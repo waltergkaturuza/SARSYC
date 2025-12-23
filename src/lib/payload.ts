@@ -1,5 +1,5 @@
 import payload from 'payload'
-import type { Payload } from 'payload'
+import type { Payload } from 'payload/types'
 
 let cached = (global as any).payload
 

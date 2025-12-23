@@ -1,6 +1,6 @@
-import { buildConfig } from 'payload/config'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { webpackBundler } from '@payloadcms/bundler-webpack'
+import { buildConfig } from 'payload'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+// webpack bundler removed (incompatible version). Using default bundler.
 import { slateEditor } from '@payloadcms/richtext-slate'
 import path from 'path'
 
@@ -23,9 +23,10 @@ import Footer from './globals/Footer'
 
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
+  // Temporary local fallback for CLI operations — replace with secure env var in production
+  secret: process.env.PAYLOAD_SECRET || 'changeme-local',
   admin: {
     user: Users.slug,
-    bundler: webpackBundler(),
     meta: {
       titleSuffix: '- SARSYC VI Admin',
       favicon: '/favicon.ico',
@@ -33,8 +34,13 @@ export default buildConfig({
     },
   },
   editor: slateEditor({}),
-  db: mongooseAdapter({
-    url: process.env.MONGODB_URI!,
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL!,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
   }),
   collections: [
     Users,
@@ -54,10 +60,10 @@ export default buildConfig({
     Footer,
   ],
   typescript: {
-    outputFile: path.resolve(__dirname, '../types/payload-types.ts'),
+    outputFile: path.resolve(process.cwd(), 'src', 'types', 'payload-types.ts'),
   },
   graphQL: {
-    schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
+    schemaOutputFile: path.resolve(process.cwd(), 'src', 'payload', 'generated-schema.graphql'),
   },
   cors: [
     process.env.PAYLOAD_PUBLIC_SERVER_URL || '',

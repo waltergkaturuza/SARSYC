@@ -1,7 +1,8 @@
-import { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload/types'
 
 const Users: CollectionConfig = {
   slug: 'users',
+  auth: {},
   access: {
     read: () => true,
     create: (args: any) => {
