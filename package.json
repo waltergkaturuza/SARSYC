@@ -1,0 +1,56 @@
+{
+  "name": "sarsyc-platform",
+  "version": "1.0.0",
+  "description": "SARSYC VI Conference Platform - Modern Next.js + Payload CMS",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "lint": "next lint",
+    "generate:types": "payload generate:types",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "setup": "npm install && npm run generate:types"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.0",
+    "axios": "^1.6.0",
+    "bcrypt": "^5.1.1",
+    "date-fns": "^3.0.0",
+    "dotenv": "^16.3.0",
+    "express": "^4.18.0",
+    "framer-motion": "^10.16.0",
+    "next": "^14.0.0",
+    "nodemailer": "^7.0.12",
+    "payload": "^3.69.0",
+    "pg": "^8.11.0",
+    "postgres": "^3.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.0",
+    "react-icons": "^5.0.0",
+    "sharp": "^0.33.0",
+    "swiper": "^11.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.0",
+    "@types/node": "^20.12.0",
+    "@types/nodemailer": "^6.4.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^16.1.1",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}
