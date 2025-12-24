@@ -28,8 +28,17 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        // TODO: Send confirmation email
-        // await sendRegistrationEmail(registration)
+        // Send confirmation email (fire-and-forget)
+        try {
+          const { sendRegistrationConfirmation } = await import('@/lib/mail')
+          void sendRegistrationConfirmation({
+            to: registration.email,
+            firstName: registration.firstName || registration.first_name,
+            registrationId: registration.registrationId || registration.registration_id,
+          })
+        } catch (e: any) {
+          console.warn('Could not send confirmation email (payload path):', e?.message || e)
+        }
 
         return NextResponse.json({
           success: true,
@@ -70,6 +79,25 @@ export async function POST(request: NextRequest) {
       )
 
       await pool.end()
+
+      // Fire-and-forget: send email and increment telemetry counter
+      try {
+        const { sendRegistrationConfirmation } = await import('@/lib/mail')
+        void sendRegistrationConfirmation({
+          to: insert.rows[0].email,
+          firstName: insert.rows[0].first_name,
+          registrationId: insert.rows[0].registration_id,
+        })
+      } catch (e: any) {
+        console.warn('Could not send confirmation email (DB fallback):', e?.message || e)
+      }
+
+      try {
+        const { incrementFallback } = await import('@/lib/telemetry')
+        void incrementFallback('registrations', { reason: 'db_fallback' })
+      } catch (e: any) {
+        console.warn('Could not increment fallback metric:', e?.message || e)
+      }
 
       return NextResponse.json({ success: true, doc: insert.rows[0], message: 'Registration successful (DB fallback)' }, { status: 201 })
     } catch (dbErr: any) {

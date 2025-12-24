@@ -194,8 +194,13 @@ const Registrations: CollectionConfig = {
         const { doc, operation, req } = args
         // Send confirmation email after registration
         if (operation === 'create') {
-          // TODO: Implement email sending
-          console.log('Send registration confirmation email to:', doc.email)
+          // Send confirmation email (fire-and-forget)
+          try {
+            const { sendRegistrationConfirmation } = await import('@/lib/mail')
+            void sendRegistrationConfirmation({ to: doc.email, firstName: doc.firstName, registrationId: doc.registrationId })
+          } catch (e: any) {
+            console.warn('Could not send confirmation email from hook:', e?.message || e)
+          }
         }
       },
     ],
@@ -203,5 +208,6 @@ const Registrations: CollectionConfig = {
 }
 
 export default Registrations
+
 
 
