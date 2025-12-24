@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
         registrationId = `SARSYC-${new Date().getFullYear()}-${Math.random().toString(36).substr(2,4).toUpperCase()}`
       }
 
+      console.info('DB fallback using registrationId:', registrationId)
+
       const insert = await pool.query(
         `INSERT INTO registrations (first_name, last_name, email, phone, country, organization, category, status, payment_status, registration_id, created_at, updated_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10, now(), now()) RETURNING *`,

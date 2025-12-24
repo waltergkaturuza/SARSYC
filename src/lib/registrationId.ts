@@ -40,6 +40,7 @@ export async function getNextRegistrationId() {
     const padded = String(count).padStart(5, '0')
     const id = `SARSYC-${year}-${padded}`
 
+    console.info('Allocated registration counter', count, '->', id)
     return { id, count }
   } catch (err: any) {
     console.error('getNextRegistrationId failed:', err?.message || err)
