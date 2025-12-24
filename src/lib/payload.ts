@@ -25,10 +25,12 @@ export const getPayloadClient = async (): Promise<Payload> => {
       // buildConfig returns a SanitizedConfig
       const sanitized = await buildConfig(config as any)
 
-      // In production serverless environments we disable onInit to avoid race conditions
-      // (like duplicate collection creation) because migrations are run separately during CI/deploy.
-      // Allow override via DISABLE_PAYLOAD_ON_INIT env var for flexibility.
-      const disableOnInit = (process.env.DISABLE_PAYLOAD_ON_INIT === 'true') || (process.env.NODE_ENV === 'production')
+      // In production serverless environments we may want to disable onInit to avoid
+      // race conditions (like duplicate collection creation). Allow explicit override
+      // via DISABLE_PAYLOAD_ON_INIT env var. If not set, default to disabling in
+      // production (but honor a deliberate 'false' value).
+      const envOverride = process.env.DISABLE_PAYLOAD_ON_INIT
+      const disableOnInit = typeof envOverride !== 'undefined' ? (envOverride === 'true') : (process.env.NODE_ENV === 'production')
 
       // @ts-ignore - Init options types can differ between payload versions
       // Retry transient init failures (eg. duplicate collection slug caused by concurrent inits in serverless)
