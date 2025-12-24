@@ -43,11 +43,6 @@ export const getPayloadClient = async (): Promise<Payload> => {
           // If it's a transient duplicate collection slug error, retry after a short backoff
           if (message.includes('Collection slug already in use') || message.includes('already exists')) {
             console.warn(`payload.init attempt ${attempt} failed with transient error:`, message)
-            // If the payload default export already has the collection registered, assume another initializer succeeded and return it
-            if ((payload as any).collections && (payload as any).collections['payload-kv']) {
-              console.warn('Detected existing payload instance with payload-kv collection; returning default export.')
-              return payload as any
-            }
             await new Promise((r) => setTimeout(r, attempt * 250))
             continue
           }

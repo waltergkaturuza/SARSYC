@@ -135,17 +135,10 @@ const Registrations: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          async (args: any) => {
+          (args: any) => {
             const { value, operation } = args
             if (operation === 'create' && !value) {
-              try {
-                const { getNextRegistrationId } = await import('@/lib/registrationId')
-                const { id } = await getNextRegistrationId()
-                return id
-              } catch (e: any) {
-                console.warn('Could not generate sequential registration ID, falling back:', e?.message || e)
-                return `SARSYC-${new Date().getFullYear()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
-              }
+              return `REG-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
             }
             return value
           },
@@ -193,6 +186,12 @@ const Registrations: CollectionConfig = {
         update: (args: any) => Boolean(args.req?.user),
       },
     },
+    {
+      name: 'deletedAt',
+      type: 'date',
+      admin: { readOnly: true },
+      label: 'Deleted At',
+    },
   ],
   timestamps: true,
   hooks: {
@@ -201,13 +200,8 @@ const Registrations: CollectionConfig = {
         const { doc, operation, req } = args
         // Send confirmation email after registration
         if (operation === 'create') {
-          // Send confirmation email (fire-and-forget)
-          try {
-            const { sendRegistrationConfirmation } = await import('@/lib/mail')
-            void sendRegistrationConfirmation({ to: doc.email, firstName: doc.firstName, registrationId: doc.registrationId })
-          } catch (e: any) {
-            console.warn('Could not send confirmation email from hook:', e?.message || e)
-          }
+          // TODO: Implement email sending
+          console.log('Send registration confirmation email to:', doc.email)
         }
       },
     ],

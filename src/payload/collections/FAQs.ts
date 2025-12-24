@@ -58,3 +58,4 @@ const FAQs: CollectionConfig = {
 export default FAQs
 
 
+

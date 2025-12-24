@@ -29,3 +29,16 @@ export async function incrementFallback(name: string, meta?: Record<string, any>
     await pool.end()
   }
 }
+
+export async function logExport(name: string, meta?: Record<string, any>) {
+  const key = `export:${name}:${Date.now()}`
+  const pool = await getPool()
+  try {
+    const payload = { ts: new Date().toISOString(), meta: meta || null }
+    await pool.query(`INSERT INTO payload_kv (key, data) VALUES ($1, $2::jsonb)`, [key, JSON.stringify(payload)])
+  } catch (err: any) {
+    console.error('logExport failed:', err?.message || err)
+  } finally {
+    await pool.end()
+  }
+}

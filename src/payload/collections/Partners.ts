@@ -104,3 +104,4 @@ const Partners: CollectionConfig = {
 export default Partners
 
 
+

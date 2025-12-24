@@ -111,6 +111,12 @@ const Participants: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'checkedInAt',
+      type: 'date',
+      admin: { readOnly: true },
+      label: 'Checked In At',
+    },
+    {
       name: 'badgesPrintedAt',
       type: 'date',
       admin: { readOnly: false },

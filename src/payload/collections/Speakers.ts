@@ -124,3 +124,4 @@ const Speakers: CollectionConfig = {
 export default Speakers
 
 
+

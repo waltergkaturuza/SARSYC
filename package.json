@@ -11,7 +11,8 @@
     "lint": "next lint",
     "generate:types": "payload generate:types",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "setup": "npm install && npm run generate:types"
+    "setup": "npm install && npm run generate:types",
+    "test": "node --test tests/*.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
@@ -58,3 +59,4 @@
     "node": ">=18.17.0"
   }
 }
+

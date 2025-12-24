@@ -139,3 +139,4 @@ const News: CollectionConfig = {
 export default News
 
 
+
