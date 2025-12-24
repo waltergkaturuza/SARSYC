@@ -65,6 +65,6 @@ export function sendRegistrationConfirmation({ to, firstName, registrationId }: 
   const text = `Dear ${firstName || 'attendee'},\n\nThank you for registering for SARSYC. Your registration ID is ${registrationId}. We will be in touch with next steps.`
   const html = `<p>Dear ${firstName || 'attendee'},</p><p>Thank you for registering for <strong>SARSYC</strong>. Your registration ID is <strong>${registrationId}</strong>.</p><p>We will be in touch with next steps.</p>`
 
-  // Fire-and-forget
-  void sendMail({ to, subject, text, html })
+  // Return the promise so callers can catch failures if desired
+  return sendMail({ to, subject, text, html })
 }

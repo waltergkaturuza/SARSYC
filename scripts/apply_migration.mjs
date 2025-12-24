@@ -8,8 +8,13 @@ const sqlFile = new URL('../src/migrations/sql/20251223_130213.sql', import.meta
 async function run() {
   const sql = await readFile(sqlFile, 'utf8')
   const connectionString = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL
+  if (!connectionString) {
+    console.error('Please provide DATABASE_URL_UNPOOLED or DATABASE_URL in the environment')
+    process.exit(1)
+  }
   console.log('Using connectionString:', connectionString)
-  const client = new pg.Client({ connectionString, ssl: { rejectUnauthorized: false } })
+  const useSsl = /sslmode=require|ssl=true/i.test(connectionString)
+  const client = new pg.Client({ connectionString, ssl: useSsl ? { rejectUnauthorized: false } : undefined })
   await client.connect()
   try {
     console.log('Applying SQL migration to:', process.env.DATABASE_URL)
