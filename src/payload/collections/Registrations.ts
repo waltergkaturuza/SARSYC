@@ -135,10 +135,17 @@ const Registrations: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          (args: any) => {
+          async (args: any) => {
             const { value, operation } = args
             if (operation === 'create' && !value) {
-              return `REG-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+              try {
+                const { getNextRegistrationId } = await import('@/lib/registrationId')
+                const { id } = await getNextRegistrationId()
+                return id
+              } catch (e: any) {
+                console.warn('Could not generate sequential registration ID, falling back:', e?.message || e)
+                return `SARSYC-${new Date().getFullYear()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+              }
             }
             return value
           },

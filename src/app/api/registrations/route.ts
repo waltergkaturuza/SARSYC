@@ -59,7 +59,16 @@ export async function POST(request: NextRequest) {
         ssl: { rejectUnauthorized: false },
       })
 
-      const registrationId = `REG-${new Date().getFullYear()}-${Math.random().toString(36).substr(2,4).toUpperCase()}`
+      // Generate a sequential, human-friendly registration ID
+      let registrationId = null
+      try {
+        const { getNextRegistrationId } = await import('@/lib/registrationId')
+        const res = await getNextRegistrationId()
+        registrationId = res.id
+      } catch (e: any) {
+        console.warn('Could not generate sequential registration ID for fallback:', e?.message || e)
+        registrationId = `SARSYC-${new Date().getFullYear()}-${Math.random().toString(36).substr(2,4).toUpperCase()}`
+      }
 
       const insert = await pool.query(
         `INSERT INTO registrations (first_name, last_name, email, phone, country, organization, category, status, payment_status, registration_id, created_at, updated_at)
