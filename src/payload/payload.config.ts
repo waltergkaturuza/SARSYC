@@ -10,6 +10,7 @@ import Registrations from './collections/Registrations'
 import Abstracts from './collections/Abstracts'
 import Speakers from './collections/Speakers'
 import Sessions from './collections/Sessions'
+import Participants from './collections/Participants'
 import Resources from './collections/Resources'
 import News from './collections/News'
 import Partners from './collections/Partners'
@@ -47,6 +48,7 @@ export default buildConfig({
     Registrations,
     Abstracts,
     Speakers,
+    Participants,
     Sessions,
     Resources,
     News,
@@ -79,5 +81,6 @@ export default buildConfig({
     window: 15 * 60 * 1000, // 15 minutes
   },
 })
+
 
 
