@@ -1,5 +1,7 @@
 import payload from 'payload'
 import type { Payload } from 'payload/types'
+import { buildConfig } from 'payload'
+import config from '../payload/payload.config'
 
 let cached = (global as any).payload
 
@@ -13,13 +15,13 @@ export const getPayloadClient = async (): Promise<Payload> => {
   }
 
   if (!cached.promise) {
-    // Type definitions for payload.init differ between versions — cast to any to avoid build-time type errors
-    // @ts-ignore
-    cached.promise = payload.init({
-      // secret is provided at runtime via environment variables
-      secret: process.env.PAYLOAD_SECRET!,
-      local: true,
-    } as any)
+    // Build and pass a sanitized config to payload.init (needed in serverless environments)
+    cached.promise = (async () => {
+      // buildConfig returns a SanitizedConfig
+      const sanitized = await buildConfig(config as any)
+      // @ts-ignore - Init options types can differ between payload versions
+      return payload.init({ config: sanitized })
+    })()
   }
 
   try {
