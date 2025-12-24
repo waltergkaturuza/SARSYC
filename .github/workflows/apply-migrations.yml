@@ -1,0 +1,39 @@
+name: Apply Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (staging|production)'
+        required: true
+        default: 'staging'
+
+jobs:
+  apply-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set DB URL
+        id: db
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "DATABASE_URL_UNPOOLED=${{ secrets.PROD_DATABASE_URL_UNPOOLED }}" >> $GITHUB_ENV
+            echo "ENV=production" >> $GITHUB_ENV
+          else
+            echo "DATABASE_URL_UNPOOLED=${{ secrets.STAGING_DATABASE_URL_UNPOOLED }}" >> $GITHUB_ENV
+            echo "ENV=staging" >> $GITHUB_ENV
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check pending migrations
+        run: node -e "(async()=>{const pg=require('pg');const conn=process.env.DATABASE_URL_UNPOOLED||process.env.DATABASE_URL;const client=new pg.Client({connectionString:conn,ssl:/sslmode=require|ssl=true/i.test(conn)?{rejectUnauthorized:false}:undefined});await client.connect();const res=await client.query('SELECT name FROM payload_migrations ORDER BY created_at DESC LIMIT 1');console.log('Latest migration in DB:', res.rows[0]?.name);await client.end();})()"
+
+      - name: Apply migrations
+        run: node ./scripts/apply_migration.mjs
+
+      - name: Report success
+        run: echo "Migrations applied for ${{ github.event.inputs.environment }}"
