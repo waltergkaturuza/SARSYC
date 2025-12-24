@@ -31,7 +31,28 @@ export const getPayloadClient = async (): Promise<Payload> => {
       const disableOnInit = (process.env.DISABLE_PAYLOAD_ON_INIT === 'true') || (process.env.NODE_ENV === 'production')
 
       // @ts-ignore - Init options types can differ between payload versions
-      return payload.init({ config: sanitized, disableOnInit })
+      // Retry transient init failures (eg. duplicate collection slug caused by concurrent inits in serverless)
+      const maxAttempts = 3
+      let lastErr: any = null
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          return await payload.init({ config: sanitized, disableOnInit })
+        } catch (err: any) {
+          lastErr = err
+          const message = String(err?.message || '')
+          // If it's a transient duplicate collection slug error, retry after a short backoff
+          if (message.includes('Collection slug already in use') || message.includes('already exists')) {
+            console.warn(`payload.init attempt ${attempt} failed with transient error:`, message)
+            await new Promise((r) => setTimeout(r, attempt * 250))
+            continue
+          }
+          // Non-transient error — rethrow
+          throw err
+        }
+      }
+
+      // If we get here, all attempts failed — rethrow last error for visibility
+      throw lastErr
     })()
   }
 
