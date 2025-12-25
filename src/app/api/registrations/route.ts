@@ -7,6 +7,7 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('📩 Registration request body keys:', Object.keys(body || {}))
     const payload = await getPayloadClient()
 
     // Create registration in Payload CMS
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
       message: error.message,
       name: error.name,
       code: error.code,
+      responseData: error?.response?.data,
     })
     return NextResponse.json(
       {
