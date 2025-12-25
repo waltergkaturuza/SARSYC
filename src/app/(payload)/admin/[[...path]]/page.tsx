@@ -8,4 +8,3 @@ export const metadata = {
   title: 'Admin Panel - SARSYC VI',
   description: 'Content management system for SARSYC VI',
 }
-
