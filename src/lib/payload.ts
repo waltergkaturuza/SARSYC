@@ -77,25 +77,19 @@ export const getPayloadClient = async (): Promise<Payload> => {
           if (errorMessage.includes('collection slug already in use') || 
               errorMessage.includes('already exists') ||
               errorMessage.includes('payload-kv')) {
-            console.warn(`payload.init attempt ${attempt}/${maxAttempts} - collection already exists (this is usually safe to ignore):`, message)
+            console.warn(`payload.init attempt ${attempt}/${maxAttempts} - collection already exists (usually safe):`, message)
             
-            // If it's the last attempt and it's a duplicate collection error, try to return existing instance
+            // If we already have a cached client, return it immediately
+            if (cached.client) {
+              console.log('Using cached Payload client after duplicate collection warning')
+              return cached.client
+            }
+
+            // On final attempt, ignore and return the raw payload instance
             if (attempt === maxAttempts) {
-              // Try to get existing payload instance if available
-              try {
-                // Check if we can access the payload instance despite the error
-                // In some cases, Payload may have initialized partially
-                if (cached.client) {
-                  console.log('Using cached Payload client despite initialization warning')
-                  return cached.client
-                }
-              } catch (accessErr) {
-                // Ignore access errors
-              }
-              
-              // For duplicate collection errors, we can often continue safely
-              // as the collections already exist in the database
-              console.warn('Collection already exists - this may be safe to ignore if collections are already initialized')
+              console.warn('Final attempt hit duplicate collection warning; returning existing payload instance')
+              // payload default export may already be usable even if init threw
+              return payload as unknown as Payload
             }
             
             // Wait before retrying (exponential backoff)
