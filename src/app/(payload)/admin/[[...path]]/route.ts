@@ -32,10 +32,23 @@ export async function GET(
     const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     
     return NextResponse.redirect(new URL(fullPath, serverURL))
-  } catch (error) {
+  } catch (error: any) {
     console.error('Payload admin route error:', error)
+    
+    // Provide more helpful error messages
+    const errorMessage = String(error?.message || error)
+    let details = errorMessage
+    
+    if (errorMessage.includes('secret')) {
+      details = errorMessage + '. Please ensure PAYLOAD_SECRET is set in Vercel environment variables and redeploy.'
+    }
+    
     return NextResponse.json(
-      { error: 'Admin panel error', details: String(error) },
+      { 
+        error: 'Admin panel error', 
+        details,
+        hint: 'Check Vercel deployment logs for more details. Ensure PAYLOAD_SECRET environment variable is set.'
+      },
       { status: 500 }
     )
   }

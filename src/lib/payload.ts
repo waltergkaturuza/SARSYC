@@ -20,13 +20,24 @@ export const getPayloadClient = async (): Promise<Payload> => {
         // Note: Secret validation happens in buildConfig and payload.init
 
       // Ensure secret is available
-      const secret = process.env.PAYLOAD_SECRET || 'changeme-local-dev-only'
-      if (!secret || secret === 'changeme-local-dev-only') {
+      const secret = process.env.PAYLOAD_SECRET
+      
+      // Debug logging (remove in production if needed)
+      if (!secret) {
+        console.error('❌ PAYLOAD_SECRET is not set in environment variables')
+        console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('PAYLOAD') || k.includes('SECRET')))
         if (process.env.NODE_ENV === 'production') {
-          throw new Error('PAYLOAD_SECRET environment variable is required in production')
+          throw new Error('PAYLOAD_SECRET environment variable is required in production. Please set it in Vercel environment variables.')
         }
-        console.warn('⚠️  Using default PAYLOAD_SECRET. Set PAYLOAD_SECRET environment variable for production!')
+        throw new Error('PAYLOAD_SECRET environment variable is required')
       }
+      
+      // Validate secret is not empty
+      if (secret.trim() === '') {
+        throw new Error('PAYLOAD_SECRET is set but is empty. Please set a valid secret key in Vercel.')
+      }
+      
+      console.log('✅ PAYLOAD_SECRET is set (length: ' + secret.length + ' chars)')
 
       // buildConfig returns a SanitizedConfig
       // Note: buildConfig may sanitize/remove the secret from the config object for security
