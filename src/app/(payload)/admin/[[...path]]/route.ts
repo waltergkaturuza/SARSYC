@@ -1,33 +1,49 @@
-/* THIS FILE IS REQUIRED FOR PAYLOAD ADMIN */
+/* PAYLOAD ADMIN ROUTE HANDLER */
 
 import { getPayloadClient } from '@/lib/payload'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-export async function GET(request: Request) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ path?: string[] }> }
+) {
   try {
     const payload = await getPayloadClient()
+    const { path } = await params
     
-    // In Payload v3, the admin is served through Payload's router
-    // We need to handle the request properly
-    // Payload admin is typically available at the root /admin path
-    // and handles its own routing internally
+    // Payload v3 handles admin routes internally
+    // We need to proxy requests to Payload's admin handler
+    // For Payload v3, the admin is served through its API
     
-    // For now, return a simple redirect response
-    // Payload's admin should be accessible at the base URL
-    return new Response(null, {
-      status: 307,
-      headers: {
-        'Location': '/admin',
-      },
-    })
+    // Get the full URL path
+    const url = new URL(request.url)
+    const pathname = url.pathname
+    const searchParams = url.searchParams.toString()
+    
+    // Construct Payload admin URL
+    const adminPath = path ? `/${path.join('/')}` : ''
+    const fullPath = `/admin${adminPath}${searchParams ? `?${searchParams}` : ''}`
+    
+    // For Payload v3, redirect to the Payload admin endpoint
+    // Payload serves the admin UI through its own routing system
+    const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+    
+    return NextResponse.redirect(new URL(fullPath, serverURL))
   } catch (error) {
-    console.error('Admin route error:', error)
-    return new Response(`Admin error: ${String(error)}`, { status: 500 })
+    console.error('Payload admin route error:', error)
+    return NextResponse.json(
+      { error: 'Admin panel error', details: String(error) },
+      { status: 500 }
+    )
   }
 }
 
-export async function POST(request: Request) {
-  return GET(request)
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ path?: string[] }> }
+) {
+  return GET(request, { params })
 }
-
