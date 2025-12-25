@@ -28,12 +28,14 @@ export const getPayloadClient = async (): Promise<Payload> => {
       // buildConfig returns a SanitizedConfig
       const sanitized = await buildConfig(config as any)
 
-      // In production serverless environments we may want to disable onInit to avoid
+      // In production serverless environments, always disable onInit to avoid
       // race conditions (like duplicate collection creation). Allow explicit override
       // via DISABLE_PAYLOAD_ON_INIT env var. If not set, default to disabling in
       // production (but honor a deliberate 'false' value).
       const envOverride = process.env.DISABLE_PAYLOAD_ON_INIT
-      const disableOnInit = typeof envOverride !== 'undefined' ? (envOverride === 'true') : (process.env.NODE_ENV === 'production')
+      const disableOnInit = typeof envOverride !== 'undefined' 
+        ? (envOverride === 'true') 
+        : (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1')
 
       // @ts-ignore - Init options types can differ between payload versions
       // Retry transient init failures (eg. duplicate collection slug caused by concurrent inits in serverless)
@@ -42,14 +44,46 @@ export const getPayloadClient = async (): Promise<Payload> => {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           // Pass secret explicitly to payload.init
-          return await payload.init({ config: sanitized, secret, disableOnInit })
+          // Always disable onInit in serverless/production to prevent duplicate collection creation
+          const shouldDisableOnInit = process.env.NODE_ENV === 'production' || disableOnInit
+          
+          return await payload.init({ 
+            config: sanitized, 
+            secret, 
+            disableOnInit: shouldDisableOnInit 
+          })
         } catch (err: any) {
           lastErr = err
           const message = String(err?.message || '')
-          // If it's a transient duplicate collection slug error, retry after a short backoff
-          if (message.includes('Collection slug already in use') || message.includes('already exists')) {
-            console.warn(`payload.init attempt ${attempt} failed with transient error:`, message)
-            await new Promise((r) => setTimeout(r, attempt * 250))
+          const errorMessage = message.toLowerCase()
+          
+          // Handle duplicate collection slug errors more gracefully
+          if (errorMessage.includes('collection slug already in use') || 
+              errorMessage.includes('already exists') ||
+              errorMessage.includes('payload-kv')) {
+            console.warn(`payload.init attempt ${attempt}/${maxAttempts} - collection already exists (this is usually safe to ignore):`, message)
+            
+            // If it's the last attempt and it's a duplicate collection error, try to return existing instance
+            if (attempt === maxAttempts) {
+              // Try to get existing payload instance if available
+              try {
+                // Check if we can access the payload instance despite the error
+                // In some cases, Payload may have initialized partially
+                if (cached.client) {
+                  console.log('Using cached Payload client despite initialization warning')
+                  return cached.client
+                }
+              } catch (accessErr) {
+                // Ignore access errors
+              }
+              
+              // For duplicate collection errors, we can often continue safely
+              // as the collections already exist in the database
+              console.warn('Collection already exists - this may be safe to ignore if collections are already initialized')
+            }
+            
+            // Wait before retrying (exponential backoff)
+            await new Promise((r) => setTimeout(r, attempt * 500))
             continue
           }
           // Non-transient error — rethrow
