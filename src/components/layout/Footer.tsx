@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin, FiYoutube, FiMail, FiPhone, FiMapPin } from 'react-icons/fi'
+import { FiFacebook, FiTwitter, FiInstagram, FiMail, FiMapPin } from 'react-icons/fi'
+import { SiTiktok } from 'react-icons/si'
 
 const footerLinks = {
   conference: [
@@ -31,11 +32,10 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { name: 'Facebook', icon: FiFacebook, href: 'https://facebook.com/saywhat', color: 'hover:text-blue-600' },
-  { name: 'Twitter', icon: FiTwitter, href: 'https://twitter.com/saywhat', color: 'hover:text-sky-500' },
-  { name: 'Instagram', icon: FiInstagram, href: 'https://instagram.com/saywhat', color: 'hover:text-pink-600' },
-  { name: 'LinkedIn', icon: FiLinkedin, href: 'https://linkedin.com/company/saywhat', color: 'hover:text-blue-700' },
-  { name: 'YouTube', icon: FiYoutube, href: 'https://youtube.com/@saywhat', color: 'hover:text-red-600' },
+  { name: 'Facebook', icon: FiFacebook, href: 'https://www.facebook.com/SARSYC', color: 'hover:text-blue-600' },
+  { name: 'Instagram', icon: FiInstagram, href: 'https://www.instagram.com/sarsyc2026/', color: 'hover:text-pink-600' },
+  { name: 'X (Twitter)', icon: FiTwitter, href: 'https://x.com/SARSYC2026', color: 'hover:text-sky-500' },
+  { name: 'TikTok', icon: SiTiktok, href: 'https://www.tiktok.com/@sarsyc2026', color: 'hover:text-black dark:hover:text-white' },
 ]
 
 export default function Footer() {
