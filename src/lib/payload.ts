@@ -1,6 +1,5 @@
 import payload from 'payload'
 import type { Payload } from 'payload/types'
-import { buildConfig } from 'payload'
 import config from '../payload/payload.config'
 import { getSecret } from './getSecret'
 
@@ -37,11 +36,6 @@ export const getPayloadClient = async (): Promise<Payload> => {
       
       console.log('✅ PAYLOAD_SECRET loaded (length: ' + secret.length + ' chars)')
 
-      // buildConfig returns a SanitizedConfig
-      // Note: buildConfig may sanitize/remove the secret from the config object for security
-      // This is fine - we pass the secret separately to payload.init()
-      const sanitized = await buildConfig(config as any)
-
       // In production serverless environments, always disable onInit to avoid
       // race conditions (like duplicate collection creation). Allow explicit override
       // via DISABLE_PAYLOAD_ON_INIT env var. If not set, default to disabling in
@@ -62,9 +56,9 @@ export const getPayloadClient = async (): Promise<Payload> => {
           const shouldDisableOnInit = process.env.NODE_ENV === 'production' || disableOnInit
           
           // Payload v3: secret should be passed as separate parameter, not in config
-          // The sanitized config from buildConfig() should not include secret
+          // The config is already sanitized in payload.config.ts
           return await payload.init({ 
-            config: sanitized, 
+            config, 
             secret: secret,
             disableOnInit: shouldDisableOnInit 
           })
