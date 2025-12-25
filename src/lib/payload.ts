@@ -17,9 +17,12 @@ export const getPayloadClient = async (): Promise<Payload> => {
   if (!cached.promise) {
     // Build and pass a sanitized config to payload.init (needed in serverless environments)
     cached.promise = (async () => {
-        // Ensure a secret is present in production — make the error explicit so logs guide the deploy config.
-      if (process.env.NODE_ENV === 'production' && !process.env.PAYLOAD_SECRET) {
-        throw new Error('Missing PAYLOAD_SECRET environment variable. Please set PAYLOAD_SECRET in your hosting environment (Production).')
+        // Note: Secret validation happens in buildConfig and payload.init
+
+      // Ensure secret is available
+      const secret = process.env.PAYLOAD_SECRET || 'changeme-local'
+      if (!secret || secret === 'changeme-local') {
+        console.warn('⚠️  Using default PAYLOAD_SECRET. Set PAYLOAD_SECRET environment variable for production!')
       }
 
       // buildConfig returns a SanitizedConfig
@@ -38,7 +41,8 @@ export const getPayloadClient = async (): Promise<Payload> => {
       let lastErr: any = null
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          return await payload.init({ config: sanitized, disableOnInit })
+          // Pass secret explicitly to payload.init
+          return await payload.init({ config: sanitized, secret, disableOnInit })
         } catch (err: any) {
           lastErr = err
           const message = String(err?.message || '')

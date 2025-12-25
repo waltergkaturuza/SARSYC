@@ -22,10 +22,22 @@ import SiteSettings from './globals/SiteSettings'
 import Header from './globals/Header'
 import Footer from './globals/Footer'
 
+// Get secret - required for Payload
+const getSecret = () => {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('PAYLOAD_SECRET environment variable is required in production')
+    }
+    console.warn('⚠️  PAYLOAD_SECRET not set, using default (development only)')
+    return 'changeme-local-dev-only'
+  }
+  return secret
+}
+
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
-  // Temporary local fallback for CLI operations — replace with secure env var in production
-  secret: process.env.PAYLOAD_SECRET || 'changeme-local',
+  secret: getSecret(),
   admin: {
     user: Users.slug,
     meta: {
