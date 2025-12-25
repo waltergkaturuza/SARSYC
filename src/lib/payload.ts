@@ -20,12 +20,17 @@ export const getPayloadClient = async (): Promise<Payload> => {
         // Note: Secret validation happens in buildConfig and payload.init
 
       // Ensure secret is available
-      const secret = process.env.PAYLOAD_SECRET || 'changeme-local'
-      if (!secret || secret === 'changeme-local') {
+      const secret = process.env.PAYLOAD_SECRET || 'changeme-local-dev-only'
+      if (!secret || secret === 'changeme-local-dev-only') {
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('PAYLOAD_SECRET environment variable is required in production')
+        }
         console.warn('⚠️  Using default PAYLOAD_SECRET. Set PAYLOAD_SECRET environment variable for production!')
       }
 
       // buildConfig returns a SanitizedConfig
+      // Note: buildConfig may sanitize/remove the secret from the config object for security
+      // This is fine - we pass the secret separately to payload.init()
       const sanitized = await buildConfig(config as any)
 
       // In production serverless environments, always disable onInit to avoid
@@ -47,9 +52,11 @@ export const getPayloadClient = async (): Promise<Payload> => {
           // Always disable onInit in serverless/production to prevent duplicate collection creation
           const shouldDisableOnInit = process.env.NODE_ENV === 'production' || disableOnInit
           
+          // Payload v3: secret should be passed as separate parameter, not in config
+          // The sanitized config from buildConfig() should not include secret
           return await payload.init({ 
             config: sanitized, 
-            secret, 
+            secret: secret,
             disableOnInit: shouldDisableOnInit 
           })
         } catch (err: any) {
