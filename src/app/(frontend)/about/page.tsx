@@ -56,15 +56,20 @@ export default function AboutPage() {
           <div className="max-w-3xl mx-auto">
             <h2 className="section-title">What is SARSYC?</h2>
             <div className="prose prose-lg max-w-none">
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed mb-4">
                 The <strong>Southern African Regional Students and Youth Conference (SARSYC)</strong> is a biennial
-                flagship regional platform convened by SAYWHAT (Student and Youth Working on Reproductive Health
-                Action Team) for transnational advocacy on youth health and education.
+                regional youth conference founded in <strong>2015</strong> by SAYWHAT (Student and Youth Working on 
+                Reproductive Health Action Team). It originated from SAYWHAT's National Students' Conference in Zimbabwe.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                SARSYC focuses on <strong>SRHR, HIV/AIDS, education rights, youth well-being, and integrated advocacy</strong>. 
+                It is designed as a feeder platform to major regional forums such as ICASA and the SADC Summit.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Since 2014, SARSYC has brought together students, young researchers, policymakers, and development
-                partners to share knowledge, build networks, and develop actionable strategies to improve youth
-                sexual and reproductive health and education outcomes across Southern Africa.
+                Since 2015, SARSYC has brought together students, young researchers, policymakers, civil society, 
+                development partners, and the private sector from across Southern Africa to share knowledge, build 
+                networks, and develop actionable strategies to improve youth sexual and reproductive health and 
+                education outcomes.
               </p>
             </div>
           </div>

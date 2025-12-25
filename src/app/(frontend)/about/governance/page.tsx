@@ -2,34 +2,64 @@ import { FiUsers, FiShield, FiTarget } from 'react-icons/fi'
 
 const committeeMembers = [
   {
-    name: 'Steering Committee Chair',
-    organization: 'Ministry of Health, Namibia',
-    role: 'Chairperson',
-    country: 'Namibia',
+    name: 'Youth Leader 1',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Angola',
   },
   {
-    name: 'SAYWHAT Representative',
-    organization: 'SAYWHAT Regional Office',
-    role: 'Member',
-    country: 'Regional',
-  },
-  {
-    name: 'Youth Representative',
-    organization: 'National Youth Council',
-    role: 'Member',
+    name: 'Youth Leader 2',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
     country: 'Botswana',
   },
   {
-    name: 'Development Partner Representative',
-    organization: 'UNFPA',
-    role: 'Member',
+    name: 'Youth Leader 3',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Malawi',
+  },
+  {
+    name: 'Youth Leader 4',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Mozambique',
+  },
+  {
+    name: 'Youth Leader 5',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Namibia',
+  },
+  {
+    name: 'Youth Leader 6',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'South Africa',
+  },
+  {
+    name: 'Youth Leader 7',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Zambia',
+  },
+  {
+    name: 'Youth Leader 8',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Zimbabwe',
+  },
+  {
+    name: 'Youth Leader 9',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
     country: 'Regional',
   },
   {
-    name: 'Academic Representative',
-    organization: 'University of Namibia',
-    role: 'Member',
-    country: 'Namibia',
+    name: 'Youth Leader 10',
+    organization: 'Youth Network',
+    role: 'Youth Steering Committee Member',
+    country: 'Regional',
   },
 ]
 
@@ -54,9 +84,10 @@ export default function GovernancePage() {
       <section className="section bg-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">SARSYC VI Steering Committee</h2>
+            <h2 className="section-title">Youth Steering Committee</h2>
             <p className="section-subtitle">
-              The Steering Committee provides strategic oversight and guidance for SARSYC VI planning and implementation.
+              10 youth leaders from SADC countries who co-plan and execute SARSYC VI, champion post-conference 
+              implementation, and ensure continuity & accountability.
             </p>
 
             <div className="grid md:grid-cols-2 gap-6">

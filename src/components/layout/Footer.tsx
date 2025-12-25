@@ -70,17 +70,27 @@ export default function Footer() {
                 <FiMapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
                 <span>Windhoek, Namibia<br />August 5-7, 2026</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <FiMail className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <a href="mailto:info@sarsyc.org" className="hover:text-white transition-colors">
-                  info@sarsyc.org
-                </a>
+              <div className="flex items-start gap-3 text-sm">
+                <FiMail className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <a href="mailto:saywhat@mweb.co.zw" className="hover:text-white transition-colors block">
+                    saywhat@mweb.co.zw
+                  </a>
+                  <a href="mailto:info@sarsyc.org" className="hover:text-white transition-colors block">
+                    info@sarsyc.org
+                  </a>
+                </div>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <FiPhone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <a href="tel:+264000000000" className="hover:text-white transition-colors">
-                  +264 (0) 00 000 0000
-                </a>
+              <div className="flex items-start gap-3 text-sm">
+                <FiMapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <a href="https://www.sarsyc.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors block">
+                    www.sarsyc.org
+                  </a>
+                  <a href="https://www.saywhat.org.zw" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors block">
+                    www.saywhat.org.zw
+                  </a>
+                </div>
               </div>
             </div>
           </div>

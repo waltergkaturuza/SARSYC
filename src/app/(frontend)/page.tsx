@@ -64,23 +64,34 @@ export default function HomePage() {
 
             {/* Main Heading */}
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              SARSYC VI
+              The 6th Southern African Regional Students and Youth Conference
             </h1>
             <p className="text-xl md:text-2xl lg:text-3xl text-white/95 font-medium mb-4">
-              Align for Action
+              SARSYC VI
             </p>
-            <p className="text-lg md:text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-              Sustaining Progress in Youth Health and Education
+            <p className="text-lg md:text-xl text-white/90 font-semibold mb-3">
+              Align for Action: Sustaining Progress in Youth Health and Education
+            </p>
+            <p className="text-base md:text-lg text-white/80 mb-2">
+              #DrivingRegionalSolidarity
+            </p>
+            <p className="text-sm md:text-base text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+              A flagship, youth-led regional conference convened by SAYWHAT, bringing together students, youth leaders, 
+              policymakers, civil society, development partners, and the private sector from across Southern Africa 
+              to drive transnational advocacy on youth health and education.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link href="/participate/register" className="btn-accent text-lg px-8 py-4 w-full sm:w-auto">
-                Register Now
+                Register for SARSYC VI
                 <FiArrowRight className="w-5 h-5 ml-2" />
               </Link>
               <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
-                Submit Abstract
+                Submit Abstract (Research Indaba)
+              </Link>
+              <Link href="/partnerships" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+                Become a Partner / Exhibitor
               </Link>
             </div>
 

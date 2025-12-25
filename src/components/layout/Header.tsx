@@ -17,7 +17,17 @@ const navigation = [
       { name: 'Governance', href: '/about/governance' },
     ]
   },
-  { name: 'SARSYC VI', href: '/sarsyc-vi' },
+  { 
+    name: 'SARSYC VI', 
+    href: '/sarsyc-vi',
+    dropdown: [
+      { name: 'Overview', href: '/sarsyc-vi' },
+      { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
+      { name: 'Objectives', href: '/sarsyc-vi/objectives' },
+      { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
+      { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
+    ]
+  },
   { 
     name: 'Programme', 
     href: '/programme',
@@ -115,8 +125,11 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
+            <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
+              Login
+            </Link>
             <Link href="/participate/register" className="btn-primary">
               Register Now
             </Link>
@@ -169,7 +182,14 @@ export default function Header() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 px-4">
+            <div className="mt-4 px-4 space-y-3">
+              <Link
+                href="/login"
+                className="block text-center text-sm font-medium text-gray-700 hover:text-primary-600 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
               <Link
                 href="/participate/register"
                 className="btn-primary w-full justify-center"
