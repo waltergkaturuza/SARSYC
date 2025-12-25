@@ -12,7 +12,9 @@
     "generate:types": "payload generate:types",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "setup": "npm install && npm run generate:types",
-    "test": "node --test tests/*.mjs"
+    "test": "node --test tests/*.mjs",
+    "generate:secret": "node scripts/generate-secret.js",
+    "init:secret": "node scripts/init-secret-db.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",

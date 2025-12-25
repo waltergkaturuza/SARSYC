@@ -2,6 +2,7 @@ import payload from 'payload'
 import type { Payload } from 'payload/types'
 import { buildConfig } from 'payload'
 import config from '../payload/payload.config'
+import { getSecret } from './getSecret'
 
 let cached = (global as any).payload
 
@@ -19,25 +20,15 @@ export const getPayloadClient = async (): Promise<Payload> => {
     cached.promise = (async () => {
         // Note: Secret validation happens in buildConfig and payload.init
 
-      // Ensure secret is available
-      const secret = process.env.PAYLOAD_SECRET
-      
-      // Debug logging (remove in production if needed)
-      if (!secret) {
-        console.error('❌ PAYLOAD_SECRET is not set in environment variables')
-        console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('PAYLOAD') || k.includes('SECRET')))
-        if (process.env.NODE_ENV === 'production') {
-          throw new Error('PAYLOAD_SECRET environment variable is required in production. Please set it in Vercel environment variables.')
-        }
-        throw new Error('PAYLOAD_SECRET environment variable is required')
-      }
+      // Get secret from environment variable or database fallback
+      const secret = await getSecret()
       
       // Validate secret is not empty
-      if (secret.trim() === '') {
-        throw new Error('PAYLOAD_SECRET is set but is empty. Please set a valid secret key in Vercel.')
+      if (!secret || secret.trim() === '') {
+        throw new Error('PAYLOAD_SECRET is required. Please set it in environment variables or initialize it in the database.')
       }
       
-      console.log('✅ PAYLOAD_SECRET is set (length: ' + secret.length + ' chars)')
+      console.log('✅ PAYLOAD_SECRET loaded (length: ' + secret.length + ' chars)')
 
       // buildConfig returns a SanitizedConfig
       // Note: buildConfig may sanitize/remove the secret from the config object for security
@@ -118,6 +109,9 @@ export const getPayloadClient = async (): Promise<Payload> => {
     cached.client = await cached.promise
   } catch (e: unknown) {
     cached.promise = null
+    const error = e as Error
+    console.error('❌ Payload client initialization failed:', error.message)
+    console.error('Error stack:', error.stack)
     throw e
   }
 

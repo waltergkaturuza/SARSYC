@@ -23,11 +23,17 @@ import Header from './globals/Header'
 import Footer from './globals/Footer'
 
 // Get secret - required for Payload
+// Note: buildConfig() is synchronous, so we can only check env var here
+// The actual secret (with database fallback) is retrieved async in lib/payload.ts
+// and passed to payload.init(). This value is just for buildConfig validation.
 const getSecret = () => {
   const secret = process.env.PAYLOAD_SECRET
   if (!secret) {
+    // Use a placeholder - the real secret will be retrieved async in lib/payload.ts
+    // Payload's buildConfig accepts this, but we override it during init()
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('PAYLOAD_SECRET environment variable is required in production')
+      // Placeholder for production - actual secret retrieved in payload.init()
+      return 'placeholder-will-be-replaced-in-init'
     }
     console.warn('⚠️  PAYLOAD_SECRET not set, using default (development only)')
     return 'changeme-local-dev-only'

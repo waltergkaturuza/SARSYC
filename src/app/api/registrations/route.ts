@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -25,11 +28,18 @@ export async function POST(request: NextRequest) {
       message: 'Registration successful',
     })
   } catch (error: any) {
-    console.error('Registration error:', error)
+    console.error('❌ Registration error:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+    })
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Registration failed',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }
     )
