@@ -56,7 +56,7 @@ export default function HomePage() {
             {/* Logo */}
             <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-8">
               <Image
-                src="/logo.png"
+                src="/logo.jpeg"
                 alt="SARSYC Logo"
                 fill
                 className="object-contain drop-shadow-2xl"
