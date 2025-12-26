@@ -1,19 +1,32 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight } from 'react-icons/fi'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [userType, setUserType] = useState<'participant' | 'speaker' | 'admin'>('participant')
+  
+  // Get user type from URL params or default to participant
+  const urlType = searchParams.get('type') as 'participant' | 'speaker' | 'admin' | null
+  const [userType, setUserType] = useState<'participant' | 'speaker' | 'admin'>(
+    urlType || 'participant'
+  )
+  
+  // Update user type when URL param changes
+  useEffect(() => {
+    if (urlType && ['participant', 'speaker', 'admin'].includes(urlType)) {
+      setUserType(urlType)
+    }
+  }, [urlType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,23 +85,29 @@ export default function LoginPage() {
         }
       }
 
+      // Get redirect URL from query params or use default
+      const redirectUrl = searchParams.get('redirect')
+      
       // For admin, wait a bit longer and verify cookie before redirect
       if (userType === 'admin') {
-        // Wait a bit to ensure cookie is set
-        await new Promise(resolve => setTimeout(resolve, 200))
+        // Wait a bit to ensure cookie is set (server-side cookie should be available)
+        await new Promise(resolve => setTimeout(resolve, 300))
         
         // Verify cookie was set (check both server-set and client-set)
         const cookieCheck = document.cookie.includes('payload-token')
         console.log('Cookie check before redirect:', cookieCheck)
         console.log('All cookies:', document.cookie)
         
+        // Use redirect URL if provided, otherwise default to /admin
+        const targetUrl = redirectUrl || '/admin'
+        
         // Use window.location.href for full page reload to ensure cookie is sent
         // This ensures the server-side cookie is included in the request
-        window.location.href = '/admin'
+        window.location.href = targetUrl
       } else if (userType === 'participant') {
-        router.push('/dashboard')
+        router.push(redirectUrl || '/dashboard')
       } else if (userType === 'speaker') {
-        router.push('/dashboard?type=speaker')
+        router.push(redirectUrl || '/dashboard?type=speaker')
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.')
