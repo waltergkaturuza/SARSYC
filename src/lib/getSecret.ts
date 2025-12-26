@@ -70,7 +70,9 @@ export async function getSecret(): Promise<string> {
   const envSecret = process.env.PAYLOAD_SECRET
   if (envSecret && envSecret.trim() !== '') {
     secretCache = envSecret
-    console.log('✅ Using PAYLOAD_SECRET from environment variable')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Using PAYLOAD_SECRET from environment variable (length: ' + envSecret.length + ' chars)')
+    }
     return envSecret
   }
 
