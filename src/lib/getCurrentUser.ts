@@ -111,6 +111,11 @@ export async function getCurrentUserFromCookies() {
     const token = cookieStore.get('payload-token')?.value
     
     if (!token) {
+      // Debug: log available cookies in development
+      if (process.env.NODE_ENV === 'development') {
+        const allCookies = cookieStore.getAll()
+        console.log('Available cookies:', allCookies.map(c => c.name))
+      }
       return null
     }
 
@@ -118,6 +123,9 @@ export async function getCurrentUserFromCookies() {
       // Get the secret (with database fallback support)
       const secret = await getSecret()
       if (!secret) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('PAYLOAD_SECRET not found in getCurrentUserFromCookies')
+        }
         return null
       }
 
@@ -125,11 +133,17 @@ export async function getCurrentUserFromCookies() {
       let decoded: any
       try {
         decoded = jwt.verify(token, secret) as any
-      } catch (verifyError) {
+      } catch (verifyError: any) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Token verification failed in getCurrentUserFromCookies:', verifyError.message)
+        }
         return null
       }
       
       if (!decoded || !decoded.id) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Token decoded but missing id:', decoded)
+        }
         return null
       }
 
@@ -138,16 +152,29 @@ export async function getCurrentUserFromCookies() {
         id: decoded.id,
       })
 
+      if (!userResult) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('User not found with id:', decoded.id)
+        }
+        return null
+      }
+
       if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
         return userResult
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('User role is not admin:', userResult.role)
+        }
+        return null
       }
-    } catch (authError) {
+    } catch (authError: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Authentication error in getCurrentUserFromCookies:', authError.message)
+      }
       return null
     }
-    
-    return null
-  } catch (error) {
-    console.error('Error getting current user from cookies:', error)
+  } catch (error: any) {
+    console.error('Error getting current user from cookies:', error?.message || error)
     return null
   }
 }

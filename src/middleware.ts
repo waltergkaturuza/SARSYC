@@ -9,6 +9,14 @@ export function middleware(request: NextRequest) {
     // Check for authentication token in cookies
     const token = request.cookies.get('payload-token')?.value
 
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      const allCookies = request.cookies.getAll()
+      console.log('Middleware - Admin route access:', pathname)
+      console.log('Middleware - Available cookies:', allCookies.map(c => c.name))
+      console.log('Middleware - payload-token found:', !!token)
+    }
+
     // If no token, redirect to login
     if (!token) {
       const loginUrl = new URL('/login', request.url)

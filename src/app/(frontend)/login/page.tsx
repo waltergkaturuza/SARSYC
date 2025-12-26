@@ -72,12 +72,18 @@ export default function LoginPage() {
         }
       }
 
-      // Small delay to ensure cookie is set before redirect
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Redirect based on user type
+      // For admin, wait a bit longer and verify cookie before redirect
       if (userType === 'admin') {
+        // Wait a bit to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        // Verify cookie was set (check both server-set and client-set)
+        const cookieCheck = document.cookie.includes('payload-token')
+        console.log('Cookie check before redirect:', cookieCheck)
+        console.log('All cookies:', document.cookie)
+        
         // Use window.location.href for full page reload to ensure cookie is sent
+        // This ensures the server-side cookie is included in the request
         window.location.href = '/admin'
       } else if (userType === 'participant') {
         router.push('/dashboard')
