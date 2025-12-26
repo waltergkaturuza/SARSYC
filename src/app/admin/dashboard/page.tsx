@@ -2,7 +2,8 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import { 
   FiUsers, FiFileText, FiMic, FiCalendar, 
-  FiTrendingUp, FiClock, FiCheckCircle, FiAlertCircle 
+  FiTrendingUp, FiClock, FiCheckCircle, FiAlertCircle,
+  FiMessageSquare, FiHeart
 } from 'react-icons/fi'
 import Link from 'next/link'
 
