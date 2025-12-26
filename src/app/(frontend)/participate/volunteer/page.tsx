@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiCheck, FiUsers, FiAward, FiHeart, FiCalendar } from 'react-icons/fi'
+import { countries } from '@/lib/countries'
 
 const volunteerSchema = z.object({
   firstName: z.string().min(2),
