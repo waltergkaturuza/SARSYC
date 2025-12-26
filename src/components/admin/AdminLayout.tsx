@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings,
-  FiMenu, FiX, FiLogOut, FiSearch
+  FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
 
 const navigation = [
@@ -68,7 +68,23 @@ const navigation = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false) // Mobile only
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true) // Desktop: closed by default
+
+  // Load sidebar state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('admin-sidebar-collapsed')
+    if (saved !== null) {
+      setSidebarCollapsed(saved === 'true')
+    }
+  }, [])
+
+  // Save sidebar state to localStorage
+  const toggleSidebar = () => {
+    const newState = !sidebarCollapsed
+    setSidebarCollapsed(newState)
+    localStorage.setItem('admin-sidebar-collapsed', String(newState))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -82,31 +98,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } lg:translate-x-0 ${
+          sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
+        } w-64`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+          <div className={`flex items-center gap-3 transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg shadow-primary-600/30">
               S6
             </div>
-            <div>
-              <div className="font-bold text-gray-900">SARSYC VI</div>
-              <div className="text-xs text-gray-500">Admin Panel</div>
-            </div>
+            {!sidebarCollapsed && (
+              <div className="overflow-hidden">
+                <div className="font-bold text-gray-900 whitespace-nowrap text-lg">SARSYC VI</div>
+                <div className="text-xs text-gray-500 whitespace-nowrap">Admin Panel</div>
+              </div>
+            )}
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-500 hover:text-gray-700"
-          >
-            <FiX className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSidebar}
+              className="hidden lg:flex text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-all hover:scale-110"
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? <FiChevronRight className="w-6 h-6" /> : <FiChevronLeft className="w-6 h-6" />}
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-gray-500 hover:text-gray-700"
+            >
+              <FiX className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-4">
+        <nav className="flex-1 overflow-y-auto py-6 px-3">
           <div className="space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon
@@ -117,21 +146,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={item.name}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  className={`flex items-center gap-3 rounded-lg transition-all group relative ${
+                    sidebarCollapsed ? 'justify-center px-4 py-4' : 'px-4 py-3.5'
+                  } ${
                     isActive
-                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
+                      : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
+                  title={sidebarCollapsed ? item.name : undefined}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className={`font-medium ${isActive ? 'text-white' : 'text-gray-900'}`}>
-                      {item.name}
+                  <Icon className="w-6 h-6 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className={`font-medium whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-900'}`}>
+                        {item.name}
+                      </div>
+                      <div className={`text-xs truncate whitespace-nowrap ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                        {item.description}
+                      </div>
                     </div>
-                    <div className={`text-xs truncate ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                      {item.description}
+                  )}
+                  {/* Tooltip for collapsed state */}
+                  {sidebarCollapsed && (
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-xs text-gray-300">{item.description}</div>
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
                     </div>
-                  </div>
+                  )}
                 </Link>
               )
             })}
@@ -139,25 +181,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-3">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            className={`flex items-center gap-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:shadow-sm transition-all group relative ${
+              sidebarCollapsed ? 'justify-center px-4 py-4' : 'px-4 py-3.5'
+            }`}
+            title={sidebarCollapsed ? 'Back to Site' : undefined}
           >
-            <FiLogOut className="w-5 h-5" />
-            <span>Back to Site</span>
+            <FiLogOut className="w-6 h-6 flex-shrink-0" />
+            {!sidebarCollapsed && <span className="whitespace-nowrap">Back to Site</span>}
+            {/* Tooltip for collapsed state */}
+            {sidebarCollapsed && (
+              <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
+                Back to Site
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              </div>
+            )}
           </Link>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gray-500 hover:text-gray-700"
+              className="lg:hidden text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-colors"
             >
               <FiMenu className="w-6 h-6" />
             </button>
