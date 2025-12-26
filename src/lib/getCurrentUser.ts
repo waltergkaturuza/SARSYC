@@ -72,13 +72,34 @@ export async function getCurrentUserFromRequest(req: Request) {
           id: authResult.user.id,
         })
 
-      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-        return userResult
+        if (!userResult) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[getCurrentUserFromRequest] User not found with id:', authResult.user.id)
+          }
+          return null
+        }
+
+        if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[getCurrentUserFromRequest] ✅ Admin user authenticated:', userResult.email)
+          }
+          return userResult
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[getCurrentUserFromRequest] User role is not admin:', userResult.role)
+          }
+          return null
+        }
+      } catch (verifyError: any) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromRequest] ❌ Payload auth.verify failed:', verifyError.message)
+        }
+        return null
       }
     } catch (authError: any) {
       // User not found or other error
       if (process.env.NODE_ENV === 'development') {
-        console.error('Authentication error:', authError.message)
+        console.error('[getCurrentUserFromRequest] Authentication error:', authError.message)
       }
       return null
     }
