@@ -119,13 +119,13 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="relative w-12 h-12 flex-shrink-0">
+              <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden">
                 <Image
                   src="/logo.jpeg"
                   alt="SARSYC Logo"
                   fill
-                  className="object-contain"
-                  sizes="48px"
+                  className="object-cover scale-110"
+                  sizes="64px"
                 />
               </div>
               <div>

@@ -73,17 +73,17 @@ export default function Header() {
     >
       <nav className="container-custom">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
+          {/* Logo - Circular */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="relative w-12 h-12 flex-shrink-0">
+              <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden">
                 <Image
                   src="/logo.jpeg"
                   alt="SARSYC Logo"
                   fill
-                  className="object-contain"
+                  className="object-cover scale-110"
                   priority
-                  sizes="48px"
+                  sizes="64px"
                 />
               </div>
               <div className="hidden sm:block">

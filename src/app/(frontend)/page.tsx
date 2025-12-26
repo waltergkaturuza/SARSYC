@@ -54,7 +54,7 @@ export default function HomePage() {
         <div className="relative container-custom py-20 md:py-32">
           <div className="relative">
             {/* Logo - Floating at Left Corner (Circular, Reduced by Half) */}
-            <div className="absolute left-0 top-0 w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 z-10 animate-float">
+            <div className="absolute -left-4 -top-4 md:-left-8 md:-top-8 w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 z-10 animate-float">
               <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
                 <Image
                   src="/logo.jpeg"
