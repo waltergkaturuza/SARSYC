@@ -7,21 +7,65 @@ export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    console.log('📩 Registration request body keys:', Object.keys(body || {}))
-    const payload = await getPayloadClient()
-
-    // Prepare registration data
-    // Note: File uploads (like passportScan) should be sent as FormData, not JSON
-    // For JSON-only submissions, passportScan will be handled by Payload's upload system
-    const registrationData: any = {
-      ...body,
+    const contentType = request.headers.get('content-type') || ''
+    let registrationData: any = {
       status: 'pending',
       paymentStatus: 'pending',
     }
+    let passportFile: File | null = null
+
+    // Handle FormData (for file uploads) or JSON
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData()
+      
+      // Extract all form fields
+      for (const [key, value] of formData.entries()) {
+        if (key === 'passportScan' && value instanceof File) {
+          passportFile = value
+        } else {
+          // Handle arrays (like dietaryRestrictions)
+          if (key.includes('[]') || Array.isArray(registrationData[key])) {
+            const arrayKey = key.replace('[]', '')
+            if (!Array.isArray(registrationData[arrayKey])) {
+              registrationData[arrayKey] = []
+            }
+            registrationData[arrayKey].push(value.toString())
+          } else {
+            registrationData[key] = value.toString()
+          }
+        }
+      }
+
+    } else {
+      // Handle JSON request (backward compatibility)
+      const body = await request.json()
+      registrationData = {
+        ...body,
+        status: 'pending',
+        paymentStatus: 'pending',
+      }
+    }
+
+    console.log('📩 Registration request body keys:', Object.keys(registrationData || {}))
+    
+    const payload = await getPayloadClient()
+
+    // Handle passport file upload if present (for FormData requests)
+    if (passportFile) {
+      // Upload file to Payload Media collection first
+      const uploadedFile = await payload.create({
+        collection: 'media',
+        data: {
+          alt: `Passport scan for ${registrationData.email || 'registration'}`,
+        },
+        file: passportFile,
+      })
+      
+      // Link the uploaded file to the registration
+      registrationData.passportScan = uploadedFile.id
+    }
 
     // Create registration in Payload CMS
-    // The storage adapter (Vercel Blob) will handle file uploads automatically
     const registration = await payload.create({
       collection: 'registrations',
       data: registrationData,

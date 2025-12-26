@@ -34,6 +34,7 @@ const registrationSchema = z.object({
   passportNumber: z.string().optional(),
   passportExpiry: z.string().optional(),
   passportIssuingCountry: z.string().optional(),
+  passportScan: z.any().optional(), // File upload - will be handled separately
   visaRequired: z.boolean().optional(),
   visaStatus: z.enum(['not-applied', 'applied-pending', 'approved', 'denied']).optional(),
   visaApplicationDate: z.string().optional(),
@@ -186,6 +187,8 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [registrationId, setRegistrationId] = useState('')
+  const [passportFile, setPassportFile] = useState<File | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const {
     register,
@@ -193,6 +196,8 @@ export default function RegisterPage() {
     formState: { errors },
     trigger,
     watch,
+    setError,
+    clearErrors,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     mode: 'onChange',
@@ -212,15 +217,83 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true)
+    setSubmitError(null)
     
     try {
+      // Validate all fields before submission
+      const isValid = await trigger()
+      if (!isValid) {
+        // Find the first error and scroll to it
+        const firstErrorField = Object.keys(errors)[0] as keyof RegistrationFormData
+        if (firstErrorField) {
+          const errorElement = document.querySelector(`[name="${firstErrorField}"]`) || 
+                              document.querySelector(`#${firstErrorField}`)
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            ;(errorElement as HTMLElement).focus()
+          }
+        }
+        
+        // Find which step has errors and navigate there
+        const errorFields = Object.keys(errors)
+        if (errorFields.some(f => ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender'].includes(f))) {
+          setCurrentStep(1)
+        } else if (errorFields.some(f => ['country', 'nationality', 'city', 'address'].includes(f))) {
+          setCurrentStep(2)
+        } else if (errorFields.some(f => ['organization', 'category'].includes(f))) {
+          setCurrentStep(3)
+        } else if (errorFields.some(f => ['passportNumber', 'passportExpiry', 'passportIssuingCountry', 'passportScan'].includes(f))) {
+          setCurrentStep(4)
+        } else if (errorFields.some(f => f.startsWith('emergencyContact'))) {
+          setCurrentStep(5)
+        }
+        
+        setSubmitError('Please fill in all required fields. Check the highlighted fields above.')
+        setIsSubmitting(false)
+        return
+      }
+
+      // Validate passport scan for international attendees
+      if (data.isInternational && !passportFile) {
+        setError('passportScan', {
+          type: 'manual',
+          message: 'Passport scan is required for international attendees'
+        })
+        setCurrentStep(4)
+        const passportScanInput = document.querySelector('#passportScan')
+        if (passportScanInput) {
+          passportScanInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          ;(passportScanInput as HTMLElement).focus()
+        }
+        setSubmitError('Please upload your passport scan.')
+        setIsSubmitting(false)
+        return
+      }
+
+      // Create FormData for file upload
+      const formData = new FormData()
+      
+      // Add all form fields
+      Object.keys(data).forEach((key) => {
+        const value = data[key as keyof RegistrationFormData]
+        if (value !== undefined && value !== null && value !== '') {
+          if (Array.isArray(value)) {
+            value.forEach((item) => formData.append(key, item))
+          } else {
+            formData.append(key, String(value))
+          }
+        }
+      })
+
+      // Add passport file if exists
+      if (passportFile) {
+        formData.append('passportScan', passportFile)
+      }
+
       // Submit to Payload CMS API
       const response = await fetch('/api/registrations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formData, // Use FormData instead of JSON
       })
 
       if (response.ok) {
@@ -230,11 +303,15 @@ export default function RegisterPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         const errorData = await response.json().catch(() => ({}))
-        alert(errorData.message || 'Registration failed. Please try again.')
+        const errorMessage = errorData.message || errorData.error || 'Registration failed. Please try again.'
+        setSubmitError(errorMessage)
+        // Scroll to top to show error
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error)
-      alert('An error occurred. Please try again.')
+      setSubmitError(error.message || 'An error occurred. Please try again.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setIsSubmitting(false)
     }
@@ -252,6 +329,15 @@ export default function RegisterPage() {
     } else if (currentStep === 4) {
       if (isInternational) {
         fieldsToValidate = ['passportNumber', 'passportExpiry', 'passportIssuingCountry']
+        // Also validate passport scan
+        if (!passportFile) {
+          setError('passportScan', {
+            type: 'manual',
+            message: 'Passport scan is required'
+          })
+        } else {
+          clearErrors('passportScan')
+        }
       } else {
         fieldsToValidate = []
       }
@@ -260,9 +346,31 @@ export default function RegisterPage() {
     }
 
     const isValid = await trigger(fieldsToValidate)
+    
+    // Check passport scan for international attendees
+    if (currentStep === 4 && isInternational && !passportFile) {
+      setError('passportScan', {
+        type: 'manual',
+        message: 'Passport scan is required'
+      })
+      return
+    }
+    
     if (isValid && currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      // Find first error and scroll to it
+      const errorFields = Object.keys(errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0] as keyof RegistrationFormData
+        const errorElement = document.querySelector(`[name="${firstError}"]`) || 
+                            document.querySelector(`#${firstError}`)
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          ;(errorElement as HTMLElement).focus()
+        }
+      }
     }
   }
 
@@ -389,6 +497,22 @@ export default function RegisterPage() {
 
           {/* Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+            {/* Error Message Display */}
+            {submitError && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700 font-medium">{submitError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit(onSubmit)}>
               {/* Step 1: Personal Information */}
               {currentStep === 1 && (
@@ -434,42 +558,42 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        {...register('email')}
-                        type="email"
-                        id="email"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                        placeholder="john.doe@example.com"
-                      />
-                      {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number *
-                      </label>
-                      <input
-                        {...register('phone')}
-                        type="tel"
-                        id="phone"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.phone ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                        placeholder="+264 000 000 000"
-                      />
-                      {errors.phone && (
-                        <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-                      )}
-                    </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      {...register('email')}
+                      type="email"
+                      id="email"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      placeholder="john.doe@example.com"
+                    />
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                    )}
                   </div>
+
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number *
+                    </label>
+                    <input
+                      {...register('phone')}
+                      type="tel"
+                      id="phone"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      placeholder="+264 000 000 000"
+                    />
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                    )}
+                  </div>
+                </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -521,28 +645,28 @@ export default function RegisterPage() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Location Information</h2>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+                  <div>
+                    <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
                         Country of Residence *
-                      </label>
-                      <select
-                        {...register('country')}
-                        id="country"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.country ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
-                      >
-                        <option value="">Select your country</option>
-                        {countries.map((country) => (
-                          <option key={country.value} value={country.value}>
-                            {country.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.country && (
-                        <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
-                      )}
-                    </div>
+                    </label>
+                    <select
+                      {...register('country')}
+                      id="country"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.country ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                    >
+                      <option value="">Select your country</option>
+                      {countries.map((country) => (
+                        <option key={country.value} value={country.value}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.country && (
+                      <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
+                    )}
+                  </div>
 
                     <div>
                       <label htmlFor="nationality" className="block text-sm font-medium text-gray-700 mb-2">
@@ -758,6 +882,64 @@ export default function RegisterPage() {
                             <p className="mt-1 text-sm text-red-600">{errors.passportIssuingCountry.message}</p>
                           )}
                         </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="passportScan" className="block text-sm font-medium text-gray-700 mb-2">
+                          Passport Scan/Copy *
+                        </label>
+                        <div className="mt-1">
+                          <input
+                            id="passportScan"
+                            type="file"
+                            accept="image/*,application/pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                // Validate file size (5MB max)
+                                if (file.size > 5 * 1024 * 1024) {
+                                  setError('passportScan', {
+                                    type: 'manual',
+                                    message: 'File size must be less than 5MB'
+                                  })
+                                  e.target.value = ''
+                                  setPassportFile(null)
+                                  return
+                                }
+                                // Validate file type
+                                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+                                if (!validTypes.includes(file.type)) {
+                                  setError('passportScan', {
+                                    type: 'manual',
+                                    message: 'Please upload a PDF, JPG, or PNG file'
+                                  })
+                                  e.target.value = ''
+                                  setPassportFile(null)
+                                  return
+                                }
+                                setPassportFile(file)
+                                clearErrors('passportScan')
+                              } else {
+                                setPassportFile(null)
+                              }
+                            }}
+                            className={`w-full px-4 py-3 rounded-lg border ${
+                              errors.passportScan ? 'border-red-500' : 'border-gray-300'
+                            } focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100`}
+                          />
+                        </div>
+                        {errors.passportScan && (
+                          <p className="mt-1 text-sm text-red-600">{errors.passportScan.message as string}</p>
+                        )}
+                        {passportFile && (
+                          <p className="mt-2 text-sm text-green-600 flex items-center gap-2">
+                            <FiCheck className="w-4 h-4" />
+                            File selected: {passportFile.name} ({(passportFile.size / 1024).toFixed(1)} KB)
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-gray-500">
+                          Upload a clear scan or photo of your passport bio page. Accepted formats: PDF, JPG, PNG. Max size: 5MB.
+                        </p>
                       </div>
 
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
