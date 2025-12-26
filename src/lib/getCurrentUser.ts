@@ -120,16 +120,22 @@ export async function getCurrentUserFromCookies() {
     }
 
     try {
-      // IMPORTANT: Use the same secret that Payload uses in its config
-      // Payload's buildConfig uses process.env.PAYLOAD_SECRET directly
-      // We must use the exact same value to verify tokens
-      const payloadSecret = process.env.PAYLOAD_SECRET
+      // IMPORTANT: Use the exact same secret that Payload uses to sign tokens
+      // Payload uses the secret passed to payload.init(), which comes from getSecret()
+      // We must use the same source to ensure consistency
+      const { getSecret } = await import('./getSecret')
+      const payloadSecret = await getSecret()
       
       if (!payloadSecret) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] PAYLOAD_SECRET not found in env')
+          console.error('[getCurrentUserFromCookies] PAYLOAD_SECRET not found')
         }
         return null
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[getCurrentUserFromCookies] Using secret from getSecret(), length:', payloadSecret.length)
+        console.log('[getCurrentUserFromCookies] Env PAYLOAD_SECRET length:', process.env.PAYLOAD_SECRET?.length || 'not set')
       }
 
       // Verify and decode the JWT token using Payload's secret
@@ -137,15 +143,32 @@ export async function getCurrentUserFromCookies() {
       try {
         decoded = jwt.verify(token, payloadSecret) as any
         if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] Token verified successfully, user ID:', decoded.id)
+          console.log('[getCurrentUserFromCookies] ✅ Token verified successfully, user ID:', decoded.id)
         }
       } catch (verifyError: any) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] Token verification failed:', verifyError.message)
+          console.error('[getCurrentUserFromCookies] ❌ Token verification failed:', verifyError.message)
           console.error('[getCurrentUserFromCookies] Secret length used:', payloadSecret.length)
+          console.error('[getCurrentUserFromCookies] Secret preview:', payloadSecret.substring(0, 10) + '...')
           console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
+          
+          // Try with env secret as fallback for debugging
+          if (process.env.PAYLOAD_SECRET && process.env.PAYLOAD_SECRET !== payloadSecret) {
+            console.error('[getCurrentUserFromCookies] ⚠️  Secret mismatch detected!')
+            console.error('[getCurrentUserFromCookies] getSecret() returned different value than process.env.PAYLOAD_SECRET')
+            try {
+              const envDecoded = jwt.verify(token, process.env.PAYLOAD_SECRET) as any
+              console.error('[getCurrentUserFromCookies] ✅ Token verifies with process.env.PAYLOAD_SECRET!')
+              decoded = envDecoded
+            } catch (envError: any) {
+              console.error('[getCurrentUserFromCookies] ❌ Also fails with process.env.PAYLOAD_SECRET:', envError.message)
+            }
+          }
         }
-        return null
+        
+        if (!decoded) {
+          return null
+        }
       }
       
       if (!decoded || !decoded.id) {
