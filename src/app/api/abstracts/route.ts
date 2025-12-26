@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       : []
 
     // Create abstract submission
+    // Use overrideAccess: true to bypass access control since this is a public submission endpoint
     const abstract = await payload.create({
       collection: 'abstracts',
       data: {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
         presentationType: body.presentationType,
         status: 'received',
       },
+      overrideAccess: true, // Bypass access control for public submissions
     })
 
     // Send confirmation email

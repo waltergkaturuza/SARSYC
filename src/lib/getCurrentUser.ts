@@ -6,6 +6,10 @@ import { getSecret } from './getSecret'
 /**
  * Get the current authenticated user from the request
  * Uses Payload's JWT token from cookies to verify the user
+ * 
+ * Note: Payload uses different cookie names depending on the version and configuration.
+ * Common cookie names: 'payload-token', 'payload_token', 'token'
+ * We try all common cookie names to find the token.
  */
 export async function getCurrentUserFromRequest(req: Request) {
   try {
@@ -18,34 +22,55 @@ export async function getCurrentUserFromRequest(req: Request) {
       return null
     }
 
-    // Parse cookies
+    // Parse cookies into a map
     const cookieMap = new Map<string, string>()
     cookieHeader.split(';').forEach(cookie => {
-      const [key, value] = cookie.trim().split('=')
-      if (key && value) {
-        cookieMap.set(key.trim(), value.trim())
+      const parts = cookie.trim().split('=')
+      if (parts.length >= 2) {
+        const key = parts[0].trim()
+        const value = parts.slice(1).join('=').trim() // Handle values with '=' in them
+        cookieMap.set(key, decodeURIComponent(value))
       }
     })
     
-    // Payload uses 'payload-token' cookie for authentication (JWT token)
-    const token = cookieMap.get('payload-token')
+    // Try multiple possible cookie names that Payload might use
+    const possibleCookieNames = ['payload-token', 'payload_token', 'token', 'payload-token-cookie']
+    let token: string | undefined
+    
+    for (const cookieName of possibleCookieNames) {
+      if (cookieMap.has(cookieName)) {
+        token = cookieMap.get(cookieName)
+        break
+      }
+    }
     
     if (!token) {
+      // Debug: log all cookies to see what's available (only in dev)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Available cookies:', Array.from(cookieMap.keys()))
+      }
       return null
     }
 
     try {
-      // Decode JWT token to get user ID (Payload stores user ID in the token)
-      // We need to get the secret from Payload config
-      const secret = process.env.PAYLOAD_SECRET
+      // Get the secret (with database fallback support)
+      const secret = await getSecret()
       if (!secret) {
         console.error('PAYLOAD_SECRET not found')
         return null
       }
 
-      // Decode the token (we don't verify here, just decode to get the user ID)
-      // In production, we should verify the token properly
-      const decoded = jwt.decode(token) as any
+      // Verify and decode the JWT token
+      let decoded: any
+      try {
+        decoded = jwt.verify(token, secret) as any
+      } catch (verifyError: any) {
+        // Token is invalid or expired
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Token verification failed:', verifyError.message)
+        }
+        return null
+      }
       
       if (!decoded || !decoded.id) {
         return null
@@ -60,15 +85,17 @@ export async function getCurrentUserFromRequest(req: Request) {
       if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
         return userResult
       }
-    } catch (authError) {
-      // Token is invalid or expired, or user not found
-      console.error('Authentication error:', authError)
+    } catch (authError: any) {
+      // User not found or other error
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Authentication error:', authError.message)
+      }
       return null
     }
     
     return null
-  } catch (error) {
-    console.error('Error getting current user from request:', error)
+  } catch (error: any) {
+    console.error('Error getting current user from request:', error?.message || error)
     return null
   }
 }
