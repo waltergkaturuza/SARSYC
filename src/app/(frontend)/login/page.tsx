@@ -35,9 +35,11 @@ function LoginForm() {
 
     try {
       // Authenticate ALL users via API (including admin)
+      // IMPORTANT: Use credentials: 'include' to ensure cookies are sent and received
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in request and response
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
