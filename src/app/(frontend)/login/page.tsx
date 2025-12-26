@@ -89,7 +89,7 @@ export default function LoginPage() {
                   className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'participant'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
                   }`}
                 >
                   <FiUser className="inline mr-2 w-5 h-5" />
@@ -101,7 +101,7 @@ export default function LoginPage() {
                   className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'speaker'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
                   }`}
                 >
                   <FiUser className="inline mr-2 w-5 h-5" />
@@ -113,7 +113,7 @@ export default function LoginPage() {
                   className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'admin'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
                   }`}
                 >
                   Admin
