@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FiDownload, FiCalendar, FiFileText, FiLoader } from 'react-icons/fi'
-import { getPayloadClient } from '@/lib/payload'
 
 export default function PressReleasesPage() {
   const [pressReleases, setPressReleases] = useState<any[]>([])

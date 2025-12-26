@@ -14,13 +14,17 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const featured = searchParams.get('featured')
 
-    const where: any = {
-      status: { equals: 'published' }
-    }
-    
-    if (category && category !== 'all') {
-      where.category = { contains: category }
-    }
+        const where: any = {
+          status: { equals: 'published' }
+        }
+        
+        if (category && category !== 'all') {
+          // Support both 'category' field and category as part of categories array
+          where.or = [
+            { category: { equals: category } },
+            { categories: { contains: category } },
+          ]
+        }
     
     if (featured === 'true') {
       where.featured = { equals: true }

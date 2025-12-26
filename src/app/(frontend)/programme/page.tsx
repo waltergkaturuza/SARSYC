@@ -70,12 +70,10 @@ export default function ProgrammePage() {
               Explore sessions, speakers, and schedule for SARSYC VI
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="btn-accent flex items-center gap-2">
+              <a href="/api/programme/pdf" download className="btn-accent flex items-center gap-2">
                 <FiDownload />
-                <a href="/api/programme/pdf" download className="flex items-center gap-2">
-                  Download Full Programme (PDF)
-                </a>
-              </button>
+                Download Full Programme (PDF)
+              </a>
               <Link href="/programme/speakers" className="btn-outline border-white text-white hover:bg-white/10">
                 View All Speakers
               </Link>
