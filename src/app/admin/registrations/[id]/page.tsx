@@ -2,14 +2,9 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBuilding, FiCheckCircle, FiXCircle, FiClock, FiDownload } from 'react-icons/fi'
+import { FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheckCircle, FiXCircle, FiClock, FiDownload } from 'react-icons/fi'
 import { format } from 'date-fns'
-import dynamic from 'next/dynamic'
-
-const RegistrationActionButtons = dynamic(
-  () => import('@/components/admin/RegistrationActionButtons'),
-  { ssr: false }
-)
+import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
 
 export const revalidate = 0
 
@@ -129,7 +124,7 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                 </div>
 
                 <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                  <FiBuilding className="w-5 h-5 text-gray-400 mt-1" />
+                  <FiBriefcase className="w-5 h-5 text-gray-400 mt-1" />
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Organization</div>
                     <div className="font-medium text-gray-900">{registration.organization || 'N/A'}</div>

@@ -67,10 +67,13 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
   }
 
   const handleNestedChange = (parent: string, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [parent]: { ...prev[parent as keyof SpeakerData], [field]: value }
-    }))
+    setFormData(prev => {
+      const parentValue = prev[parent as keyof SpeakerData] as any
+      return {
+        ...prev,
+        [parent]: { ...(parentValue || {}), [field]: value }
+      }
+    })
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

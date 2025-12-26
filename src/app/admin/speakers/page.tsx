@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import SpeakersFilters from '@/components/admin/SpeakersFilters'
 import { 
-  FiMic, FiPlus, FiEdit, FiStar, FiUser 
+  FiMic, FiPlus, FiEdit, FiStar, FiUser, FiEye 
 } from 'react-icons/fi'
 
 export const revalidate = 0
