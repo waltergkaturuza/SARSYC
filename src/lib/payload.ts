@@ -91,11 +91,14 @@ export const getPayloadClient = async (): Promise<Payload> => {
             continue
           }
           
-          // Handle database schema migration errors (e.g., enum value mismatches)
+          // Handle database schema migration errors (e.g., enum value mismatches, null values in NOT NULL columns)
           // This can happen when existing data doesn't match the new schema
           if (errorMessage.includes('invalid input value for enum') ||
               errorMessage.includes('enum_registrations_country') ||
-              errorMessage.includes('22P02')) {
+              errorMessage.includes('22P02') ||
+              errorMessage.includes('contains null values') ||
+              errorMessage.includes('23502') ||
+              errorMessage.includes('SET NOT NULL')) {
             console.warn(`payload.init attempt ${attempt}/${maxAttempts} - database schema migration issue (existing data mismatch):`, message)
             console.warn('This usually means there is test data in the database that doesn\'t match the schema.')
             console.warn('Consider cleaning up test data or updating the schema to match existing data.')

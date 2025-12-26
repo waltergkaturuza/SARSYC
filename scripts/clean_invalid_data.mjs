@@ -63,8 +63,19 @@ async function cleanInvalidData() {
 
     console.log(`Found ${result.rows.length} registrations with country values\n`)
 
+    // Also check for null required fields
+    const nullFieldsResult = await pool.query(`
+      SELECT id, email, first_name, last_name, date_of_birth
+      FROM registrations
+      WHERE date_of_birth IS NULL
+      ORDER BY id
+    `)
+
+    console.log(`Found ${nullFieldsResult.rows.length} registrations with null date_of_birth\n`)
+
     let invalidCount = 0
     const invalidRecords = []
+    const nullDateRecords = []
 
     // Check each record
     for (const row of result.rows) {
@@ -110,94 +121,144 @@ async function cleanInvalidData() {
       }
     }
 
-    if (invalidCount === 0) {
-      console.log('✅ No invalid data found! All country values are valid.\n')
-      await pool.end()
+    // Check for null date_of_birth
+    for (const row of nullFieldsResult.rows) {
+      nullDateRecords.push({
+        id: row.id,
+        email: row.email,
+        name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || row.email,
+      })
+    }
+
+    if (invalidCount === 0 && nullDateRecords.length === 0) {
+      console.log('✅ No invalid data found! All country values are valid and all required fields are set.\n')
+      if (pool && !pool.ended) {
+        await pool.end()
+      }
       return
     }
 
-    console.log(`❌ Found ${invalidCount} registration(s) with invalid data:\n`)
-    invalidRecords.forEach((record, index) => {
-      console.log(`${index + 1}. ID: ${record.id}, Email: ${record.email}, Name: ${record.name}`)
-      console.log(`   Issues: ${record.issues.join(', ')}`)
-      console.log(`   Country: "${record.country}", Nationality: "${record.nationality || 'N/A'}"\n`)
-    })
-
-    // Ask what to do (in a script, we'll default to updating to a safe value)
-    console.log('🔧 Fixing invalid data...\n')
-
-    for (const record of invalidRecords) {
-      const updates = []
-      const values = []
-      let paramIndex = 1
-
-      // Fix invalid country - try to map name to code first
-      const countryNameToCode = {
-        'Zimbabwe': 'ZW',
-        'United States': 'US',
-        'United Kingdom': 'GB',
-        'United States of America': 'US',
-        'Testland': 'US',
-      }
-      
-      let newCountry = record.country
-      if (countryNameToCode[record.country]) {
-        newCountry = countryNameToCode[record.country]
-      } else if (!VALID_COUNTRIES.includes(record.country) && 
-                 !(typeof record.country === 'string' && record.country.length === 2 && /^[A-Z]{2}$/.test(record.country))) {
-        // Set to a default valid country if no mapping found
-        newCountry = 'US'
-      }
-      
-      if (newCountry !== record.country) {
-        updates.push(`country = $${paramIndex}`)
-        values.push(newCountry)
-        paramIndex++
-        console.log(`   → Updating registration ${record.id} (${record.email}): country "${record.country}" → "${newCountry}"`)
-      }
-
-      // Fix invalid nationality
-      if (record.nationality && 
-          !VALID_COUNTRIES.includes(record.nationality) && 
-          !(typeof record.nationality === 'string' && record.nationality.length === 2 && /^[A-Z]{2}$/.test(record.nationality))) {
-        // Set to NULL or default
-        updates.push(`nationality = $${paramIndex}`)
-        values.push(null)
-        paramIndex++
-        console.log(`   → Updating registration ${record.id} (${record.email}): nationality "${record.nationality}" → NULL`)
-      }
-
-      if (updates.length > 0) {
-        values.push(record.id)
-        const updateQuery = `
-          UPDATE registrations
-          SET ${updates.join(', ')}
-          WHERE id = $${paramIndex}
-        `
-        
-        await pool.query(updateQuery, values)
-        console.log(`   ✅ Updated registration ${record.id}\n`)
-      }
+    // Show what needs fixing
+    if (invalidCount > 0) {
+      console.log(`❌ Found ${invalidCount} registration(s) with invalid data:\n`)
+      invalidRecords.forEach((record, index) => {
+        console.log(`${index + 1}. ID: ${record.id}, Email: ${record.email}, Name: ${record.name}`)
+        console.log(`   Issues: ${record.issues.join(', ')}`)
+        console.log(`   Country: "${record.country}", Nationality: "${record.nationality || 'N/A'}"\n`)
+      })
     }
 
-    if (invalidCount > 0) {
-      console.log(`\n✅ Successfully cleaned ${invalidCount} invalid record(s)!\n`)
+    if (nullDateRecords.length > 0) {
+      console.log(`❌ Found ${nullDateRecords.length} registration(s) with null date_of_birth:\n`)
+      nullDateRecords.forEach((record, index) => {
+        console.log(`${index + 1}. ID: ${record.id}, Email: ${record.email}, Name: ${record.name}\n`)
+      })
+    }
 
-      // Verify the fix
-      console.log('🔍 Verifying fix...\n')
-      const verifyResult = await pool.query(`
-        SELECT COUNT(*) as invalid_count
-        FROM registrations
-        WHERE country IS NOT NULL 
-          AND country NOT IN (${VALID_COUNTRIES.map((_, i) => `$${i + 1}`).join(', ')})
-      `, VALID_COUNTRIES)
-
-      const remainingInvalid = parseInt(verifyResult.rows[0].invalid_count)
-      if (remainingInvalid === 0) {
-        console.log('✅ All data is now valid! The schema migration should work.\n')
-      } else {
-        console.log(`⚠️  Warning: ${remainingInvalid} invalid record(s) still remain. Manual cleanup may be needed.\n`)
+    // Fix null date_of_birth values first
+    if (nullDateRecords.length > 0) {
+      console.log(`🔧 Fixing ${nullDateRecords.length} registration(s) with null date_of_birth...\n`)
+      
+      for (const record of nullDateRecords) {
+        // Set a default date (e.g., 2000-01-01) for test data
+        const defaultDate = '2000-01-01'
+        await pool.query(
+          `UPDATE registrations SET date_of_birth = $1 WHERE id = $2`,
+          [defaultDate, record.id]
+        )
+        console.log(`   → Updated registration ${record.id} (${record.email}): date_of_birth NULL → "${defaultDate}"`)
       }
+      console.log(`   ✅ Fixed ${nullDateRecords.length} null date_of_birth record(s)\n`)
+    }
+
+    // Fix invalid country values
+    if (invalidCount > 0) {
+      console.log('🔧 Fixing invalid country data...\n')
+
+      for (const record of invalidRecords) {
+        const updates = []
+        const values = []
+        let paramIndex = 1
+
+        // Fix invalid country - try to map name to code first
+        const countryNameToCode = {
+          'Zimbabwe': 'ZW',
+          'United States': 'US',
+          'United Kingdom': 'GB',
+          'United States of America': 'US',
+          'Testland': 'US',
+        }
+        
+        let newCountry = record.country
+        if (countryNameToCode[record.country]) {
+          newCountry = countryNameToCode[record.country]
+        } else if (!VALID_COUNTRIES.includes(record.country) && 
+                   !(typeof record.country === 'string' && record.country.length === 2 && /^[A-Z]{2}$/.test(record.country))) {
+          // Set to a default valid country if no mapping found
+          newCountry = 'US'
+        }
+        
+        if (newCountry !== record.country) {
+          updates.push(`country = $${paramIndex}`)
+          values.push(newCountry)
+          paramIndex++
+          console.log(`   → Updating registration ${record.id} (${record.email}): country "${record.country}" → "${newCountry}"`)
+        }
+
+        // Fix invalid nationality
+        if (record.nationality && 
+            !VALID_COUNTRIES.includes(record.nationality) && 
+            !(typeof record.nationality === 'string' && record.nationality.length === 2 && /^[A-Z]{2}$/.test(record.nationality))) {
+          // Set to NULL or default
+          updates.push(`nationality = $${paramIndex}`)
+          values.push(null)
+          paramIndex++
+          console.log(`   → Updating registration ${record.id} (${record.email}): nationality "${record.nationality}" → NULL`)
+        }
+
+        if (updates.length > 0) {
+          values.push(record.id)
+          const updateQuery = `
+            UPDATE registrations
+            SET ${updates.join(', ')}
+            WHERE id = $${paramIndex}
+          `
+          
+          await pool.query(updateQuery, values)
+          console.log(`   ✅ Updated registration ${record.id}\n`)
+        }
+      }
+
+      console.log(`✅ Successfully cleaned ${invalidCount} invalid record(s)!\n`)
+    }
+
+    // Verify the fix
+    console.log('🔍 Verifying fix...\n')
+    const verifyResult = await pool.query(`
+      SELECT COUNT(*) as invalid_count
+      FROM registrations
+      WHERE country IS NOT NULL 
+        AND country NOT IN (${VALID_COUNTRIES.map((_, i) => `$${i + 1}`).join(', ')})
+    `, VALID_COUNTRIES)
+
+    const remainingInvalid = parseInt(verifyResult.rows[0].invalid_count)
+    const nullDateCheck = await pool.query(`
+      SELECT COUNT(*) as null_count
+      FROM registrations
+      WHERE date_of_birth IS NULL
+    `)
+    const remainingNullDates = parseInt(nullDateCheck.rows[0].null_count)
+
+    if (remainingInvalid === 0 && remainingNullDates === 0) {
+      console.log('✅ All data is now valid! The schema migration should work.\n')
+    } else {
+      if (remainingInvalid > 0) {
+        console.log(`⚠️  Warning: ${remainingInvalid} invalid country record(s) still remain.\n`)
+      }
+      if (remainingNullDates > 0) {
+        console.log(`⚠️  Warning: ${remainingNullDates} null date_of_birth record(s) still remain.\n`)
+      }
+      console.log('Manual cleanup may be needed.\n')
     }
 
   } catch (error) {
