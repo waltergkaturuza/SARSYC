@@ -52,9 +52,9 @@ export default function HomePage() {
         </div>
 
         <div className="relative container-custom py-20 md:py-32">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Logo - Super Big and Floating (Circular Focus) */}
-            <div className="relative w-80 h-80 md:w-[28rem] md:h-[28rem] lg:w-[36rem] lg:h-[36rem] xl:w-[40rem] xl:h-[40rem] mx-auto mb-12 animate-float">
+          <div className="relative">
+            {/* Logo - Floating at Left Corner (Circular, Reduced by Half) */}
+            <div className="absolute left-0 top-0 w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 z-10 animate-float">
               <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
                 <Image
                   src="/logo.jpeg"
@@ -62,10 +62,13 @@ export default function HomePage() {
                   fill
                   className="object-cover scale-110"
                   priority
-                  sizes="(max-width: 768px) 320px, (max-width: 1024px) 448px, (max-width: 1280px) 576px, 640px"
+                  sizes="(max-width: 768px) 160px, (max-width: 1024px) 224px, (max-width: 1280px) 288px, 320px"
                 />
               </div>
             </div>
+
+            {/* Content - Adjusted for Logo */}
+            <div className="max-w-4xl ml-auto md:ml-48 lg:ml-64 xl:ml-72 text-center">
 
             {/* Conference Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
@@ -115,6 +118,7 @@ export default function HomePage() {
                 Conference Countdown
               </h2>
               <CountdownTimer targetDate={conferenceDate} />
+            </div>
             </div>
           </div>
         </div>
