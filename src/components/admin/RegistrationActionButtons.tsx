@@ -1,6 +1,6 @@
 'use client'
 
-import { ApproveButton, RejectButton } from './RegistrationActions'
+import { ApproveButton, RejectButton } from '@/components/admin/RegistrationActions'
 
 interface RegistrationActionButtonsProps {
   registrationId: string
