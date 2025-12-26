@@ -1,6 +1,7 @@
 import { getPayloadClient } from './payload'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
+import { getSecret } from './getSecret'
 
 /**
  * Get the current authenticated user from the request
@@ -87,7 +88,8 @@ export async function getCurrentUserFromCookies() {
     }
 
     try {
-      const secret = process.env.PAYLOAD_SECRET
+      // Get the secret (with database fallback support)
+      const secret = await getSecret()
       if (!secret) {
         return null
       }
