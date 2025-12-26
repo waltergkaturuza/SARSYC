@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiDownload, FiMail } from 'react-icons/fi'
 
 const tiers = [
@@ -66,9 +67,48 @@ const tiers = [
   },
 ]
 
-const pastPartners = [
-  'UNFPA', 'WHO', 'UNICEF', 'UNAIDS', 'Save the Children',
-  'IPPF', 'MSI Reproductive Choices', 'Gates Foundation'
+// Partner organizations with their logos
+const partners = [
+  {
+    name: 'SAYWHAT',
+    logo: '/partners/saywhat%20logo%20(1).png',
+    alt: 'SAYWHAT Logo',
+  },
+  {
+    name: 'GEAR Alliance',
+    logo: '/partners/GEARlogo.jpg',
+    alt: 'GEAR Alliance Logo',
+  },
+  {
+    name: 'Education Out Loud (EOL)',
+    logo: '/partners/EOL_GPE-Branding_horizontal_EN-1-e1666182269168.jpg',
+    alt: 'Education Out Loud Logo',
+  },
+  {
+    name: 'AmplifyChange',
+    logo: '/partners/AmplifyChange-launch-graphics-16-9_Artboard-11-1024x576.jpg',
+    alt: 'AmplifyChange Logo',
+  },
+  {
+    name: 'CYECE',
+    logo: '/partners/CYECE.webp',
+    alt: 'CYECE Logo',
+  },
+  {
+    name: 'FACET',
+    logo: '/partners/FACET.webp',
+    alt: 'FACET Logo',
+  },
+  {
+    name: 'GAYO',
+    logo: '/partners/gayo.webp',
+    alt: 'GAYO Logo',
+  },
+  {
+    name: 'NAQEZ',
+    logo: '/partners/NAQEZ-Logo.png',
+    alt: 'NAQEZ Logo',
+  },
 ]
 
 export default function PartnershipsPage() {
@@ -193,14 +233,20 @@ export default function PartnershipsPage() {
             Proud to partner with leading organizations committed to youth empowerment.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 mb-12">
-            {pastPartners.map((partner) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-12">
+            {partners.map((partner) => (
               <div
-                key={partner}
-                className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center hover:shadow-lg transition-shadow"
+                key={partner.name}
+                className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all hover:border-primary-300"
               >
-                <div className="text-gray-400 font-bold text-sm text-center px-4">
-                  {partner}
+                <div className="relative w-full h-24 flex items-center justify-center">
+                  <Image
+                    src={partner.logo}
+                    alt={partner.alt}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 200px"
+                  />
                 </div>
               </div>
             ))}
