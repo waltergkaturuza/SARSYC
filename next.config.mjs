@@ -25,6 +25,11 @@ const nextConfig = {
       },
     ]
   },
+  // Prevent caching issues in development
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
