@@ -115,10 +115,37 @@ async function handleAdminRequest(
       <p style="color: #666; margin-top: 1rem;">Loading Admin Panel...</p>
     </div>
   </div>
-  <script>
-    // Payload admin UI loads automatically through Payload's internal routing
-    // The admin UI will make requests to /api/admin/* endpoints
-    console.log('Admin panel page loaded. Payload admin UI should initialize automatically.');
+  <script type="module">
+    // For Payload v3 with Next.js App Router, the admin UI requires proper setup
+    // This is a temporary placeholder. For production, use one of these approaches:
+    // 1. Use custom Express server (see server.ts) - run: node src/server.ts
+    // 2. Configure Payload API routes properly to serve admin UI
+    
+    const serverURL = window.PAYLOAD_PUBLIC_SERVER_URL || window.location.origin;
+    console.log('Payload admin UI placeholder loaded. Server URL:', serverURL);
+    
+    // Check if Payload API is accessible
+    fetch(serverURL + '/api/config')
+      .then(res => {
+        if (res.ok) {
+          console.log('✅ Payload API is accessible');
+          return res.json();
+        }
+        throw new Error('Payload API not accessible');
+      })
+      .then(config => {
+        console.log('Payload config:', config);
+        // If we can access config, admin UI should work
+        // Try redirecting to see if Payload serves admin UI directly
+        document.querySelector('.loading p').textContent = 'Payload API accessible. Admin UI should load...';
+      })
+      .catch(err => {
+        console.error('❌ Cannot access Payload API:', err);
+        const msg = document.querySelector('.loading p');
+        if (msg) {
+          msg.innerHTML = '⚠️ Payload API not accessible.<br>Check that PAYLOAD_SECRET and DATABASE_URL are set.<br>Try using custom server: node src/server.ts';
+        }
+      });
   </script>
 </body>
 </html>`,
