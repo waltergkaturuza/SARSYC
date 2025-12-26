@@ -53,34 +53,24 @@ export async function getCurrentUserFromRequest(req: Request) {
     }
 
     try {
-      // Get the secret (with database fallback support)
-      const secret = await getSecret()
-      if (!secret) {
-        console.error('PAYLOAD_SECRET not found')
-        return null
-      }
-
-      // Verify and decode the JWT token
-      let decoded: any
+      // Use Payload's built-in authentication instead of manual JWT verification
       try {
-        decoded = jwt.verify(token, secret) as any
-      } catch (verifyError: any) {
-        // Token is invalid or expired
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Token verification failed:', verifyError.message)
-        }
-        return null
-      }
-      
-      if (!decoded || !decoded.id) {
-        return null
-      }
+        const authResult = await payload.auth.verify({
+          token,
+        })
 
-      // Get the user from Payload using the ID from the token
-      const userResult = await payload.findByID({
-        collection: 'users',
-        id: decoded.id,
-      })
+        if (!authResult || !authResult.user) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[getCurrentUserFromRequest] Payload auth.verify returned no user')
+          }
+          return null
+        }
+
+        // Get the full user object
+        const userResult = await payload.findByID({
+          collection: 'users',
+          id: authResult.user.id,
+        })
 
       if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
         return userResult
@@ -120,86 +110,55 @@ export async function getCurrentUserFromCookies() {
     }
 
     try {
-      // IMPORTANT: Use the exact same secret that Payload uses to sign tokens
-      // Payload uses the secret passed to payload.init(), which comes from getSecret()
-      // We must use the same source to ensure consistency
-      const { getSecret } = await import('./getSecret')
-      const payloadSecret = await getSecret()
-      
-      if (!payloadSecret) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] PAYLOAD_SECRET not found')
-        }
-        return null
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[getCurrentUserFromCookies] Using secret from getSecret(), length:', payloadSecret.length)
-        console.log('[getCurrentUserFromCookies] Env PAYLOAD_SECRET length:', process.env.PAYLOAD_SECRET?.length || 'not set')
-      }
-
-      // Verify and decode the JWT token using Payload's secret
-      let decoded: any
+      // Use Payload's built-in authentication instead of manual JWT verification
+      // This ensures we use the exact same secret and verification logic that Payload uses
+      // Payload's auth.verify() method handles token verification internally
       try {
-        decoded = jwt.verify(token, payloadSecret) as any
+        // Use Payload's verify method which uses the same secret from payload.init()
+        const authResult = await payload.auth.verify({
+          token,
+        })
+
+        if (!authResult || !authResult.user) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[getCurrentUserFromCookies] Payload auth.verify returned no user')
+          }
+          return null
+        }
+
         if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] ✅ Token verified successfully, user ID:', decoded.id)
+          console.log('[getCurrentUserFromCookies] ✅ Token verified successfully via Payload auth, user ID:', authResult.user.id)
+        }
+
+        // Get the full user object
+        const userResult = await payload.findByID({
+          collection: 'users',
+          id: authResult.user.id,
+        })
+
+        if (!userResult) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[getCurrentUserFromCookies] User not found with id:', authResult.user.id)
+          }
+          return null
+        }
+
+        // Check if user has admin role
+        if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[getCurrentUserFromCookies] ✅ Admin user authenticated:', userResult.email)
+          }
+          return userResult
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[getCurrentUserFromCookies] User role is not admin:', userResult.role)
+          }
+          return null
         }
       } catch (verifyError: any) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] ❌ Token verification failed:', verifyError.message)
-          console.error('[getCurrentUserFromCookies] Secret length used:', payloadSecret.length)
-          console.error('[getCurrentUserFromCookies] Secret preview:', payloadSecret.substring(0, 10) + '...')
+          console.error('[getCurrentUserFromCookies] ❌ Payload auth.verify failed:', verifyError.message)
           console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
-          
-          // Try with env secret as fallback for debugging
-          if (process.env.PAYLOAD_SECRET && process.env.PAYLOAD_SECRET !== payloadSecret) {
-            console.error('[getCurrentUserFromCookies] ⚠️  Secret mismatch detected!')
-            console.error('[getCurrentUserFromCookies] getSecret() returned different value than process.env.PAYLOAD_SECRET')
-            try {
-              const envDecoded = jwt.verify(token, process.env.PAYLOAD_SECRET) as any
-              console.error('[getCurrentUserFromCookies] ✅ Token verifies with process.env.PAYLOAD_SECRET!')
-              decoded = envDecoded
-            } catch (envError: any) {
-              console.error('[getCurrentUserFromCookies] ❌ Also fails with process.env.PAYLOAD_SECRET:', envError.message)
-            }
-          }
-        }
-        
-        if (!decoded) {
-          return null
-        }
-      }
-      
-      if (!decoded || !decoded.id) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] Token decoded but missing id:', decoded)
-        }
-        return null
-      }
-
-      // Get the user from Payload using the ID from the token
-      const userResult = await payload.findByID({
-        collection: 'users',
-        id: decoded.id,
-      })
-
-      if (!userResult) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] User not found with id:', decoded.id)
-        }
-        return null
-      }
-
-      // Check if user has admin role
-      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] ✅ Admin user authenticated:', userResult.email)
-        }
-        return userResult
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] User role is not admin:', userResult.role)
         }
         return null
       }
