@@ -14,6 +14,50 @@ export async function POST(request: NextRequest) {
 
     const payloadClient = await getPayloadClient()
 
+    // Check if account is locked before attempting login
+    try {
+      const user = await payloadClient.findByID({
+        collection: 'users',
+        id: email,
+        overrideAccess: true,
+      }).catch(() => null)
+
+      // If user not found by ID, try to find by email
+      let foundUser = user
+      if (!foundUser) {
+        const users = await payloadClient.find({
+          collection: 'users',
+          where: {
+            email: {
+              equals: email,
+            },
+          },
+          limit: 1,
+          overrideAccess: true,
+        })
+        foundUser = users.docs[0] || null
+      }
+
+      // Check if account is locked
+      if (foundUser && (foundUser as any).lockUntil) {
+        const lockUntil = new Date((foundUser as any).lockUntil)
+        if (lockUntil > new Date()) {
+          return NextResponse.json(
+            { 
+              error: `Account is locked due to too many failed login attempts. Please try again after ${lockUntil.toLocaleString()}`,
+              locked: true,
+              lockUntil: lockUntil.toISOString(),
+            },
+            { status: 423 } // 423 Locked
+          )
+        }
+      }
+    } catch (checkError) {
+      // If we can't check the user, continue with login attempt
+      // (user might not exist, which will be caught by login)
+      console.log('[Login API] Could not check user lock status:', checkError)
+    }
+
     // Try to authenticate with Payload
     try {
       const result = await payloadClient.login({
@@ -108,7 +152,19 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid credentials or insufficient permissions' },
         { status: 403 }
       )
-    } catch (authError) {
+    } catch (authError: any) {
+      // Provide more detailed error messages
+      const errorMessage = authError?.message || 'Invalid email or password'
+      console.error('[Login API] Authentication failed:', errorMessage)
+      
+      // Check if it's a locked account error
+      if (errorMessage.includes('locked') || errorMessage.includes('Locked')) {
+        return NextResponse.json(
+          { error: 'Account is locked. Please contact an administrator.' },
+          { status: 423 } // 423 Locked
+        )
+      }
+      
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
