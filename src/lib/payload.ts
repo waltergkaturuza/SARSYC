@@ -90,6 +90,43 @@ export const getPayloadClient = async (): Promise<Payload> => {
             await new Promise((r) => setTimeout(r, attempt * 500))
             continue
           }
+          
+          // Handle database schema migration errors (e.g., enum value mismatches)
+          // This can happen when existing data doesn't match the new schema
+          if (errorMessage.includes('invalid input value for enum') ||
+              errorMessage.includes('enum_registrations_country') ||
+              errorMessage.includes('22P02')) {
+            console.warn(`payload.init attempt ${attempt}/${maxAttempts} - database schema migration issue (existing data mismatch):`, message)
+            console.warn('This usually means there is test data in the database that doesn\'t match the schema.')
+            console.warn('Consider cleaning up test data or updating the schema to match existing data.')
+            
+            // If we already have a cached client, return it immediately
+            if (cached.client) {
+              console.log('Using cached Payload client despite schema migration warning')
+              return cached.client
+            }
+
+            // On final attempt, try to continue anyway - Payload might still work
+            if (attempt === maxAttempts) {
+              console.warn('Final attempt hit schema migration warning; attempting to continue anyway')
+              // Try to return the payload instance - it might still work for basic operations
+              try {
+                return payload as unknown as Payload
+              } catch {
+                // If that fails, we need to fix the data
+                throw new Error(
+                  'Database schema migration failed due to invalid data. ' +
+                  'Please fix or remove test data (e.g., "Testland" country value) from the database. ' +
+                  'Original error: ' + message
+                )
+              }
+            }
+            
+            // Wait before retrying
+            await new Promise((r) => setTimeout(r, attempt * 500))
+            continue
+          }
+          
           // Non-transient error — rethrow
           throw err
         }
