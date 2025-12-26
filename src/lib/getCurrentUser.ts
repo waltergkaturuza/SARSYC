@@ -90,27 +90,21 @@ export async function getCurrentUserFromRequest(req: Request) {
         id: decoded.id,
       })
 
-        if (!userResult) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('[getCurrentUserFromRequest] User not found with id:', authResult.user.id)
-          }
-          return null
-        }
-
-        if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[getCurrentUserFromRequest] ✅ Admin user authenticated:', userResult.email)
-          }
-          return userResult
-        } else {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[getCurrentUserFromRequest] User role is not admin:', userResult.role)
-          }
-          return null
-        }
-      } catch (verifyError: any) {
+      if (!userResult) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromRequest] ❌ Payload auth.verify failed:', verifyError.message)
+          console.error('[getCurrentUserFromRequest] User not found with id:', decoded.id)
+        }
+        return null
+      }
+
+      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromRequest] ✅ Admin user authenticated:', userResult.email)
+        }
+        return userResult
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromRequest] User role is not admin:', userResult.role)
         }
         return null
       }
@@ -149,31 +143,45 @@ export async function getCurrentUserFromCookies() {
     }
 
     try {
-      // Use Payload's built-in authentication instead of manual JWT verification
-      // This ensures we use the exact same secret and verification logic that Payload uses
-      // Payload's auth.verify() method handles token verification internally
-      try {
-        // Use Payload's verify method which uses the same secret from payload.init()
-        const authResult = await payload.auth.verify({
-          token,
-        })
-
-        if (!authResult || !authResult.user) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('[getCurrentUserFromCookies] Payload auth.verify returned no user')
-          }
-          return null
-        }
-
+      // Verify JWT token using the same secret that Payload uses
+      // Payload uses the secret passed to payload.init(), which comes from getSecret()
+      const payloadSecret = await getSecret()
+      
+      if (!payloadSecret) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] ✅ Token verified successfully via Payload auth, user ID:', authResult.user.id)
+          console.error('[getCurrentUserFromCookies] PAYLOAD_SECRET not found')
         }
+        return null
+      }
 
-        // Get the full user object
-        const userResult = await payload.findByID({
-          collection: 'users',
-          id: authResult.user.id,
-        })
+      // Decode and verify the JWT token
+      let decoded: any
+      try {
+        decoded = jwt.verify(token, payloadSecret) as any
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromCookies] ✅ Token verified successfully, user ID:', decoded.id)
+        }
+      } catch (verifyError: any) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromCookies] ❌ Token verification failed:', verifyError.message)
+          console.error('[getCurrentUserFromCookies] Secret length:', payloadSecret.length)
+          console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
+        }
+        return null
+      }
+      
+      if (!decoded || !decoded.id) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromCookies] Token decoded but missing id:', decoded)
+        }
+        return null
+      }
+
+      // Get the full user object from Payload
+      const userResult = await payload.findByID({
+        collection: 'users',
+        id: decoded.id,
+      })
 
       if (!userResult) {
         if (process.env.NODE_ENV === 'development') {
