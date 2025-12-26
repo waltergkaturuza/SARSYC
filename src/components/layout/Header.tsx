@@ -76,8 +76,15 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                S6
+              <div className="relative w-12 h-12 flex-shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="SARSYC Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="48px"
+                />
               </div>
               <div className="hidden sm:block">
                 <div className="font-heading font-bold text-xl text-gray-900">

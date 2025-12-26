@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiFacebook, FiTwitter, FiInstagram, FiMail, FiMapPin, FiCheck } from 'react-icons/fi'
 import { SiTiktok } from 'react-icons/si'
 
@@ -118,8 +119,14 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                S6
+              <div className="relative w-12 h-12 flex-shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="SARSYC Logo"
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                />
               </div>
               <div>
                 <div className="font-heading font-bold text-xl text-white">

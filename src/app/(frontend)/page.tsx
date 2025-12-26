@@ -53,6 +53,18 @@ export default function HomePage() {
 
         <div className="relative container-custom py-20 md:py-32">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Logo */}
+            <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-8">
+              <Image
+                src="/logo.png"
+                alt="SARSYC Logo"
+                fill
+                className="object-contain drop-shadow-2xl"
+                priority
+                sizes="(max-width: 768px) 128px, 160px"
+              />
+            </div>
+
             {/* Conference Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
               <FiCalendar className="w-4 h-4" />
