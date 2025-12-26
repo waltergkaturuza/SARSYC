@@ -108,26 +108,30 @@ export default async function PartnersManagementPage({
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Partner Type</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Types</option>
-              <option value="implementing">Implementing</option>
-              <option value="funding">Funding</option>
-              <option value="technical">Technical</option>
-              <option value="media">Media</option>
-              <option value="sponsor">Sponsor</option>
-            </select>
+            <form action="/admin/partners" method="get">
+              <select name="type" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Types</option>
+                <option value="implementing">Implementing</option>
+                <option value="funding">Funding</option>
+                <option value="technical">Technical</option>
+                <option value="media">Media</option>
+                <option value="sponsor">Sponsor</option>
+              </select>
+            </form>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Sponsorship Tier</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Tiers</option>
-              <option value="platinum">Platinum</option>
-              <option value="gold">Gold</option>
-              <option value="silver">Silver</option>
-              <option value="bronze">Bronze</option>
-              <option value="in-kind">In-Kind</option>
-            </select>
+            <form action="/admin/partners" method="get">
+              <select name="tier" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Tiers</option>
+                <option value="platinum">Platinum</option>
+                <option value="gold">Gold</option>
+                <option value="silver">Silver</option>
+                <option value="bronze">Bronze</option>
+                <option value="in-kind">In-Kind</option>
+              </select>
+            </form>
           </div>
         </div>
       </div>

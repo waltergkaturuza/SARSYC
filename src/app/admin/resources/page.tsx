@@ -116,32 +116,39 @@ export default async function ResourcesManagementPage({
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Resource Type</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Types</option>
-              <option value="report">Reports</option>
-              <option value="paper">Research Papers</option>
-              <option value="brief">Policy Briefs</option>
-              <option value="toolkit">Toolkits</option>
-            </select>
+            <form action="/admin/resources" method="get">
+              <select name="type" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Types</option>
+                <option value="report">Reports</option>
+                <option value="paper">Research Papers</option>
+                <option value="brief">Policy Briefs</option>
+                <option value="toolkit">Toolkits</option>
+              </select>
+            </form>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Years</option>
-              {Array.from({ length: 10 }, (_, i) => 2026 - i).map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
+            <form action="/admin/resources" method="get">
+              <select name="year" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Years</option>
+                {Array.from({ length: 10 }, (_, i) => 2026 - i).map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </form>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
+            <form action="/admin/resources" method="get">
+              <input
+                type="text"
+                name="search"
+                placeholder="Search resources..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </form>
           </div>
         </div>
       </div>

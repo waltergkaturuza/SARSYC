@@ -106,44 +106,55 @@ export default async function SessionsManagementPage({
           {/* Type Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              defaultValue={type || 'all'}
-            >
-              <option value="all">All Types</option>
-              <option value="keynote">Keynote</option>
-              <option value="plenary">Plenary</option>
-              <option value="panel">Panel Discussion</option>
-              <option value="workshop">Workshop</option>
-              <option value="oral">Oral Presentation</option>
-              <option value="poster">Poster Session</option>
-            </select>
+            <form action="/admin/sessions" method="get">
+              <select
+                name="type"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                defaultValue={type || 'all'}
+              >
+                <option value="all">All Types</option>
+                <option value="keynote">Keynote</option>
+                <option value="plenary">Plenary</option>
+                <option value="panel">Panel Discussion</option>
+                <option value="workshop">Workshop</option>
+                <option value="oral">Oral Presentation</option>
+                <option value="poster">Poster Session</option>
+              </select>
+            </form>
           </div>
 
           {/* Track Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Track</label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              defaultValue={track || 'all'}
-            >
-              <option value="all">All Tracks</option>
-              <option value="srhr">SRHR</option>
-              <option value="education">Education</option>
-              <option value="advocacy">Advocacy</option>
-              <option value="innovation">Innovation</option>
-            </select>
+            <form action="/admin/sessions" method="get">
+              <select
+                name="track"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                defaultValue={track || 'all'}
+              >
+                <option value="all">All Tracks</option>
+                <option value="srhr">SRHR</option>
+                <option value="education">Education</option>
+                <option value="advocacy">Advocacy</option>
+                <option value="innovation">Innovation</option>
+              </select>
+            </form>
           </div>
 
           {/* Date Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Days</option>
-              <option value="2026-08-05">Day 1 - Aug 5</option>
-              <option value="2026-08-06">Day 2 - Aug 6</option>
-              <option value="2026-08-07">Day 3 - Aug 7</option>
-            </select>
+            <form action="/admin/sessions" method="get">
+              <select
+                name="date"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="all">All Days</option>
+                <option value="2026-08-05">Day 1 - Aug 5</option>
+                <option value="2026-08-06">Day 2 - Aug 6</option>
+                <option value="2026-08-07">Day 3 - Aug 7</option>
+              </select>
+            </form>
           </div>
         </div>
       </div>

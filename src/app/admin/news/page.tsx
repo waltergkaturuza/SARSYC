@@ -108,32 +108,39 @@ export default async function NewsManagementPage({
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
+            <form action="/admin/news" method="get">
+              <select name="status" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </form>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="all">All Categories</option>
-              <option value="conference">Conference</option>
-              <option value="speakers">Speakers</option>
-              <option value="partnerships">Partnerships</option>
-              <option value="research">Research</option>
-            </select>
+            <form action="/admin/news" method="get">
+              <select name="category" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option value="all">All Categories</option>
+                <option value="conference">Conference</option>
+                <option value="speakers">Speakers</option>
+                <option value="partnerships">Partnerships</option>
+                <option value="research">Research</option>
+              </select>
+            </form>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <input
-              type="text"
-              placeholder="Search articles..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
+            <form action="/admin/news" method="get">
+              <input
+                type="text"
+                name="search"
+                placeholder="Search articles..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </form>
           </div>
         </div>
       </div>
