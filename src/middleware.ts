@@ -9,23 +9,30 @@ export async function middleware(request: NextRequest) {
     // Check for authentication token in cookies
     const token = request.cookies.get('payload-token')?.value
 
-    // Debug logging (enable in production too for troubleshooting)
+    // Debug logging (always enabled for troubleshooting)
     const allCookies = request.cookies.getAll()
+    console.log('[Middleware] ==========================================')
     console.log('[Middleware] Admin route access:', pathname)
-    console.log('[Middleware] Available cookies:', allCookies.map(c => `${c.name}=${c.value.substring(0, 20)}...`))
-    console.log('[Middleware] payload-token found:', !!token)
+    console.log('[Middleware] Request method:', request.method)
     console.log('[Middleware] Request URL:', request.url)
+    console.log('[Middleware] Available cookies:', allCookies.map(c => c.name))
+    console.log('[Middleware] payload-token found:', !!token)
+    if (token) {
+      console.log('[Middleware] Token length:', token.length)
+      console.log('[Middleware] Token preview:', token.substring(0, 20) + '...')
+    }
+    console.log('[Middleware] ==========================================')
 
     // If no token, redirect to login
     if (!token) {
-      console.log('[Middleware] No token found, redirecting to login')
+      console.log('[Middleware] ❌ No token found, redirecting to login')
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       loginUrl.searchParams.set('type', 'admin')
       return NextResponse.redirect(loginUrl)
     }
 
-    console.log('[Middleware] Token found, allowing access')
+    console.log('[Middleware] ✅ Token found, allowing access')
     // Token exists - let it through
     // Server-side pages will validate the token and user role
     return NextResponse.next()

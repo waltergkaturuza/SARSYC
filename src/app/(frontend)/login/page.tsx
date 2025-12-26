@@ -70,47 +70,35 @@ function LoginForm() {
       // Get redirect URL from query params or use default
       const redirectUrl = searchParams.get('redirect')
       
-      // For admin, the cookie is set server-side in the API response
-      // The browser automatically processes Set-Cookie headers from the fetch response
+      // For admin, ensure cookie is set and redirect
       if (userType === 'admin') {
-        // IMPORTANT: Cookies set via response.cookies.set() in the API are automatically
-        // included in document.cookie by the browser after the fetch completes.
-        // However, we need to ensure the response is fully processed.
-        
-        // Wait for next tick to ensure browser has processed the Set-Cookie header
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // Also set cookie client-side as backup (in case server-side cookie didn't work)
+        // Set cookie client-side (this is the most reliable method)
+        // The server-side cookie from the API response should also be set, but we set it client-side as backup
         const isProduction = window.location.hostname !== 'localhost'
-        const cookieString = `payload-token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
+        const cookieString = `payload-token=${encodeURIComponent(data.token)}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
         document.cookie = cookieString
         
-        // Wait a bit more to ensure both cookies are set
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
-        // Verify the cookie is available
-        const cookieCheck = document.cookie.includes('payload-token')
-        console.log('[Admin Login] Cookie check before redirect:', cookieCheck)
-        console.log('[Admin Login] All cookies:', document.cookie)
+        // Log for debugging
+        console.log('[Admin Login] Login successful!')
         console.log('[Admin Login] Token received:', !!data.token)
-        console.log('[Admin Login] Token length:', data.token?.length)
-        
-        if (!cookieCheck) {
-          console.error('[Admin Login] WARNING: Cookie not found! This will cause redirect loop.')
-          setError('Failed to set authentication cookie. Please try again.')
-          setLoading(false)
-          return
-        }
+        console.log('[Admin Login] Cookie set:', cookieString.substring(0, 50) + '...')
+        console.log('[Admin Login] All cookies:', document.cookie)
         
         // Use redirect URL if provided, otherwise default to /admin
         const targetUrl = redirectUrl || '/admin'
         
-        console.log('[Admin Login] Redirecting to:', targetUrl)
+        console.log('[Admin Login] About to redirect to:', targetUrl)
         
-        // Use window.location.href for full page reload
-        // This ensures cookies are included in the request
+        // Small delay to ensure cookie is processed
+        await new Promise(resolve => setTimeout(resolve, 50))
+        
+        // ALWAYS redirect - don't block on cookie check
+        // The cookie is set, and if there's an issue, the middleware will handle it
+        console.log('[Admin Login] Executing redirect now...')
         window.location.href = targetUrl
-        return // Exit early to prevent further execution
+        
+        // Prevent any further execution
+        return
       } else if (userType === 'participant') {
         router.push(redirectUrl || '/dashboard')
       } else if (userType === 'speaker') {

@@ -54,18 +54,26 @@ export async function POST(request: NextRequest) {
         // Set cookie server-side for better reliability
         // Payload expects 'payload-token' cookie name
         const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+        
+        // Method 1: Use Next.js cookies API
         response.cookies.set('payload-token', result.token, {
           path: '/',
           maxAge: 7 * 24 * 60 * 60, // 7 days
           sameSite: 'lax',
           secure: isProduction, // Only send over HTTPS in production
           httpOnly: false, // Allow client-side access for localStorage sync
-          // Ensure domain is set correctly (don't set domain for subdomains to work)
-          // domain: isProduction ? '.vercel.app' : undefined, // Don't set domain - let browser handle it
         })
         
-        // Also set a response header to ensure cookie is processed
+        // Method 2: Also set via Set-Cookie header directly as backup
+        // This ensures the cookie is definitely set even if cookies.set() has issues
+        const cookieHeader = `payload-token=${result.token}; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
+        response.headers.append('Set-Cookie', cookieHeader)
+        
+        // Prevent caching
         response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+        response.headers.set('Pragma', 'no-cache')
+        
+        console.log('[Login API] Admin login successful, cookie set for:', result.user.email)
         
         return response
       }
