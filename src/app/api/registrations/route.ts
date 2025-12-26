@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { sendRegistrationConfirmation } from '@/lib/mail'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,8 +21,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // TODO: Send confirmation email
-    // await sendRegistrationEmail(registration)
+    // Send confirmation email
+    try {
+      await sendRegistrationConfirmation({
+        to: registration.email,
+        firstName: registration.firstName,
+        registrationId: registration.registrationId || registration.id.toString(),
+      })
+    } catch (emailError: any) {
+      // Log but don't fail the registration if email fails
+      console.error('Failed to send registration confirmation email:', emailError)
+    }
 
     return NextResponse.json({
       success: true,

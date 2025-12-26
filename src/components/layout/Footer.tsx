@@ -38,6 +38,74 @@ const socialLinks = [
   { name: 'TikTok', icon: SiTiktok, href: 'https://www.tiktok.com/@sarsyc2026', color: 'hover:text-black dark:hover:text-white' },
 ]
 
+function NewsletterForm() {
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setIsSuccess(true)
+        setEmail('')
+        setTimeout(() => setIsSuccess(false), 5000)
+      } else {
+        setError(data.error || 'Subscription failed. Please try again.')
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="flex items-center gap-2 text-green-400 text-sm">
+        <FiCheck className="w-5 h-5" />
+        <span>Subscribed successfully!</span>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        required
+        disabled={isSubmitting}
+        className="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+      />
+      <button 
+        type="submit" 
+        disabled={isSubmitting}
+        className="btn-primary whitespace-nowrap disabled:opacity-50"
+      >
+        {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+      </button>
+      {error && (
+        <p className="text-red-400 text-sm mt-2 col-span-full">{error}</p>
+      )}
+    </form>
+  )
+}
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -154,16 +222,7 @@ export default function Footer() {
             <p className="text-sm mb-4">
               Subscribe to our newsletter for conference updates, speaker announcements, and more.
             </p>
-            <form className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              <button type="submit" className="btn-primary whitespace-nowrap">
-                Subscribe
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
       </div>

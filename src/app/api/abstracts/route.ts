@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { sendMail } from '@/lib/mail'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -29,7 +30,50 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // TODO: Send confirmation email
+    // Send confirmation email
+    try {
+      const subject = `Abstract Submission Confirmation — ${abstract.submissionId || abstract.id}`
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #0ea5e9;">Abstract Submission Received</h2>
+          <p>Dear ${abstract.primaryAuthor?.firstName || 'Author'},</p>
+          <p>Thank you for submitting your abstract "<strong>${abstract.title}</strong>" to SARSYC VI.</p>
+          <p><strong>Submission ID:</strong> ${abstract.submissionId || abstract.id}</p>
+          <p><strong>Track:</strong> ${abstract.track}</p>
+          <p><strong>Status:</strong> Received - Under Review</p>
+          <p>Our review committee will evaluate your submission and notify you of the outcome. You can expect to hear back within 4-6 weeks.</p>
+          <p>We appreciate your contribution to SARSYC VI and look forward to potentially featuring your work.</p>
+          <p>Best regards,<br>The SARSYC VI Steering Committee</p>
+        </div>
+      `
+      const text = `
+Abstract Submission Received
+
+Dear ${abstract.primaryAuthor?.firstName || 'Author'},
+
+Thank you for submitting your abstract "${abstract.title}" to SARSYC VI.
+
+Submission ID: ${abstract.submissionId || abstract.id}
+Track: ${abstract.track}
+Status: Received - Under Review
+
+Our review committee will evaluate your submission and notify you of the outcome. You can expect to hear back within 4-6 weeks.
+
+Best regards,
+The SARSYC VI Steering Committee
+      `
+
+      await sendMail({
+        to: abstract.primaryAuthor?.email || '',
+        subject,
+        html,
+        text,
+      })
+    } catch (emailError: any) {
+      // Log but don't fail the submission if email fails
+      console.error('Failed to send abstract confirmation email:', emailError)
+    }
+
     console.log('Abstract submitted:', abstract.submissionId)
 
     return NextResponse.json({
