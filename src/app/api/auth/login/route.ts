@@ -25,14 +25,26 @@ export async function POST(request: NextRequest) {
       })
 
       // Check if user has appropriate role
-      if (type === 'admin' && result.user.roles?.includes('admin')) {
+      // Note: Users collection uses 'role' (singular), not 'roles' (plural)
+      const userRole = (result.user as any).role || (result.user as any).roles?.[0]
+      
+      if (type === 'admin') {
+        // Only allow admin role for admin login
+        if (userRole !== 'admin') {
+          return NextResponse.json(
+            { error: 'Access denied. Admin role required.' },
+            { status: 403 }
+          )
+        }
         return NextResponse.json({
           success: true,
           user: {
             id: result.user.id,
             email: result.user.email,
-            name: result.user.name,
-            roles: result.user.roles,
+            name: (result.user as any).firstName && (result.user as any).lastName 
+              ? `${(result.user as any).firstName} ${(result.user as any).lastName}`
+              : (result.user as any).name || result.user.email,
+            role: userRole,
           },
           token: result.token,
         })

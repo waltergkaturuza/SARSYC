@@ -1,5 +1,7 @@
 import React from 'react'
+import { redirect } from 'next/navigation'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import { 
   FiUsers, FiFileText, FiMic, FiCalendar, 
   FiTrendingUp, FiClock, FiCheckCircle, FiAlertCircle,
@@ -10,6 +12,13 @@ import Link from 'next/link'
 export const revalidate = 0
 
 export default async function AdminDashboardPage() {
+  // Check authentication
+  const user = await getCurrentUserFromCookies()
+  
+  if (!user || user.role !== 'admin') {
+    redirect('/login?type=admin&redirect=/admin/dashboard')
+  }
+
   const payload = await getPayloadClient()
 
   // Fetch statistics

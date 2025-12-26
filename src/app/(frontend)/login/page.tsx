@@ -21,14 +21,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Handle different login types
-      if (userType === 'admin') {
-        // Redirect to Payload admin panel (Payload handles its own login)
-        window.location.href = '/admin'
-        return
-      }
-
-      // For participants and speakers, authenticate via API
+      // Authenticate ALL users via API (including admin)
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,14 +38,29 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Store token and redirect
+      // Verify authentication was successful
+      if (!data.success || !data.token) {
+        throw new Error('Authentication failed')
+      }
+
+      // Store token and user info
       if (data.token) {
+        // Store in localStorage for API calls
         localStorage.setItem('auth_token', data.token)
         localStorage.setItem('user_type', userType)
+        if (data.user) {
+          localStorage.setItem('user_data', JSON.stringify(data.user))
+        }
+        
+        // Set cookie for server-side authentication (Payload expects 'payload-token')
+        document.cookie = `payload-token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`
       }
 
       // Redirect based on user type
-      if (userType === 'participant') {
+      if (userType === 'admin') {
+        // Redirect to Payload admin panel after successful authentication
+        window.location.href = '/admin'
+      } else if (userType === 'participant') {
         router.push('/dashboard')
       } else if (userType === 'speaker') {
         router.push('/dashboard?type=speaker')
