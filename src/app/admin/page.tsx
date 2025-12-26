@@ -12,13 +12,7 @@ export default async function AdminRootPage() {
     const cookieStore = await cookies()
     const token = cookieStore.get('payload-token')
     
-    if (token) {
-      // Create a response that clears the cookie
-      const response = NextResponse.redirect(new URL('/login?type=admin&redirect=/admin', process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'))
-      response.cookies.delete('payload-token')
-      return response
-    }
-    
+    // Always redirect to login - the cookie clearing will happen via middleware or client-side
     redirect('/login?type=admin&redirect=/admin')
   }
 

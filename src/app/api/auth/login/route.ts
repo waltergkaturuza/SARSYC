@@ -13,6 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     const payloadClient = await getPayloadClient()
+    
+    // Log the secret being used for debugging
+    const { getSecret } = await import('@/lib/getSecret')
+    const loginSecret = await getSecret()
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Login API] Secret used for login (length:', loginSecret.length + '):', loginSecret.substring(0, 20) + '...')
+    }
 
     // Check if account is locked before attempting login
     try {
@@ -67,6 +74,11 @@ export async function POST(request: NextRequest) {
           password,
         },
       })
+      
+      // Log token info for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Login API] Token generated (length:', result.token.length + '):', result.token.substring(0, 50) + '...')
+      }
 
       // Check if user has appropriate role
       // Note: Users collection uses 'role' (singular), not 'roles' (plural)
