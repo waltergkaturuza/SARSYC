@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBuilding, FiCheckCircle, FiXCircle, FiClock, FiDownload } from 'react-icons/fi'
 import { format } from 'date-fns'
+import { ApproveButton, RejectButton } from '@/components/admin/RegistrationActions'
 
 export const revalidate = 0
 
@@ -188,28 +189,10 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                   </div>
                   <div className="flex gap-3">
                     {registration.status !== 'confirmed' && (
-                      <form action="/api/admin/registrations/bulk" method="post" className="inline">
-                        <input type="hidden" name="action" value="markConfirmed" />
-                        <input type="hidden" name="ids" value={JSON.stringify([registration.id])} />
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Approve Registration
-                        </button>
-                      </form>
+                      <ApproveButton registrationId={registration.id} />
                     )}
                     {registration.status !== 'cancelled' && (
-                      <form action="/api/admin/registrations/bulk" method="post" className="inline">
-                        <input type="hidden" name="action" value="softDelete" />
-                        <input type="hidden" name="ids" value={JSON.stringify([registration.id])} />
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Reject/Cancel
-                        </button>
-                      </form>
+                      <RejectButton registrationId={registration.id} />
                     )}
                   </div>
                 </div>
