@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendRegistrationConfirmation } from '@/lib/mail'
 import { logExport } from '@/lib/telemetry'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 
 export async function POST(req: Request) {
   try {
@@ -13,14 +14,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
-    const adminId = req.headers.get('x-admin-user-id')
-    if (!adminId) return NextResponse.json({ error: 'Missing admin header' }, { status: 401 })
-
-    const payload = await getPayloadClient()
-    const userRes = await payload.find({ collection: 'users', where: { id: { equals: adminId } } })
-    const acting = userRes?.docs?.[0]
+    // Get current user (handles both header and development fallback)
+    const acting = await getCurrentUserFromRequest(req)
+    
     if (!acting || !['admin', 'super-admin'].includes(acting.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return NextResponse.json({ 
+        error: 'Unauthorized. Please ensure you are logged in as an admin user.' 
+      }, { status: 403 })
     }
 
     // Perform actions

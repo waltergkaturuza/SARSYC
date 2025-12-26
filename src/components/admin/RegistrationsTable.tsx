@@ -25,14 +25,19 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
   }
 
   async function handleExport() {
-    if (!adminId) {
-      setMessage('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
-      return
-    }
-
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/registrations/export', { headers: { 'x-admin-user-id': adminId } })
+      const headers: Record<string, string> = {}
+      
+      // Only add admin ID header if provided (for backwards compatibility)
+      if (adminId) {
+        headers['x-admin-user-id'] = adminId
+      }
+      
+      const res = await fetch('/api/admin/registrations/export', { 
+        headers,
+        credentials: 'include', // Include cookies for session-based auth
+      })
       if (!res.ok) {
         const json = await res.json()
         setMessage(json?.error || 'Export failed')
@@ -64,15 +69,19 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
       setMessage('No rows selected')
       return
     }
-    if (!adminId) {
-      setMessage('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
-      return
-    }
     setLoading(true)
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      
+      // Only add admin ID header if provided (for backwards compatibility)
+      if (adminId) {
+        headers['x-admin-user-id'] = adminId
+      }
+      
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-user-id': adminId },
+        headers,
+        credentials: 'include', // Include cookies for session-based auth
         body: JSON.stringify({ action, ids }),
       })
       const json = await res.json()
