@@ -53,24 +53,42 @@ export async function getCurrentUserFromRequest(req: Request) {
     }
 
     try {
-      // Use Payload's built-in authentication instead of manual JWT verification
-      try {
-        const authResult = await payload.auth.verify({
-          token,
-        })
-
-        if (!authResult || !authResult.user) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('[getCurrentUserFromRequest] Payload auth.verify returned no user')
-          }
-          return null
+      // Verify JWT token using the same secret that Payload uses
+      const payloadSecret = await getSecret()
+      
+      if (!payloadSecret) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromRequest] PAYLOAD_SECRET not found')
         }
+        return null
+      }
 
-        // Get the full user object
-        const userResult = await payload.findByID({
-          collection: 'users',
-          id: authResult.user.id,
-        })
+      // Decode and verify the JWT token
+      let decoded: any
+      try {
+        decoded = jwt.verify(token, payloadSecret) as any
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromRequest] ✅ Token verified successfully, user ID:', decoded.id)
+        }
+      } catch (verifyError: any) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromRequest] ❌ Token verification failed:', verifyError.message)
+        }
+        return null
+      }
+      
+      if (!decoded || !decoded.id) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[getCurrentUserFromRequest] Token decoded but missing id:', decoded)
+        }
+        return null
+      }
+
+      // Get the full user object from Payload
+      const userResult = await payload.findByID({
+        collection: 'users',
+        id: decoded.id,
+      })
 
         if (!userResult) {
           if (process.env.NODE_ENV === 'development') {
@@ -157,29 +175,22 @@ export async function getCurrentUserFromCookies() {
           id: authResult.user.id,
         })
 
-        if (!userResult) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('[getCurrentUserFromCookies] User not found with id:', authResult.user.id)
-          }
-          return null
-        }
-
-        // Check if user has admin role
-        if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[getCurrentUserFromCookies] ✅ Admin user authenticated:', userResult.email)
-          }
-          return userResult
-        } else {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[getCurrentUserFromCookies] User role is not admin:', userResult.role)
-          }
-          return null
-        }
-      } catch (verifyError: any) {
+      if (!userResult) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[getCurrentUserFromCookies] ❌ Payload auth.verify failed:', verifyError.message)
-          console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
+          console.error('[getCurrentUserFromCookies] User not found with id:', decoded.id)
+        }
+        return null
+      }
+
+      // Check if user has admin role
+      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromCookies] ✅ Admin user authenticated:', userResult.email)
+        }
+        return userResult
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[getCurrentUserFromCookies] User role is not admin:', userResult.role)
         }
         return null
       }
