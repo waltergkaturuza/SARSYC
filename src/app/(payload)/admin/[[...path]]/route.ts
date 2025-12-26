@@ -1,4 +1,4 @@
-/* PAYLOAD ADMIN ROUTE HANDLER - Initialize Payload and serve admin UI */
+/* PAYLOAD ADMIN ROUTE HANDLER - Serve Payload admin UI */
 
 import { getPayloadClient } from '@/lib/payload'
 import { NextRequest, NextResponse } from 'next/server'
@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Handle all HTTP methods
+// Handle all HTTP methods - Payload admin UI uses various methods
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path?: string[] }> }
@@ -21,41 +21,78 @@ export async function POST(
   return handleAdminRequest(request, params)
 }
 
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ path?: string[] }> }
+) {
+  return handleAdminRequest(request, params)
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ path?: string[] }> }
+) {
+  return handleAdminRequest(request, params)
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ path?: string[] }> }
+) {
+  return handleAdminRequest(request, params)
+}
+
 async function handleAdminRequest(
   request: NextRequest,
   params: Promise<{ path?: string[] }>
 ) {
   try {
-    // Initialize Payload - this ensures the secret key is validated
+    // Initialize Payload
     const payload = await getPayloadClient()
     
-    // If we get here, Payload initialized successfully
-    // Payload v3 handles admin routes internally through its API
-    // The admin UI is served as a SPA that makes requests to /api/admin/*
+    // Get the path segments from params
+    const resolvedParams = await params
+    const pathSegments = resolvedParams?.path || []
+    const path = pathSegments.length > 0 ? `/${pathSegments.join('/')}` : ''
     
-    // Return a simple HTML page that will load Payload's admin UI
-    // Payload's admin UI is bundled and served through its internal routing
-    return new NextResponse(
-      `<!DOCTYPE html>
+    // Build the admin URL - Payload serves admin at /admin
+    const adminPath = path || '/'
+    
+    // In Payload v3, the admin UI is served as a SPA through /admin
+    // The admin UI JavaScript will handle routing client-side
+    // We need to serve the index.html for the admin UI
+    
+    // If accessing root /admin, serve the admin UI HTML
+    if (adminPath === '/' || adminPath === '') {
+      const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
+      
+      return new NextResponse(
+        `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SARSYC VI Admin Panel</title>
+  <script>
+    window.PAYLOAD_PUBLIC_SERVER_URL = '${serverURL}';
+  </script>
   <style>
     body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #fff;
+    }
+    #payload-admin {
+      width: 100%;
+      height: 100vh;
+    }
+    .loading {
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       background: #f5f5f5;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
     }
     .spinner {
       border: 4px solid #f3f3f3;
@@ -70,36 +107,29 @@ async function handleAdminRequest(
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    .message {
-      color: #666;
-      margin-top: 1rem;
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="spinner"></div>
-    <div class="message">Loading Admin Panel...</div>
-    <div class="message" style="font-size: 0.875rem; margin-top: 0.5rem; color: #999;">
-      If this page doesn't load, check that PAYLOAD_SECRET is set correctly.
+  <div id="payload-admin" class="loading">
+    <div style="text-align: center;">
+      <div class="spinner"></div>
+      <p style="color: #666; margin-top: 1rem;">Loading Admin Panel...</p>
     </div>
   </div>
   <script>
-    // Payload's admin UI should be accessible through its API routes
-    // Redirect to ensure proper initialization
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    // Payload admin UI loads automatically through Payload's internal routing
+    // The admin UI will make requests to /api/admin/* endpoints
+    console.log('Admin panel page loaded. Payload admin UI should initialize automatically.');
   </script>
 </body>
 </html>`,
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      }
-    )
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+          },
+        }
+      )
   } catch (error: any) {
     console.error('❌ Payload admin initialization error:', error)
     

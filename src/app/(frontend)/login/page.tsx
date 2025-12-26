@@ -23,8 +23,8 @@ export default function LoginPage() {
     try {
       // Handle different login types
       if (userType === 'admin') {
-        // Redirect to Payload admin
-        window.location.href = '/admin/login'
+        // Redirect to Payload admin panel (Payload handles its own login)
+        window.location.href = '/admin'
         return
       }
 
