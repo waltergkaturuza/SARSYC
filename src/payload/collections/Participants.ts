@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types'
+import { getCountryOptions } from '@/lib/countries'
 
 const Participants: CollectionConfig = {
   slug: 'participants',
@@ -41,8 +42,9 @@ const Participants: CollectionConfig = {
     },
     {
       name: 'country',
-      type: 'text',
+      type: 'select',
       label: 'Country',
+      options: getCountryOptions(),
     },
     {
       name: 'organization',

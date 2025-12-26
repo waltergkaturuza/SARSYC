@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types'
+import { getCountryOptions } from '@/lib/countries'
 
 const Registrations: CollectionConfig = {
   slug: 'registrations',
@@ -91,15 +92,17 @@ const Registrations: CollectionConfig = {
       fields: [
         {
           name: 'country',
-          type: 'text',
+          type: 'select',
           required: true,
           label: 'Country of Residence',
+          options: getCountryOptions(),
         },
         {
           name: 'nationality',
-          type: 'text',
+          type: 'select',
           required: true,
           label: 'Nationality',
+          options: getCountryOptions(),
         },
       ],
     },
@@ -173,9 +176,10 @@ const Registrations: CollectionConfig = {
         },
         {
           name: 'passportIssuingCountry',
-          type: 'text',
+          type: 'select',
           label: 'Passport Issuing Country',
           required: true,
+          options: getCountryOptions(),
           admin: {
             condition: (data: any) => data.isInternational === true,
           },
@@ -322,9 +326,10 @@ const Registrations: CollectionConfig = {
       fields: [
         {
           name: 'emergencyContactCountry',
-          type: 'text',
+          type: 'select',
           required: true,
           label: 'Country',
+          options: getCountryOptions(),
         },
         {
           name: 'emergencyContactCity',

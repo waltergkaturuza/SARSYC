@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types'
+import { getCountryOptions } from '@/lib/countries'
 
 const Resources: CollectionConfig = {
   slug: 'resources',
@@ -123,8 +124,9 @@ const Resources: CollectionConfig = {
     },
     {
       name: 'country',
-      type: 'text',
+      type: 'select',
       label: 'Country/Region',
+      options: getCountryOptions(),
     },
     {
       name: 'language',

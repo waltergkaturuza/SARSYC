@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FiFileText, FiUser, FiCheck, FiUpload, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { countries } from '@/lib/countries'
 
 const abstractSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
@@ -376,11 +377,17 @@ export default function SubmitAbstractPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Country *
                     </label>
-                    <input
+                    <select
                       {...register('primaryAuthor.country')}
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                    >
+                      <option value="">Select country</option>
+                      {countries.map((country) => (
+                        <option key={country.value} value={country.value}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               )}

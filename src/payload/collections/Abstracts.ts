@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types'
+import { getCountryOptions } from '@/lib/countries'
 
 const Abstracts: CollectionConfig = {
   slug: 'abstracts',

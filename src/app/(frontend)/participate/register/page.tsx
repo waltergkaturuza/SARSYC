@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { countries } from '@/lib/countries'
 
 // Validation Schema
 const registrationSchema = z.object({
@@ -327,15 +328,20 @@ export default function RegisterPage() {
                     <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
                       Country *
                     </label>
-                    <input
+                    <select
                       {...register('country')}
-                      type="text"
                       id="country"
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.country ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                      placeholder="e.g., Namibia"
-                    />
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                    >
+                      <option value="">Select your country</option>
+                      {countries.map((country) => (
+                        <option key={country.value} value={country.value}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </select>
                     {errors.country && (
                       <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
                     )}
