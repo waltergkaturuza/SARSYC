@@ -56,54 +56,59 @@ function LoginForm() {
         throw new Error('Authentication failed')
       }
 
-      // Store token and user info
+      // Store token and user info in localStorage for client-side use
       if (data.token) {
-        // Store in localStorage for API calls
         localStorage.setItem('auth_token', data.token)
         localStorage.setItem('user_type', userType)
         if (data.user) {
           localStorage.setItem('user_data', JSON.stringify(data.user))
-        }
-        
-        // Set cookie for server-side authentication (Payload expects 'payload-token')
-        // Use secure cookie settings for production
-        const isProduction = window.location.hostname !== 'localhost'
-        const cookieOptions = [
-          `payload-token=${data.token}`,
-          'path=/',
-          `max-age=${7 * 24 * 60 * 60}`, // 7 days
-          'SameSite=Lax',
-          ...(isProduction ? ['Secure'] : []), // Secure flag for HTTPS
-        ].join('; ')
-        
-        document.cookie = cookieOptions
-        
-        // Verify cookie was set
-        const cookieSet = document.cookie.includes('payload-token')
-        if (!cookieSet) {
-          console.warn('Cookie may not have been set properly')
         }
       }
 
       // Get redirect URL from query params or use default
       const redirectUrl = searchParams.get('redirect')
       
-      // For admin, wait a bit longer and verify cookie before redirect
+      // For admin, the cookie is set server-side in the API response
+      // The browser automatically processes Set-Cookie headers from the fetch response
       if (userType === 'admin') {
-        // Wait a bit to ensure cookie is set (server-side cookie should be available)
-        await new Promise(resolve => setTimeout(resolve, 300))
+        // IMPORTANT: Cookies set via response.cookies.set() in the API are automatically
+        // included in document.cookie by the browser after the fetch completes.
+        // However, we need to ensure the response is fully processed.
         
-        // Verify cookie was set (check both server-set and client-set)
+        // Wait for next tick to ensure browser has processed the Set-Cookie header
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Also set cookie client-side as backup (in case server-side cookie didn't work)
+        const isProduction = window.location.hostname !== 'localhost'
+        const cookieString = `payload-token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
+        document.cookie = cookieString
+        
+        // Wait a bit more to ensure both cookies are set
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        // Verify the cookie is available
         const cookieCheck = document.cookie.includes('payload-token')
-        console.log('Cookie check before redirect:', cookieCheck)
-        console.log('All cookies:', document.cookie)
+        console.log('[Admin Login] Cookie check before redirect:', cookieCheck)
+        console.log('[Admin Login] All cookies:', document.cookie)
+        console.log('[Admin Login] Token received:', !!data.token)
+        console.log('[Admin Login] Token length:', data.token?.length)
+        
+        if (!cookieCheck) {
+          console.error('[Admin Login] WARNING: Cookie not found! This will cause redirect loop.')
+          setError('Failed to set authentication cookie. Please try again.')
+          setLoading(false)
+          return
+        }
         
         // Use redirect URL if provided, otherwise default to /admin
         const targetUrl = redirectUrl || '/admin'
         
-        // Use window.location.href for full page reload to ensure cookie is sent
-        // This ensures the server-side cookie is included in the request
+        console.log('[Admin Login] Redirecting to:', targetUrl)
+        
+        // Use window.location.href for full page reload
+        // This ensures cookies are included in the request
         window.location.href = targetUrl
+        return // Exit early to prevent further execution
       } else if (userType === 'participant') {
         router.push(redirectUrl || '/dashboard')
       } else if (userType === 'speaker') {

@@ -60,7 +60,12 @@ export async function POST(request: NextRequest) {
           sameSite: 'lax',
           secure: isProduction, // Only send over HTTPS in production
           httpOnly: false, // Allow client-side access for localStorage sync
+          // Ensure domain is set correctly (don't set domain for subdomains to work)
+          // domain: isProduction ? '.vercel.app' : undefined, // Don't set domain - let browser handle it
         })
+        
+        // Also set a response header to ensure cookie is processed
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
         
         return response
       }
