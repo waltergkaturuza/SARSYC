@@ -53,15 +53,15 @@ export default function HomePage() {
 
         <div className="relative container-custom py-20 md:py-32">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Logo */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-8">
+            {/* Logo - Super Big and Floating */}
+            <div className="relative w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] mx-auto mb-12 animate-float">
               <Image
                 src="/logo.jpeg"
                 alt="SARSYC Logo"
                 fill
                 className="object-contain drop-shadow-2xl"
                 priority
-                sizes="(max-width: 768px) 128px, 160px"
+                sizes="(max-width: 768px) 288px, (max-width: 1024px) 384px, (max-width: 1280px) 448px, 512px"
               />
             </div>
 
