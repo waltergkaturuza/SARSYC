@@ -9,7 +9,7 @@ require('dotenv').config({
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3001
 
 // Initialize Next.js
 const nextApp = next({ dev, hostname, port: Number(PORT) })
