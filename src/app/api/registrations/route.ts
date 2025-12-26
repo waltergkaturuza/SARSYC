@@ -11,14 +11,23 @@ export async function POST(request: NextRequest) {
     console.log('📩 Registration request body keys:', Object.keys(body || {}))
     const payload = await getPayloadClient()
 
+    // Clean up the data - remove undefined/null values and handle upload fields
+    const cleanedData: any = {
+      ...body,
+      status: 'pending',
+      paymentStatus: 'pending',
+    }
+
+    // Remove passportScan if it's not provided or is empty (upload fields need special handling)
+    // On Vercel without storage adapter, we can't process uploads yet
+    if (!cleanedData.passportScan || cleanedData.passportScan === '' || cleanedData.passportScan === null) {
+      delete cleanedData.passportScan
+    }
+
     // Create registration in Payload CMS
     const registration = await payload.create({
       collection: 'registrations',
-      data: {
-        ...body,
-        status: 'pending',
-        paymentStatus: 'pending',
-      },
+      data: cleanedData,
     })
 
     // Send confirmation email

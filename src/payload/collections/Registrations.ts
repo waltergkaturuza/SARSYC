@@ -191,10 +191,10 @@ const Registrations: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Passport Scan/Copy',
-      required: true,
+      required: false, // Made optional temporarily - will be required once storage adapter is configured
       admin: {
         condition: (data: any) => data.isInternational === true,
-        description: 'Upload a clear scan or photo of your passport bio page (required for visa processing). Accepted formats: PDF, JPG, PNG. Max size: 5MB',
+        description: 'Upload a clear scan or photo of your passport bio page (required for visa processing). Accepted formats: PDF, JPG, PNG. Max size: 5MB. Note: File uploads require storage adapter configuration on Vercel.',
       },
     },
     {
