@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { FiDownload, FiFileText } from 'react-icons/fi'
 
 type Props = {
   docs: any[]
@@ -93,47 +94,164 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
     }
   }
 
+  const statusColors: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    confirmed: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
+  }
+
+  const paymentColors: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    paid: 'bg-green-100 text-green-800',
+    failed: 'bg-red-100 text-red-800',
+  }
+
   return (
-    <div>
-      <div className="mb-4 flex gap-2">
-        <button onClick={() => handleExport()} disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded">Export CSV</button>
-        <button onClick={() => handleBulk('markConfirmed')} disabled={loading} className="bg-green-600 text-white px-3 py-1 rounded">Mark as Confirmed</button>
-        <button onClick={() => handleBulk('sendEmail')} disabled={loading} className="bg-indigo-600 text-white px-3 py-1 rounded">Send Email</button>
-        <button onClick={() => handleBulk('softDelete')} disabled={loading} className="bg-red-600 text-white px-3 py-1 rounded">Soft Delete</button>
+    <div className="p-6">
+      <div className="mb-6 flex flex-wrap gap-3">
+        <button 
+          onClick={() => handleExport()} 
+          disabled={loading} 
+          className="btn-primary flex items-center gap-2"
+        >
+          <FiDownload className="w-4 h-4" />
+          Export CSV
+        </button>
+        <button 
+          onClick={() => handleBulk('markConfirmed')} 
+          disabled={loading || selectedIds().length === 0} 
+          className="btn-outline"
+        >
+          Mark as Confirmed
+        </button>
+        <button 
+          onClick={() => handleBulk('sendEmail')} 
+          disabled={loading || selectedIds().length === 0} 
+          className="btn-outline"
+        >
+          Send Email
+        </button>
+        <button 
+          onClick={() => handleBulk('softDelete')} 
+          disabled={loading || selectedIds().length === 0} 
+          className="btn-outline text-red-600 border-red-600 hover:bg-red-50"
+        >
+          Soft Delete
+        </button>
       </div>
 
-      {message && <div className="mb-4 text-sm text-gray-700">{message}</div>}
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg ${
+          message.includes('failed') || message.includes('error') 
+            ? 'bg-red-50 text-red-800 border border-red-200' 
+            : 'bg-green-50 text-green-800 border border-green-200'
+        }`}>
+          {message}
+        </div>
+      )}
 
-      <table className="min-w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">🗂</th>
-            <th className="p-2">Registration ID</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Payment</th>
-            <th className="p-2">Ticket</th>
-            <th className="p-2">Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {docs.map((d) => (
-            <tr key={d.id} className="odd:bg-white even:bg-gray-50">
-              <td className="p-2 text-center"><input type="checkbox" checked={!!selected[d.id]} onChange={() => toggle(d.id)} /></td>
-              <td className="p-2">{d.registrationId}</td>
-              <td className="p-2">{d.firstName} {d.lastName}</td>
-              <td className="p-2">{d.email}</td>
-              <td className="p-2">{d.status}</td>
-              <td className="p-2">{d.paymentStatus}</td>
-              <td className="p-2">{d.ticketType || d.category}</td>
-              <td className="p-2">{new Date(d.createdAt).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {docs.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <FiFileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+          <p>No registrations found.</p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input 
+                      type="checkbox" 
+                      checked={docs.length > 0 && docs.every(d => selected[d.id])}
+                      onChange={() => {
+                        const allSelected = docs.every(d => selected[d.id])
+                        const newSelected: Record<string, boolean> = {}
+                        docs.forEach(d => {
+                          newSelected[d.id] = !allSelected
+                        })
+                        setSelected(newSelected)
+                      }}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Registration ID
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ticket Type
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {docs.map((d) => (
+                  <tr key={d.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input 
+                        type="checkbox" 
+                        checked={!!selected[d.id]} 
+                        onChange={() => toggle(d.id)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{d.registrationId || 'N/A'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{d.firstName} {d.lastName}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{d.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        statusColors[d.status] || 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {d.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        paymentColors[d.paymentStatus] || 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {d.paymentStatus || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {d.ticketType || d.category || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(d.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      <div className="mt-4 text-sm text-gray-600">Showing {docs.length} of {total}</div>
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="text-sm text-gray-600">
+              Showing <span className="font-medium">{docs.length}</span> of <span className="font-medium">{total}</span> registrations
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
