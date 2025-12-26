@@ -54,8 +54,10 @@ async function handleAdminRequest(
   const url = new URL(request.url)
   const origin = url.origin
   
-  // Show admin options page instead of infinite loading
-  return new NextResponse(
+  // Redirect to the new custom admin dashboard
+  return NextResponse.redirect(new URL('/admin/dashboard', origin))
+}
+
     `<!DOCTYPE html>
 <html lang="en">
 <head>
