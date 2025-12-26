@@ -1,7 +1,7 @@
 import { getPayloadClient } from './payload'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
-import { getSecret } from './getSecret'
+import { getProcessedSecret } from './getSecret'
 
 /**
  * Get the current authenticated user from the request
@@ -53,20 +53,21 @@ export async function getCurrentUserFromRequest(req: Request) {
     }
 
     try {
-      // Verify JWT token using the same secret that Payload uses
-      const payloadSecret = await getSecret()
+      // Verify JWT token using the processed secret (hashed and truncated like Payload does)
+      // Payload CMS hashes the secret with SHA-256 and truncates to 32 chars for JWT signing
+      const processedSecret = await getProcessedSecret()
       
-      if (!payloadSecret) {
+      if (!processedSecret) {
         if (process.env.NODE_ENV === 'development') {
           console.error('[getCurrentUserFromRequest] PAYLOAD_SECRET not found')
         }
         return null
       }
 
-      // Decode and verify the JWT token
+      // Decode and verify the JWT token using the processed secret
       let decoded: any
       try {
-        decoded = jwt.verify(token, payloadSecret) as any
+        decoded = jwt.verify(token, processedSecret) as any
         if (process.env.NODE_ENV === 'development') {
           console.log('[getCurrentUserFromRequest] ✅ Token verified successfully, user ID:', decoded.id)
         }
@@ -143,28 +144,32 @@ export async function getCurrentUserFromCookies() {
     }
 
     try {
-      // Verify JWT token using the same secret that Payload uses
-      // Payload uses the secret passed to payload.init(), which comes from getSecret()
-      const payloadSecret = await getSecret()
+      // Verify JWT token using the processed secret (hashed and truncated like Payload does)
+      // Payload CMS hashes the secret with SHA-256 and truncates to 32 chars for JWT signing
+      const processedSecret = await getProcessedSecret()
       
-      if (!payloadSecret) {
+      if (!processedSecret) {
         if (process.env.NODE_ENV === 'development') {
           console.error('[getCurrentUserFromCookies] PAYLOAD_SECRET not found')
         }
         return null
       }
 
-      // Decode and verify the JWT token
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[getCurrentUserFromCookies] Using processed secret (length:', processedSecret.length + ' chars)')
+      }
+
+      // Decode and verify the JWT token using the processed secret
       let decoded: any
       try {
-        decoded = jwt.verify(token, payloadSecret) as any
+        decoded = jwt.verify(token, processedSecret) as any
         if (process.env.NODE_ENV === 'development') {
           console.log('[getCurrentUserFromCookies] ✅ Token verified successfully, user ID:', decoded.id)
         }
       } catch (verifyError: any) {
         if (process.env.NODE_ENV === 'development') {
           console.error('[getCurrentUserFromCookies] ❌ Token verification failed:', verifyError.message)
-          console.error('[getCurrentUserFromCookies] Secret length:', payloadSecret.length)
+          console.error('[getCurrentUserFromCookies] Processed secret length:', processedSecret.length)
           console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
           
           // If it's an invalid signature, the token was signed with a different secret

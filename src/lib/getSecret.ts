@@ -58,7 +58,20 @@ async function getSecretFromDatabase(): Promise<string | null> {
 }
 
 /**
+ * Process secret the same way Payload CMS does for JWT signing
+ * Payload hashes the secret with SHA-256 and truncates to 32 characters
+ */
+import crypto from 'crypto'
+
+export function processPayloadSecret(rawSecret: string): string {
+  // Payload CMS processes the secret: SHA-256 hash, then truncate to 32 chars
+  const hash = crypto.createHash('sha256').update(rawSecret).digest('hex')
+  return hash.substring(0, 32)
+}
+
+/**
  * Get PAYLOAD_SECRET - tries environment variable first, then database fallback
+ * Returns the RAW secret (for config/init)
  */
 export async function getSecret(): Promise<string> {
   // Check cache first
@@ -98,6 +111,14 @@ export async function getSecret(): Promise<string> {
     '  2. Database table app_secrets (key: payload_secret)\n' +
     'Run: npm run init:secret to store a secret in the database.'
   )
+}
+
+/**
+ * Get processed secret for JWT verification (hashed and truncated like Payload does)
+ */
+export async function getProcessedSecret(): Promise<string> {
+  const rawSecret = await getSecret()
+  return processPayloadSecret(rawSecret)
 }
 
 /**
