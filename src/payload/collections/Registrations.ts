@@ -152,8 +152,10 @@ const Registrations: CollectionConfig = {
       name: 'passportNumber',
       type: 'text',
       label: 'Passport Number',
+      required: true,
       admin: {
         condition: (data: any) => data.isInternational === true,
+        description: 'As shown on your passport',
       },
     },
     {
@@ -163,19 +165,33 @@ const Registrations: CollectionConfig = {
           name: 'passportExpiry',
           type: 'date',
           label: 'Passport Expiration Date',
+          required: true,
           admin: {
             condition: (data: any) => data.isInternational === true,
+            description: 'Must be valid for at least 6 months after conference end date',
           },
         },
         {
           name: 'passportIssuingCountry',
           type: 'text',
           label: 'Passport Issuing Country',
+          required: true,
           admin: {
             condition: (data: any) => data.isInternational === true,
           },
         },
       ],
+    },
+    {
+      name: 'passportScan',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Passport Scan/Copy',
+      required: true,
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+        description: 'Upload a clear scan or photo of your passport bio page (required for visa processing). Accepted formats: PDF, JPG, PNG. Max size: 5MB',
+      },
     },
     {
       name: 'visaRequired',
@@ -251,39 +267,77 @@ const Registrations: CollectionConfig = {
       name: 'emergencyContactName',
       type: 'text',
       required: true,
-      label: 'Emergency Contact - Full Name',
+      label: 'Next of Kin - Full Name',
+      admin: {
+        description: 'Full legal name of next of kin or emergency contact',
+      },
     },
     {
       type: 'row',
       fields: [
         {
           name: 'emergencyContactRelationship',
-          type: 'text',
+          type: 'select',
           required: true,
-          label: 'Relationship',
+          label: 'Relationship to You',
+          options: [
+            { label: 'Spouse/Partner', value: 'spouse-partner' },
+            { label: 'Parent', value: 'parent' },
+            { label: 'Sibling', value: 'sibling' },
+            { label: 'Child', value: 'child' },
+            { label: 'Other Relative', value: 'other-relative' },
+            { label: 'Friend', value: 'friend' },
+            { label: 'Colleague', value: 'colleague' },
+            { label: 'Other', value: 'other' },
+          ],
         },
         {
           name: 'emergencyContactPhone',
           type: 'text',
           required: true,
           label: 'Phone Number',
+          admin: {
+            description: 'Include country code (e.g., +263 77 123 4567)',
+          },
         },
       ],
+    },
+    {
+      name: 'emergencyContactEmail',
+      type: 'email',
+      required: true,
+      label: 'Email Address',
+    },
+    {
+      name: 'emergencyContactAddress',
+      type: 'textarea',
+      required: true,
+      label: 'Full Home Address',
+      admin: {
+        description: 'Complete home address including street, city, state/province, postal code, and country',
+      },
     },
     {
       type: 'row',
       fields: [
         {
-          name: 'emergencyContactEmail',
-          type: 'email',
-          label: 'Email Address',
+          name: 'emergencyContactCountry',
+          type: 'text',
+          required: true,
+          label: 'Country',
         },
         {
-          name: 'emergencyContactAddress',
-          type: 'textarea',
-          label: 'Address',
+          name: 'emergencyContactCity',
+          type: 'text',
+          required: true,
+          label: 'City',
         },
       ],
+    },
+    {
+      name: 'emergencyContactPostalCode',
+      type: 'text',
+      label: 'Postal/ZIP Code',
     },
     {
       type: 'row',
@@ -301,9 +355,50 @@ const Registrations: CollectionConfig = {
       ],
     },
     {
-      name: 'flightNumber',
+      type: 'row',
+      fields: [
+        {
+          name: 'flightNumber',
+          type: 'text',
+          label: 'Flight Number (if known)',
+        },
+        {
+          name: 'travelInsuranceProvider',
+          type: 'text',
+          label: 'Travel Insurance Provider',
+          admin: {
+            condition: (data: any) => data.isInternational === true,
+            description: 'Name of your travel insurance company',
+          },
+        },
+      ],
+    },
+    {
+      name: 'travelInsurancePolicyNumber',
       type: 'text',
-      label: 'Flight Number (if known)',
+      label: 'Travel Insurance Policy Number',
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+      },
+    },
+    {
+      name: 'travelInsuranceExpiry',
+      type: 'date',
+      label: 'Travel Insurance Expiry Date',
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+        description: 'Must be valid for the duration of your stay',
+      },
+    },
+    {
+      name: 'visaInvitationLetterRequired',
+      type: 'checkbox',
+      label: 'Requires Visa Invitation Letter',
+      defaultValue: true,
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+        description: 'Check if you need an official invitation letter for visa application',
+      },
     },
     {
       name: 'accommodationRequired',
@@ -322,8 +417,11 @@ const Registrations: CollectionConfig = {
     {
       name: 'hasHealthInsurance',
       type: 'checkbox',
-      label: 'Has Health Insurance',
+      label: 'Has Travel/Health Insurance',
       defaultValue: false,
+      admin: {
+        description: 'Required for international attendees. Must cover medical expenses and emergency evacuation.',
+      },
     },
     {
       type: 'row',

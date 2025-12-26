@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { 
   FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBriefcase, 
   FiCheckCircle, FiXCircle, FiClock, FiDownload, FiCalendar,
-  FiUser, FiGlobe, FiHome, FiShield, FiPlane, FiHeart, FiFileText
+  FiUser, FiGlobe, FiHome, FiShield, FiPlane, FiHeart, FiFileText,
+  FiImage, FiPaperclip
 } from 'react-icons/fi'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
 
@@ -273,6 +275,40 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                           <div className="font-medium text-gray-900">{registration.passportIssuingCountry}</div>
                         </div>
                       )}
+                      {registration.passportScan && (
+                        <div className="p-4 bg-gray-50 rounded-lg md:col-span-3">
+                          <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
+                            <FiImage className="w-4 h-4" />
+                            Passport Scan/Copy
+                          </div>
+                          {typeof registration.passportScan === 'object' && registration.passportScan.url ? (
+                            <div className="mt-2">
+                              <a
+                                href={registration.passportScan.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+                              >
+                                <FiPaperclip className="w-4 h-4" />
+                                View Passport Scan
+                              </a>
+                              {registration.passportScan.mimeType?.startsWith('image/') && (
+                                <div className="mt-3 max-w-md">
+                                  <Image
+                                    src={registration.passportScan.url}
+                                    alt="Passport Scan"
+                                    width={600}
+                                    height={400}
+                                    className="rounded-lg border border-gray-300"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 italic">No passport scan uploaded</div>
+                          )}
+                        </div>
+                      )}
                       {registration.visaRequired && (
                         <>
                           {registration.visaStatus && (
@@ -324,43 +360,72 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
               </div>
             )}
 
-            {/* Emergency Contact */}
+            {/* Next of Kin / Emergency Contact */}
             {(registration.emergencyContactName || registration.emergencyContactPhone) && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <FiPhone className="w-6 h-6" />
-                  Emergency Contact
+                  <FiUser className="w-6 h-6" />
+                  Next of Kin / Emergency Contact
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {registration.emergencyContactName && (
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-500 mb-1">Name</div>
+                      <div className="text-sm text-gray-500 mb-1">Full Name</div>
                       <div className="font-medium text-gray-900">{registration.emergencyContactName}</div>
                     </div>
                   )}
                   {registration.emergencyContactRelationship && (
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-500 mb-1">Relationship</div>
-                      <div className="font-medium text-gray-900">{registration.emergencyContactRelationship}</div>
+                      <div className="font-medium text-gray-900 capitalize">
+                        {typeof registration.emergencyContactRelationship === 'string' 
+                          ? registration.emergencyContactRelationship.replace(/-/g, ' ')
+                          : registration.emergencyContactRelationship}
+                      </div>
                     </div>
                   )}
                   {registration.emergencyContactPhone && (
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-500 mb-1">Phone</div>
+                      <div className="text-sm text-gray-500 mb-1">Phone Number</div>
                       <div className="font-medium text-gray-900">{registration.emergencyContactPhone}</div>
                     </div>
                   )}
                   {registration.emergencyContactEmail && (
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-500 mb-1">Email</div>
+                      <div className="text-sm text-gray-500 mb-1">Email Address</div>
                       <div className="font-medium text-gray-900 break-words">{registration.emergencyContactEmail}</div>
                     </div>
                   )}
                   {registration.emergencyContactAddress && (
-                    <div className="p-4 bg-gray-50 rounded-lg md:col-span-2">
-                      <div className="text-sm text-gray-500 mb-1">Address</div>
+                    <div className="p-4 bg-gray-50 rounded-lg md:col-span-2 lg:col-span-3">
+                      <div className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                        <FiHome className="w-4 h-4" />
+                        Full Home Address
+                      </div>
                       <div className="font-medium text-gray-900 whitespace-pre-wrap">{registration.emergencyContactAddress}</div>
                     </div>
+                  )}
+                  {(registration.emergencyContactCity || registration.emergencyContactCountry) && (
+                    <>
+                      {registration.emergencyContactCity && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <div className="text-sm text-gray-500 mb-1">City</div>
+                          <div className="font-medium text-gray-900">{registration.emergencyContactCity}</div>
+                        </div>
+                      )}
+                      {registration.emergencyContactCountry && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <div className="text-sm text-gray-500 mb-1">Country</div>
+                          <div className="font-medium text-gray-900">{registration.emergencyContactCountry}</div>
+                        </div>
+                      )}
+                      {registration.emergencyContactPostalCode && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <div className="text-sm text-gray-500 mb-1">Postal/ZIP Code</div>
+                          <div className="font-medium text-gray-900">{registration.emergencyContactPostalCode}</div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -394,6 +459,38 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-500 mb-1">Flight Number</div>
                       <div className="font-medium text-gray-900 font-mono">{registration.flightNumber}</div>
+                    </div>
+                  )}
+                  {registration.travelInsuranceProvider && (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-500 mb-1">Travel Insurance Provider</div>
+                      <div className="font-medium text-gray-900">{registration.travelInsuranceProvider}</div>
+                    </div>
+                  )}
+                  {registration.travelInsurancePolicyNumber && (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-500 mb-1">Travel Insurance Policy Number</div>
+                      <div className="font-medium text-gray-900 font-mono">{registration.travelInsurancePolicyNumber}</div>
+                    </div>
+                  )}
+                  {registration.travelInsuranceExpiry && (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-500 mb-1">Travel Insurance Expiry</div>
+                      <div className="font-medium text-gray-900">
+                        {format(new Date(registration.travelInsuranceExpiry), 'PPP')}
+                      </div>
+                    </div>
+                  )}
+                  {registration.visaInvitationLetterRequired !== undefined && (
+                    <div className="p-4 bg-gray-50 rounded-lg md:col-span-3">
+                      <div className="text-sm text-gray-500 mb-1">Visa Invitation Letter Required</div>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        registration.visaInvitationLetterRequired 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {registration.visaInvitationLetterRequired ? 'Yes' : 'No'}
+                      </span>
                     </div>
                   )}
                   {registration.accommodationRequired && (
