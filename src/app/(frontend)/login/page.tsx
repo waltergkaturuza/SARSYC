@@ -79,41 +79,41 @@ export default function LoginPage() {
       {/* Login Form */}
       <section className="section bg-gray-50">
         <div className="container-custom">
-          <div className="max-w-md mx-auto">
-            <div className="card p-8">
+          <div className="max-w-lg mx-auto">
+            <div className="card p-10 md:p-12 shadow-2xl">
               {/* User Type Selector */}
-              <div className="flex gap-2 mb-8 p-1 bg-gray-100 rounded-lg">
+              <div className="flex gap-3 mb-10 p-1.5 bg-gray-100 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setUserType('participant')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'participant'
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-200'
+                      ? 'bg-primary-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
                   }`}
                 >
-                  <FiUser className="inline mr-2" />
+                  <FiUser className="inline mr-2 w-5 h-5" />
                   Participant
                 </button>
                 <button
                   type="button"
                   onClick={() => setUserType('speaker')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'speaker'
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-200'
+                      ? 'bg-primary-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
                   }`}
                 >
-                  <FiUser className="inline mr-2" />
+                  <FiUser className="inline mr-2 w-5 h-5" />
                   Speaker
                 </button>
                 <button
                   type="button"
                   onClick={() => setUserType('admin')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
                     userType === 'admin'
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-200'
+                      ? 'bg-primary-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-102'
                   }`}
                 >
                   Admin
@@ -121,14 +121,14 @@ export default function LoginPage() {
               </div>
 
               {userType === 'admin' && (
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="mb-8 p-5 bg-gradient-to-r from-blue-50 to-primary-50 border-2 border-primary-200 rounded-xl shadow-sm">
+                  <p className="text-base text-blue-900 font-semibold">
                     <strong>Admin Login:</strong> Clicking "Login" will redirect you to the Payload CMS admin panel.
                   </p>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-7">
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                     <FiAlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -137,47 +137,47 @@ export default function LoginPage() {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-base font-bold text-gray-800 mb-3">
                     Email Address
                   </label>
                   <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="email"
                       id="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-base font-medium"
                       placeholder="your.email@example.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="password" className="block text-base font-bold text-gray-800 mb-3">
                     Password
                   </label>
                   <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="password"
                       id="password"
                       required
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-base font-medium"
                       placeholder="••••••••"
                     />
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <label className="flex items-center cursor-pointer">
+                    <input type="checkbox" className="w-5 h-5 rounded border-2 border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-2 cursor-pointer" />
+                    <span className="ml-3 text-base font-semibold text-gray-700">Remember me</span>
                   </label>
-                  <Link href="/forgot-password" className="text-sm text-primary-600 hover:underline">
+                  <Link href="/forgot-password" className="text-base font-bold text-primary-600 hover:text-primary-700 hover:underline transition-colors">
                     Forgot password?
                   </Link>
                 </div>
@@ -185,17 +185,17 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary justify-center text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary justify-center text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
                 >
                   {loading ? 'Logging in...' : 'Login'}
-                  {!loading && <FiArrowRight className="ml-2" />}
+                  {!loading && <FiArrowRight className="ml-2 w-5 h-5" />}
                 </button>
               </form>
 
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <p className="text-center text-sm text-gray-600">
+              <div className="mt-10 pt-8 border-t-2 border-gray-200">
+                <p className="text-center text-base text-gray-700 font-semibold">
                   Don't have an account?{' '}
-                  <Link href="/participate/register" className="text-primary-600 font-medium hover:underline">
+                  <Link href="/participate/register" className="text-primary-600 font-bold hover:text-primary-700 hover:underline transition-colors">
                     Register for SARSYC VI
                   </Link>
                 </p>
@@ -211,9 +211,9 @@ export default function LoginPage() {
             </div>
 
             {/* Help Section */}
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600 mb-4">Need help?</p>
-              <Link href="/contact" className="text-primary-600 font-medium hover:underline text-sm">
+            <div className="mt-10 text-center">
+              <p className="text-base text-gray-700 font-semibold mb-4">Need help?</p>
+              <Link href="/contact" className="text-primary-600 font-bold hover:text-primary-700 hover:underline transition-colors text-base">
                 Contact Support
               </Link>
             </div>
