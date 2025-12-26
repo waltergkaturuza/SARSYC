@@ -24,9 +24,12 @@ import Header from './globals/Header'
 import Footer from './globals/Footer'
 
 // Get secret - required for Payload
+// IMPORTANT: This secret MUST match the one passed to payload.init() in lib/payload.ts
+// Both should read from process.env.PAYLOAD_SECRET to ensure consistency
 // Note: buildConfig() is synchronous, so we can only check env var here
 // The actual secret (with database fallback) is retrieved async in lib/payload.ts
-// and passed to payload.init(). This value is just for buildConfig validation.
+// and passed to payload.init(). Payload should use the init() secret, not this one,
+// but we set it here for validation and to ensure they match.
 const getSecret = () => {
   const secret = process.env.PAYLOAD_SECRET
   if (!secret) {
@@ -39,6 +42,12 @@ const getSecret = () => {
     console.warn('⚠️  PAYLOAD_SECRET not set, using default (development only)')
     return 'changeme-local-dev-only'
   }
+  
+  // Log secret length for debugging (only in dev)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Config] PAYLOAD_SECRET in config (length:', secret.length + '):', secret.substring(0, 20) + '...')
+  }
+  
   return secret
 }
 
