@@ -120,7 +120,9 @@ export default function SessionsPage() {
                         View Details
                       </Link>
                       <button className="btn-outline text-sm">
-                        Add to Calendar
+                        <a href={`/api/programme/ical?sessionId=${session.id}`} download>
+                          Add to Calendar
+                        </a>
                       </button>
                       <button className="btn-outline text-sm">
                         Bookmark

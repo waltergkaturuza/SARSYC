@@ -72,7 +72,9 @@ export default function ProgrammePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button className="btn-accent flex items-center gap-2">
                 <FiDownload />
-                Download Full Programme (PDF)
+                <a href="/api/programme/pdf" download className="flex items-center gap-2">
+                  Download Full Programme (PDF)
+                </a>
               </button>
               <Link href="/programme/speakers" className="btn-outline border-white text-white hover:bg-white/10">
                 View All Speakers
@@ -230,7 +232,9 @@ export default function ProgrammePage() {
                         View Details
                       </button>
                       <button className="text-sm text-primary-600 font-medium hover:underline">
-                        Add to Calendar
+                        <a href={`/api/programme/ical?sessionId=${session.id}`} download className="flex items-center gap-2">
+                          Add to Calendar
+                        </a>
                       </button>
                       <button className="text-sm text-primary-600 font-medium hover:underline">
                         Bookmark

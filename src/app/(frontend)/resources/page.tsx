@@ -1,33 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter } from 'react-icons/fi'
-
-// Placeholder data - will fetch from Payload CMS
-const resources = [
-  {
-    id: '1',
-    title: 'SARSYC V Conference Report',
-    description: 'Comprehensive report from the 2022 conference in Maputo, Mozambique, covering all tracks, resolutions, and outcomes.',
-    type: 'report',
-    year: 2022,
-    edition: 'SARSYC V',
-    downloads: 450,
-    fileSize: '2.5 MB',
-    language: 'English',
-  },
-  {
-    id: '2',
-    title: 'Youth SRHR Policy Brief: Southern Africa 2023',
-    description: 'Evidence-based policy recommendations for improving youth sexual and reproductive health services.',
-    type: 'brief',
-    year: 2023,
-    downloads: 320,
-    fileSize: '1.2 MB',
-    language: 'English',
-  },
-  // Add more resources...
-]
+import { useState, useEffect } from 'react'
+import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader } from 'react-icons/fi'
 
 const resourceTypes = [
   { value: 'all', label: 'All Types', icon: FiFile },
@@ -39,9 +13,77 @@ const resourceTypes = [
 ]
 
 export default function ResourcesPage() {
+  const [resources, setResources] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState('all')
   const [selectedYear, setSelectedYear] = useState('all')
+  const [downloading, setDownloading] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetchResources()
+  }, [selectedType, selectedYear, searchQuery])
+
+  const fetchResources = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (selectedType !== 'all') params.append('type', selectedType)
+      if (selectedYear !== 'all') params.append('year', selectedYear)
+      if (searchQuery) params.append('search', searchQuery)
+
+      const response = await fetch(`/api/resources?${params.toString()}`)
+      const data = await response.json()
+      
+      if (data.docs) {
+        setResources(data.docs)
+      }
+    } catch (error) {
+      console.error('Failed to fetch resources:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDownload = async (resource: any) => {
+    if (!resource.file?.url) return
+
+    setDownloading(resource.id)
+    
+    try {
+      // Track download
+      await fetch('/api/resources', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: resource.id }),
+      })
+
+      // Open/download file
+      const fileUrl = resource.file.url.startsWith('http') 
+        ? resource.file.url 
+        : `${process.env.NEXT_PUBLIC_SERVER_URL || ''}${resource.file.url}`
+      
+      window.open(fileUrl, '_blank')
+    } catch (error) {
+      console.error('Download tracking failed:', error)
+      // Still open the file even if tracking fails
+      const fileUrl = resource.file.url.startsWith('http') 
+        ? resource.file.url 
+        : `${process.env.NEXT_PUBLIC_SERVER_URL || ''}${resource.file.url}`
+      window.open(fileUrl, '_blank')
+    } finally {
+      setDownloading(null)
+    }
+  }
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return ''
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
+
+  const availableYears = Array.from(new Set(resources.map(r => r.year).filter(Boolean))).sort((a, b) => b - a)
 
   return (
     <>
@@ -105,21 +147,31 @@ export default function ResourcesPage() {
             </div>
           </div>
 
-          {/* Year Filters */}
+          {/* Year Filter */}
           <div>
             <p className="text-sm font-medium text-gray-700 mb-3">Year</p>
             <div className="flex flex-wrap gap-2">
-              {['all', '2026', '2024', '2022', '2020', '2018', '2016', '2014'].map((year) => (
+              <button
+                onClick={() => setSelectedYear('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedYear === 'all'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                All Years
+              </button>
+              {availableYears.map((year) => (
                 <button
                   key={year}
-                  onClick={() => setSelectedYear(year)}
+                  onClick={() => setSelectedYear(year.toString())}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedYear === year
+                    selectedYear === year.toString()
                       ? 'bg-primary-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
-                  {year === 'all' ? 'All Years' : year}
+                  {year}
                 </button>
               ))}
             </div>
@@ -130,65 +182,70 @@ export default function ResourcesPage() {
       {/* Resources Grid */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="flex items-center justify-between mb-8">
-            <p className="text-gray-600">
-              Showing <strong>{resources.length}</strong> resources
-            </p>
-            <select className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option>Most Recent</option>
-              <option>Most Downloaded</option>
-              <option>Alphabetical</option>
-            </select>
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-600" />
+              <p className="text-gray-600">Loading resources...</p>
+            </div>
+          ) : resources.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 mb-4">No resources found.</p>
+              <button onClick={() => { setSelectedType('all'); setSelectedYear('all'); setSearchQuery('') }} className="btn-outline">
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {resources.map((resource) => (
+                  <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FiFileText className="w-6 h-6 text-primary-600" />
+                      </div>
+                      <div className="text-right text-sm text-gray-500">
+                        <div>{resource.year}</div>
+                        {resource.file?.filesize && (
+                          <div className="text-xs">{formatFileSize(resource.file.filesize)}</div>
+                        )}
+                      </div>
+                    </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {resources.map((resource) => (
-              <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FiFileText className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <div className="text-right text-sm text-gray-500">
-                    <div>{resource.year}</div>
-                    <div className="text-xs">{resource.fileSize}</div>
-                  </div>
-                </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+                      {resource.title}
+                    </h3>
+                    
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      {resource.description}
+                    </p>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
-                  {resource.title}
-                </h3>
-                
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {resource.description}
-                </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <FiDownload className="w-4 h-4" />
-                    {resource.downloads} downloads
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <FiDownload className="w-4 h-4" />
+                        {resource.downloads || 0} downloads
+                      </div>
+                      <button 
+                        onClick={() => handleDownload(resource)}
+                        disabled={downloading === resource.id || !resource.file?.url}
+                        className="btn-primary py-2 px-4 text-sm disabled:opacity-50"
+                      >
+                        {downloading === resource.id ? (
+                          <>
+                            <FiLoader className="w-4 h-4 animate-spin inline mr-2" />
+                            Downloading...
+                          </>
+                        ) : (
+                          'Download'
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  <button className="btn-primary py-2 px-4 text-sm">
-                    Download
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <button className="btn-outline">
-              Load More Resources
-            </button>
-          </div>
+            </>
+          )}
         </div>
       </section>
     </>
   )
 }
-
-
-
-
-
-
