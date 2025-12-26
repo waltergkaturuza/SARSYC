@@ -189,10 +189,10 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                   </div>
                   <div className="flex gap-3">
                     {registration.status !== 'confirmed' && (
-                      <ApproveButton registrationId={registration.id} />
+                      <ApproveButton registrationId={registration.id} adminId={process.env.ADMIN_USER_ID || ''} />
                     )}
                     {registration.status !== 'cancelled' && (
-                      <RejectButton registrationId={registration.id} />
+                      <RejectButton registrationId={registration.id} adminId={process.env.ADMIN_USER_ID || ''} />
                     )}
                   </div>
                 </div>

@@ -6,21 +6,26 @@ import { FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi'
 
 interface ActionButtonProps {
   registrationId: string
+  adminId: string
 }
 
-export function ApproveButton({ registrationId }: ActionButtonProps) {
+export function ApproveButton({ registrationId, adminId }: ActionButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   const handleApprove = async () => {
+    if (!adminId) {
+      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
+      return
+    }
+
     setLoading(true)
     try {
-      // Get admin ID from session or use a different auth method
-      // For now, we'll call the API and let it handle auth
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
+          'x-admin-user-id': adminId,
         },
         body: JSON.stringify({ action: 'markConfirmed', ids: [registrationId] }),
       })
@@ -59,12 +64,17 @@ export function ApproveButton({ registrationId }: ActionButtonProps) {
   )
 }
 
-export function RejectButton({ registrationId }: ActionButtonProps) {
+export function RejectButton({ registrationId, adminId }: ActionButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   const handleReject = async () => {
     if (!confirm('Are you sure you want to reject/cancel this registration?')) {
+      return
+    }
+
+    if (!adminId) {
+      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
       return
     }
 
@@ -74,6 +84,7 @@ export function RejectButton({ registrationId }: ActionButtonProps) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
+          'x-admin-user-id': adminId,
         },
         body: JSON.stringify({ action: 'softDelete', ids: [registrationId] }),
       })
