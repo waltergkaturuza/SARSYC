@@ -68,7 +68,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
   const adminId = process.env.ADMIN_USER_ID || ''
 
   return (
-    <div className="w-full max-w-full py-8">
+    <div className="w-full py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Registrations</h1>
         <p className="text-gray-600 mt-2">Manage conference registrations and participant details</p>
