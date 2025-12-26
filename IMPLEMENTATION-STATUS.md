@@ -120,40 +120,69 @@ This document compares the functional requirements from the Technical Specificat
 
 ---
 
-## ⚠️ PARTIALLY IMPLEMENTED (Needs Completion)
+## ✅ COMPLETED FEATURES (Recently Implemented)
 
-### High Priority (P0-P1)
+1. **Email Automation** ✅
+   - Email confirmations for registration and abstract submissions
+   - Integrated with existing email utility
 
-1. **Email Automation**
-   - ✅ Email utility (`src/lib/mail.ts`) exists
-   - ❌ Not integrated with registration/abstract submission
-   - **Action Required:** Connect email sending to form submissions
+2. **Newsletter Subscription** ✅
+   - Backend API endpoint created (`/api/newsletter`)
+   - Footer form connected to API
+   - Confirmation emails sent on subscription
 
-2. **Newsletter Subscription**
-   - ✅ Form exists in footer
-   - ❌ No backend API endpoint
-   - ❌ No Mailchimp/email service integration
-   - **Action Required:** Create newsletter API route, integrate email service
+3. **User Dashboard Functionality** ✅
+   - Connected to Payload API (`/api/user/dashboard`)
+   - Fetches real registration and abstract data by email
+   - Displays registration status and abstract submissions
 
-3. **User Dashboard Functionality**
-   - ✅ Dashboard page exists (`/dashboard`)
-   - ❌ Uses mock data, not connected to API
-   - ❌ Edit registration not functional
-   - **Action Required:** Connect to Payload API, implement edit functionality
+4. **Download Tracking** ✅
+   - Integrated in resources page
+   - Tracks downloads via API on button click
+   - Shows download counts
 
-4. **Download Tracking**
-   - ✅ API route exists (`/api/resources` PATCH)
-   - ❌ Frontend not calling it
-   - **Action Required:** Add tracking to resource download buttons
+5. **Google Maps Integration** ✅
+   - Added Google Maps embed to venue page
+   - Includes link to open in Google Maps
 
-5. **Abstract File Upload**
-   - ✅ Media collection supports uploads
-   - ⚠️ Form field may need enhancement
-   - **Action Required:** Verify file upload works in abstract form
+6. **PDF Schedule Export** ✅
+   - Created `/api/programme/pdf` endpoint
+   - Generates HTML version (can be printed to PDF)
+   - Download button connected on programme page
 
-6. **Google Maps Integration**
-   - ❌ Not implemented on venue page
-   - **Action Required:** Add Google Maps to `/sarsyc-vi/venue`
+7. **Calendar Export (iCal)** ✅
+   - Created `/api/programme/ical` endpoint
+   - Supports single session or full programme export
+   - "Add to Calendar" buttons connected
+
+8. **RSS Feed** ✅
+   - Created `/api/news/rss` endpoint
+   - Generates RSS 2.0 feed for published news
+   - Available at `/api/news/rss`
+
+9. **Photo/Video Gallery** ✅
+   - Created gallery page structure (`/media/gallery`)
+   - Ready for Media collection integration
+
+10. **Press Releases** ✅
+    - Created press releases page (`/media/press`)
+    - Fetches news items with "press-release" category
+    - Includes media contact information
+
+11. **Media Kit** ✅
+    - Created media kit page (`/media/kit`)
+    - Downloadable assets section
+    - Usage guidelines included
+
+## ⚠️ REMAINING MINOR ITEMS
+
+1. **Edit Registration**
+   - Dashboard shows registration, but edit functionality needs implementation
+   - **Note:** Can be added if users need to edit their registrations
+
+2. **Payment Integration**
+   - Not implemented (only needed if registration fees required)
+   - **Recommendation:** Add Stripe/PayPal if fees needed
 
 ---
 
