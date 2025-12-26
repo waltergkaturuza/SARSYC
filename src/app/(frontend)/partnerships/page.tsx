@@ -71,7 +71,7 @@ const tiers = [
 const partners = [
   {
     name: 'SAYWHAT',
-    logo: '/partners/saywhat%20logo%20(1).png',
+    logo: '/partners/saywhat logo (1).png',
     alt: 'SAYWHAT Logo',
   },
   {
