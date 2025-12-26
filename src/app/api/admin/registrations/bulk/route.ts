@@ -29,6 +29,8 @@ export async function POST(req: Request) {
       }, { status: 403 })
     }
 
+    const payload = await getPayloadClient()
+
     // Perform actions
     const results: Record<string, any> = { updated: [], failed: [] }
 
