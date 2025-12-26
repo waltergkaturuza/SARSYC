@@ -14,12 +14,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
-    // Get current user (handles both header and development fallback)
+    // Get current authenticated user from session
     const acting = await getCurrentUserFromRequest(req)
     
-    if (!acting || !['admin', 'super-admin'].includes(acting.role)) {
+    if (!acting) {
       return NextResponse.json({ 
-        error: 'Unauthorized. Please ensure you are logged in as an admin user.' 
+        error: 'Unauthorized. Please log in to access this resource.' 
+      }, { status: 401 })
+    }
+    
+    if (!['admin', 'super-admin'].includes(acting.role)) {
+      return NextResponse.json({ 
+        error: 'Forbidden. Admin access required.' 
       }, { status: 403 })
     }
 

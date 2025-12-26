@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { logExport, incrementFallback } from '@/lib/telemetry'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const RATE_LIMIT_MAX = 3 // max exports per window
@@ -32,20 +33,22 @@ function toCsv(rows: Record<string, any>[], columns: string[]) {
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
-    // Expect admin user id header to authenticate and authorize
-    const adminId = req.headers.get('x-admin-user-id')
-    if (!adminId) return NextResponse.json({ error: 'Missing admin header' }, { status: 401 })
+    
+    // Get current authenticated user from session
+    const foundUser = await getCurrentUserFromRequest(req)
+    
+    if (!foundUser) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in to access this resource.' }, { status: 401 })
+    }
+    
+    if (!['admin', 'super-admin'].includes(foundUser.role)) {
+      return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 })
+    }
 
     const payload = await getPayloadClient()
 
-    const user = await payload.find({ collection: 'users', where: { id: { equals: adminId } } })
-    const foundUser = user?.docs?.[0]
-    if (!foundUser || !['admin', 'super-admin'].includes(foundUser.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
-
     // Rate limiting
-    const key = `exports:${adminId}`
+    const key = `exports:${foundUser.id}`
     const entry = rateLimitMap.get(key) || { timestamps: [] }
     const now = Date.now()
     entry.timestamps = entry.timestamps.filter((t) => t > now - RATE_LIMIT_WINDOW_MS)
