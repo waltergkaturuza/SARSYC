@@ -2,7 +2,7 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
 import RegistrationsTable from '@/components/admin/RegistrationsTable'
-import { FiFileText, FiDownload, FiFilter } from 'react-icons/fi'
+import { FiFilter } from 'react-icons/fi'
 
 export const revalidate = 0
 
@@ -64,16 +64,9 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
 
   return (
     <div className="container-custom py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Registrations</h1>
-          <p className="text-gray-600 mt-2">Manage conference registrations and participant details</p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/admin/registrations/export" className="btn-outline">
-            <FiDownload className="mr-2" /> Export CSV
-          </Link>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Registrations</h1>
+        <p className="text-gray-600 mt-2">Manage conference registrations and participant details</p>
       </div>
 
       {/* Filters */}
