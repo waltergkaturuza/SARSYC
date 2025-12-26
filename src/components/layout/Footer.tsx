@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { FiFacebook, FiTwitter, FiInstagram, FiMail, FiMapPin } from 'react-icons/fi'
+import { FiFacebook, FiTwitter, FiInstagram, FiMail, FiMapPin, FiCheck } from 'react-icons/fi'
 import { SiTiktok } from 'react-icons/si'
 
 const footerLinks = {
