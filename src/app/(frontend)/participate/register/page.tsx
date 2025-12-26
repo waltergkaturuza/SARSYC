@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield } from 'react-icons/fi'
+import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
+import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -189,6 +190,8 @@ export default function RegisterPage() {
   const [registrationId, setRegistrationId] = useState('')
   const [passportFile, setPassportFile] = useState<File | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [extractionStatus, setExtractionStatus] = useState<string | null>(null)
 
   const {
     register,
@@ -198,6 +201,7 @@ export default function RegisterPage() {
     watch,
     setError,
     clearErrors,
+    setValue,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     mode: 'onChange',
@@ -893,7 +897,7 @@ export default function RegisterPage() {
                             id="passportScan"
                             type="file"
                             accept="image/*,application/pdf"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const file = e.target.files?.[0]
                               if (file) {
                                 // Validate file size (5MB max)
@@ -906,7 +910,7 @@ export default function RegisterPage() {
                                   setPassportFile(null)
                                   return
                                 }
-                                // Validate file type
+                                // Validate file type (only images for OCR, PDFs need server-side processing)
                                 const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
                                 if (!validTypes.includes(file.type)) {
                                   setError('passportScan', {
@@ -917,10 +921,110 @@ export default function RegisterPage() {
                                   setPassportFile(null)
                                   return
                                 }
+                                
                                 setPassportFile(file)
                                 clearErrors('passportScan')
+                                
+                                // Extract passport data automatically (only for images)
+                                if (file.type.startsWith('image/')) {
+                                  setIsExtracting(true)
+                                  setExtractionStatus('Extracting passport information...')
+                                  
+                                  try {
+                                    const extracted = await extractPassportData(file)
+                                    
+                                    if (extracted.confidence && extracted.confidence > 0) {
+                                      // Auto-fill form fields with extracted data
+                                      if (extracted.passportNumber) {
+                                        setValue('passportNumber', extracted.passportNumber)
+                                        setExtractionStatus(`✓ Passport number extracted: ${extracted.passportNumber}`)
+                                      }
+                                      
+                                      if (extracted.expiryDate) {
+                                        setValue('passportExpiry', extracted.expiryDate)
+                                        setExtractionStatus(prev => prev + `\n✓ Expiry date extracted: ${extracted.expiryDate}`)
+                                      }
+                                      
+                                      if (extracted.dateOfBirth) {
+                                        setValue('dateOfBirth', extracted.dateOfBirth)
+                                        setExtractionStatus(prev => prev + `\n✓ Date of birth extracted: ${extracted.dateOfBirth}`)
+                                      }
+                                      
+                                      if (extracted.gender) {
+                                        setValue('gender', extracted.gender)
+                                        setExtractionStatus(prev => prev + `\n✓ Gender extracted: ${extracted.gender}`)
+                                      }
+                                      
+                                      if (extracted.surname) {
+                                        setValue('lastName', extracted.surname)
+                                        setExtractionStatus(prev => prev + `\n✓ Surname extracted: ${extracted.surname}`)
+                                      }
+                                      
+                                      if (extracted.givenNames) {
+                                        const nameParts = extracted.givenNames.split(' ')
+                                        if (nameParts.length > 0) {
+                                          setValue('firstName', nameParts[0])
+                                          if (nameParts.length > 1) {
+                                            // If there are multiple given names, use first one for firstName
+                                            setExtractionStatus(prev => prev + `\n✓ First name extracted: ${nameParts[0]}`)
+                                          }
+                                        }
+                                      }
+                                      
+                                      // Map country codes to full country codes
+                                      if (extracted.nationality) {
+                                        const countryCode = mapCountryCode(extracted.nationality)
+                                        if (countryCode) {
+                                          const country = countries.find(c => c.value === countryCode)
+                                          if (country) {
+                                            setValue('nationality', countryCode)
+                                            setExtractionStatus(prev => prev + `\n✓ Nationality extracted: ${country.label}`)
+                                          }
+                                        }
+                                      }
+                                      
+                                      if (extracted.issuingCountry) {
+                                        const countryCode = mapCountryCode(extracted.issuingCountry)
+                                        if (countryCode) {
+                                          const country = countries.find(c => c.value === countryCode)
+                                          if (country) {
+                                            setValue('passportIssuingCountry', countryCode)
+                                            setExtractionStatus(prev => prev + `\n✓ Issuing country extracted: ${country.label}`)
+                                          }
+                                        }
+                                      }
+                                      
+                                      // Trigger validation for updated fields
+                                      await trigger(['passportNumber', 'passportExpiry', 'passportIssuingCountry', 'dateOfBirth', 'gender', 'firstName', 'lastName', 'nationality'])
+                                      
+                                      setTimeout(() => {
+                                        setExtractionStatus(null)
+                                      }, 5000)
+                                    } else {
+                                      setExtractionStatus('Could not extract passport data. Please fill manually.')
+                                      setTimeout(() => {
+                                        setExtractionStatus(null)
+                                      }, 3000)
+                                    }
+                                  } catch (error) {
+                                    console.error('Error extracting passport data:', error)
+                                    setExtractionStatus('Error extracting data. Please fill manually.')
+                                    setTimeout(() => {
+                                      setExtractionStatus(null)
+                                    }, 3000)
+                                  } finally {
+                                    setIsExtracting(false)
+                                  }
+                                } else {
+                                  // For PDF files, show message that extraction is not available
+                                  setExtractionStatus('PDF files: Please fill passport details manually.')
+                                  setTimeout(() => {
+                                    setExtractionStatus(null)
+                                  }, 3000)
+                                }
                               } else {
                                 setPassportFile(null)
+                                setExtractionStatus(null)
                               }
                             }}
                             className={`w-full px-4 py-3 rounded-lg border ${
@@ -932,10 +1036,23 @@ export default function RegisterPage() {
                           <p className="mt-1 text-sm text-red-600">{errors.passportScan.message as string}</p>
                         )}
                         {passportFile && (
-                          <p className="mt-2 text-sm text-green-600 flex items-center gap-2">
-                            <FiCheck className="w-4 h-4" />
-                            File selected: {passportFile.name} ({(passportFile.size / 1024).toFixed(1)} KB)
-                          </p>
+                          <div className="mt-2 space-y-2">
+                            <p className="text-sm text-green-600 flex items-center gap-2">
+                              <FiCheck className="w-4 h-4" />
+                              File selected: {passportFile.name} ({(passportFile.size / 1024).toFixed(1)} KB)
+                            </p>
+                            {isExtracting && (
+                              <div className="flex items-center gap-2 text-sm text-blue-600">
+                                <FiLoader className="w-4 h-4 animate-spin" />
+                                <span>Extracting passport information...</span>
+                              </div>
+                            )}
+                            {extractionStatus && !isExtracting && (
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                                <p className="text-blue-800 whitespace-pre-line">{extractionStatus}</p>
+                              </div>
+                            )}
+                          </div>
                         )}
                         <p className="mt-1 text-xs text-gray-500">
                           Upload a clear scan or photo of your passport bio page. Accepted formats: PDF, JPG, PNG. Max size: 5MB.
