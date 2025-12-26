@@ -140,6 +140,13 @@ export default async function SpeakersManagementPage({
                       
                       <div className="flex gap-2">
                         <Link
+                          href={`/admin/speakers/${speaker.id}`}
+                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="View"
+                        >
+                          <FiEye className="w-4 h-4" />
+                        </Link>
+                        <Link
                           href={`/admin/speakers/${speaker.id}/edit`}
                           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                           title="Edit"
