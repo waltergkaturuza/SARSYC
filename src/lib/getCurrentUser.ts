@@ -166,6 +166,12 @@ export async function getCurrentUserFromCookies() {
           console.error('[getCurrentUserFromCookies] ❌ Token verification failed:', verifyError.message)
           console.error('[getCurrentUserFromCookies] Secret length:', payloadSecret.length)
           console.error('[getCurrentUserFromCookies] Token preview:', token.substring(0, 50) + '...')
+          
+          // If it's an invalid signature, the token was signed with a different secret
+          if (verifyError.message.includes('invalid signature')) {
+            console.error('[getCurrentUserFromCookies] ⚠️  Token was signed with a different secret!')
+            console.error('[getCurrentUserFromCookies] 💡 Clear the payload-token cookie and log in again.')
+          }
         }
         return null
       }

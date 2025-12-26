@@ -32,9 +32,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    console.log('[Middleware] ✅ Token found, allowing access')
-    // Token exists - let it through
-    // Server-side pages will validate the token and user role
+    // If token exists but is invalid (will be caught by getCurrentUserFromCookies),
+    // we still let it through to the page, which will handle the redirect
+    // This prevents infinite redirect loops
+    console.log('[Middleware] ✅ Token found, allowing access (validation happens in page)')
     return NextResponse.next()
   }
 
