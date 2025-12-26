@@ -63,11 +63,10 @@ async function handleAdminRequest(
     // We need to serve the index.html for the admin UI
     
     // If accessing root /admin, serve the admin UI HTML
-    if (adminPath === '/' || adminPath === '') {
-      const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
-      
-      return new NextResponse(
-        `<!DOCTYPE html>
+    const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
+    
+    return new NextResponse(
+      `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -123,13 +122,13 @@ async function handleAdminRequest(
   </script>
 </body>
 </html>`,
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-          },
-        }
-      )
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      }
+    )
   } catch (error: any) {
     console.error('❌ Payload admin initialization error:', error)
     
