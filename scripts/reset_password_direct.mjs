@@ -52,18 +52,16 @@ async function resetPassword() {
     console.log(`✅ Found user: ${user.first_name} ${user.last_name} (${user.role})`)
     
     // Hash the new password (Payload uses bcrypt with 10 rounds)
-    const saltRounds = 10
+    // Note: bcrypt includes the salt in the hash, so we store empty string for salt field
+    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '10', 10)
     const hash = await bcrypt.hash(newPassword, saltRounds)
     
-    // Generate a random salt (bcrypt includes salt in hash, but Payload might store it separately)
-    // For Payload, we typically just need the hash
-    const salt = await bcrypt.genSalt(saltRounds)
-    
     // Update the password in the database
-    // Payload stores password as 'hash' field
+    // Payload stores password as 'hash' field, with empty salt (bcrypt hash includes salt)
+    // Also reset login attempts and lock status in case account was locked
     await client.query(
-      'UPDATE users SET hash = $1, salt = $2, updated_at = NOW() WHERE id = $3',
-      [hash, salt, user.id]
+      'UPDATE users SET hash = $1, salt = $2, login_attempts = 0, lock_until = NULL, updated_at = NOW() WHERE id = $3',
+      [hash, '', user.id]
     )
     
     console.log(`✅ Password successfully reset for ${email}`)
