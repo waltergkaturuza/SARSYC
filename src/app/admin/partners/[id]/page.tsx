@@ -201,3 +201,4 @@ export default async function PartnerDetailPage({ params }: PartnerDetailPagePro
 }
 
 
+

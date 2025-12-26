@@ -161,49 +161,51 @@ export default function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 animate-slide-down">
-            <div className="space-y-1">
-              {navigation.map((item) => (
-                <div key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="block px-4 py-3 text-base font-bold text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                  {item.dropdown && (
-                    <div className="pl-4 space-y-1">
-                      {item.dropdown.map((subItem) => (
-                        <Link
-                          key={subItem.name}
-                          href={subItem.href}
-                          className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 px-4 space-y-3">
-              <Link
-                href="/login"
-                className="block text-center text-base font-bold text-gray-700 hover:text-primary-600 py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                href="/participate/register"
-                className="btn-primary w-full justify-center font-bold text-base"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Register Now
-              </Link>
+          <div className="lg:hidden fixed inset-0 top-24 bg-white z-40 overflow-y-auto">
+            <div className="container-custom py-4">
+              <div className="space-y-1 pb-4">
+                {navigation.map((item) => (
+                  <div key={item.name}>
+                    <Link
+                      href={item.href}
+                      className="block px-4 py-3 text-base font-bold text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                    {item.dropdown && (
+                      <div className="pl-4 space-y-1">
+                        {item.dropdown.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            href={subItem.href}
+                            className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 px-4 space-y-3 pb-8">
+                <Link
+                  href="/login"
+                  className="block text-center text-base font-bold text-gray-700 hover:text-primary-600 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/participate/register"
+                  className="btn-primary w-full justify-center font-bold text-base"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Register Now
+                </Link>
+              </div>
             </div>
           </div>
         )}

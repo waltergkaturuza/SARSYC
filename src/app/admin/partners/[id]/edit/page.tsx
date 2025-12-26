@@ -36,3 +36,4 @@ export default async function EditPartnerPage({ params }: EditPartnerPageProps) 
 }
 
 
+
