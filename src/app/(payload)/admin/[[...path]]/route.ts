@@ -1,12 +1,11 @@
-/* PAYLOAD ADMIN ROUTE HANDLER - Serve Payload admin UI */
+/* PAYLOAD ADMIN REDIRECT - Show admin options instead of loading spinner */
 
-import { getPayloadClient } from '@/lib/payload'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Handle all HTTP methods - Payload admin UI uses various methods
+// Handle all HTTP methods
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path?: string[] }> }
@@ -46,227 +45,172 @@ async function handleAdminRequest(
   request: NextRequest,
   params: Promise<{ path?: string[] }>
 ) {
-  try {
-    // Initialize Payload
-    const payload = await getPayloadClient()
-    
-    // Get the path segments from params
-    const resolvedParams = await params
-    const pathSegments = resolvedParams?.path || []
-    const path = pathSegments.length > 0 ? `/${pathSegments.join('/')}` : ''
-    
-    // Build the admin URL - Payload serves admin at /admin
-    const adminPath = path || '/'
-    
-    // In Payload v3, the admin UI is served as a SPA through /admin
-    // The admin UI JavaScript will handle routing client-side
-    // We need to serve the index.html for the admin UI
-    
-    // If accessing root /admin, serve the admin UI HTML
-    // Use the actual request URL to avoid port mismatches
-    const url = new URL(request.url)
-    const origin = url.origin // This will be http://localhost:3001 (or whatever port is actually running)
-    const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || origin
-    
-    return new NextResponse(
-      `<!DOCTYPE html>
+  // Get the path segments
+  const resolvedParams = await params
+  const pathSegments = resolvedParams?.path || []
+  const path = pathSegments.length > 0 ? `/${pathSegments.join('/')}` : ''
+  
+  // Get request origin to avoid port mismatches
+  const url = new URL(request.url)
+  const origin = url.origin
+  
+  // Show admin options page instead of infinite loading
+  return new NextResponse(
+    `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SARSYC VI Admin Panel</title>
-  <script>
-    // Use the same origin to avoid CORS issues
-    window.PAYLOAD_PUBLIC_SERVER_URL = '${origin}';
-  </script>
+  <title>SARSYC VI Admin</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #fff;
-    }
-    #payload-admin {
-      width: 100%;
-      height: 100vh;
-    }
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #f5f5f5;
-    }
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <div id="payload-admin" class="loading">
-    <div style="text-align: center;">
-      <div class="spinner"></div>
-      <p style="color: #666; margin-top: 1rem;">Loading Admin Panel...</p>
-    </div>
-  </div>
-  <script type="module">
-    // Payload admin UI requires API endpoints at /api/admin/*
-    // For now, show a helpful message since Payload admin UI needs proper API routes
-    const serverURL = window.PAYLOAD_PUBLIC_SERVER_URL || window.location.origin;
-    console.log('Payload admin UI placeholder. Server URL:', serverURL);
-    
-    // Try to access Payload's config endpoint (if it exists)
-    fetch(serverURL + '/api/config')
-      .then(res => {
-        if (res.ok) {
-          console.log('✅ Payload API endpoint accessible');
-          return res.json();
-        }
-        // Config endpoint might not exist - that's okay
-        return null;
-      })
-      .then(config => {
-        if (config) {
-          console.log('Payload config loaded:', config);
-        }
-        // Show user-friendly message
-        const msg = document.querySelector('.loading p');
-        if (msg) {
-          msg.innerHTML = 'Payload admin panel is loading...<br><br>If this persists, Payload admin UI requires API routes.<br>For development, consider using: <code>node src/server.ts</code>';
-        }
-      })
-      .catch(err => {
-        console.log('Payload config endpoint check:', err.message);
-        // This is expected if API routes aren't fully configured
-      });
-  </script>
-</body>
-</html>`,
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      }
-    )
-  } catch (error: any) {
-    console.error('❌ Payload admin initialization error:', error)
-    
-    const errorMessage = String(error?.message || error || 'Unknown error')
-    const isSecretError = errorMessage.toLowerCase().includes('secret') || 
-                         errorMessage.toLowerCase().includes('payload_secret')
-    
-    // Return a helpful error page
-    return new NextResponse(
-      `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel Error - SARSYC VI</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
       background: #f5f5f5;
     }
     .container {
-      max-width: 600px;
+      max-width: 900px;
+      margin: 0 auto;
       padding: 2rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     h1 {
-      color: #e74c3c;
-      margin-top: 0;
+      color: #2c3e50;
+      margin-bottom: 2rem;
+      text-align: center;
     }
-    .error {
-      background: #fee;
-      border-left: 4px solid #e74c3c;
-      padding: 1rem;
-      margin: 1rem 0;
-      border-radius: 4px;
+    .option-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s;
     }
-    .steps {
-      background: #f9f9f9;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-top: 1rem;
-      text-align: left;
+    .option-card:hover {
+      border-color: #3498db;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+      transform: translateY(-2px);
     }
-    .steps ol {
-      margin: 0.5rem 0;
-      padding-left: 1.5rem;
+    .option-card h3 {
+      color: #2c3e50;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
     }
-    .steps li {
-      margin: 0.5rem 0;
+    .option-card p {
+      color: #7f8c8d;
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #2980b9;
+    }
+    .btn-secondary {
+      background: #95a5a6;
+    }
+    .btn-secondary:hover {
+      background: #7f8c8d;
     }
     code {
       background: #f4f4f4;
-      padding: 0.2rem 0.4rem;
-      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
       font-family: 'Courier New', monospace;
       font-size: 0.9em;
+      color: #e74c3c;
+    }
+    .code-block {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    .note {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 1rem;
+      margin: 2rem 0;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>⚠️ Admin Panel Error</h1>
-    <div class="error">
-      <strong>Error:</strong> ${errorMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+    <h1>🎛️ SARSYC VI Admin Options</h1>
+    
+    <div class="option-card">
+      <h3>📋 Registrations Management</h3>
+      <p>View and manage conference registrations, export to CSV, and check-in participants</p>
+      <a href="/admin/registrations" class="btn">Go to Registrations →</a>
     </div>
-    ${isSecretError ? `
-    <div class="steps">
-      <h3>🔧 How to Fix:</h3>
-      <ol>
-        <li>Generate a new secret key: <code>npm run generate:secret</code></li>
-        <li>Go to Vercel Dashboard → Your Project → Settings → Environment Variables</li>
-        <li>Add or update: <code>PAYLOAD_SECRET</code> = (your generated secret)</li>
-        <li>Apply to all environments (Production, Preview, Development)</li>
-        <li>Go to Deployments tab and <strong>Redeploy</strong> the latest deployment</li>
-        <li>Wait for deployment to complete, then refresh this page</li>
-      </ol>
+    
+    <div class="option-card">
+      <h3>🚀 Use Custom Server (Full Payload Admin)</h3>
+      <p>Run the custom server to access Payload's complete admin UI with all features</p>
+      <div class="code-block">
+cd C:\\Users\\Administrator\\Documents\\SARSYC\\sarsyc-platform<br>
+npm run dev:server<br>
+# Then access: http://localhost:3001/admin
+      </div>
+      <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 0.5rem;">
+        This runs Express + Next.js + Payload together
+      </p>
     </div>
-    ` : `
-    <div class="steps">
-      <h3>🔍 Troubleshooting:</h3>
-      <ol>
-        <li>Check Vercel deployment logs for detailed error messages</li>
-        <li>Verify all environment variables are set correctly</li>
-        <li>Ensure the database connection is working</li>
-        <li>Try redeploying the application</li>
-      </ol>
+    
+    <div class="option-card">
+      <h3>🗄️ Direct Database Access</h3>
+      <p>Use a database GUI tool to manage data directly</p>
+      <p>Recommended tools:</p>
+      <ul style="margin: 0.5rem 0 1rem 1.5rem; color: #7f8c8d;">
+        <li><strong>pgAdmin</strong> - Full-featured PostgreSQL tool</li>
+        <li><strong>DBeaver</strong> - Universal database manager</li>
+        <li><strong>TablePlus</strong> - Modern, native GUI</li>
+      </ul>
+      <a href="https://www.pgadmin.org/download/" target="_blank" class="btn btn-secondary">Download pgAdmin →</a>
     </div>
-    `}
-    <p style="margin-top: 1.5rem; color: #666; font-size: 0.9rem;">
-      Need help? Check the <code>SECRET-KEY-GUIDE.md</code> file in your project.
-    </p>
+    
+    <div class="option-card">
+      <h3>🔌 API Routes</h3>
+      <p>Your API endpoints are working. Use them to manage data programmatically</p>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+        <a href="/api/config" target="_blank" class="btn btn-secondary">View Config</a>
+        <a href="/api/registrations" target="_blank" class="btn btn-secondary">Registrations API</a>
+        <a href="/api/speakers" target="_blank" class="btn btn-secondary">Speakers API</a>
+      </div>
+    </div>
+    
+    <div class="note">
+      <strong>📝 Note:</strong> Payload's full admin UI requires custom server setup. 
+      The custom server is already configured and ready to use with <code>npm run dev:server</code>.
+      See <code>USE-CUSTOM-SERVER.md</code> for details.
+    </div>
+    
+    <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+      <a href="/" class="btn btn-secondary">← Back to Homepage</a>
+    </div>
   </div>
 </body>
 </html>`,
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      }
-    )
-  }
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    }
+  )
 }
