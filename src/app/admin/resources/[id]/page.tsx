@@ -208,3 +208,4 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   }
 }
 
+

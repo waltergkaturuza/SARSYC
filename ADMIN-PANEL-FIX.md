@@ -60,3 +60,4 @@ Look for:
 3. Check if Payload admin routes are accessible at `/api/admin/*`
 4. Consider using Payload's bundler configuration for admin UI
 
+

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBriefcase, 
   FiCheckCircle, FiXCircle, FiClock, FiDownload, FiCalendar,
-  FiUser, FiGlobe, FiHome, FiShield, FiPlane, FiHeart, FiFileText,
+  FiUser, FiGlobe, FiHome, FiShield, FiNavigation, FiHeart, FiFileText,
   FiImage, FiPaperclip
 } from 'react-icons/fi'
 import Image from 'next/image'
@@ -454,7 +454,7 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
             {(registration.arrivalDate || registration.departureDate || registration.flightNumber || registration.accommodationRequired) && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <FiPlane className="w-6 h-6" />
+                  <FiNavigation className="w-6 h-6" />
                   Travel Information
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

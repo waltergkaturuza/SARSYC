@@ -204,3 +204,4 @@ export default async function SpeakerDetailPage({ params }: SpeakerDetailPagePro
   }
 }
 
+

@@ -41,3 +41,4 @@ The following migrations need to be applied:
 
 Both migrations are safe to run and are additive (they only add new columns).
 
+

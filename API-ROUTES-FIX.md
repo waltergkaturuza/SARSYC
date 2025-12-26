@@ -67,3 +67,4 @@ If registration still fails:
 4. Check that database connection is working
 5. Verify Payload collections are properly migrated
 
+

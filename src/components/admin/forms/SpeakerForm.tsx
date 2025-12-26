@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
 import Image from 'next/image'
+import { countries } from '@/lib/countries'
 
 interface SpeakerData {
   name: string
@@ -219,13 +220,18 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
           </FormField>
 
           <FormField label="Country" required error={errors.country}>
-            <input
-              type="text"
+            <select
               value={formData.country}
               onChange={(e) => handleInputChange('country', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Namibia"
-            />
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+            >
+              <option value="">Select country</option>
+              {countries.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.label}
+                </option>
+              ))}
+            </select>
           </FormField>
         </div>
 

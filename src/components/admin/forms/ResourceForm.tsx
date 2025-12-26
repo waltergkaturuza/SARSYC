@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
+import { countries } from '@/lib/countries'
 
 interface ResourceData {
   title: string
@@ -374,13 +375,18 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
         
         <div className="grid md:grid-cols-2 gap-6">
           <FormField label="Country/Region" hint="Optional">
-            <input
-              type="text"
+            <select
               value={formData.country || ''}
               onChange={(e) => handleInputChange('country', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Country or region"
-            />
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+            >
+              <option value="">Select country (optional)</option>
+              {countries.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.label}
+                </option>
+              ))}
+            </select>
           </FormField>
 
           <FormField label="Language">

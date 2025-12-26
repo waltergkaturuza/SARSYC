@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
+import { countries } from '@/lib/countries'
 
 interface AuthorData {
   firstName: string
@@ -358,12 +359,18 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
           </FormField>
 
           <FormField label="Country" required error={errors['primaryAuthor.country']}>
-            <input
-              type="text"
+            <select
               value={formData.primaryAuthor.country}
               onChange={(e) => handleAuthorChange('country', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+            >
+              <option value="">Select country</option>
+              {countries.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.label}
+                </option>
+              ))}
+            </select>
           </FormField>
         </div>
       </div>
