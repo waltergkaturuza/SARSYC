@@ -25,15 +25,20 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
   const paymentStatusFilter = searchParams.paymentStatus || 'all'
   const searchQuery = searchParams.search || ''
 
-  const where: any = {
-    deletedAt: { equals: null }, // Exclude soft-deleted
-  }
+  const where: any = {}
+
+  // Only filter by deletedAt if we want to exclude soft-deleted
+  // For now, we'll just show all registrations (including ones without deletedAt set)
+  // If you need soft-delete functionality, uncomment this:
+  // where.or = [
+  //   { deletedAt: { equals: null } },
+  //   { deletedAt: { exists: false } },
+  // ]
 
   if (statusFilter !== 'all') {
     where.status = { equals: statusFilter }
-  } else {
-    where.status = { not_equals: 'cancelled' } // Default: exclude cancelled
   }
+  // When 'all', don't filter by status - show everything
 
   if (paymentStatusFilter !== 'all') {
     where.paymentStatus = { equals: paymentStatusFilter }
