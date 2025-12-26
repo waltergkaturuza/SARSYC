@@ -287,10 +287,12 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                                 href={registration.passportScan.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+                                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-2"
                               >
                                 <FiPaperclip className="w-4 h-4" />
-                                View Passport Scan
+                                {registration.passportScan.mimeType === 'application/pdf' 
+                                  ? 'View Passport Scan (PDF)' 
+                                  : 'View Passport Scan'}
                               </a>
                               {registration.passportScan.mimeType?.startsWith('image/') && (
                                 <div className="mt-3 max-w-md">
@@ -303,6 +305,23 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                                   />
                                 </div>
                               )}
+                              {registration.passportScan.filename && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  File: {registration.passportScan.filename}
+                                </div>
+                              )}
+                            </div>
+                          ) : typeof registration.passportScan === 'string' ? (
+                            <div className="mt-2">
+                              <a
+                                href={registration.passportScan}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+                              >
+                                <FiPaperclip className="w-4 h-4" />
+                                View Passport Scan
+                              </a>
                             </div>
                           ) : (
                             <div className="text-gray-500 italic">No passport scan uploaded</div>
