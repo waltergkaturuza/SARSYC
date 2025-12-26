@@ -1,8 +1,9 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
+import AbstractsFilters from '@/components/admin/AbstractsFilters'
 import { 
-  FiFileText, FiFilter, FiDownload, FiEye, FiCheck, FiX, FiClock, FiEdit 
+  FiFileText, FiDownload, FiEye, FiCheck, FiX, FiClock, FiEdit 
 } from 'react-icons/fi'
 
 export const revalidate = 0
@@ -110,77 +111,7 @@ export default async function AbstractsManagementPage({
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <FiFilter className="w-5 h-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              defaultValue={status || 'all'}
-              onChange={(e) => {
-                const params = new URLSearchParams(window.location.search)
-                if (e.target.value === 'all') {
-                  params.delete('status')
-                } else {
-                  params.set('status', e.target.value)
-                }
-                window.location.href = `?${params.toString()}`
-              }}
-            >
-              <option value="all">All Status</option>
-              <option value="received">Received</option>
-              <option value="under-review">Under Review</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="revisions">Revisions Requested</option>
-            </select>
-          </div>
-
-          {/* Track Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Track</label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              defaultValue={track || 'all'}
-              onChange={(e) => {
-                const params = new URLSearchParams(window.location.search)
-                if (e.target.value === 'all') {
-                  params.delete('track')
-                } else {
-                  params.set('track', e.target.value)
-                }
-                window.location.href = `?${params.toString()}`
-              }}
-            >
-              <option value="all">All Tracks</option>
-              <option value="srhr">SRHR</option>
-              <option value="education">Education</option>
-              <option value="advocacy">Advocacy</option>
-              <option value="innovation">Innovation</option>
-            </select>
-          </div>
-
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <form action="/admin/abstracts" method="get">
-              <input
-                type="text"
-                name="search"
-                placeholder="Search by title or author..."
-                defaultValue={search}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </form>
-          </div>
-        </div>
-      </div>
+      <AbstractsFilters />
 
       {/* Abstracts Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
