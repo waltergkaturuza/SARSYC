@@ -20,8 +20,11 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
     "@payloadcms/db-postgres": "^3.69.0",
+    "@payloadcms/plugin-cloud-storage": "^3.69.0",
     "@payloadcms/richtext-slate": "^3.69.0",
+    "@payloadcms/storage-vercel-blob": "^3.69.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "@vercel/blob": "^2.0.0",
     "axios": "^1.6.0",
     "bcrypt": "^5.1.1",
     "date-fns": "^3.0.0",

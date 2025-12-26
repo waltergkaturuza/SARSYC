@@ -2,6 +2,7 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 // webpack bundler removed (incompatible version). Using default bundler.
 import { slateEditor } from '@payloadcms/richtext-slate'
+import vercelBlobStorage from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 
 // Collections
@@ -93,7 +94,23 @@ export default buildConfig({
     process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
     process.env.NEXT_PUBLIC_SERVER_URL || '',
   ].filter(Boolean),
-  plugins: [],
+  plugins: [
+    // Configure Vercel Blob storage for file uploads
+    // Only enable when BLOB_READ_WRITE_TOKEN is available (Vercel automatically provides this)
+    ...(process.env.BLOB_READ_WRITE_TOKEN
+      ? [
+          vercelBlobStorage({
+            collections: {
+              media: {
+                // Vercel Blob token is automatically available in Vercel environment
+                // For local development, set BLOB_READ_WRITE_TOKEN in .env
+                token: process.env.BLOB_READ_WRITE_TOKEN,
+              },
+            },
+          }),
+        ]
+      : []),
+  ],
   rateLimit: {
     max: 2000,
     window: 15 * 60 * 1000, // 15 minutes
