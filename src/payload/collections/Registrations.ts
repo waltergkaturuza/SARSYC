@@ -67,18 +67,332 @@ const Registrations: CollectionConfig = {
       type: 'row',
       fields: [
         {
+          name: 'dateOfBirth',
+          type: 'date',
+          required: true,
+          label: 'Date of Birth',
+        },
+        {
+          name: 'gender',
+          type: 'select',
+          required: true,
+          label: 'Gender',
+          options: [
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' },
+            { label: 'Other', value: 'other' },
+            { label: 'Prefer not to say', value: 'prefer-not-to-say' },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
           name: 'country',
           type: 'text',
           required: true,
-          label: 'Country',
+          label: 'Country of Residence',
         },
+        {
+          name: 'nationality',
+          type: 'text',
+          required: true,
+          label: 'Nationality',
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'city',
+          type: 'text',
+          required: true,
+          label: 'City',
+        },
+        {
+          name: 'address',
+          type: 'textarea',
+          required: true,
+          label: 'Full Address',
+          admin: {
+            description: 'Street address, postal code, etc.',
+          },
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
         {
           name: 'organization',
           type: 'text',
           required: true,
           label: 'Organization/Institution',
         },
+        {
+          name: 'organizationPosition',
+          type: 'text',
+          label: 'Position/Title',
+        },
       ],
+    },
+    {
+      name: 'isInternational',
+      type: 'checkbox',
+      label: 'International Attendee',
+      admin: {
+        description: 'Check if you are from outside the host country',
+      },
+      defaultValue: false,
+    },
+    {
+      name: 'passportNumber',
+      type: 'text',
+      label: 'Passport Number',
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+      },
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'passportExpiry',
+          type: 'date',
+          label: 'Passport Expiration Date',
+          admin: {
+            condition: (data: any) => data.isInternational === true,
+          },
+        },
+        {
+          name: 'passportIssuingCountry',
+          type: 'text',
+          label: 'Passport Issuing Country',
+          admin: {
+            condition: (data: any) => data.isInternational === true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'visaRequired',
+      type: 'checkbox',
+      label: 'Visa Required',
+      admin: {
+        condition: (data: any) => data.isInternational === true,
+      },
+      defaultValue: true,
+    },
+    {
+      name: 'visaStatus',
+      type: 'select',
+      label: 'Visa Status',
+      options: [
+        { label: 'Not Applied', value: 'not-applied' },
+        { label: 'Applied - Pending', value: 'applied-pending' },
+        { label: 'Approved', value: 'approved' },
+        { label: 'Denied', value: 'denied' },
+      ],
+      admin: {
+        condition: (data: any) => data.isInternational === true && data.visaRequired === true,
+      },
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'visaApplicationDate',
+          type: 'date',
+          label: 'Visa Application Date',
+          admin: {
+            condition: (data: any) => data.isInternational === true && data.visaRequired === true,
+          },
+        },
+        {
+          name: 'visaNumber',
+          type: 'text',
+          label: 'Visa Number',
+          admin: {
+            condition: (data: any) => data.isInternational === true && data.visaRequired === true && data.visaStatus === 'approved',
+          },
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'nationalIdNumber',
+          type: 'text',
+          label: 'National ID Number',
+          admin: {
+            condition: (data: any) => data.isInternational === false,
+          },
+        },
+        {
+          name: 'nationalIdType',
+          type: 'select',
+          label: 'ID Type',
+          options: [
+            { label: 'National ID', value: 'national-id' },
+            { label: 'Driver\'s License', value: 'drivers-license' },
+            { label: 'Other Government ID', value: 'other' },
+          ],
+          admin: {
+            condition: (data: any) => data.isInternational === false,
+          },
+        },
+      ],
+    },
+    {
+      name: 'emergencyContactName',
+      type: 'text',
+      required: true,
+      label: 'Emergency Contact - Full Name',
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'emergencyContactRelationship',
+          type: 'text',
+          required: true,
+          label: 'Relationship',
+        },
+        {
+          name: 'emergencyContactPhone',
+          type: 'text',
+          required: true,
+          label: 'Phone Number',
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'emergencyContactEmail',
+          type: 'email',
+          label: 'Email Address',
+        },
+        {
+          name: 'emergencyContactAddress',
+          type: 'textarea',
+          label: 'Address',
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'arrivalDate',
+          type: 'date',
+          label: 'Expected Arrival Date',
+        },
+        {
+          name: 'departureDate',
+          type: 'date',
+          label: 'Expected Departure Date',
+        },
+      ],
+    },
+    {
+      name: 'flightNumber',
+      type: 'text',
+      label: 'Flight Number (if known)',
+    },
+    {
+      name: 'accommodationRequired',
+      type: 'checkbox',
+      label: 'Requires Accommodation Assistance',
+      defaultValue: false,
+    },
+    {
+      name: 'accommodationPreferences',
+      type: 'textarea',
+      label: 'Accommodation Preferences/Requirements',
+      admin: {
+        condition: (data: any) => data.accommodationRequired === true,
+      },
+    },
+    {
+      name: 'hasHealthInsurance',
+      type: 'checkbox',
+      label: 'Has Health Insurance',
+      defaultValue: false,
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'insuranceProvider',
+          type: 'text',
+          label: 'Insurance Provider',
+          admin: {
+            condition: (data: any) => data.hasHealthInsurance === true,
+          },
+        },
+        {
+          name: 'insurancePolicyNumber',
+          type: 'text',
+          label: 'Policy Number',
+          admin: {
+            condition: (data: any) => data.hasHealthInsurance === true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'medicalConditions',
+      type: 'textarea',
+      label: 'Medical Conditions or Allergies (optional)',
+    },
+    {
+      name: 'bloodType',
+      type: 'select',
+      label: 'Blood Type (optional)',
+      options: [
+        { label: 'A+', value: 'a-positive' },
+        { label: 'A-', value: 'a-negative' },
+        { label: 'B+', value: 'b-positive' },
+        { label: 'B-', value: 'b-negative' },
+        { label: 'AB+', value: 'ab-positive' },
+        { label: 'AB-', value: 'ab-negative' },
+        { label: 'O+', value: 'o-positive' },
+        { label: 'O-', value: 'o-negative' },
+        { label: 'Unknown', value: 'unknown' },
+      ],
+    },
+    {
+      name: 'securityCheckStatus',
+      type: 'select',
+      label: 'Security Check Status',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'In Progress', value: 'in-progress' },
+        { label: 'Cleared', value: 'cleared' },
+        { label: 'Flagged', value: 'flagged' },
+      ],
+      defaultValue: 'pending',
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: (args: any) => args.req?.user?.role === 'admin',
+      },
+    },
+    {
+      name: 'securityCheckNotes',
+      type: 'textarea',
+      label: 'Security Check Notes',
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: (args: any) => args.req?.user?.role === 'admin',
+      },
     },
     {
       name: 'category',
