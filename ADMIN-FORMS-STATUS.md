@@ -23,28 +23,28 @@
 - ✅ API routes (`/api/admin/sessions`)
 - ✅ Features: Date/time pickers, speaker assignment, venue, track selection, presentation linking
 
-## 🚧 In Progress / Remaining
+## ✅ Completed (All Forms)
 
 ### 4. News
-- ⏳ Create form - Need to create
-- ⏳ Edit form - Need to create
-- ⏳ View page - Need to create
-- ⏳ API routes - Need to create
-- Features needed: Featured image upload, rich text editor, categories, tags, SEO fields
+- ✅ Create form (`/admin/news/new`)
+- ✅ Edit form (`/admin/news/[id]/edit`)
+- ✅ View page (`/admin/news/[id]`)
+- ✅ API routes (`/api/admin/news`)
+- ✅ Features: Featured image upload, rich text editor, categories, tags, SEO fields, auto-slug generation
 
 ### 5. Partners
-- ⏳ Create form - Need to create
-- ⏳ Edit form - Need to create
-- ⏳ View page - Need to create
-- ⏳ API routes - Need to create
-- Features needed: Logo upload, sponsorship tiers, partnership types, website, display order
+- ✅ Create form (`/admin/partners/new`)
+- ✅ Edit form (`/admin/partners/[id]/edit`)
+- ✅ View page (`/admin/partners/[id]`)
+- ✅ API routes (`/api/admin/partners`)
+- ✅ Features: Logo upload, sponsorship tiers, partnership types, website, display order, SARSYC editions
 
 ### 6. Resources
-- ⏳ Create form - Need to create
-- ⏳ Edit form - Need to create
-- ⏳ View page - Need to create
-- ⏳ API routes - Need to create
-- Features needed: File upload, categorization, metadata, year, topics, authors
+- ✅ Create form (`/admin/resources/new`)
+- ✅ Edit form (`/admin/resources/[id]/edit`)
+- ✅ View page (`/admin/resources/[id]`)
+- ✅ API routes (`/api/admin/resources`)
+- ✅ Features: File upload, categorization, metadata, year, topics, authors, language, featured flag
 
 ## 📝 Notes
 
