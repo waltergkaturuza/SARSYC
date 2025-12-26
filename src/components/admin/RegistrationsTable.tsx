@@ -197,6 +197,9 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Created
                   </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -211,7 +214,7 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{d.registrationId || 'N/A'}</div>
+                      <div className="text-sm font-medium text-gray-900 font-mono">{d.registrationId || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{d.firstName} {d.lastName}</div>
@@ -238,6 +241,14 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(d.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <a
+                        href={`/admin/registrations/${d.id}`}
+                        className="text-primary-600 hover:text-primary-900 font-medium"
+                      >
+                        View Details
+                      </a>
                     </td>
                   </tr>
                 ))}

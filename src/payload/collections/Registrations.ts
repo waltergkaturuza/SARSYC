@@ -138,7 +138,13 @@ const Registrations: CollectionConfig = {
           (args: any) => {
             const { value, operation } = args
             if (operation === 'create' && !value) {
-              return `REG-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+              // Format: SARSYC-YYMMDD-XXXXXX (e.g., SARSYC-261224-A3B7C9)
+              const now = new Date()
+              const year = now.getFullYear().toString().slice(-2) // Last 2 digits
+              const month = String(now.getMonth() + 1).padStart(2, '0')
+              const day = String(now.getDate()).padStart(2, '0')
+              const random = Math.random().toString(36).substring(2, 8).toUpperCase()
+              return `SARSYC-${year}${month}${day}-${random}`
             }
             return value
           },
