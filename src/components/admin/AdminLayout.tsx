@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
-  FiFolder, FiMessageSquare, FiHeart, FiSettings,
+  FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
 
@@ -57,6 +57,12 @@ const navigation = [
     href: '/admin/partners',
     icon: FiHeart,
     description: 'Manage sponsors',
+  },
+  {
+    name: 'Users',
+    href: '/admin/users',
+    icon: FiShield,
+    description: 'Manage admin users',
   },
   {
     name: 'Settings',
