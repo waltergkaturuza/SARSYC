@@ -38,9 +38,10 @@ const Speakers: CollectionConfig = {
     },
     {
       name: 'country',
-      type: 'text',
+      type: 'select',
       required: true,
       label: 'Country',
+      options: getCountryOptions(),
     },
     {
       name: 'photo',
