@@ -53,12 +53,31 @@ export default function LoginPage() {
         }
         
         // Set cookie for server-side authentication (Payload expects 'payload-token')
-        document.cookie = `payload-token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`
+        // Use secure cookie settings for production
+        const isProduction = window.location.hostname !== 'localhost'
+        const cookieOptions = [
+          `payload-token=${data.token}`,
+          'path=/',
+          `max-age=${7 * 24 * 60 * 60}`, // 7 days
+          'SameSite=Lax',
+          ...(isProduction ? ['Secure'] : []), // Secure flag for HTTPS
+        ].join('; ')
+        
+        document.cookie = cookieOptions
+        
+        // Verify cookie was set
+        const cookieSet = document.cookie.includes('payload-token')
+        if (!cookieSet) {
+          console.warn('Cookie may not have been set properly')
+        }
       }
+
+      // Small delay to ensure cookie is set before redirect
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       // Redirect based on user type
       if (userType === 'admin') {
-        // Redirect to Payload admin panel after successful authentication
+        // Use window.location.href for full page reload to ensure cookie is sent
         window.location.href = '/admin'
       } else if (userType === 'participant') {
         router.push('/dashboard')

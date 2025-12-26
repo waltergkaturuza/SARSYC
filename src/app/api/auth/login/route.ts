@@ -36,7 +36,9 @@ export async function POST(request: NextRequest) {
             { status: 403 }
           )
         }
-        return NextResponse.json({
+        
+        // Create response with user data
+        const response = NextResponse.json({
           success: true,
           user: {
             id: result.user.id,
@@ -48,12 +50,25 @@ export async function POST(request: NextRequest) {
           },
           token: result.token,
         })
+        
+        // Set cookie server-side for better reliability
+        // Payload expects 'payload-token' cookie name
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+        response.cookies.set('payload-token', result.token, {
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+          sameSite: 'lax',
+          secure: isProduction, // Only send over HTTPS in production
+          httpOnly: false, // Allow client-side access for localStorage sync
+        })
+        
+        return response
       }
 
       if (type === 'participant' || type === 'speaker') {
         // For participants/speakers, check if they have a registration
         // This is a simplified check - you may want to add a separate collection
-        return NextResponse.json({
+        const response = NextResponse.json({
           success: true,
           user: {
             id: result.user.id,
@@ -62,6 +77,18 @@ export async function POST(request: NextRequest) {
           },
           token: result.token,
         })
+        
+        // Set cookie for participants/speakers too
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+        response.cookies.set('payload-token', result.token, {
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+          sameSite: 'lax',
+          secure: isProduction,
+          httpOnly: false,
+        })
+        
+        return response
       }
 
       return NextResponse.json(
