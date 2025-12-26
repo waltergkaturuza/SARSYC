@@ -4,7 +4,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBuilding, FiCheckCircle, FiXCircle, FiClock, FiDownload } from 'react-icons/fi'
 import { format } from 'date-fns'
-import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
+import dynamic from 'next/dynamic'
+
+const RegistrationActionButtons = dynamic(
+  () => import('@/components/admin/RegistrationActionButtons'),
+  { ssr: false }
+)
 
 export const revalidate = 0
 
