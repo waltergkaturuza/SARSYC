@@ -72,7 +72,7 @@ export default function Header() {
       }`}
     >
       <nav className="container-custom">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24 md:h-28">
           {/* Logo - Circular */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3">
@@ -87,10 +87,10 @@ export default function Header() {
                 />
               </div>
               <div className="hidden sm:block">
-                <div className="font-heading font-bold text-xl text-gray-900">
+                <div className="font-heading font-black text-2xl md:text-3xl text-gray-900">
                   SARSYC VI
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-sm md:text-base font-semibold text-gray-600">
                   Windhoek 2026
                 </div>
               </div>
@@ -108,7 +108,7 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors duration-200 flex items-center gap-1"
+                  className="px-4 py-2 text-base font-bold text-gray-700 hover:text-primary-600 transition-colors duration-200 flex items-center gap-1"
                 >
                   {item.name}
                   {item.dropdown && <FiChevronDown className="w-4 h-4" />}
@@ -134,10 +134,10 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
-            <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
+            <Link href="/login" className="text-base font-bold text-gray-700 hover:text-primary-600 transition-colors">
               Login
             </Link>
-            <Link href="/participate/register" className="btn-primary">
+            <Link href="/participate/register" className="btn-primary font-bold text-base px-6 py-3">
               Register Now
             </Link>
           </div>
@@ -167,7 +167,7 @@ export default function Header() {
                 <div key={item.name}>
                   <Link
                     href={item.href}
-                    className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+                    className="block px-4 py-3 text-base font-bold text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.name}
@@ -192,14 +192,14 @@ export default function Header() {
             <div className="mt-4 px-4 space-y-3">
               <Link
                 href="/login"
-                className="block text-center text-sm font-medium text-gray-700 hover:text-primary-600 py-2"
+                className="block text-center text-base font-bold text-gray-700 hover:text-primary-600 py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Login
               </Link>
               <Link
                 href="/participate/register"
-                className="btn-primary w-full justify-center"
+                className="btn-primary w-full justify-center font-bold text-base"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Register Now
