@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiMail, FiPhone, FiMapPin, FiBuilding, FiCheckCircle, FiXCircle, FiClock, FiDownload } from 'react-icons/fi'
 import { format } from 'date-fns'
-import { ApproveButton, RejectButton } from '@/components/admin/RegistrationActions'
+import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
 
 export const revalidate = 0
 
@@ -187,14 +187,10 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                       {registration.status?.charAt(0).toUpperCase() + registration.status?.slice(1) || 'Pending'}
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    {registration.status !== 'confirmed' && (
-                      <ApproveButton registrationId={registration.id} adminId={process.env.ADMIN_USER_ID || ''} />
-                    )}
-                    {registration.status !== 'cancelled' && (
-                      <RejectButton registrationId={registration.id} adminId={process.env.ADMIN_USER_ID || ''} />
-                    )}
-                  </div>
+                  <RegistrationActionButtons 
+                    registrationId={registration.id} 
+                    status={registration.status || 'pending'}
+                  />
                 </div>
 
                 {registration.notes && (
