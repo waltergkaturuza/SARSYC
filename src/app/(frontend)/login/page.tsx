@@ -34,6 +34,10 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      console.log('[Login] Starting login attempt...')
+      console.log('[Login] Email:', formData.email)
+      console.log('[Login] User Type:', userType)
+      
       // Authenticate ALL users via API (including admin)
       // IMPORTANT: Use credentials: 'include' to ensure cookies are sent and received
       const response = await fetch('/api/auth/login', {
@@ -47,16 +51,37 @@ function LoginForm() {
         }),
       })
 
-      const data = await response.json()
+      console.log('[Login] Response status:', response.status, response.statusText)
+      
+      let data
+      try {
+        data = await response.json()
+        console.log('[Login] Response data:', { 
+          success: data.success, 
+          hasToken: !!data.token, 
+          error: data.error,
+          user: data.user ? { email: data.user.email, role: data.user.role } : null
+        })
+      } catch (parseError) {
+        console.error('[Login] Failed to parse JSON response:', parseError)
+        const text = await response.text()
+        console.error('[Login] Response text:', text)
+        throw new Error('Invalid response from server')
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
+        const errorMsg = data.error || `Login failed (${response.status})`
+        console.error('[Login] Login failed:', errorMsg)
+        throw new Error(errorMsg)
       }
 
       // Verify authentication was successful
       if (!data.success || !data.token) {
-        throw new Error('Authentication failed')
+        console.error('[Login] Authentication verification failed:', { success: data.success, hasToken: !!data.token })
+        throw new Error('Authentication failed - invalid response')
       }
+      
+      console.log('[Login] Authentication successful!')
 
       // Store token and user info in localStorage for client-side use
       if (data.token) {
@@ -105,8 +130,10 @@ function LoginForm() {
         router.push(redirectUrl || '/dashboard?type=speaker')
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred. Please try again.')
-    } finally {
+      console.error('[Login] Error caught:', err)
+      const errorMessage = err.message || 'An error occurred. Please try again.'
+      console.error('[Login] Setting error message:', errorMessage)
+      setError(errorMessage)
       setLoading(false)
     }
   }

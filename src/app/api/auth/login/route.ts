@@ -155,13 +155,28 @@ export async function POST(request: NextRequest) {
     } catch (authError: any) {
       // Provide more detailed error messages
       const errorMessage = authError?.message || 'Invalid email or password'
-      console.error('[Login API] Authentication failed:', errorMessage)
+      console.error('[Login API] Authentication failed:')
+      console.error('[Login API] Error message:', errorMessage)
+      console.error('[Login API] Error type:', authError?.name)
+      console.error('[Login API] Error stack:', authError?.stack)
+      console.error('[Login API] Attempted email:', email)
+      console.error('[Login API] User type:', type)
       
       // Check if it's a locked account error
       if (errorMessage.includes('locked') || errorMessage.includes('Locked')) {
         return NextResponse.json(
           { error: 'Account is locked. Please contact an administrator.' },
           { status: 423 } // 423 Locked
+        )
+      }
+      
+      // Check for specific Payload errors
+      if (errorMessage.includes('Invalid credentials') || 
+          errorMessage.includes('Invalid email') || 
+          errorMessage.includes('Invalid password')) {
+        return NextResponse.json(
+          { error: 'Invalid email or password' },
+          { status: 401 }
         )
       }
       
