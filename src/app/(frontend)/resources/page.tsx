@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader } from 'react-icons/fi'
+import EmptyState from '@/components/ui/EmptyState'
 
 const resourceTypes = [
   { value: 'all', label: 'All Types', icon: FiFile },
@@ -188,12 +189,17 @@ export default function ResourcesPage() {
               <p className="text-gray-600">Loading resources...</p>
             </div>
           ) : resources.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">No resources found.</p>
-              <button onClick={() => { setSelectedType('all'); setSelectedYear('all'); setSearchQuery('') }} className="btn-outline">
-                Clear Filters
-              </button>
-            </div>
+            <EmptyState
+              icon="file"
+              title={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? "No Resources Found" : "No Resources Available Yet"}
+              description={searchQuery || selectedType !== 'all' || selectedYear !== 'all' 
+                ? "Try adjusting your filters or search query to find what you're looking for."
+                : "We're working on adding resources to the library. Check back soon for conference reports, research papers, and more."}
+              action={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? {
+                label: "Clear Filters",
+                onClick: () => { setSelectedType('all'); setSelectedYear('all'); setSearchQuery('') }
+              } : undefined}
+            />
           ) : (
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

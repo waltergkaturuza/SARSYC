@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FiCalendar, FiArrowRight } from 'react-icons/fi'
+import EmptyState from '@/components/ui/EmptyState'
 
 // Placeholder data - will fetch from Payload CMS
 const newsArticles = [
@@ -68,8 +69,15 @@ export default function NewsPage() {
       {/* News Grid */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {newsArticles.map((article) => (
+          {newsArticles.length === 0 ? (
+            <EmptyState
+              icon="file"
+              title="No News Articles Yet"
+              description="We're working on bringing you the latest updates. Check back soon for news and announcements about SARSYC VI."
+            />
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {newsArticles.map((article) => (
               <Link
                 key={article.id}
                 href={`/news/${article.slug}`}
@@ -109,15 +117,17 @@ export default function NewsPage() {
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <button className="btn-outline">
-              Load More Articles
-            </button>
-          </div>
+          {newsArticles.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="btn-outline">
+                Load More Articles
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

@@ -3,25 +3,46 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { FiMail, FiArrowLeft, FiCheckCircle } from 'react-icons/fi'
+import { showToast } from '@/lib/toast'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState('')
+  const [resetUrl, setResetUrl] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!email || !email.includes('@')) {
+      showToast.error('Please enter a valid email address')
+      return
+    }
+
     setLoading(true)
-    setError('')
 
     try {
-      // TODO: Implement password reset API endpoint
-      // For now, just show success message
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send reset email')
+      }
+
+      showToast.success(result.message || 'Password reset link sent!')
       setSubmitted(true)
+      
+      // In development, show the reset URL for testing
+      if (result.resetUrl) {
+        setResetUrl(result.resetUrl)
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email. Please try again.')
+      showToast.error(err.message || 'Failed to send reset email. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -43,6 +64,22 @@ export default function ForgotPasswordPage() {
           <p className="text-sm text-gray-500 mb-6">
             Please check your inbox and follow the instructions to reset your password.
           </p>
+          
+          {/* Show reset URL in development for testing */}
+          {resetUrl && process.env.NODE_ENV === 'development' && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800 mb-2 font-semibold">Development Mode - Reset Link:</p>
+              <a
+                href={resetUrl}
+                className="text-xs text-blue-600 hover:text-blue-700 break-all underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {resetUrl}
+              </a>
+            </div>
+          )}
+          
           <Link
             href="/login"
             className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium"
@@ -75,11 +112,6 @@ export default function ForgotPasswordPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">

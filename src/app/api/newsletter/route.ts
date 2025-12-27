@@ -16,11 +16,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Store newsletter subscription in database
-    // For now, we'll just send a confirmation email
-    // You can create a NewsletterSubscribers collection if needed
-
     const payload = await getPayloadClient()
+
+    // Check if email already exists
+    const existing = await payload.find({
+      collection: 'newsletter-subscriptions',
+      where: {
+        email: {
+          equals: email,
+        },
+      },
+      limit: 1,
+    })
+
+    // If already subscribed and active, return success
+    if (existing.totalDocs > 0) {
+      const subscription = existing.docs[0]
+      if (subscription.status === 'subscribed') {
+        return NextResponse.json({
+          success: true,
+          message: 'You are already subscribed to our newsletter!',
+        })
+      }
+      
+      // If unsubscribed, resubscribe them
+      await payload.update({
+        collection: 'newsletter-subscriptions',
+        id: subscription.id,
+        data: {
+          status: 'subscribed',
+          firstName: firstName || subscription.firstName,
+          lastName: lastName || subscription.lastName,
+          subscribedAt: new Date().toISOString(),
+          unsubscribedAt: null,
+        },
+      })
+    } else {
+      // Create new subscription
+      await payload.create({
+        collection: 'newsletter-subscriptions',
+        data: {
+          email,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          status: 'subscribed',
+          subscribedAt: new Date().toISOString(),
+        },
+      })
+    }
 
     // Send confirmation email
     const subject = 'Welcome to SARSYC VI Newsletter!'

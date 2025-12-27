@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight } from 'react-icons/fi'
+import { showToast } from '@/lib/toast'
 
 function LoginForm() {
   const router = useRouter()
@@ -71,17 +72,17 @@ function LoginForm() {
 
       if (!response.ok) {
         const errorMsg = data.error || `Login failed (${response.status})`
-        console.error('[Login] Login failed:', errorMsg)
+        showToast.error(errorMsg)
         throw new Error(errorMsg)
       }
 
       // Verify authentication was successful
       if (!data.success || !data.token) {
-        console.error('[Login] Authentication verification failed:', { success: data.success, hasToken: !!data.token })
+        showToast.error('Authentication failed - invalid response')
         throw new Error('Authentication failed - invalid response')
       }
       
-      console.log('[Login] Authentication successful!')
+      showToast.success('Login successful!')
 
       // Store token and user info in localStorage for client-side use
       if (data.token) {

@@ -17,6 +17,8 @@ import News from './collections/News'
 import Partners from './collections/Partners'
 import FAQs from './collections/FAQs'
 import Media from './collections/Media'
+import NewsletterSubscriptions from './collections/NewsletterSubscriptions'
+import ContactMessages from './collections/ContactMessages'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -83,6 +85,8 @@ export default buildConfig({
     Partners,
     FAQs,
     Media,
+    NewsletterSubscriptions,
+    ContactMessages,
   ],
   globals: [
     SiteSettings,

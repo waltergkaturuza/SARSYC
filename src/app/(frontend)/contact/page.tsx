@@ -1,21 +1,72 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { FiMail, FiPhone, FiMapPin, FiSend, FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from 'react-icons/fi'
+import { showToast } from '@/lib/toast'
+
+const contactSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  subject: z.enum(['general', 'registration', 'abstract', 'partnership', 'media', 'technical', 'other']),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+})
+
+type ContactFormData = z.infer<typeof contactSchema>
+
+const subjectOptions = [
+  { value: 'general', label: 'General Inquiry' },
+  { value: 'registration', label: 'Registration Support' },
+  { value: 'abstract', label: 'Abstract Submission' },
+  { value: 'partnership', label: 'Partnership Inquiry' },
+  { value: 'media', label: 'Media Inquiry' },
+  { value: 'technical', label: 'Technical Support' },
+  { value: 'other', label: 'Other' },
+]
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      subject: 'general',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
     
-    // TODO: Send to API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSuccess(true)
-    setIsSubmitting(false)
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message')
+      }
+
+      showToast.success(result.message || 'Message sent successfully!')
+      setIsSuccess(true)
+      reset()
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to send message. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,71 +102,103 @@ export default function ContactPage() {
                     <p className="text-gray-600">We'll get back to you within 24-48 hours.</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                           First Name *
                         </label>
                         <input
+                          {...register('firstName')}
                           type="text"
-                          required
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          id="firstName"
+                          className={`w-full px-4 py-3 rounded-lg border ${
+                            errors.firstName ? 'border-red-500' : 'border-gray-300'
+                          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         />
+                        {errors.firstName && (
+                          <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                        )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
                           Last Name *
                         </label>
                         <input
+                          {...register('lastName')}
                           type="text"
-                          required
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          id="lastName"
+                          className={`w-full px-4 py-3 rounded-lg border ${
+                            errors.lastName ? 'border-red-500' : 'border-gray-300'
+                          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         />
+                        {errors.lastName && (
+                          <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                        )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email Address *
                       </label>
                       <input
+                        {...register('email')}
                         type="email"
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        id="email"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                         Subject *
                       </label>
-                      <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                        <option>General Inquiry</option>
-                        <option>Registration Support</option>
-                        <option>Abstract Submission</option>
-                        <option>Partnership Inquiry</option>
-                        <option>Media Inquiry</option>
-                        <option>Technical Support</option>
+                      <select
+                        {...register('subject')}
+                        id="subject"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.subject ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      >
+                        {subjectOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                       </select>
+                      {errors.subject && (
+                        <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                         Message *
                       </label>
                       <textarea
+                        {...register('message')}
+                        id="message"
                         rows={6}
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.message ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="How can we help you?"
                       />
+                      {errors.message && (
+                        <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
+                      )}
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="btn-primary w-full flex items-center justify-center gap-2"
+                      className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                       <FiSend />

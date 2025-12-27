@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiLinkedin, FiTwitter, FiGlobe } from 'react-icons/fi'
+import EmptyState from '@/components/ui/EmptyState'
 
 // This will fetch from Payload CMS - placeholder data for now
 const speakers = [
@@ -69,8 +70,15 @@ export default async function SpeakersPage() {
       {/* Speaker Grid */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {speakers.map((speaker) => (
+          {speakers.length === 0 ? (
+            <EmptyState
+              icon="users"
+              title="No Speakers Announced Yet"
+              description="We're working on bringing you an amazing lineup of speakers. Check back soon for announcements about our keynote speakers, panelists, and workshop facilitators."
+            />
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {speakers.map((speaker) => (
               <div key={speaker.id} className="card group overflow-hidden">
                 <div className="aspect-square relative overflow-hidden bg-gray-200">
                   {/* Placeholder - will use real images */}
@@ -125,19 +133,21 @@ export default async function SpeakersPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Add More Speakers Notice (for admin) */}
-          <div className="mt-12 text-center bg-gray-50 rounded-lg p-8">
-            <h3 className="font-semibold text-gray-900 mb-2">More Speakers Coming Soon!</h3>
-            <p className="text-gray-600 mb-4">
-              We're adding more amazing speakers daily. Check back regularly for updates.
-            </p>
-            <Link href="/news" className="text-primary-600 font-medium hover:underline">
-              Subscribe to updates →
-            </Link>
-          </div>
+          {speakers.length > 0 && (
+            <div className="mt-12 text-center bg-gray-50 rounded-lg p-8">
+              <h3 className="font-semibold text-gray-900 mb-2">More Speakers Coming Soon!</h3>
+              <p className="text-gray-600 mb-4">
+                We're adding more amazing speakers daily. Check back regularly for updates.
+              </p>
+              <Link href="/news" className="text-primary-600 font-medium hover:underline">
+                Subscribe to updates →
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </>
