@@ -1,5 +1,10 @@
-import { FiMapPin, FiHome, FiCoffee, FiInfo } from 'react-icons/fi'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { FiMapPin, FiHome, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
 import Link from 'next/link'
+import InteractiveMap from '@/components/maps/InteractiveMap'
+import { showToast } from '@/lib/toast'
 
 const hotels = [
   {
@@ -33,7 +38,126 @@ const attractions = [
   'Joe\'s Beerhouse (famous restaurant)',
 ]
 
+interface VenueLocation {
+  id: string
+  venueName: string
+  city: string
+  country: string
+  address?: string
+  latitude: number
+  longitude: number
+  zoomLevel?: number
+  description?: string
+  conferenceEdition?: string
+  facilities?: Array<{ facility: string }>
+}
+
 export default function VenuePage() {
+  const [venue, setVenue] = useState<VenueLocation | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchVenue()
+  }, [])
+
+  const fetchVenue = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Try to get current conference venue first
+      const response = await fetch('/api/venue-locations?current=true')
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch venue location')
+      }
+
+      if (result.venues && result.venues.length > 0) {
+        setVenue(result.venues[0])
+      } else {
+        // Fallback: Try to get SARSYC VI venue
+        const fallbackResponse = await fetch('/api/venue-locations?edition=VI')
+        const fallbackResult = await fallbackResponse.json()
+        
+        if (fallbackResult.venues && fallbackResult.venues.length > 0) {
+          setVenue(fallbackResult.venues[0])
+        } else {
+          // Default fallback venue (Windhoek)
+          setVenue({
+            id: 'default',
+            venueName: 'Windhoek International Convention Centre',
+            city: 'Windhoek',
+            country: 'Namibia',
+            address: '123 Independence Avenue, Windhoek, Namibia',
+            latitude: -22.5597,
+            longitude: 17.0832,
+            zoomLevel: 15,
+            conferenceEdition: 'SARSYC VI',
+            description: 'A state-of-the-art facility in the heart of Windhoek, equipped with modern conference amenities and accessibility features.',
+            facilities: [
+              { facility: 'Main plenary hall (capacity: 600)' },
+              { facility: '4 breakout rooms (capacity: 100 each)' },
+              { facility: 'Exhibition area' },
+              { facility: 'WiFi throughout' },
+              { facility: 'Wheelchair accessible' },
+            ],
+          })
+        }
+      }
+    } catch (err: any) {
+      console.error('Error fetching venue:', err)
+      setError(err.message || 'Failed to load venue information')
+      // Set default fallback venue
+      setVenue({
+        id: 'default',
+        venueName: 'Windhoek International Convention Centre',
+        city: 'Windhoek',
+        country: 'Namibia',
+        address: '123 Independence Avenue, Windhoek, Namibia',
+        latitude: -22.5597,
+        longitude: 17.0832,
+        zoomLevel: 15,
+        conferenceEdition: 'SARSYC VI',
+        description: 'A state-of-the-art facility in the heart of Windhoek, equipped with modern conference amenities and accessibility features.',
+        facilities: [
+          { facility: 'Main plenary hall (capacity: 600)' },
+          { facility: '4 breakout rooms (capacity: 100 each)' },
+          { facility: 'Exhibition area' },
+          { facility: 'WiFi throughout' },
+          { facility: 'Wheelchair accessible' },
+        ],
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FiLoader className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading venue information...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!venue) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Failed to load venue information</p>
+          <button onClick={fetchVenue} className="btn-primary">
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Hero */}
@@ -44,7 +168,7 @@ export default function VenuePage() {
               Venue & Accommodation
             </h1>
             <p className="text-xl text-white/90">
-              Everything you need to know about visiting Windhoek, Namibia
+              Everything you need to know about visiting {venue.city}, {venue.country}
             </p>
           </div>
         </div>
@@ -59,62 +183,52 @@ export default function VenuePage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Windhoek International Convention Centre
+                  {venue.venueName}
                 </h3>
+                {venue.conferenceEdition && (
+                  <p className="text-sm text-primary-600 font-semibold mb-2">
+                    {venue.conferenceEdition}
+                  </p>
+                )}
                 <p className="text-lg text-gray-600 mb-6">
-                  A state-of-the-art facility in the heart of Windhoek, equipped with modern conference amenities
-                  and accessibility features.
+                  {venue.description || 'A state-of-the-art facility equipped with modern conference amenities and accessibility features.'}
                 </p>
 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <FiMapPin className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Address</div>
-                      <div className="text-gray-600">123 Independence Avenue<br />Windhoek, Namibia</div>
+                  {venue.address && (
+                    <div className="flex items-start gap-3">
+                      <FiMapPin className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Address</div>
+                        <div className="text-gray-600 whitespace-pre-line">{venue.address}</div>
+                        <div className="text-gray-600">{venue.city}, {venue.country}</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex items-start gap-3">
-                    <FiInfo className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Facilities</div>
-                      <ul className="text-gray-600 text-sm space-y-1">
-                        <li>• Main plenary hall (capacity: 600)</li>
-                        <li>• 4 breakout rooms (capacity: 100 each)</li>
-                        <li>• Exhibition area</li>
-                        <li>• WiFi throughout</li>
-                        <li>• Wheelchair accessible</li>
-                      </ul>
+                  {venue.facilities && venue.facilities.length > 0 && (
+                    <div className="flex items-start gap-3">
+                      <FiInfo className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Facilities</div>
+                        <ul className="text-gray-600 text-sm space-y-1">
+                          {venue.facilities.map((facility, index) => (
+                            <li key={index}>• {typeof facility === 'string' ? facility : facility.facility}</li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Google Maps */}
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-lg">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3580.8652345678901!2d17.0832!3d-22.5597!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDMzJzM0LjkiUyAxN8KwMDQnNTkuNiJF!5e0!3m2!1sen!2s!4v1234567890123!5m2!1sen!2s"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="w-full h-full"
-                  title="SARSYC VI Conference Venue - Windhoek, Namibia"
-                ></iframe>
-              </div>
-              <div className="mt-4 text-center">
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=-22.5597,17.0832"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-2"
-                >
-                  <FiMapPin className="w-4 h-4" />
-                  Open in Google Maps
-                </a>
+              {/* Interactive Map */}
+              <div>
+                <InteractiveMap
+                  venue={venue}
+                  height="500px"
+                  showControls={true}
+                />
               </div>
             </div>
           </div>
@@ -126,7 +240,7 @@ export default function VenuePage() {
         <div className="container-custom">
           <h2 className="section-title">Recommended Accommodation</h2>
           <p className="section-subtitle">
-            We've negotiated special rates with these hotels for SARSYC VI participants
+            We've negotiated special rates with these hotels for {venue.conferenceEdition || 'SARSYC VI'} participants
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -171,7 +285,7 @@ export default function VenuePage() {
       <section className="section bg-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">Getting to Windhoek</h2>
+            <h2 className="section-title">Getting to {venue.city}</h2>
 
             <div className="card p-8 mb-8">
               <div className="flex items-start gap-4 mb-6">
@@ -212,7 +326,7 @@ export default function VenuePage() {
       <section className="section bg-gray-50">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">Explore Windhoek</h2>
+            <h2 className="section-title">Explore {venue.city}</h2>
             <p className="section-subtitle">
               Make the most of your visit with these local attractions
             </p>
@@ -239,4 +353,3 @@ export default function VenuePage() {
     </>
   )
 }
-

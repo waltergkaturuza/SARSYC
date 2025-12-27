@@ -1,6 +1,88 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck } from 'react-icons/fi'
+import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
+import InteractiveMap from '@/components/maps/InteractiveMap'
+
+interface VenueLocation {
+  id: string
+  venueName: string
+  city: string
+  country: string
+  address?: string
+  latitude: number
+  longitude: number
+  zoomLevel?: number
+  description?: string
+  conferenceEdition?: string
+}
+
+function VenueMapSection() {
+  const [venue, setVenue] = useState<VenueLocation | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchVenue()
+  }, [])
+
+  const fetchVenue = async () => {
+    try {
+      const response = await fetch('/api/venue-locations?current=true')
+      const result = await response.json()
+
+      if (result.venues && result.venues.length > 0) {
+        setVenue(result.venues[0])
+      } else {
+        // Fallback to default
+        setVenue({
+          id: 'default',
+          venueName: 'Windhoek International Convention Centre',
+          city: 'Windhoek',
+          country: 'Namibia',
+          address: '123 Independence Avenue, Windhoek, Namibia',
+          latitude: -22.5597,
+          longitude: 17.0832,
+          zoomLevel: 15,
+          conferenceEdition: 'SARSYC VI',
+        })
+      }
+    } catch (error) {
+      // Fallback to default
+      setVenue({
+        id: 'default',
+        venueName: 'Windhoek International Convention Centre',
+        city: 'Windhoek',
+        country: 'Namibia',
+        address: '123 Independence Avenue, Windhoek, Namibia',
+        latitude: -22.5597,
+        longitude: 17.0832,
+        zoomLevel: 15,
+        conferenceEdition: 'SARSYC VI',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading || !venue) {
+    return (
+      <div className="aspect-square lg:aspect-auto lg:h-96 bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+        <div className="text-center text-white">
+          <FiLoader className="w-16 h-16 mx-auto mb-4 opacity-50 animate-spin" />
+          <p className="text-lg font-medium opacity-75">Loading map...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="aspect-square lg:aspect-auto lg:h-96 rounded-2xl overflow-hidden shadow-2xl">
+      <InteractiveMap venue={venue} height="100%" showControls={true} />
+    </div>
+  )
+}
 
 const objectives = [
   {
@@ -288,16 +370,8 @@ export default function SarsycVIPage() {
               </Link>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="aspect-square lg:aspect-auto lg:h-96 bg-gray-700 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="w-full h-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <FiMapPin className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium opacity-75">Interactive Map Coming Soon</p>
-                  <p className="text-sm opacity-60 mt-2">Windhoek, Namibia</p>
-                </div>
-              </div>
-            </div>
+            {/* Interactive Map */}
+            <VenueMapSection />
           </div>
         </div>
       </section>
