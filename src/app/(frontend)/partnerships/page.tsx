@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiDownload, FiMail, FiZap, FiTarget, FiLoader } from 'react-icons/fi'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import EmptyState from '@/components/ui/EmptyState'
+import { showToast } from '@/lib/toast'
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -71,11 +75,34 @@ const partners = [
   },
 ]
 
+const partnershipInquirySchema = z.object({
+  organizationName: z.string().min(2, 'Organization name must be at least 2 characters'),
+  contactPerson: z.string().min(2, 'Contact person name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  phone: z.string().optional(),
+  tier: z.enum(['platinum', 'gold', 'silver', 'bronze', 'exhibitor', 'custom'], {
+    required_error: 'Please select a partnership tier',
+  }),
+  message: z.string().optional(),
+})
+
+type PartnershipInquiryFormData = z.infer<typeof partnershipInquirySchema>
+
 export default function PartnershipsPage() {
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [tiers, setTiers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<PartnershipInquiryFormData>({
+    resolver: zodResolver(partnershipInquirySchema),
+  })
 
   useEffect(() => {
     fetchTiers()
@@ -103,10 +130,30 @@ export default function PartnershipsPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Submit to API
-    setFormSubmitted(true)
+  const onSubmit = async (data: PartnershipInquiryFormData) => {
+    setIsSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/partnerships', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit inquiry')
+      }
+
+      showToast.success(result.message || 'Partnership inquiry submitted successfully!')
+      setFormSubmitted(true)
+      reset()
+    } catch (error: any) {
+      showToast.error(error.message || 'Failed to submit inquiry. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -302,86 +349,128 @@ export default function PartnershipsPage() {
                 </a>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8">
+              <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-xl p-8">
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="organizationName" className="block text-sm font-medium text-gray-700 mb-2">
                         Organization Name *
                       </label>
                       <input
+                        {...register('organizationName')}
                         type="text"
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        id="organizationName"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.organizationName ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.organizationName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.organizationName.message}</p>
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 mb-2">
                         Contact Person *
                       </label>
                       <input
+                        {...register('contactPerson')}
                         type="text"
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        id="contactPerson"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.contactPerson ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.contactPerson && (
+                        <p className="mt-1 text-sm text-red-600">{errors.contactPerson.message}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email Address *
                       </label>
                       <input
+                        {...register('email')}
                         type="email"
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        id="email"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                         Phone Number
                       </label>
                       <input
+                        {...register('phone')}
                         type="tel"
+                        id="phone"
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="tier" className="block text-sm font-medium text-gray-700 mb-2">
                       Partnership Interest *
                     </label>
                     <select
-                      required
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      {...register('tier')}
+                      id="tier"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.tier ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                     >
                       <option value="">Select a tier</option>
-                      {tiers.map((tier) => (
-                        <option key={tier.id || tier.name} value={tier.name.toLowerCase()}>
-                          {tier.name} Sponsor {tier.price && `(${tier.price})`}
-                        </option>
-                      ))}
+                      {tiers.map((tier) => {
+                        // Map tier name to enum value
+                        const tierNameLower = tier.name.toLowerCase()
+                        let enumValue = 'custom'
+                        if (tierNameLower.includes('platinum')) enumValue = 'platinum'
+                        else if (tierNameLower.includes('gold')) enumValue = 'gold'
+                        else if (tierNameLower.includes('silver')) enumValue = 'silver'
+                        else if (tierNameLower.includes('bronze')) enumValue = 'bronze'
+                        
+                        return (
+                          <option key={tier.id || tier.name} value={enumValue}>
+                            {tier.name} Sponsor {tier.price && `(${tier.price})`}
+                          </option>
+                        )
+                      })}
                       <option value="exhibitor">Exhibition Only</option>
                       <option value="custom">Custom Partnership</option>
                     </select>
+                    {errors.tier && (
+                      <p className="mt-1 text-sm text-red-600">{errors.tier.message}</p>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                       Message
                     </label>
                     <textarea
+                      {...register('message')}
+                      id="message"
                       rows={5}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Tell us about your organization and partnership goals..."
                     />
                   </div>
 
-                  <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <FiMail />
-                    Submit Partnership Inquiry
+                    {isSubmitting ? 'Submitting...' : 'Submit Partnership Inquiry'}
                   </button>
 
                   <p className="text-sm text-gray-500 text-center">

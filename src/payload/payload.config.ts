@@ -20,6 +20,7 @@ import Media from './collections/Media'
 import NewsletterSubscriptions from './collections/NewsletterSubscriptions'
 import ContactMessages from './collections/ContactMessages'
 import SponsorshipTiers from './collections/SponsorshipTiers'
+import PartnershipInquiries from './collections/PartnershipInquiries'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -89,6 +90,7 @@ export default buildConfig({
     NewsletterSubscriptions,
     ContactMessages,
     SponsorshipTiers,
+    PartnershipInquiries,
   ],
   globals: [
     SiteSettings,
