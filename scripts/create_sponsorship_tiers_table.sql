@@ -26,12 +26,19 @@ CREATE TABLE IF NOT EXISTS "sponsorship_tiers" (
 );
 
 -- Add foreign key for benefits array
-ALTER TABLE "sponsorship_tiers_benefits" 
-  ADD CONSTRAINT IF NOT EXISTS "sponsorship_tiers_benefits_parent_fk" 
-  FOREIGN KEY ("_parent_id") 
-  REFERENCES "public"."sponsorship_tiers"("id") 
-  ON DELETE cascade 
-  ON UPDATE no action;
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'sponsorship_tiers_benefits_parent_fk'
+  ) THEN
+    ALTER TABLE "sponsorship_tiers_benefits" 
+      ADD CONSTRAINT "sponsorship_tiers_benefits_parent_fk" 
+      FOREIGN KEY ("_parent_id") 
+      REFERENCES "public"."sponsorship_tiers"("id") 
+      ON DELETE cascade 
+      ON UPDATE no action;
+  END IF;
+END $$;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS "sponsorship_tiers_benefits_order_idx" 
@@ -48,15 +55,31 @@ CREATE INDEX IF NOT EXISTS "sponsorship_tiers_created_at_idx"
   ON "sponsorship_tiers" USING btree ("created_at");
 
 -- Add to payload_locked_documents_rels if needed
-ALTER TABLE "payload_locked_documents_rels" 
-  ADD COLUMN IF NOT EXISTS "sponsorship_tiers_id" integer;
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'payload_locked_documents_rels' 
+    AND column_name = 'sponsorship_tiers_id'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels" 
+      ADD COLUMN "sponsorship_tiers_id" integer;
+  END IF;
+END $$;
 
-ALTER TABLE "payload_locked_documents_rels" 
-  ADD CONSTRAINT IF NOT EXISTS "payload_locked_documents_rels_sponsorship_tiers_fk" 
-  FOREIGN KEY ("sponsorship_tiers_id") 
-  REFERENCES "public"."sponsorship_tiers"("id") 
-  ON DELETE cascade 
-  ON UPDATE no action;
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_sponsorship_tiers_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels" 
+      ADD CONSTRAINT "payload_locked_documents_rels_sponsorship_tiers_fk" 
+      FOREIGN KEY ("sponsorship_tiers_id") 
+      REFERENCES "public"."sponsorship_tiers"("id") 
+      ON DELETE cascade 
+      ON UPDATE no action;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_sponsorship_tiers_id_idx" 
   ON "payload_locked_documents_rels" USING btree ("sponsorship_tiers_id");
