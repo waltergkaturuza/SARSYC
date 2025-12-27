@@ -39,47 +39,78 @@ type MapLayer = 'street' | 'satellite' | 'terrain' | 'hybrid'
 // Component to handle map layer changes
 function MapLayerController({ layer }: { layer: MapLayer }) {
   const map = useMap()
+  const [tileLayer, setTileLayer] = useState<L.TileLayer | null>(null)
+  const [overlayLayer, setOverlayLayer] = useState<L.TileLayer | null>(null)
 
   useEffect(() => {
     // Remove existing layers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.TileLayer) {
-        map.removeLayer(layer)
-      }
-    })
+    if (tileLayer) {
+      map.removeLayer(tileLayer)
+    }
+    if (overlayLayer) {
+      map.removeLayer(overlayLayer)
+    }
+
+    let newTileLayer: L.TileLayer | null = null
+    let newOverlayLayer: L.TileLayer | null = null
 
     // Add new layer based on selection
     switch (layer) {
       case 'satellite':
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        newTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: '© Esri',
           maxZoom: 20,
-        }).addTo(map)
+          minZoom: 1,
+          crossOrigin: true,
+        })
+        newTileLayer.addTo(map)
         break
       case 'terrain':
-        L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        newTileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenTopoMap',
           maxZoom: 20,
-        }).addTo(map)
+          minZoom: 1,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true,
+        })
+        newTileLayer.addTo(map)
         break
       case 'hybrid':
         // Hybrid: Satellite with labels
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        newTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: '© Esri',
           maxZoom: 20,
-        }).addTo(map)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          minZoom: 1,
+          crossOrigin: true,
+        })
+        newTileLayer.addTo(map)
+        
+        newOverlayLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap',
           maxZoom: 20,
-          opacity: 0.3,
-        }).addTo(map)
+          minZoom: 1,
+          opacity: 0.4,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true,
+        })
+        newOverlayLayer.addTo(map)
         break
       default: // street
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        newTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 20,
-        }).addTo(map)
+          minZoom: 1,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true,
+        })
+        newTileLayer.addTo(map)
     }
+
+    setTileLayer(newTileLayer)
+    setOverlayLayer(newOverlayLayer)
+
+    // Force a redraw to ensure tiles load
+    map.invalidateSize()
   }, [map, layer])
 
   return null
@@ -92,6 +123,30 @@ function ZoomController({ zoom }: { zoom: number }) {
   useEffect(() => {
     map.setZoom(zoom)
   }, [map, zoom])
+
+  return null
+}
+
+// Component to handle map initialization
+function MapInitializer() {
+  const map = useMap()
+
+  useEffect(() => {
+    // Ensure map is properly sized and tiles load
+    map.invalidateSize()
+    
+    // Force tile reload after a short delay to ensure they load
+    const timer = setTimeout(() => {
+      map.invalidateSize()
+      map.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer) {
+          layer.redraw()
+        }
+      })
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [map])
 
   return null
 }
@@ -144,8 +199,8 @@ export default function InteractiveMap({
     <div className={`relative ${className}`}>
       {/* Map Container */}
       <div
-        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200"
-        style={{ height }}
+        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100"
+        style={{ height, minHeight: '400px' }}
       >
         <MapContainer
           center={[venue.latitude, venue.longitude]}
@@ -154,9 +209,11 @@ export default function InteractiveMap({
           style={{ height: '100%', width: '100%', zIndex: 0 }}
           maxZoom={20}
           minZoom={1}
+          zoomControl={true}
         >
           <MapLayerController layer={currentLayer} />
           <ZoomController zoom={zoomLevel} />
+          <MapInitializer />
 
           <Marker
             position={[venue.latitude, venue.longitude]}

@@ -79,7 +79,7 @@ function VenueMapSection() {
 
   if (loading || !venue) {
     return (
-      <div className="aspect-square lg:aspect-auto lg:h-96 bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+      <div className="w-full h-[500px] lg:h-[600px] bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
         <div className="text-center text-white">
           <FiLoader className="w-16 h-16 mx-auto mb-4 opacity-50 animate-spin" />
           <p className="text-lg font-medium opacity-75">Loading map...</p>
@@ -89,7 +89,7 @@ function VenueMapSection() {
   }
 
   return (
-    <div className="aspect-square lg:aspect-auto lg:h-96 rounded-2xl overflow-hidden shadow-2xl">
+    <div className="w-full h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
       <InteractiveMap venue={venue} height="100%" showControls={true} />
     </div>
   )
