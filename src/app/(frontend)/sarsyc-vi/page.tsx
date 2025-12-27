@@ -4,7 +4,18 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
-import InteractiveMap from '@/components/maps/InteractiveMap'
+import dynamic from 'next/dynamic'
+
+const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="aspect-square lg:aspect-auto lg:h-96 bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+      <div className="text-center text-white">
+        <p className="text-lg font-medium opacity-75">Loading map...</p>
+      </div>
+    </div>
+  ),
+})
 
 interface VenueLocation {
   id: string

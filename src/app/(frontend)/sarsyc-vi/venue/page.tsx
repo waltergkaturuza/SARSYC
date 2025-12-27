@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react'
 import { FiMapPin, FiHome, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
 import Link from 'next/link'
-import InteractiveMap from '@/components/maps/InteractiveMap'
+import dynamic from 'next/dynamic'
+
+const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-gray-200 rounded-2xl flex items-center justify-center" style={{ height: '500px' }}>
+      <div className="text-gray-500">Loading map...</div>
+    </div>
+  ),
+})
 import { showToast } from '@/lib/toast'
 
 const hotels = [
