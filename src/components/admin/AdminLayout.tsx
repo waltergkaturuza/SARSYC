@@ -111,14 +111,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 z-50 h-screen bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 ${
           sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
         } w-64`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 flex-shrink-0">
           <div className={`flex items-center gap-3 transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
             <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg shadow-primary-600/30">
               S6
@@ -147,8 +147,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-3">
+        {/* Navigation - Scrollable */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 min-h-0">
           <div className="space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon
@@ -193,8 +193,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-gray-200 p-3">
+        {/* Footer - Fixed at bottom */}
+        <div className="border-t border-gray-200 p-3 flex-shrink-0">
           <Link
             href="/"
             className={`flex items-center gap-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:shadow-sm transition-all group relative ${
