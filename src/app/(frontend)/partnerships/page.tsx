@@ -1,71 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiDownload, FiMail } from 'react-icons/fi'
+import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiDownload, FiMail, FiZap, FiTarget, FiLoader } from 'react-icons/fi'
+import EmptyState from '@/components/ui/EmptyState'
 
-const tiers = [
-  {
-    name: 'Platinum',
-    price: '$25,000',
-    color: 'from-gray-300 to-gray-400',
-    icon: FiStar,
-    benefits: [
-      'Logo on all conference materials',
-      'Exhibition booth (premium location)',
-      'Speaking opportunity (20 min keynote)',
-      'VIP networking reception access',
-      '10 complimentary registrations',
-      'Full-page ad in conference programme',
-      'Recognition in opening and closing ceremonies',
-      'Social media feature (10+ posts)',
-      'Post-conference impact report with logo',
-    ],
-  },
-  {
-    name: 'Gold',
-    price: '$15,000',
-    color: 'from-yellow-400 to-yellow-500',
-    icon: FiAward,
-    popular: true,
-    benefits: [
-      'Logo on conference website and materials',
-      'Exhibition booth (standard location)',
-      'Panel participation opportunity',
-      'VIP networking reception access',
-      '6 complimentary registrations',
-      'Half-page ad in conference programme',
-      'Recognition in ceremonies',
-      'Social media feature (5+ posts)',
-    ],
-  },
-  {
-    name: 'Silver',
-    price: '$8,000',
-    color: 'from-gray-400 to-gray-500',
-    icon: FiTrendingUp,
-    benefits: [
-      'Logo on conference website',
-      'Exhibition table',
-      '4 complimentary registrations',
-      'Quarter-page ad in programme',
-      'Recognition in ceremonies',
-      'Social media mention (3 posts)',
-    ],
-  },
-  {
-    name: 'Bronze',
-    price: '$3,000',
-    color: 'from-orange-600 to-orange-700',
-    icon: FiHeart,
-    benefits: [
-      'Logo on conference website',
-      '2 complimentary registrations',
-      'Logo in programme',
-      'Social media mention (1 post)',
-    ],
-  },
-]
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  star: FiStar,
+  award: FiAward,
+  trending: FiTrendingUp,
+  heart: FiHeart,
+  diamond: FiZap, // Using Zap as alternative for diamond
+  trophy: FiTarget, // Using Target as alternative for trophy
+}
+
+// Color mapping
+const colorMap: Record<string, string> = {
+  gray: 'from-gray-300 to-gray-400',
+  yellow: 'from-yellow-400 to-yellow-500',
+  silver: 'from-gray-400 to-gray-500',
+  orange: 'from-orange-600 to-orange-700',
+  blue: 'from-blue-400 to-blue-500',
+  purple: 'from-purple-400 to-purple-500',
+  green: 'from-green-400 to-green-500',
+  red: 'from-red-400 to-red-500',
+}
 
 // Partner organizations with their logos
 const partners = [
@@ -113,6 +73,35 @@ const partners = [
 
 export default function PartnershipsPage() {
   const [formSubmitted, setFormSubmitted] = useState(false)
+  const [tiers, setTiers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchTiers()
+  }, [])
+
+  const fetchTiers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/sponsorship-tiers')
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch sponsorship tiers')
+      }
+
+      setTiers(result.tiers || [])
+    } catch (err: any) {
+      console.error('Error fetching tiers:', err)
+      setError(err.message || 'Failed to load sponsorship tiers')
+      // Fallback to empty array - will show empty state
+      setTiers([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -174,47 +163,73 @@ export default function PartnershipsPage() {
             Choose the partnership level that aligns with your organization's goals and budget.
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {tiers.map((tier) => {
-              const Icon = tier.icon
-              return (
-                <div
-                  key={tier.name}
-                  className={`card overflow-hidden ${
-                    tier.popular ? 'ring-4 ring-accent-500 transform scale-105' : ''
-                  }`}
-                >
-                  {tier.popular && (
-                    <div className="bg-accent-500 text-gray-900 text-center py-2 px-4 font-bold text-sm">
-                      MOST POPULAR
-                    </div>
-                  )}
-                  
-                  <div className="p-6">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${tier.color} rounded-xl flex items-center justify-center text-white mb-4`}>
-                      <Icon className="w-8 h-8" />
-                    </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <FiLoader className="w-8 h-8 animate-spin text-primary-600" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button onClick={fetchTiers} className="btn-outline">
+                Try Again
+              </button>
+            </div>
+          ) : tiers.length === 0 ? (
+            <EmptyState
+              icon="award"
+              title="No Sponsorship Tiers Available"
+              description="Sponsorship packages are being configured. Please check back soon or contact us for partnership opportunities."
+            />
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {tiers.map((tier) => {
+                const IconComponent = iconMap[tier.icon] || FiStar
+                const colorClass = colorMap[tier.color] || colorMap.gray
+                const benefits = tier.benefits || []
+                
+                return (
+                  <div
+                    key={tier.id || tier.name}
+                    className={`card overflow-hidden ${
+                      tier.isPopular ? 'ring-4 ring-accent-500 transform scale-105' : ''
+                    }`}
+                  >
+                    {tier.isPopular && (
+                      <div className="bg-accent-500 text-gray-900 text-center py-2 px-4 font-bold text-sm">
+                        MOST POPULAR
+                      </div>
+                    )}
                     
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-                    <div className="text-3xl font-bold text-primary-600 mb-6">{tier.price}</div>
-                    
-                    <ul className="space-y-3 mb-8">
-                      {tier.benefits.map((benefit) => (
-                        <li key={benefit} className="flex items-start gap-2 text-sm">
-                          <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-600">{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="p-6">
+                      <div className={`w-16 h-16 bg-gradient-to-br ${colorClass} rounded-xl flex items-center justify-center text-white mb-4`}>
+                        <IconComponent className="w-8 h-8" />
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
+                      <div className="text-3xl font-bold text-primary-600 mb-6">{tier.price}</div>
+                      
+                      {tier.description && (
+                        <p className="text-sm text-gray-600 mb-4">{tier.description}</p>
+                      )}
+                      
+                      <ul className="space-y-3 mb-8">
+                        {benefits.map((benefit: any, index: number) => (
+                          <li key={index} className="flex items-start gap-2 text-sm">
+                            <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-600">{benefit.benefit || benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
 
-                    <button className="btn-primary w-full" onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}>
-                      Get Started
-                    </button>
+                      <button className="btn-primary w-full" onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}>
+                        Get Started
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
 
           <div className="text-center mt-8">
             <button className="btn-outline flex items-center gap-2 mx-auto">
@@ -343,10 +358,11 @@ export default function PartnershipsPage() {
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Select a tier</option>
-                      <option value="platinum">Platinum Sponsor</option>
-                      <option value="gold">Gold Sponsor</option>
-                      <option value="silver">Silver Sponsor</option>
-                      <option value="bronze">Bronze Sponsor</option>
+                      {tiers.map((tier) => (
+                        <option key={tier.id || tier.name} value={tier.name.toLowerCase()}>
+                          {tier.name} Sponsor {tier.price && `(${tier.price})`}
+                        </option>
+                      ))}
                       <option value="exhibitor">Exhibition Only</option>
                       <option value="custom">Custom Partnership</option>
                     </select>
