@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation'
 import { 
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
-  FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight
+  FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
+  FiAward
 } from 'react-icons/fi'
 
 const navigation = [
@@ -57,6 +58,12 @@ const navigation = [
     href: '/admin/partners',
     icon: FiHeart,
     description: 'Manage sponsors',
+  },
+  {
+    name: 'Sponsorship Tiers',
+    href: '/admin/sponsorship-tiers',
+    icon: FiAward,
+    description: 'Manage pricing tiers',
   },
   {
     name: 'Users',
