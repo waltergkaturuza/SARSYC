@@ -926,6 +926,8 @@ export default function RegisterPage() {
                                 
                                 setPassportFile(file)
                                 clearErrors('passportScan')
+                                // Also clear any manual errors set elsewhere
+                                setSubmitError(null)
                                 
                                 // Extract passport data automatically (only for images)
                                 if (file.type.startsWith('image/')) {
@@ -1033,11 +1035,11 @@ export default function RegisterPage() {
                               }
                             }}
                             className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.passportScan ? 'border-red-500' : 'border-gray-300'
+                              errors.passportScan && !passportFile ? 'border-red-500' : 'border-gray-300'
                             } focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100`}
                           />
                         </div>
-                        {errors.passportScan && (
+                        {errors.passportScan && !passportFile && (
                           <p className="mt-1 text-sm text-red-600">{errors.passportScan.message as string}</p>
                         )}
                         {passportFile && (
@@ -1774,12 +1776,38 @@ function RegistrationPreview({ data, passportFile }: { data: any, passportFile: 
         </div>
       </div>
 
+      {/* Organization */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FiBriefcase />
+          Organization
+        </h3>
+        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium text-gray-700">Organization:</span>
+              <span className="ml-2 text-gray-900">{data.organization || 'Not provided'}</span>
+            </div>
+            {data.organizationPosition && (
+              <div>
+                <span className="font-medium text-gray-700">Position:</span>
+                <span className="ml-2 text-gray-900">{data.organizationPosition}</span>
+              </div>
+            )}
+            <div>
+              <span className="font-medium text-gray-700">Category:</span>
+              <span className="ml-2 text-gray-900 capitalize">{data.category?.replace(/-/g, ' ') || 'Not provided'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Passport Information (if international) */}
       {data.isInternational && (
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <FiGlobe />
-            Passport Information
+            Passport & Travel Information
           </h3>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 text-sm">
             <p className="text-xs text-yellow-800 mb-3 font-medium">
@@ -1800,8 +1828,145 @@ function RegistrationPreview({ data, passportFile }: { data: any, passportFile: 
               </div>
               <div>
                 <span className="font-medium text-gray-700">Passport File:</span>
-                <span className="ml-2 text-gray-900">{passportFile ? passportFile.name : 'Not uploaded'}</span>
+                <span className="ml-2 text-gray-900">{passportFile ? `${passportFile.name} (${(passportFile.size / 1024).toFixed(1)} KB)` : 'Not uploaded'}</span>
               </div>
+            </div>
+          </div>
+
+          {/* Visa Information */}
+          {data.visaRequired && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-gray-900 mb-2">Visa Information</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium text-gray-700">Visa Status:</span>
+                  <span className="ml-2 text-gray-900 capitalize">{data.visaStatus?.replace(/-/g, ' ') || 'Not provided'}</span>
+                </div>
+                {data.visaInvitationLetterRequired && (
+                  <div>
+                    <span className="font-medium text-gray-700">Invitation Letter:</span>
+                    <span className="ml-2 text-green-600">✓ Required</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Travel Information */}
+          {(data.arrivalDate || data.departureDate || data.flightNumber) && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-gray-900 mb-2">Travel Details</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                {data.arrivalDate && (
+                  <div>
+                    <span className="font-medium text-gray-700">Arrival Date:</span>
+                    <span className="ml-2 text-gray-900">{formatDate(data.arrivalDate)}</span>
+                  </div>
+                )}
+                {data.departureDate && (
+                  <div>
+                    <span className="font-medium text-gray-700">Departure Date:</span>
+                    <span className="ml-2 text-gray-900">{formatDate(data.departureDate)}</span>
+                  </div>
+                )}
+                {data.flightNumber && (
+                  <div>
+                    <span className="font-medium text-gray-700">Flight Number:</span>
+                    <span className="ml-2 text-gray-900">{data.flightNumber}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Travel Insurance */}
+          {(data.travelInsuranceProvider || data.travelInsurancePolicyNumber || data.travelInsuranceExpiry) && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-gray-900 mb-2">Travel Insurance</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                {data.travelInsuranceProvider && (
+                  <div>
+                    <span className="font-medium text-gray-700">Provider:</span>
+                    <span className="ml-2 text-gray-900">{data.travelInsuranceProvider}</span>
+                  </div>
+                )}
+                {data.travelInsurancePolicyNumber && (
+                  <div>
+                    <span className="font-medium text-gray-700">Policy Number:</span>
+                    <span className="ml-2 text-gray-900">{data.travelInsurancePolicyNumber}</span>
+                  </div>
+                )}
+                {data.travelInsuranceExpiry && (
+                  <div>
+                    <span className="font-medium text-gray-700">Expiry Date:</span>
+                    <span className="ml-2 text-gray-900">{formatDate(data.travelInsuranceExpiry)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Accommodation */}
+          {data.accommodationRequired && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-gray-900 mb-2">Accommodation</h4>
+              <div>
+                <span className="font-medium text-gray-700">Accommodation Required:</span>
+                <span className="ml-2 text-green-600">✓ Yes</span>
+              </div>
+              {data.accommodationPreferences && (
+                <div className="mt-2">
+                  <span className="font-medium text-gray-700">Preferences:</span>
+                  <p className="ml-2 text-gray-900 mt-1">{data.accommodationPreferences}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Health Insurance */}
+          {data.hasHealthInsurance && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-gray-900 mb-2">Health Insurance</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                {data.insuranceProvider && (
+                  <div>
+                    <span className="font-medium text-gray-700">Provider:</span>
+                    <span className="ml-2 text-gray-900">{data.insuranceProvider}</span>
+                  </div>
+                )}
+                {data.insurancePolicyNumber && (
+                  <div>
+                    <span className="font-medium text-gray-700">Policy Number:</span>
+                    <span className="ml-2 text-gray-900">{data.insurancePolicyNumber}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* National ID (if not international) */}
+      {!data.isInternational && (data.nationalIdNumber || data.nationalIdType) && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <FiShield />
+            National ID Information
+          </h3>
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+            <div className="grid md:grid-cols-2 gap-4">
+              {data.nationalIdNumber && (
+                <div>
+                  <span className="font-medium text-gray-700">ID Number:</span>
+                  <span className="ml-2 text-gray-900">{data.nationalIdNumber}</span>
+                </div>
+              )}
+              {data.nationalIdType && (
+                <div>
+                  <span className="font-medium text-gray-700">ID Type:</span>
+                  <span className="ml-2 text-gray-900 capitalize">{data.nationalIdType?.replace(/-/g, ' ')}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1831,7 +1996,71 @@ function RegistrationPreview({ data, passportFile }: { data: any, passportFile: 
               <span className="font-medium text-gray-700">Email:</span>
               <span className="ml-2 text-gray-900">{data.emergencyContactEmail}</span>
             </div>
+            <div className="md:col-span-2">
+              <span className="font-medium text-gray-700">Address:</span>
+              <span className="ml-2 text-gray-900">{data.emergencyContactAddress}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">City:</span>
+              <span className="ml-2 text-gray-900">{data.emergencyContactCity}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Country:</span>
+              <span className="ml-2 text-gray-900">{getCountryName(data.emergencyContactCountry)}</span>
+            </div>
+            {data.emergencyContactPostalCode && (
+              <div>
+                <span className="font-medium text-gray-700">Postal Code:</span>
+                <span className="ml-2 text-gray-900">{data.emergencyContactPostalCode}</span>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
+
+      {/* Preferences */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FiCheck />
+          Preferences & Requirements
+        </h3>
+        <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
+          {data.dietaryRestrictions && data.dietaryRestrictions.length > 0 && (
+            <div>
+              <span className="font-medium text-gray-700">Dietary Restrictions:</span>
+              <div className="ml-2 mt-1">
+                {data.dietaryRestrictions.map((restriction: string, index: number) => (
+                  <span key={index} className="inline-block bg-primary-100 text-primary-800 px-2 py-1 rounded mr-2 mb-2 capitalize">
+                    {restriction.replace(/-/g, ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.accessibilityNeeds && (
+            <div>
+              <span className="font-medium text-gray-700">Accessibility Needs:</span>
+              <p className="ml-2 text-gray-900 mt-1">{data.accessibilityNeeds}</p>
+            </div>
+          )}
+          {data.tshirtSize && (
+            <div>
+              <span className="font-medium text-gray-700">T-Shirt Size:</span>
+              <span className="ml-2 text-gray-900 uppercase">{data.tshirtSize}</span>
+            </div>
+          )}
+          {data.medicalConditions && (
+            <div>
+              <span className="font-medium text-gray-700">Medical Conditions:</span>
+              <p className="ml-2 text-gray-900 mt-1">{data.medicalConditions}</p>
+            </div>
+          )}
+          {data.bloodType && (
+            <div>
+              <span className="font-medium text-gray-700">Blood Type:</span>
+              <span className="ml-2 text-gray-900">{data.bloodType.toUpperCase().replace(/-/g, '')}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
