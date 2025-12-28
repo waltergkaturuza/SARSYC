@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       sort: '-createdAt',
+      depth: 2, // Populate photo relationship fully
     })
 
     return NextResponse.json(speakers)

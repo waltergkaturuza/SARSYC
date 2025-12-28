@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiMapPin, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiArrowRight } from 'react-icons/fi'
+import { FiCalendar, FiMapPin, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiArrowRight, FiMic, FiUser } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
+import { getPayloadClient } from '@/lib/payload'
 
 // This will be fetched from Payload CMS in production
 const stats = [
@@ -38,8 +39,41 @@ const tracks = [
   },
 ]
 
-export default function HomePage() {
+// Helper function to get speaker photo URL
+function getSpeakerPhotoUrl(photo: any): string | null {
+  if (!photo) return null
+  if (typeof photo === 'string') return null
+  
+  // Try different URL locations for Vercel Blob or local storage
+  return (
+    photo.url ||
+    photo.sizes?.card?.url ||
+    photo.sizes?.thumbnail?.url ||
+    photo.sizes?.hero?.url ||
+    null
+  )
+}
+
+export default async function HomePage() {
   const conferenceDate = process.env.NEXT_PUBLIC_CONFERENCE_DATE || '2026-08-05T09:00:00'
+  
+  // Fetch featured speakers
+  let featuredSpeakers: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const speakersResult = await payload.find({
+      collection: 'speakers',
+      where: {
+        featured: { equals: true },
+      },
+      limit: 6,
+      sort: '-createdAt',
+      depth: 2, // Populate photo relationship fully
+    })
+    featuredSpeakers = speakersResult.docs || []
+  } catch (error) {
+    console.error('Error fetching featured speakers:', error)
+  }
 
   return (
     <>
@@ -236,6 +270,86 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Speakers Section */}
+      {featuredSpeakers.length > 0 && (
+        <section className="section bg-white">
+          <div className="container-custom">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="section-title">Featured Speakers</h2>
+              <p className="section-subtitle">
+                Meet some of the distinguished speakers who will be sharing their expertise at SARSYC VI.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredSpeakers.map((speaker: any) => {
+                const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+                return (
+                  <Link
+                    key={speaker.id}
+                    href={`/programme/speakers/${speaker.id}`}
+                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                      {photoUrl ? (
+                        <Image
+                          src={photoUrl}
+                          alt={speaker.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-400 to-secondary-400">
+                          <FiUser className="w-16 h-16 text-white opacity-50" />
+                        </div>
+                      )}
+                      {speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote') && (
+                        <div className="absolute top-2 right-2 bg-accent-500 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
+                          KEYNOTE
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
+                        {speaker.name}
+                      </h3>
+                      <p className="text-sm text-primary-600 font-medium mb-2">
+                        {speaker.title}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {speaker.organization}
+                      </p>
+                      {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {speaker.expertise.slice(0, 2).map((exp: any, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                            >
+                              {exp.area || exp}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link href="/programme/speakers" className="btn-primary">
+                View All Speakers
+                <FiArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="section bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
