@@ -19,17 +19,30 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData()
       
       // Extract all form fields
+      // First pass: collect all keys to identify arrays
+      const fieldCounts: Record<string, number> = {}
+      for (const [key] of formData.entries()) {
+        if (key !== 'passportScan') {
+          fieldCounts[key] = (fieldCounts[key] || 0) + 1
+        }
+      }
+      
+      // Second pass: extract values
       for (const [key, value] of formData.entries()) {
         if (key === 'passportScan' && value instanceof File) {
           passportFile = value
         } else {
-          // Handle arrays (like dietaryRestrictions)
-          if (key.includes('[]') || Array.isArray(registrationData[key])) {
+          // Handle arrays (like dietaryRestrictions) - if key appears multiple times, it's an array
+          if (fieldCounts[key] > 1 || key.includes('[]')) {
             const arrayKey = key.replace('[]', '')
             if (!Array.isArray(registrationData[arrayKey])) {
               registrationData[arrayKey] = []
             }
-            registrationData[arrayKey].push(value.toString())
+            const stringValue = value.toString()
+            // Only add if not already in array (avoid duplicates)
+            if (!registrationData[arrayKey].includes(stringValue)) {
+              registrationData[arrayKey].push(stringValue)
+            }
           } else {
             registrationData[key] = value.toString()
           }
