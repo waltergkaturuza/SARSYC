@@ -290,12 +290,26 @@ export async function POST(request: NextRequest) {
             
             console.log('📤 Uploading to Vercel Blob with token:', blobToken.substring(0, 20) + '...')
             
+            // CRITICAL FIX: Convert Buffer to Blob for Vercel Blob SDK
+            // @vercel/blob does NOT support raw Buffers in serverless environments
+            // It expects Blob, ReadableStream, or File objects
+            const pdfBlob = new Blob([buffer], { type: 'application/pdf' })
+            
+            // Sanity check before upload
+            console.log('🧪 Blob upload input check:', {
+              isBlob: pdfBlob instanceof Blob,
+              size: pdfBlob.size,
+              type: pdfBlob.type,
+              bufferLength: buffer.length,
+            })
+            
             // Upload to Vercel Blob
             let blob: any
             try {
-              blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, buffer, {
+              // Pass Blob, NOT buffer - this is critical for serverless
+              blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, pdfBlob, {
                 access: 'public',
-                contentType: 'application/pdf',
+                // Do NOT pass contentType manually - Blob already carries it
                 token: blobToken, // Explicitly pass the token
               })
               console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
