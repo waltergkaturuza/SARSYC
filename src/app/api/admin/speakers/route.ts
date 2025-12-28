@@ -63,15 +63,37 @@ export async function POST(request: NextRequest) {
     })
 
     // Upload photo
+    // Convert File to Buffer for Payload CMS (required in serverless environments)
     let photoId: string | undefined
     try {
       console.log('Attempting to upload photo to media collection...')
+      
+      // Convert File to ArrayBuffer then Buffer for Payload
+      const arrayBuffer = await photoFile.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      
+      // Create a new File-like object with the buffer
+      // Payload expects either a File or a Buffer with file metadata
+      const fileForPayload = {
+        data: buffer,
+        name: photoFile.name,
+        size: photoFile.size,
+        type: photoFile.type,
+        mimetype: photoFile.type,
+      }
+      
+      console.log('File converted to buffer:', {
+        bufferSize: buffer.length,
+        name: fileForPayload.name,
+        type: fileForPayload.type,
+      })
+      
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
         },
-        file: photoFile,
+        file: fileForPayload as any, // Payload accepts File-like objects
         overrideAccess: true, // Allow admin uploads
       })
       
