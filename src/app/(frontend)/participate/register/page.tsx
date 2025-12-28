@@ -289,8 +289,10 @@ export default function RegisterPage() {
           })
 
           // Upload to dedicated upload endpoint
+          // Include email to create consistent filename and prevent duplicates
           const uploadFormData = new FormData()
           uploadFormData.append('file', passportFile)
+          uploadFormData.append('email', data.email) // Include email for duplicate prevention
 
           const uploadResponse = await fetch('/api/upload/passport', {
             method: 'POST',
