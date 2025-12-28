@@ -191,23 +191,13 @@ export async function POST(request: NextRequest) {
             isPDFHeader: buffer.subarray(0, 4).toString() === '%PDF',
           })
           
-          // Explicitly set MIME type in data if it's a PDF
-          // This helps Payload validate the file type correctly
-          const mediaData: any = {
-            alt: `Passport scan for ${registrationData.email || 'registration'}`,
-          }
-          
-          // If it's a PDF, explicitly set the MIME type to help Payload validate it
-          if (fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')) {
-            // Payload might detect MIME type from content, but we can help by ensuring
-            // the filename and type are consistent
-            console.log('📄 PDF file detected, ensuring MIME type is set correctly')
-          }
+          // Check if it's a PDF file
+          const isPDF = fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')
           
           // For PDFs, upload directly to Vercel Blob to bypass Payload's MIME type validation
           // Then create a media record with the URL
-          if (fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')) {
-            console.log('📄 Uploading PDF directly to Vercel Blob to bypass Payload validation...')
+          if (isPDF) {
+            console.log('📄 PDF file detected, uploading directly to Vercel Blob to bypass Payload validation...')
             
             // Get the token from environment variable
             const blobToken = process.env.BLOB_READ_WRITE_TOKEN
@@ -224,11 +214,11 @@ export async function POST(request: NextRequest) {
             
             console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
             
-            // Create media record with the blob URL
+            // Create media record with the blob URL (without file upload)
             uploadedFile = await payload.create({
               collection: 'media',
               data: {
-                ...mediaData,
+                alt: `Passport scan for ${registrationData.email || 'registration'}`,
                 url: blob.url,
                 filename: fileForPayload.name,
                 mimeType: 'application/pdf',
@@ -240,7 +230,9 @@ export async function POST(request: NextRequest) {
             // For images, use normal Payload upload
             uploadedFile = await payload.create({
               collection: 'media',
-              data: mediaData,
+              data: {
+                alt: `Passport scan for ${registrationData.email || 'registration'}`,
+              },
               file: fileForPayload,
               overrideAccess: true, // Allow public uploads for registration passport scans
             })
