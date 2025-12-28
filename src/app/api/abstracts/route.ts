@@ -6,8 +6,9 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
+  let body: any = null
   try {
-    const body = await request.json()
+    body = await request.json()
     const payload = await getPayloadClient()
 
     // Transform keywords from string to array
@@ -16,16 +17,60 @@ export async function POST(request: NextRequest) {
       : []
 
     // Transform coAuthors from array of strings or objects to proper format
-    let coAuthors = []
-    if (body.coAuthors && Array.isArray(body.coAuthors)) {
-      coAuthors = body.coAuthors.map((ca: any) => {
-        if (typeof ca === 'string') {
-          // If it's just a string, assume it's a name
-          return { name: ca.trim(), organization: '' }
-        }
-        // If it's an object, use it as is
-        return { name: ca.name?.trim() || '', organization: ca.organization?.trim() || '' }
-      }).filter((ca: any) => ca.name.length > 0)
+    let coAuthors: any[] = []
+    if (body.coAuthors) {
+      if (Array.isArray(body.coAuthors)) {
+        coAuthors = body.coAuthors.map((ca: any) => {
+          if (typeof ca === 'string') {
+            // If it's just a string, assume it's a name
+            return { name: ca.trim(), organization: '' }
+          }
+          // If it's an object, use it as is
+          return { name: ca.name?.trim() || '', organization: ca.organization?.trim() || '' }
+        }).filter((ca: any) => ca.name && ca.name.length > 0)
+      } else if (typeof body.coAuthors === 'string') {
+        // Handle comma-separated string
+        coAuthors = body.coAuthors.split(',').map((name: string) => ({
+          name: name.trim(),
+          organization: '',
+        })).filter((ca: any) => ca.name.length > 0)
+      }
+    }
+
+    // Validate required fields
+    if (!body.title || !body.abstract || !body.track || !body.primaryAuthor || !body.presentationType) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required fields',
+          missing: {
+            title: !body.title,
+            abstract: !body.abstract,
+            track: !body.track,
+            primaryAuthor: !body.primaryAuthor,
+            presentationType: !body.presentationType,
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    // Validate primaryAuthor structure
+    if (!body.primaryAuthor.firstName || !body.primaryAuthor.lastName || !body.primaryAuthor.email || !body.primaryAuthor.organization || !body.primaryAuthor.country) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Primary author information is incomplete',
+          missing: {
+            firstName: !body.primaryAuthor.firstName,
+            lastName: !body.primaryAuthor.lastName,
+            email: !body.primaryAuthor.email,
+            organization: !body.primaryAuthor.organization,
+            country: !body.primaryAuthor.country,
+          },
+        },
+        { status: 400 }
+      )
     }
 
     // Create abstract submission
@@ -34,11 +79,18 @@ export async function POST(request: NextRequest) {
     const abstract = await payload.create({
       collection: 'abstracts',
       data: {
-        title: body.title,
-        abstract: body.abstract,
+        title: body.title.trim(),
+        abstract: body.abstract.trim(),
         keywords: keywords,
         track: body.track,
-        primaryAuthor: body.primaryAuthor,
+        primaryAuthor: {
+          firstName: body.primaryAuthor.firstName.trim(),
+          lastName: body.primaryAuthor.lastName.trim(),
+          email: body.primaryAuthor.email.trim(),
+          phone: body.primaryAuthor.phone?.trim() || '',
+          organization: body.primaryAuthor.organization.trim(),
+          country: body.primaryAuthor.country.trim(),
+        },
         coAuthors: coAuthors,
         presentationType: body.presentationType,
         status: 'received',
@@ -101,10 +153,30 @@ The SARSYC VI Steering Committee
     })
   } catch (error: any) {
     console.error('Abstract submission error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      data: error.data,
+      status: error.status,
+    })
+    if (body) {
+      console.error('Request body received:', {
+        title: body.title,
+        track: body.track,
+        primaryAuthor: body.primaryAuthor,
+        coAuthors: body.coAuthors,
+        keywords: body.keywords,
+        presentationType: body.presentationType,
+      })
+    } else {
+      console.error('Request body could not be parsed')
+    }
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Submission failed',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }
     )
