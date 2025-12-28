@@ -5,8 +5,9 @@ import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import Link from 'next/link'
 import UserDeleteButton from '@/components/admin/UserDeleteButton'
 import { 
-  FiUsers, FiPlus, FiEdit, FiEye, FiSearch, FiShield, FiUser, FiMail, FiPhone
+  FiUsers, FiPlus, FiEdit, FiEye, FiSearch, FiShield, FiUser, FiMail, FiPhone, FiLock
 } from 'react-icons/fi'
+import UserUnlockButton from '@/components/admin/UserUnlockButton'
 
 export const revalidate = 0
 
@@ -67,6 +68,15 @@ export default async function UsersManagementPage({
     'admin': { color: 'bg-red-100 text-red-700', label: 'Admin', icon: FiShield },
     'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor', icon: FiEdit },
     'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor', icon: FiUser },
+    'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker', icon: FiUser },
+    'presenter': { color: 'bg-indigo-100 text-indigo-700', label: 'Presenter', icon: FiUser },
+  }
+
+  // Helper function to check if account is locked
+  const isAccountLocked = (user: any): boolean => {
+    if (!user.lockUntil) return false
+    const lockUntil = new Date(user.lockUntil)
+    return lockUntil > new Date()
   }
 
   return (
@@ -155,6 +165,7 @@ export default async function UsersManagementPage({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -164,9 +175,10 @@ export default async function UsersManagementPage({
                 {users.map((user: any) => {
                   const roleInfo = roleConfig[user.role] || roleConfig['contributor']
                   const RoleIcon = roleInfo.icon
+                  const locked = isAccountLocked(user)
                   
                   return (
-                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${locked ? 'bg-orange-50' : ''}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
@@ -197,6 +209,18 @@ export default async function UsersManagementPage({
                           {roleInfo.label}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {locked ? (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                            <FiLock className="w-3 h-3" />
+                            Locked
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            Active
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.organization || '-'}
                       </td>
@@ -205,6 +229,12 @@ export default async function UsersManagementPage({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
+                          {locked && (
+                            <UserUnlockButton
+                              userId={user.id}
+                              isLocked={locked}
+                            />
+                          )}
                           <Link
                             href={`/admin/users/${user.id}`}
                             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

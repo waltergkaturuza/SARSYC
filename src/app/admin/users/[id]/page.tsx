@@ -4,8 +4,9 @@ import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import Link from 'next/link'
 import { 
-  FiUser, FiMail, FiPhone, FiShield, FiEdit, FiCalendar, FiBriefcase
+  FiUser, FiMail, FiPhone, FiShield, FiEdit, FiCalendar, FiBriefcase, FiLock, FiUnlock
 } from 'react-icons/fi'
+import UserUnlockButton from '@/components/admin/UserUnlockButton'
 
 export const revalidate = 0
 
@@ -33,9 +34,15 @@ export default async function UserDetailPage({
       'admin': { color: 'bg-red-100 text-red-700', label: 'Admin' },
       'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor' },
       'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor' },
+      'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker' },
+      'presenter': { color: 'bg-indigo-100 text-indigo-700', label: 'Presenter' },
     }
 
     const roleInfo = roleConfig[user.role as string] || roleConfig['contributor']
+    
+    // Check if account is locked
+    const isLocked = user.lockUntil && new Date(user.lockUntil as string) > new Date()
+    const lockUntil = user.lockUntil ? new Date(user.lockUntil as string) : null
 
     return (
       <div className="space-y-6">
@@ -49,14 +56,45 @@ export default async function UserDetailPage({
               User Details
             </h1>
           </div>
-          <Link
-            href={`/admin/users/${params.id}/edit`}
-            className="btn-primary flex items-center gap-2"
-          >
-            <FiEdit className="w-5 h-5" />
-            Edit User
-          </Link>
+          <div className="flex items-center gap-3">
+            {isLocked && (
+              <UserUnlockButton
+                userId={params.id}
+                isLocked={isLocked}
+              />
+            )}
+            <Link
+              href={`/admin/users/${params.id}/edit`}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FiEdit className="w-5 h-5" />
+              Edit User
+            </Link>
+          </div>
         </div>
+
+        {/* Locked Account Warning */}
+        {isLocked && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <FiLock className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-900 mb-1">Account Locked</h3>
+                <p className="text-sm text-orange-700">
+                  This account has been locked due to too many failed login attempts.
+                  {lockUntil && (
+                    <span className="block mt-1">
+                      Locked until: {lockUntil.toLocaleString()}
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-orange-600 mt-2">
+                  Use the unlock button above to restore access to this account.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* User Information Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -117,6 +155,15 @@ export default async function UserDetailPage({
                         month: 'long',
                         day: 'numeric'
                       })}
+                    </span>
+                  </div>
+                )}
+
+                {user.loginAttempts !== undefined && user.loginAttempts > 0 && (
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <FiLock className="w-5 h-5 text-gray-400" />
+                    <span>
+                      Failed login attempts: {user.loginAttempts}
                     </span>
                   </div>
                 )}
