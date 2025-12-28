@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiLinkedin, FiTwitter, FiGlobe, FiUser } from 'react-icons/fi'
+import { FiLinkedin, FiTwitter, FiGlobe, FiUser, FiAward, FiMapPin } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
 
@@ -179,7 +179,9 @@ export default async function SpeakersPage() {
                 const photoUrl = getSpeakerPhotoUrl(speaker.photo)
                 const initials = getInitials(speaker.name)
                 const bioText = extractBioText(speaker.bio)
-                const isKeynote = speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote')
+                const speakerTypes = speaker.type && Array.isArray(speaker.type) ? speaker.type : []
+                const isKeynote = speakerTypes.includes('keynote')
+                const isPlenary = speakerTypes.includes('plenary')
                 const twitterHandle = speaker.socialMedia?.twitter
                 const linkedinUrl = speaker.socialMedia?.linkedin
                 const websiteUrl = speaker.socialMedia?.website
@@ -188,9 +190,10 @@ export default async function SpeakersPage() {
                   <Link
                     key={speaker.id}
                     href={`/programme/speakers/${speaker.id}`}
-                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300"
+                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg"
                   >
-                    <div className="aspect-square relative overflow-hidden bg-gray-200">
+                    {/* Photo Section with Gradient Background */}
+                    <div className="aspect-square relative overflow-hidden rounded-t-lg">
                       {photoUrl ? (
                         <Image
                           src={photoUrl}
@@ -201,30 +204,66 @@ export default async function SpeakersPage() {
                           unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-                          <div className="text-white text-6xl font-bold opacity-50">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-300 via-blue-400 to-purple-500 flex items-center justify-center">
+                          <div className="text-white text-7xl font-bold opacity-60">
                             {initials}
                           </div>
                         </div>
                       )}
-                      {/* KEYNOTE badge in bottom-left */}
-                      {isKeynote && (
-                        <div className="absolute bottom-0 left-0 p-4">
-                          <span className="px-3 py-1.5 bg-yellow-400 text-gray-900 text-xs font-bold rounded-md">
-                            KEYNOTE
-                          </span>
-                        </div>
-                      )}
                     </div>
                     
-                    <div className="p-6 bg-white">
-                      <h3 className="text-xl font-bold text-primary-600 mb-1 group-hover:text-primary-700 transition-colors">
-                        {speaker.name}
-                      </h3>
-                      <p className="text-sm font-medium text-gray-700 mb-1">{speaker.title}</p>
-                      <p className="text-sm text-gray-600 mb-4">
-                        {speaker.organization}{speaker.country ? ` • ${speaker.country}` : ''}
-                      </p>
+                    {/* Badges Section - Below Photo */}
+                    {(isKeynote || isPlenary) && (
+                      <div className="px-4 pt-3 pb-2 flex gap-2">
+                        {isKeynote && (
+                          <span className="px-3 py-1 bg-yellow-400 text-white text-xs font-bold rounded uppercase">
+                            KEYNOTE
+                          </span>
+                        )}
+                        {isPlenary && (
+                          <span className="px-3 py-1 bg-yellow-400 text-white text-xs font-bold rounded uppercase">
+                            PLENARY
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Info Section */}
+                    <div className="p-6 bg-white space-y-4">
+                      {/* Position */}
+                      {speaker.title && (
+                        <div className="flex items-start gap-3">
+                          <FiAward className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500 mb-1">Position</p>
+                            <p className="text-sm font-semibold text-gray-900 leading-tight">
+                              {speaker.title}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Country */}
+                      {speaker.country && (
+                        <div className="flex items-start gap-3">
+                          <FiMapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500 mb-1">Country</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {speaker.country}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Organization (if no title/country structure) */}
+                      {speaker.organization && !speaker.title && (
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            {speaker.organization}
+                          </p>
+                        </div>
+                      )}
                       
                       {bioText && (
                         <p className="text-sm text-gray-600 line-clamp-3 mb-4">
