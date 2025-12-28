@@ -1,9 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiAward, FiMapPin } from 'react-icons/fi'
+import { FiAward, FiMapPin, FiArrowRight } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
+import { getCountryLabel } from '@/lib/countries'
 import SocialLinks from '@/components/speakers/SocialLinks'
+import SpeakerFilters from '@/components/speakers/SpeakerFilters'
 
 // Helper function to get speaker photo URL
 function getSpeakerPhotoUrl(photo: any): string | null {
