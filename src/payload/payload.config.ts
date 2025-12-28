@@ -3,6 +3,8 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 // webpack bundler removed (incompatible version). Using default bundler.
 import { slateEditor } from '@payloadcms/richtext-slate'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import nodemailer from 'nodemailer'
 import sharp from 'sharp'
 import path from 'path'
 
@@ -57,10 +59,36 @@ const getSecret = () => {
   return secret
 }
 
+// Configure email adapter if SMTP is configured
+const getEmailAdapter = () => {
+  const host = process.env.SMTP_HOST
+  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
+  const from = process.env.SMTP_FROM || `noreply@${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'sarsyc.org'}`
+
+  if (!host || !port) {
+    // No email adapter - emails will be logged to console
+    return undefined
+  }
+
+  return nodemailerAdapter({
+    defaultFromAddress: from,
+    defaultFromName: 'SARSYC VI',
+    transport: nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // true for 465, false for other ports
+      auth: user && pass ? { user, pass } : undefined,
+    }),
+  })
+}
+
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
   secret: getSecret(),
   sharp, // Pass sharp for image resizing
+  email: getEmailAdapter(), // Configure email adapter if SMTP is available
   admin: {
     user: Users.slug,
     meta: {
