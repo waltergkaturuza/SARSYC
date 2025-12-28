@@ -38,9 +38,60 @@ export async function POST(request: NextRequest) {
       let formData: FormData
       try {
         console.log('📦 About to call request.formData()...')
-        formData = await request.formData()
+        // Add timeout wrapper for FormData parsing
+        const formDataPromise = request.formData()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('FormData parsing timeout after 10 seconds')), 10000)
+        )
+        
+        formData = await Promise.race([formDataPromise, timeoutPromise]) as FormData
         console.log('✅ FormData parsed successfully')
-        console.log('📦 FormData entries count:', Array.from(formData.entries()).length)
+        
+        // Convert to array immediately to avoid multiple iterations
+        console.log('📦 Converting FormData entries to array...')
+        const entries = Array.from(formData.entries())
+        console.log('📦 FormData entries count:', entries.length)
+        
+        // Extract all form fields
+        // First pass: collect all keys to identify arrays
+        console.log('📦 Step 3a: Collecting field counts...')
+        const fieldCounts: Record<string, number> = {}
+        for (const [key] of entries) {
+          if (key !== 'passportScan') {
+            fieldCounts[key] = (fieldCounts[key] || 0) + 1
+          }
+        }
+        console.log('✅ Step 3a complete: Field counts collected')
+        
+        // Second pass: extract values
+        console.log('📦 Step 3b: Extracting form values...')
+        for (const [key, value] of entries) {
+          if (key === 'passportScan' && value instanceof File) {
+            passportFile = value
+            console.log('📦 Passport file found:', {
+              name: value.name,
+              size: value.size,
+              type: value.type,
+            })
+          } else {
+            // Handle arrays (like dietaryRestrictions) - if key appears multiple times, it's an array
+            if (fieldCounts[key] > 1 || key.includes('[]')) {
+              const arrayKey = key.replace('[]', '')
+              if (!Array.isArray(registrationData[arrayKey])) {
+                registrationData[arrayKey] = []
+              }
+              const stringValue = value.toString()
+              // Only add if not already in array (avoid duplicates)
+              if (!registrationData[arrayKey].includes(stringValue)) {
+                registrationData[arrayKey].push(stringValue)
+              }
+            } else {
+              registrationData[key] = value.toString()
+            }
+          }
+        }
+        console.log('✅ Step 3b complete: Form values extracted')
+        console.log('✅ Step 3 complete: FormData processing finished')
       } catch (formDataError: any) {
         console.error('❌ FormData parsing failed:', {
           message: formDataError.message,
@@ -52,40 +103,10 @@ export async function POST(request: NextRequest) {
             success: false,
             error: 'Failed to parse form data',
             details: formDataError.message,
+            step: 'FormData parsing',
           },
           { status: 400 }
         )
-      }
-      
-      // Extract all form fields
-      // First pass: collect all keys to identify arrays
-      const fieldCounts: Record<string, number> = {}
-      for (const [key] of formData.entries()) {
-        if (key !== 'passportScan') {
-          fieldCounts[key] = (fieldCounts[key] || 0) + 1
-        }
-      }
-      
-      // Second pass: extract values
-      for (const [key, value] of formData.entries()) {
-        if (key === 'passportScan' && value instanceof File) {
-          passportFile = value
-        } else {
-          // Handle arrays (like dietaryRestrictions) - if key appears multiple times, it's an array
-          if (fieldCounts[key] > 1 || key.includes('[]')) {
-            const arrayKey = key.replace('[]', '')
-            if (!Array.isArray(registrationData[arrayKey])) {
-              registrationData[arrayKey] = []
-            }
-            const stringValue = value.toString()
-            // Only add if not already in array (avoid duplicates)
-            if (!registrationData[arrayKey].includes(stringValue)) {
-              registrationData[arrayKey].push(stringValue)
-            }
-          } else {
-            registrationData[key] = value.toString()
-          }
-        }
       }
 
     } else {
