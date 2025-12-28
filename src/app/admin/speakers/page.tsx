@@ -108,18 +108,29 @@ export default async function SpeakersManagementPage({
                 <div key={speaker.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Speaker Photo */}
                   <div className="relative h-48 bg-gray-100">
-                    {speaker.photo?.url ? (
-                      <Image
-                        src={speaker.photo.url}
-                        alt={speaker.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FiUser className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
+                    {(() => {
+                      // Handle different photo object structures
+                      const photoUrl = 
+                        typeof speaker.photo === 'string' 
+                          ? null // Just an ID, not populated
+                          : speaker.photo?.url || 
+                            (speaker.photo as any)?.sizes?.card?.url ||
+                            (speaker.photo as any)?.sizes?.thumbnail?.url;
+                      
+                      return photoUrl ? (
+                        <Image
+                          src={photoUrl}
+                          alt={speaker.name}
+                          fill
+                          className="object-cover"
+                          unoptimized={photoUrl?.includes('blob.vercel-storage.com')} // Vercel Blob URLs
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FiUser className="w-16 h-16 text-gray-400" />
+                        </div>
+                      );
+                    })()}
                     {speaker.featured && (
                       <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                         <FiStar className="w-3 h-3" />

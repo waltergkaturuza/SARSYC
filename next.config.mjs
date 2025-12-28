@@ -8,8 +8,19 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
+      // Vercel Blob Storage
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'blob.vercel-storage.com',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
+    // Allow unoptimized images for Vercel Blob
+    unoptimized: false,
   },
   // PWA Support
   async headers() {

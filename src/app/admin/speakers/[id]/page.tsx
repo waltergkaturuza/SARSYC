@@ -42,16 +42,27 @@ export default async function SpeakerDetailPage({ params }: SpeakerDetailPagePro
           {/* Speaker Header */}
           <div className="bg-gradient-to-r from-primary-600 to-secondary-600 p-8 text-white">
             <div className="flex items-start gap-6">
-              {speaker.photo && typeof speaker.photo !== 'string' && (
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 flex-shrink-0">
-                  <Image
-                    src={speaker.photo.url}
-                    alt={speaker.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
+              {(() => {
+                // Handle different photo object structures
+                const photoUrl = 
+                  typeof speaker.photo === 'string' 
+                    ? null // Just an ID, not populated
+                    : speaker.photo?.url || 
+                      (speaker.photo as any)?.sizes?.card?.url ||
+                      (speaker.photo as any)?.sizes?.thumbnail?.url;
+                
+                return photoUrl ? (
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 flex-shrink-0">
+                    <Image
+                      src={photoUrl}
+                      alt={speaker.name}
+                      fill
+                      className="object-cover"
+                      unoptimized={photoUrl?.includes('blob.vercel-storage.com')} // Vercel Blob URLs
+                    />
+                  </div>
+                ) : null;
+              })()}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold">{speaker.name}</h1>
