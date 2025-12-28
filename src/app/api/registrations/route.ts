@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendRegistrationConfirmation } from '@/lib/mail'
+import { put } from '@vercel/blob'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -203,12 +204,40 @@ export async function POST(request: NextRequest) {
             console.log('📄 PDF file detected, ensuring MIME type is set correctly')
           }
           
-          uploadedFile = await payload.create({
-            collection: 'media',
-            data: mediaData,
-            file: fileForPayload,
-            overrideAccess: true, // Allow public uploads for registration passport scans
-          })
+          // For PDFs, upload directly to Vercel Blob to bypass Payload's MIME type validation
+          // Then create a media record with the URL
+          if (fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')) {
+            console.log('📄 Uploading PDF directly to Vercel Blob to bypass Payload validation...')
+            
+            // Upload to Vercel Blob
+            const blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, buffer, {
+              access: 'public',
+              contentType: 'application/pdf',
+            })
+            
+            console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
+            
+            // Create media record with the blob URL
+            uploadedFile = await payload.create({
+              collection: 'media',
+              data: {
+                ...mediaData,
+                url: blob.url,
+                filename: fileForPayload.name,
+                mimeType: 'application/pdf',
+                filesize: fileForPayload.size,
+              },
+              overrideAccess: true,
+            })
+          } else {
+            // For images, use normal Payload upload
+            uploadedFile = await payload.create({
+              collection: 'media',
+              data: mediaData,
+              file: fileForPayload,
+              overrideAccess: true, // Allow public uploads for registration passport scans
+            })
+          }
           
           console.log('📤 Upload response:', {
             type: typeof uploadedFile,
