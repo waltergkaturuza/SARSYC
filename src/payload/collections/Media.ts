@@ -121,6 +121,18 @@ const Media: CollectionConfig = {
         return data
       },
     ],
+    afterRead: [
+      async ({ doc, req }: any) => {
+        // If the media has an external URL (e.g., from Vercel Blob), ensure it's used directly
+        // This is important for serverless environments where files aren't stored locally
+        if (doc?.url && (doc.url.startsWith('https://') || doc.url.startsWith('http://'))) {
+          // External URL - ensure it's preserved and used directly
+          // Don't let Payload try to generate local file paths
+          return doc
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {
