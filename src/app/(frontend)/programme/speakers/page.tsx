@@ -329,33 +329,39 @@ export default async function SpeakersPage() {
                       
                       {/* Social Links */}
                       {(twitterHandle || linkedinUrl || websiteUrl) && (
-                        <div className="flex gap-3 pt-2 border-t border-gray-100">
+                        <div className="flex gap-3 pt-2 border-t border-gray-100 relative z-10">
                           {twitterHandle && (
                             <a
                               href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ position: 'relative', zIndex: 10 }}
                             >
                               <FiTwitter className="w-5 h-5" />
                             </a>
                           )}
                           {linkedinUrl && (
                             <a
-                              href={linkedinUrl}
+                              href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ position: 'relative', zIndex: 10 }}
                             >
                               <FiLinkedin className="w-5 h-5" />
                             </a>
                           )}
                           {websiteUrl && (
                             <a
-                              href={websiteUrl}
+                              href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ position: 'relative', zIndex: 10 }}
                             >
                               <FiGlobe className="w-5 h-5" />
                             </a>

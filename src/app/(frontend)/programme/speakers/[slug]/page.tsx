@@ -254,7 +254,9 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                           href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-sky-500 transition-colors"
+                          className="flex items-center gap-3 text-gray-700 hover:text-sky-500 transition-colors cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ position: 'relative', zIndex: 10 }}
                         >
                           <FiTwitter className="w-5 h-5" />
                           <span className="text-sm">{twitterHandle}</span>
@@ -265,7 +267,9 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                           href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
+                          className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ position: 'relative', zIndex: 10 }}
                         >
                           <FiLinkedin className="w-5 h-5" />
                           <span className="text-sm">LinkedIn</span>
@@ -276,7 +280,9 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                           href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-primary-600 transition-colors"
+                          className="flex items-center gap-3 text-gray-700 hover:text-primary-600 transition-colors cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ position: 'relative', zIndex: 10 }}
                         >
                           <FiGlobe className="w-5 h-5" />
                           <span className="text-sm">Website</span>
