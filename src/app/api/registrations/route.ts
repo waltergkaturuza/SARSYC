@@ -84,10 +84,29 @@ export async function POST(request: NextRequest) {
           throw new Error('File size exceeds 5MB limit')
         }
         
+        // Validate file type
+        const allowedTypes = [
+          'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ]
+        const fileType = passportFile.type || ''
+        const isValidType = allowedTypes.some(type => fileType.includes(type.split('/')[1]) || fileType === type)
+        
+        if (!isValidType && fileType) {
+          console.warn('⚠️  File type might not be supported:', fileType)
+          // Continue anyway - let Payload validate
+        }
+        
         // Convert File to Buffer for Payload CMS (required in serverless environments)
         // This works for both images (processed by sharp) and PDFs
         const arrayBuffer = await passportFile.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
+        
+        if (buffer.length === 0) {
+          throw new Error('File buffer is empty after conversion')
+        }
         
         console.log('📤 File converted to buffer:', {
           bufferSize: buffer.length,
@@ -97,15 +116,42 @@ export async function POST(request: NextRequest) {
         
         // Create a new File object with buffer for Payload compatibility
         // Payload needs the file to have buffer/data properties in serverless environments
+        // Ensure we have a valid MIME type
+        let mimeType = passportFile.type || ''
+        if (!mimeType) {
+          // Try to infer from file extension
+          const ext = passportFile.name.split('.').pop()?.toLowerCase()
+          const mimeMap: Record<string, string> = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'pdf': 'application/pdf',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          }
+          mimeType = mimeMap[ext || ''] || 'application/octet-stream'
+        }
+        
         const fileForPayload = new File([buffer], passportFile.name, {
-          type: passportFile.type,
-          lastModified: passportFile.lastModified,
+          type: mimeType,
+          lastModified: passportFile.lastModified || Date.now(),
         }) as File & { data: Buffer; buffer: Buffer }
         
         // Add buffer properties that Payload/sharp expect
+        // These are required for Payload to process the file in serverless environments
         Object.assign(fileForPayload, {
           data: buffer,
           buffer: buffer,
+        })
+        
+        console.log('📤 File prepared for Payload:', {
+          name: fileForPayload.name,
+          type: fileForPayload.type,
+          size: fileForPayload.size,
+          bufferLength: buffer.length,
+          hasData: 'data' in fileForPayload,
+          hasBuffer: 'buffer' in fileForPayload,
         })
         
         console.log('📤 Uploading file to Payload Media collection...', {
