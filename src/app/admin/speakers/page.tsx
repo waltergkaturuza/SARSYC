@@ -153,10 +153,6 @@ export default async function SpeakersManagementPage({
                           fill
                           className="object-cover"
                           unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
-                          onError={(e) => {
-                            console.error(`Failed to load image for speaker ${speaker.id}:`, photoUrl);
-                            console.error('Error:', e);
-                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
