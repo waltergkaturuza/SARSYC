@@ -21,6 +21,16 @@ export async function POST(request: NextRequest) {
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
     const photoFile = formData.get('photo') as File | null
     
+    // Debug: Log all form data keys
+    console.log('Form data keys:', Array.from(formData.keys()))
+    console.log('Photo file received:', {
+      exists: !!photoFile,
+      isFile: photoFile instanceof File,
+      name: photoFile?.name,
+      size: photoFile?.size,
+      type: photoFile?.type,
+    })
+    
     // Validate required fields
     if (!name || !title || !organization || !country || !bio) {
       return NextResponse.json(
