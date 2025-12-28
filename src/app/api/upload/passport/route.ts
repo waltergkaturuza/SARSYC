@@ -83,12 +83,21 @@ export async function POST(request: NextRequest) {
       url: blob.url,
       pathname: blob.pathname,
       filename: sanitizedFilename,
+      size: blob.size,
+      uploadedAt: blob.uploadedAt,
     })
+
+    // Verify the URL is accessible (quick check)
+    if (!blob.url || !blob.url.startsWith('https://')) {
+      console.error('❌ Invalid blob URL returned:', blob.url)
+      throw new Error('Invalid blob URL returned from upload')
+    }
 
     return NextResponse.json({
       success: true,
       url: blob.url,
       pathname: blob.pathname,
+      size: blob.size,
     })
   } catch (error: any) {
     console.error('Passport upload error:', error)
