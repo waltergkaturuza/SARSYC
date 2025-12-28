@@ -15,26 +15,83 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   }
   
   if (typeof photo === 'object') {
+    // Try direct URL first
     if (photo.url && typeof photo.url === 'string') {
       if (photo.url.startsWith('http://') || photo.url.startsWith('https://')) {
         return photo.url
       }
+      // Handle relative URLs
+      if (photo.url.startsWith('/')) {
+        if (process.env.NODE_ENV === 'development') {
+          return `http://localhost:3000${photo.url}`
+        }
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+        if (serverUrl) {
+          return `${serverUrl}${photo.url}`
+        }
+        return photo.url
+      }
     }
     
+    // Try sizes
     if (photo.sizes) {
-      if (photo.sizes.card?.url && photo.sizes.card.url.startsWith('http')) {
-        return photo.sizes.card.url
+      if (photo.sizes.card?.url) {
+        if (photo.sizes.card.url.startsWith('http')) {
+          return photo.sizes.card.url
+        }
+        if (photo.sizes.card.url.startsWith('/')) {
+          if (process.env.NODE_ENV === 'development') {
+            return `http://localhost:3000${photo.sizes.card.url}`
+          }
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+          if (serverUrl) {
+            return `${serverUrl}${photo.sizes.card.url}`
+          }
+        }
       }
-      if (photo.sizes.thumbnail?.url && photo.sizes.thumbnail.url.startsWith('http')) {
-        return photo.sizes.thumbnail.url
+      if (photo.sizes.thumbnail?.url) {
+        if (photo.sizes.thumbnail.url.startsWith('http')) {
+          return photo.sizes.thumbnail.url
+        }
+        if (photo.sizes.thumbnail.url.startsWith('/')) {
+          if (process.env.NODE_ENV === 'development') {
+            return `http://localhost:3000${photo.sizes.thumbnail.url}`
+          }
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+          if (serverUrl) {
+            return `${serverUrl}${photo.sizes.thumbnail.url}`
+          }
+        }
       }
-      if (photo.sizes.hero?.url && photo.sizes.hero.url.startsWith('http')) {
-        return photo.sizes.hero.url
+      if (photo.sizes.hero?.url) {
+        if (photo.sizes.hero.url.startsWith('http')) {
+          return photo.sizes.hero.url
+        }
+        if (photo.sizes.hero.url.startsWith('/')) {
+          if (process.env.NODE_ENV === 'development') {
+            return `http://localhost:3000${photo.sizes.hero.url}`
+          }
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+          if (serverUrl) {
+            return `${serverUrl}${photo.sizes.hero.url}`
+          }
+        }
       }
     }
     
-    if (photo.thumbnailURL && photo.thumbnailURL.startsWith('http')) {
-      return photo.thumbnailURL
+    if (photo.thumbnailURL) {
+      if (photo.thumbnailURL.startsWith('http')) {
+        return photo.thumbnailURL
+      }
+      if (photo.thumbnailURL.startsWith('/')) {
+        if (process.env.NODE_ENV === 'development') {
+          return `http://localhost:3000${photo.thumbnailURL}`
+        }
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+        if (serverUrl) {
+          return `${serverUrl}${photo.thumbnailURL}`
+        }
+      }
     }
   }
   

@@ -17,6 +17,12 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'blob.vercel-storage.com',
       },
+      // Localhost for development
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     // Allow unoptimized images for Vercel Blob
