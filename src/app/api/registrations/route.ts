@@ -158,6 +158,105 @@ export async function POST(request: NextRequest) {
       delete registrationData.passportScan
     }
 
+    // Check for duplicate registrations before creating
+    console.log('🔍 Checking for duplicate registrations...')
+    
+    // Build query to check for existing registrations
+    const duplicateChecks: any[] = []
+    
+    // Always check email (most reliable identifier)
+    duplicateChecks.push({
+      email: {
+        equals: registrationData.email,
+      },
+    })
+    
+    // For international attendees, check passport number
+    if (registrationData.isInternational && registrationData.passportNumber) {
+      duplicateChecks.push({
+        and: [
+          {
+            isInternational: {
+              equals: true,
+            },
+          },
+          {
+            passportNumber: {
+              equals: registrationData.passportNumber.trim().toUpperCase(),
+            },
+          },
+        ],
+      })
+    }
+    
+    // For non-international attendees, check national ID
+    if (!registrationData.isInternational && registrationData.nationalIdNumber) {
+      duplicateChecks.push({
+        and: [
+          {
+            isInternational: {
+              equals: false,
+            },
+          },
+          {
+            nationalIdNumber: {
+              equals: registrationData.nationalIdNumber.trim(),
+            },
+          },
+        ],
+      })
+    }
+    
+    // Check for existing registrations matching any of the criteria
+    // Only check registrations from the current year (SARSYC VI is 2026)
+    const currentYear = new Date().getFullYear()
+    const existingRegistrations = await payload.find({
+      collection: 'registrations',
+      where: {
+        or: duplicateChecks,
+        // Only check registrations from the current conference year
+        // Assuming SARSYC VI is in 2026, we check registrations created in 2025-2026
+        createdAt: {
+          greater_than_equal: new Date(`${currentYear - 1}-01-01`).toISOString(),
+        },
+      },
+      limit: 1,
+    })
+    
+    if (existingRegistrations.totalDocs > 0) {
+      const existing = existingRegistrations.docs[0]
+      let duplicateReason = 'email address'
+      
+      // Determine which field matched
+      if (registrationData.isInternational && 
+          existing.passportNumber && 
+          existing.passportNumber.toUpperCase() === registrationData.passportNumber.trim().toUpperCase()) {
+        duplicateReason = 'passport number'
+      } else if (!registrationData.isInternational && 
+                 existing.nationalIdNumber && 
+                 existing.nationalIdNumber === registrationData.nationalIdNumber.trim()) {
+        duplicateReason = 'national ID number'
+      }
+      
+      console.log('❌ Duplicate registration found:', {
+        existingId: existing.id,
+        registrationId: existing.registrationId,
+        matchedField: duplicateReason,
+      })
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: `You have already registered for SARSYC VI using this ${duplicateReason}.`,
+          details: `Registration ID: ${existing.registrationId || existing.id}`,
+          existingRegistrationId: existing.registrationId || existing.id,
+        },
+        { status: 409 } // 409 Conflict
+      )
+    }
+    
+    console.log('✅ No duplicate registrations found, proceeding with creation...')
+
     // Create registration in Payload CMS
     const registration = await payload.create({
       collection: 'registrations',

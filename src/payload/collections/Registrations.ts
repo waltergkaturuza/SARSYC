@@ -160,6 +160,8 @@ const Registrations: CollectionConfig = {
         condition: (data: any) => data.isInternational === true,
         description: 'As shown on your passport',
       },
+      // Note: Not marked as unique in schema because uniqueness is checked
+      // per conference/event in the API route (allows same person for different events)
     },
     {
       type: 'row',
@@ -258,6 +260,8 @@ const Registrations: CollectionConfig = {
           admin: {
             condition: (data: any) => data.isInternational === false,
           },
+          // Note: Not marked as unique in schema because uniqueness is checked
+          // per conference/event in the API route (allows same person for different events)
         },
         {
           name: 'nationalIdType',
