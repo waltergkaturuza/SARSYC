@@ -107,9 +107,10 @@ export default async function SpeakersPage() {
   let speakers: any[] = []
   try {
     const payload = await getPayloadClient()
+    // Fetch all speakers - no limit to ensure all are displayed
     const speakersResult = await payload.find({
       collection: 'speakers',
-      limit: 100,
+      limit: 1000, // Increased limit to fetch all speakers
       sort: '-createdAt',
       depth: 2, // Populate photo relationship fully
       overrideAccess: true, // Ensure all speakers are fetched regardless of access control
