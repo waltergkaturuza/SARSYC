@@ -3,6 +3,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 // webpack bundler removed (incompatible version). Using default bundler.
 import { slateEditor } from '@payloadcms/richtext-slate'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import sharp from 'sharp'
 import path from 'path'
 
 // Collections
@@ -59,6 +60,7 @@ const getSecret = () => {
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
   secret: getSecret(),
+  sharp, // Pass sharp for image resizing
   admin: {
     user: Users.slug,
     meta: {
