@@ -94,7 +94,7 @@ async function cleanupOrphanedPhotos() {
         try {
           await client.query('DELETE FROM media WHERE id = $1', [photo.id])
           console.log(`   ✅ Deleted photo ${photo.id} (${photo.alt})`)
-        } catch (err: any) {
+        } catch (err) {
           console.error(`   ❌ Failed to delete photo ${photo.id}:`, err.message)
         }
       }
