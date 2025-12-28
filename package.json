@@ -18,7 +18,8 @@
     "init:secret": "node scripts/init-secret-db.mjs",
     "drop:locking-tables": "node scripts/drop_document_locking_tables.mjs",
     "create:stub-locking-tables": "node scripts/create_stub_locking_tables.mjs",
-    "verify:locking-tables": "node scripts/verify_locking_tables.mjs"
+    "verify:locking-tables": "node scripts/verify_locking_tables.mjs",
+    "cleanup:orphaned-photos": "node scripts/cleanup_orphaned_speaker_photos.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",

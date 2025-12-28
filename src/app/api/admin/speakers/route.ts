@@ -115,6 +115,8 @@ export async function POST(request: NextRequest) {
         )
       }
       
+      console.log(`✅ New photo uploaded for new speaker: ${photoId}`)
+      
       console.log('Photo uploaded successfully with ID:', photoId)
     } catch (uploadError: any) {
       console.error('Photo upload error details:', {
