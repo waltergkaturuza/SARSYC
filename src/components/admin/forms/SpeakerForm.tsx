@@ -170,13 +170,17 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to save speaker')
+        // Show more detailed error message
+        const errorMessage = result.error || 'Failed to save speaker'
+        const details = result.details ? `: ${result.details}` : ''
+        throw new Error(`${errorMessage}${details}`)
       }
 
       router.push('/admin/speakers')
       router.refresh()
     } catch (error: any) {
-      setErrors({ submit: error.message })
+      console.error('Speaker form submission error:', error)
+      setErrors({ submit: error.message || 'Failed to save speaker' })
     } finally {
       setLoading(false)
     }
