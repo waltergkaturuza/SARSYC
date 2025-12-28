@@ -311,6 +311,14 @@ export default function RegisterPage() {
         const errorData = await response.json().catch(() => ({}))
         let errorMessage = errorData.message || errorData.error || 'Registration failed. Please try again.'
         
+        // Log full error details to console for debugging
+        console.error('❌ Registration API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: errorData,
+          fullResponse: errorData,
+        })
+        
         // Handle duplicate registration (409 Conflict)
         if (response.status === 409) {
           errorMessage = errorData.error || 'You have already registered for this conference.'
@@ -322,10 +330,32 @@ export default function RegisterPage() {
           }
           showToast.error(errorMessage)
         } else {
+          // For 400 errors, show more details
+          if (response.status === 400) {
+            if (errorData.details) {
+              errorMessage += `: ${errorData.details}`
+            }
+            if (errorData.debug) {
+              console.error('Debug info:', errorData.debug)
+              // Show debug info in development
+              if (process.env.NODE_ENV === 'development') {
+                errorMessage += ` [Debug: ${JSON.stringify(errorData.debug)}]`
+              }
+            }
+            if (errorData.errors && Array.isArray(errorData.errors)) {
+              const errorList = errorData.errors.map((e: any) => e.message || e).join(', ')
+              errorMessage += ` Errors: ${errorList}`
+            }
+          }
           showToast.error(errorMessage)
         }
         
-        setSubmitError(errorMessage)
+        // Set full error message including details
+        const fullErrorMessage = errorData.details 
+          ? `${errorMessage}\n\nDetails: ${errorData.details}`
+          : errorMessage
+        setSubmitError(fullErrorMessage)
+        
         // Scroll to top to show error
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
