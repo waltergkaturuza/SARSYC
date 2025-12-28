@@ -6,27 +6,21 @@ import { FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi'
 
 interface ActionButtonProps {
   registrationId: string
-  adminId: string
 }
 
-export function ApproveButton({ registrationId, adminId }: ActionButtonProps) {
+export function ApproveButton({ registrationId }: ActionButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   const handleApprove = async () => {
-    if (!adminId) {
-      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
-      return
-    }
-
     setLoading(true)
     try {
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-user-id': adminId,
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ action: 'markConfirmed', ids: [registrationId] }),
       })
 
@@ -64,17 +58,12 @@ export function ApproveButton({ registrationId, adminId }: ActionButtonProps) {
   )
 }
 
-export function RejectButton({ registrationId, adminId }: ActionButtonProps) {
+export function RejectButton({ registrationId }: ActionButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   const handleReject = async () => {
     if (!confirm('Are you sure you want to reject/cancel this registration?')) {
-      return
-    }
-
-    if (!adminId) {
-      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
       return
     }
 
@@ -84,8 +73,8 @@ export function RejectButton({ registrationId, adminId }: ActionButtonProps) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-user-id': adminId,
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ action: 'softDelete', ids: [registrationId] }),
       })
 

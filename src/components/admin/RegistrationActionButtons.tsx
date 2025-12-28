@@ -7,32 +7,25 @@ import { FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi'
 interface RegistrationActionButtonsProps {
   registrationId: string
   status: string
-  adminId?: string
 }
 
 export default function RegistrationActionButtons({ 
   registrationId, 
-  status,
-  adminId = '' 
+  status
 }: RegistrationActionButtonsProps) {
   const router = useRouter()
   const [approveLoading, setApproveLoading] = useState(false)
   const [rejectLoading, setRejectLoading] = useState(false)
 
   const handleApprove = async () => {
-    if (!adminId) {
-      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
-      return
-    }
-
     setApproveLoading(true)
     try {
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-user-id': adminId,
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ action: 'markConfirmed', ids: [registrationId] }),
       })
 
@@ -54,19 +47,14 @@ export default function RegistrationActionButtons({
       return
     }
 
-    if (!adminId) {
-      alert('Admin ID not configured. Set ADMIN_USER_ID env var for local testing.')
-      return
-    }
-
     setRejectLoading(true)
     try {
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-user-id': adminId,
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ action: 'softDelete', ids: [registrationId] }),
       })
 
