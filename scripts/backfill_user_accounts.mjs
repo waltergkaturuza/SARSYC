@@ -10,8 +10,19 @@
  * Usage: node scripts/backfill_user_accounts.mjs
  */
 
-import { getPayloadClient } from '../src/lib/payload.js'
 import crypto from 'crypto'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import dotenv from 'dotenv'
+
+// Load environment variables
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+dotenv.config({ path: join(__dirname, '..', '.env.local') })
+dotenv.config({ path: join(__dirname, '..', '.env') })
+
+// Import Payload client - will work with tsx
+const { getPayloadClient } = await import('../src/lib/payload.ts')
 
 async function backfillUserAccounts() {
   console.log('🚀 Starting user account backfill...\n')
