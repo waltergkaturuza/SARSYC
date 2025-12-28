@@ -19,12 +19,15 @@ export async function PATCH(
         collection: 'speakers',
         id: params.id,
         depth: 0, // Don't need full population, just the photo ID
+        overrideAccess: true,
       })
       oldPhotoId = typeof currentSpeaker.photo === 'string' 
         ? currentSpeaker.photo 
         : (currentSpeaker.photo as any)?.id || null
-    } catch (err) {
-      console.warn('Could not fetch current speaker for photo cleanup:', err)
+    } catch (err: any) {
+      // Log but don't fail - photo cleanup is optional
+      console.warn('Could not fetch current speaker for photo cleanup:', err?.message || err)
+      // Continue without old photo cleanup
     }
     
     // Extract form fields
