@@ -36,25 +36,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Transform coAuthors from array of strings or objects to proper format
+    // Transform coAuthors from array to proper format
     let coAuthors: any[] = []
-    if (body.coAuthors) {
-      if (Array.isArray(body.coAuthors)) {
-        coAuthors = body.coAuthors.map((ca: any) => {
+    if (body.coAuthors && Array.isArray(body.coAuthors)) {
+      coAuthors = body.coAuthors
+        .map((ca: any) => {
           if (typeof ca === 'string') {
             // If it's just a string, assume it's a name
             return { name: ca.trim(), organization: '' }
           }
           // If it's an object, use it as is
-          return { name: ca.name?.trim() || '', organization: ca.organization?.trim() || '' }
-        }).filter((ca: any) => ca.name && ca.name.length > 0)
-      } else if (typeof body.coAuthors === 'string') {
-        // Handle comma-separated string
-        coAuthors = body.coAuthors.split(',').map((name: string) => ({
-          name: name.trim(),
-          organization: '',
-        })).filter((ca: any) => ca.name.length > 0)
-      }
+          return {
+            name: ca.name?.trim() || '',
+            organization: ca.organization?.trim() || '',
+          }
+        })
+        .filter((ca: any) => ca.name && ca.name.length > 0)
     }
 
     // Validate required fields

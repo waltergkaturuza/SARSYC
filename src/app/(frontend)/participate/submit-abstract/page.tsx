@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState, useEffect } from 'react'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiFileText, FiUser, FiCheck, FiUpload, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { FiFileText, FiUser, FiCheck, FiUpload, FiArrowRight, FiArrowLeft, FiX, FiEdit2, FiPlus } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
+import { showToast } from '@/lib/toast'
 
 const abstractSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
@@ -22,7 +23,12 @@ const abstractSchema = z.object({
     organization: z.string().min(2),
     country: z.string().min(2),
   }),
+  coAuthors: z.array(z.object({
+    name: z.string().min(2, 'Name is required'),
+    organization: z.string().optional(),
+  })).optional(),
   presentationType: z.enum(['oral', 'poster', 'either']),
+  abstractFile: z.any().optional(),
 })
 
 type AbstractFormData = z.infer<typeof abstractSchema>
@@ -40,6 +46,8 @@ export default function SubmitAbstractPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [submissionId, setSubmissionId] = useState('')
   const [wordCount, setWordCount] = useState(0)
+  const [abstractFile, setAbstractFile] = useState<File | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   const {
     register,
@@ -47,22 +55,52 @@ export default function SubmitAbstractPage() {
     formState: { errors },
     trigger,
     watch,
+    setValue,
+    control,
   } = useForm<AbstractFormData>({
     resolver: zodResolver(abstractSchema),
     mode: 'onChange',
+    defaultValues: {
+      coAuthors: [],
+    },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'coAuthors',
   })
 
   const abstractText = watch('abstract')
+  const formData = watch()
 
   // Update word count
-  useState(() => {
+  useEffect(() => {
     if (abstractText) {
-      const words = abstractText.trim().split(/\s+/).length
+      const words = abstractText.trim().split(/\s+/).filter(word => word.length > 0).length
       setWordCount(words)
     } else {
       setWordCount(0)
     }
-  })
+  }, [abstractText])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      if (!allowedTypes.includes(file.type)) {
+        showToast.error('Please upload a PDF or Word document')
+        return
+      }
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        showToast.error('File size must be less than 5MB')
+        return
+      }
+      setAbstractFile(file)
+      setValue('abstractFile', file)
+    }
+  }
 
   const onSubmit = async (data: AbstractFormData) => {
     setIsSubmitting(true)
@@ -71,7 +109,10 @@ export default function SubmitAbstractPage() {
       const response = await fetch('/api/abstracts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          abstractFile: undefined, // File upload not supported in public API
+        }),
       })
 
       if (response.ok) {
@@ -79,12 +120,14 @@ export default function SubmitAbstractPage() {
         setSubmissionId(result.doc.submissionId)
         setIsSuccess(true)
         window.scrollTo({ top: 0, behavior: 'smooth' })
+        showToast.success('Abstract submitted successfully!')
       } else {
-        alert('Submission failed. Please try again.')
+        const errorData = await response.json().catch(() => ({}))
+        showToast.error(errorData.error || 'Submission failed. Please try again.')
       }
     } catch (error) {
       console.error('Submission error:', error)
-      alert('An error occurred. Please try again.')
+      showToast.error('An error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -94,13 +137,15 @@ export default function SubmitAbstractPage() {
     let fieldsToValidate: any[] = []
     
     if (currentStep === 1) {
-      fieldsToValidate = ['title', 'abstract', 'keywords', 'track']
+      fieldsToValidate = ['title', 'abstract', 'keywords', 'track', 'presentationType']
     } else if (currentStep === 2) {
       fieldsToValidate = ['primaryAuthor']
+    } else if (currentStep === 3) {
+      // Co-authors step - no validation needed as it's optional
     }
 
     const isValid = await trigger(fieldsToValidate)
-    if (isValid && currentStep < 3) {
+    if (isValid && currentStep < 4) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -109,7 +154,13 @@ export default function SubmitAbstractPage() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
+      setShowPreview(false)
     }
+  }
+
+  const editField = (step: number) => {
+    setCurrentStep(step)
+    setShowPreview(false)
   }
 
   if (isSuccess) {
@@ -184,6 +235,36 @@ export default function SubmitAbstractPage() {
             </div>
           </div>
 
+          {/* Progress Indicator */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                      currentStep >= step 
+                        ? 'bg-primary-600 text-white' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {currentStep > step ? <FiCheck className="w-5 h-5" /> : step}
+                    </div>
+                    <p className="text-xs mt-2 text-gray-600 hidden sm:block">
+                      {step === 1 && 'Abstract'}
+                      {step === 2 && 'Author'}
+                      {step === 3 && 'Co-Authors'}
+                      {step === 4 && 'Review'}
+                    </p>
+                  </div>
+                  {step < 4 && (
+                    <div className={`flex-1 h-1 mx-2 ${
+                      currentStep > step ? 'bg-primary-600' : 'bg-gray-200'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Guidelines */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h3 className="font-semibold text-blue-900 mb-3">Submission Guidelines</h3>
@@ -191,7 +272,7 @@ export default function SubmitAbstractPage() {
               <li>• Abstract should be <strong>200-300 words</strong></li>
               <li>• Select the most appropriate conference track</li>
               <li>• Provide 3-5 keywords</li>
-              <li>• Include all co-authors</li>
+              <li>• Include all co-authors (optional)</li>
               <li>• Review process takes 2-4 weeks</li>
             </ul>
           </div>
@@ -241,8 +322,8 @@ export default function SubmitAbstractPage() {
                           <p className="text-sm text-red-600">{errors.abstract.message}</p>
                         )}
                       </div>
-                      <p className={`text-sm ${wordCount > 300 ? 'text-red-600' : 'text-gray-600'}`}>
-                        {wordCount} words
+                      <p className={`text-sm ${wordCount > 300 ? 'text-red-600' : wordCount < 200 ? 'text-yellow-600' : 'text-gray-600'}`}>
+                        {wordCount} words {wordCount < 200 && '(minimum 200)'}
                       </p>
                     </div>
                   </div>
@@ -335,8 +416,13 @@ export default function SubmitAbstractPage() {
                       <input
                         {...register('primaryAuthor.firstName')}
                         type="text"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.primaryAuthor?.firstName ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.primaryAuthor?.firstName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.firstName.message}</p>
+                      )}
                     </div>
 
                     <div>
@@ -346,20 +432,44 @@ export default function SubmitAbstractPage() {
                       <input
                         {...register('primaryAuthor.lastName')}
                         type="text"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.primaryAuthor?.lastName ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
+                      {errors.primaryAuthor?.lastName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.lastName.message}</p>
+                      )}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      {...register('primaryAuthor.email')}
-                      type="email"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        {...register('primaryAuthor.email')}
+                        type="email"
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.primaryAuthor?.email ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      />
+                      {errors.primaryAuthor?.email && (
+                        <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.email.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number (Optional)
+                      </label>
+                      <input
+                        {...register('primaryAuthor.phone')}
+                        type="tel"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="+1234567890"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -369,8 +479,13 @@ export default function SubmitAbstractPage() {
                     <input
                       {...register('primaryAuthor.organization')}
                       type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.primaryAuthor?.organization ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                     />
+                    {errors.primaryAuthor?.organization && (
+                      <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.organization.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -379,7 +494,9 @@ export default function SubmitAbstractPage() {
                     </label>
                     <select
                       {...register('primaryAuthor.country')}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.primaryAuthor?.country ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                     >
                       <option value="">Select country</option>
                       {countries.map((country) => (
@@ -388,33 +505,255 @@ export default function SubmitAbstractPage() {
                         </option>
                       ))}
                     </select>
+                    {errors.primaryAuthor?.country && (
+                      <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.country.message}</p>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Step 3: Review & Submit */}
+              {/* Step 3: Co-Authors */}
               {currentStep === 3 && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Co-Authors (Optional)</h2>
+                    <button
+                      type="button"
+                      onClick={() => append({ name: '', organization: '' })}
+                      className="btn-outline flex items-center gap-2 text-sm"
+                    >
+                      <FiPlus /> Add Co-Author
+                    </button>
+                  </div>
+
+                  {fields.length === 0 ? (
+                    <div className="bg-gray-50 rounded-lg p-8 text-center">
+                      <FiUser className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4">No co-authors added yet</p>
+                      <button
+                        type="button"
+                        onClick={() => append({ name: '', organization: '' })}
+                        className="btn-outline"
+                      >
+                        Add First Co-Author
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {fields.map((field, index) => (
+                        <div key={field.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-start justify-between mb-4">
+                            <h3 className="font-medium text-gray-900">Co-Author {index + 1}</h3>
+                            <button
+                              type="button"
+                              onClick={() => remove(index)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <FiX className="w-5 h-5" />
+                            </button>
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Name *
+                              </label>
+                              <input
+                                {...register(`coAuthors.${index}.name`)}
+                                type="text"
+                                className={`w-full px-4 py-2 rounded-lg border ${
+                                  errors.coAuthors?.[index]?.name ? 'border-red-500' : 'border-gray-300'
+                                } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                                placeholder="Full name"
+                              />
+                              {errors.coAuthors?.[index]?.name && (
+                                <p className="mt-1 text-xs text-red-600">{errors.coAuthors[index]?.name?.message}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Organization (Optional)
+                              </label>
+                              <input
+                                {...register(`coAuthors.${index}.organization`)}
+                                type="text"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="Organization name"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Optional File Upload */}
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Abstract Document (Optional)
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                      PDF or Word document (max 5MB). This is optional - you can submit without uploading a file.
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <div className="btn-outline flex items-center gap-2">
+                          <FiUpload /> Choose File
+                        </div>
+                      </label>
+                      {abstractFile && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <FiFileText className="w-4 h-4" />
+                          <span>{abstractFile.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAbstractFile(null)
+                              setValue('abstractFile', undefined)
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Review & Submit */}
+              {currentStep === 4 && (
                 <div className="space-y-6 animate-fade-in">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Review Your Submission</h2>
 
-                  <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Title</p>
-                      <p className="font-medium">{watch('title')}</p>
+                  <div className="bg-gray-50 rounded-lg p-6 space-y-6">
+                    {/* Abstract Details */}
+                    <div className="border-b border-gray-200 pb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">Abstract Details</h3>
+                        <button
+                          type="button"
+                          onClick={() => editField(1)}
+                          className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm"
+                        >
+                          <FiEdit2 className="w-4 h-4" /> Edit
+                        </button>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-gray-600">Title:</span>
+                          <p className="font-medium text-gray-900 mt-1">{formData.title}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Track:</span>
+                          <p className="font-medium text-gray-900 mt-1">
+                            {tracks.find((t) => t.value === formData.track)?.label}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Presentation Type:</span>
+                          <p className="font-medium text-gray-900 mt-1 capitalize">
+                            {formData.presentationType === 'oral' && 'Oral Presentation'}
+                            {formData.presentationType === 'poster' && 'Poster Presentation'}
+                            {formData.presentationType === 'either' && 'Either'}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Keywords:</span>
+                          <p className="font-medium text-gray-900 mt-1">{formData.keywords}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Abstract ({wordCount} words):</span>
+                          <p className="text-gray-700 mt-1 whitespace-pre-wrap">{formData.abstract}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Track</p>
-                      <p className="font-medium">
-                        {tracks.find((t) => t.value === watch('track'))?.label}
-                      </p>
+
+                    {/* Primary Author */}
+                    <div className="border-b border-gray-200 pb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">Primary Author</h3>
+                        <button
+                          type="button"
+                          onClick={() => editField(2)}
+                          className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm"
+                        >
+                          <FiEdit2 className="w-4 h-4" /> Edit
+                        </button>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <p className="font-medium text-gray-900">
+                          {formData.primaryAuthor?.firstName} {formData.primaryAuthor?.lastName}
+                        </p>
+                        <p className="text-gray-600">{formData.primaryAuthor?.email}</p>
+                        {formData.primaryAuthor?.phone && (
+                          <p className="text-gray-600">{formData.primaryAuthor.phone}</p>
+                        )}
+                        <p className="text-gray-600">{formData.primaryAuthor?.organization}</p>
+                        <p className="text-gray-600">
+                          {countries.find(c => c.value === formData.primaryAuthor?.country)?.label || formData.primaryAuthor?.country}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Primary Author</p>
-                      <p className="font-medium">
-                        {watch('primaryAuthor.firstName')} {watch('primaryAuthor.lastName')}
-                      </p>
-                      <p className="text-sm text-gray-600">{watch('primaryAuthor.email')}</p>
+
+                    {/* Co-Authors */}
+                    <div className="border-b border-gray-200 pb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900">
+                          Co-Authors {formData.coAuthors && formData.coAuthors.length > 0 && `(${formData.coAuthors.length})`}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => editField(3)}
+                          className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm"
+                        >
+                          <FiEdit2 className="w-4 h-4" /> Edit
+                        </button>
+                      </div>
+                      {formData.coAuthors && formData.coAuthors.length > 0 ? (
+                        <div className="space-y-2 text-sm">
+                          {formData.coAuthors.map((author, index) => (
+                            <div key={index} className="text-gray-700">
+                              <span className="font-medium">{author.name}</span>
+                              {author.organization && (
+                                <span className="text-gray-600"> - {author.organization}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-sm">No co-authors added</p>
+                      )}
                     </div>
+
+                    {/* File Upload */}
+                    {abstractFile && (
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-semibold text-gray-900">Uploaded File</h3>
+                          <button
+                            type="button"
+                            onClick={() => editField(3)}
+                            className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm"
+                          >
+                            <FiEdit2 className="w-4 h-4" /> Edit
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <FiFileText className="w-4 h-4" />
+                          <span>{abstractFile.name}</span>
+                          <span className="text-gray-500">
+                            ({(abstractFile.size / 1024 / 1024).toFixed(2)} MB)
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -434,7 +773,7 @@ export default function SubmitAbstractPage() {
                   </button>
                 )}
                 
-                {currentStep < 3 ? (
+                {currentStep < 4 ? (
                   <button type="button" onClick={nextStep} className="btn-primary ml-auto flex items-center gap-2">
                     Next <FiArrowRight />
                   </button>
@@ -455,9 +794,3 @@ export default function SubmitAbstractPage() {
     </div>
   )
 }
-
-
-
-
-
-
