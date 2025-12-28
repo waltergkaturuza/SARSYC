@@ -150,8 +150,6 @@ function extractBioText(bio: any): string {
   return ''
 }
 
-import SpeakerFilters from '@/components/speakers/SpeakerFilters'
-
 interface SpeakersPageProps {
   searchParams: { type?: string }
 }
