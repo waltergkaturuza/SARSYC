@@ -154,6 +154,32 @@ export async function POST(request: NextRequest) {
       // NEW: Client-side upload - create media record from blob URL
       console.log('📦 Creating media record from client-uploaded blob URL...')
       try {
+        // Check if this registration already has a passport scan
+        // If so, we'll delete the old media record to prevent duplicates
+        let oldMediaId: string | null = null
+        if (registrationData.email) {
+          try {
+            // Try to find existing registration with this email to get old passport scan
+            const existingRegs = await payload.find({
+              collection: 'registrations',
+              where: {
+                email: { equals: registrationData.email },
+              },
+              limit: 1,
+              depth: 1,
+            })
+            
+            if (existingRegs.docs.length > 0 && existingRegs.docs[0].passportScan) {
+              const oldPassportScan = existingRegs.docs[0].passportScan
+              oldMediaId = typeof oldPassportScan === 'string' ? oldPassportScan : oldPassportScan.id
+              console.log('🗑️  Found existing passport scan, will delete old media record:', oldMediaId)
+            }
+          } catch (checkError: any) {
+            console.warn('⚠️  Could not check for existing passport scan:', checkError.message)
+            // Continue anyway
+          }
+        }
+        
         // Extract filename from URL and decode it
         const urlParts = registrationData.passportScanUrl.split('/')
         let filename = urlParts[urlParts.length - 1] || `passport-${Date.now()}.pdf`
@@ -164,6 +190,12 @@ export async function POST(request: NextRequest) {
         
         console.log('📦 Extracted filename from URL:', filename)
         console.log('📦 Blob URL:', registrationData.passportScanUrl)
+        
+        // Verify the URL is valid before storing
+        if (!registrationData.passportScanUrl || !registrationData.passportScanUrl.startsWith('https://')) {
+          console.error('❌ Invalid blob URL provided:', registrationData.passportScanUrl)
+          throw new Error('Invalid blob URL provided')
+        }
         
         // Create media record with the blob URL
         const uploadedFile = await payload.create({
@@ -178,10 +210,36 @@ export async function POST(request: NextRequest) {
           overrideAccess: true,
         })
         
+        // Verify the media record was created with the correct URL
+        const createdMedia = typeof uploadedFile === 'string' 
+          ? await payload.findByID({ collection: 'media', id: uploadedFile })
+          : uploadedFile
+        
+        console.log('✅ Media record created:', {
+          id: createdMedia.id,
+          url: createdMedia.url,
+          filename: createdMedia.filename,
+        })
+        
         const fileId = typeof uploadedFile === 'string' ? uploadedFile : uploadedFile.id
         registrationData.passportScan = fileId
         delete registrationData.passportScanUrl // Remove the URL, we have the media ID now
         console.log('✅ Media record created from client upload:', fileId)
+        
+        // Delete old media record if it exists (to prevent duplicates in media collection)
+        if (oldMediaId && oldMediaId !== fileId) {
+          try {
+            await payload.delete({
+              collection: 'media',
+              id: oldMediaId,
+              overrideAccess: true,
+            })
+            console.log('✅ Deleted old media record:', oldMediaId)
+          } catch (deleteError: any) {
+            console.warn('⚠️  Failed to delete old media record:', deleteError.message)
+            // Continue anyway - not critical
+          }
+        }
       } catch (mediaError: any) {
         console.error('❌ Failed to create media record from blob URL:', {
           message: mediaError.message,
