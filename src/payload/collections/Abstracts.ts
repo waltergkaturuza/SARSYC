@@ -230,42 +230,61 @@ const Abstracts: CollectionConfig = {
   hooks: {
     afterChange: [
       async (args: any) => {
-        const { doc, operation, previousDoc, req } = args
-        
-        // Import email function dynamically to avoid circular dependencies
-        const { sendAbstractStatusUpdate } = await import('@/lib/mail')
-        
-        // Send confirmation email on submission
-        if (operation === 'create') {
-          try {
-            await sendAbstractStatusUpdate({
-              to: doc.primaryAuthor?.email,
-              firstName: doc.primaryAuthor?.firstName,
-              submissionId: doc.submissionId || `ABS-${doc.id}`,
-              title: doc.title,
-              status: 'received',
-            })
-            console.log('Abstract submission confirmation sent to:', doc.primaryAuthor?.email)
-          } catch (error: any) {
-            console.error('Failed to send abstract confirmation email:', error.message)
+        // Wrap entire hook in try-catch to prevent hook errors from failing the update
+        try {
+          const { doc, operation, previousDoc, req } = args
+          
+          // Only proceed if we have the necessary data
+          if (!doc || !doc.primaryAuthor || !doc.primaryAuthor.email) {
+            console.warn('Abstract hook: Missing required data for email', { hasDoc: !!doc, hasAuthor: !!doc?.primaryAuthor })
+            return
           }
-        }
-        
-        // Send status update email when status changes
-        if (operation === 'update' && previousDoc?.status !== doc.status) {
-          try {
-            await sendAbstractStatusUpdate({
-              to: doc.primaryAuthor?.email,
-              firstName: doc.primaryAuthor?.firstName,
-              submissionId: doc.submissionId || `ABS-${doc.id}`,
-              title: doc.title,
-              status: doc.status,
-              reviewerComments: doc.reviewerComments || undefined,
-            })
-            console.log('Abstract status update email sent to:', doc.primaryAuthor?.email, '- New status:', doc.status)
-          } catch (error: any) {
-            console.error('Failed to send abstract status update email:', error.message)
-          }
+          
+          // Import email function dynamically to avoid circular dependencies
+          // Use fire-and-forget pattern to not block the update
+          const emailPromise = (async () => {
+            try {
+              const { sendAbstractStatusUpdate } = await import('@/lib/mail')
+              
+              // Send confirmation email on submission
+              if (operation === 'create') {
+                await sendAbstractStatusUpdate({
+                  to: doc.primaryAuthor.email,
+                  firstName: doc.primaryAuthor.firstName,
+                  submissionId: doc.submissionId || `ABS-${doc.id}`,
+                  title: doc.title,
+                  status: 'received',
+                })
+                console.log('Abstract submission confirmation sent to:', doc.primaryAuthor.email)
+              }
+              
+              // Send status update email when status changes
+              if (operation === 'update' && previousDoc?.status !== doc.status) {
+                await sendAbstractStatusUpdate({
+                  to: doc.primaryAuthor.email,
+                  firstName: doc.primaryAuthor.firstName,
+                  submissionId: doc.submissionId || `ABS-${doc.id}`,
+                  title: doc.title,
+                  status: doc.status,
+                  reviewerComments: doc.reviewerComments || undefined,
+                })
+                console.log('Abstract status update email sent to:', doc.primaryAuthor.email, '- New status:', doc.status)
+              }
+            } catch (emailError: any) {
+              // Log but don't throw - email failures shouldn't block updates
+              console.error('Email sending error in abstract hook:', emailError.message || emailError)
+            }
+          })()
+          
+          // Don't await - let it run in background
+          // This ensures the update completes even if email fails
+          emailPromise.catch((err) => {
+            console.error('Email promise error (non-blocking):', err)
+          })
+        } catch (hookError: any) {
+          // Catch any unexpected errors in the hook itself
+          // Log but don't throw - we don't want hook errors to fail the update
+          console.error('Abstract hook error (non-blocking):', hookError.message || hookError)
         }
       },
     ],
