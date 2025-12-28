@@ -7,6 +7,13 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
+  // Log immediately to ensure we capture errors
+  console.log('🚀 Registration API called')
+  console.log('📋 Request method:', request.method)
+  console.log('📋 Request URL:', request.url)
+  console.log('📋 Content-Type:', request.headers.get('content-type'))
+  console.log('📋 Content-Length:', request.headers.get('content-length'))
+  
   try {
     const contentType = request.headers.get('content-type') || ''
     let registrationData: any = {
@@ -17,7 +24,26 @@ export async function POST(request: NextRequest) {
 
     // Handle FormData (for file uploads) or JSON
     if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData()
+      console.log('📦 Parsing FormData...')
+      let formData: FormData
+      try {
+        formData = await request.formData()
+        console.log('✅ FormData parsed successfully')
+      } catch (formDataError: any) {
+        console.error('❌ FormData parsing failed:', {
+          message: formDataError.message,
+          name: formDataError.name,
+          stack: formDataError.stack,
+        })
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Failed to parse form data',
+            details: formDataError.message,
+          },
+          { status: 400 }
+        )
+      }
       
       // Extract all form fields
       // First pass: collect all keys to identify arrays
@@ -52,11 +78,29 @@ export async function POST(request: NextRequest) {
 
     } else {
       // Handle JSON request (backward compatibility)
-      const body = await request.json()
-      registrationData = {
-        ...body,
-        status: 'pending',
-        paymentStatus: 'pending',
+      console.log('📦 Parsing JSON body...')
+      try {
+        const body = await request.json()
+        registrationData = {
+          ...body,
+          status: 'pending',
+          paymentStatus: 'pending',
+        }
+        console.log('✅ JSON body parsed successfully')
+      } catch (jsonError: any) {
+        console.error('❌ JSON parsing failed:', {
+          message: jsonError.message,
+          name: jsonError.name,
+          stack: jsonError.stack,
+        })
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Failed to parse JSON body',
+            details: jsonError.message,
+          },
+          { status: 400 }
+        )
       }
     }
 
