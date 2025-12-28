@@ -19,16 +19,13 @@ export async function POST(request: NextRequest) {
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
-    const photoFile = formData.get('photo') as File | null
+    const photoUrl = formData.get('photoUrl') as string | null // Photo URL from client-side upload
     
     // Debug: Log all form data keys
     console.log('Form data keys:', Array.from(formData.keys()))
-    console.log('Photo file received:', {
-      exists: !!photoFile,
-      isFile: photoFile instanceof File,
-      name: photoFile?.name,
-      size: photoFile?.size,
-      type: photoFile?.type,
+    console.log('Photo URL received:', {
+      exists: !!photoUrl,
+      url: photoUrl,
     })
     
     // Validate required fields
@@ -46,57 +43,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Photo is required - validate it's provided
-    if (!photoFile || photoFile.size === 0) {
+    // Photo URL is required - validate it's provided
+    if (!photoUrl || !photoUrl.startsWith('https://')) {
       return NextResponse.json(
-        { error: 'Professional photo is required' },
+        { error: 'Professional photo is required. Please upload a photo.' },
         { status: 400 }
       )
     }
 
-    // Log file details for debugging
-    console.log('Photo file details:', {
-      name: photoFile.name,
-      size: photoFile.size,
-      type: photoFile.type,
-      lastModified: photoFile.lastModified,
-    })
-
-    // Upload photo
-    // Convert File to Buffer for Payload CMS (required in serverless environments)
+    // Create media record with the blob URL
     let photoId: string | undefined
     try {
-      console.log('Attempting to upload photo to media collection...')
+      console.log('Creating media record with blob URL...', photoUrl)
       
-      // In serverless environments, Payload needs the file data as a Buffer
-      // Convert File to Buffer for image processing (sharp)
-      const arrayBuffer = await photoFile.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+      // Extract filename from URL for better metadata
+      const urlPath = new URL(photoUrl).pathname
+      const filename = urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
       
-      console.log('File converted to buffer:', {
-        bufferSize: buffer.length,
-        originalName: photoFile.name,
-        originalSize: photoFile.size,
-        originalType: photoFile.type,
-      })
-      
-      // Payload CMS with sharp expects the file to have a data property
-      // Create a file object that Payload can process
-      const fileForPayload = Object.assign(photoFile, {
-        data: buffer,
-        buffer: buffer,
-      })
+      // Decode URL-encoded filename
+      const decodedFilename = decodeURIComponent(filename)
       
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
+          url: photoUrl, // Set the URL directly
+          filename: decodedFilename,
         },
-        file: fileForPayload,
         overrideAccess: true, // Allow admin uploads
       })
       
-      console.log('Photo upload result:', {
+      console.log('Media record created:', {
         type: typeof photoUpload,
         id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
         hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
@@ -105,21 +82,19 @@ export async function POST(request: NextRequest) {
       photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
       
       if (!photoId) {
-        console.error('Photo upload returned no ID:', photoUpload)
+        console.error('Media record creation returned no ID:', photoUpload)
         return NextResponse.json(
           { 
-            error: 'Photo upload failed - no ID returned',
-            details: 'The upload completed but no file ID was returned',
+            error: 'Failed to create media record - no ID returned',
+            details: 'The media record was created but no file ID was returned',
           },
           { status: 500 }
         )
       }
       
-      console.log(`✅ New photo uploaded for new speaker: ${photoId}`)
-      
-      console.log('Photo uploaded successfully with ID:', photoId)
+      console.log(`✅ Media record created for speaker photo: ${photoId}`)
     } catch (uploadError: any) {
-      console.error('Photo upload error details:', {
+      console.error('Media record creation error details:', {
         message: uploadError.message,
         stack: uploadError.stack,
         data: uploadError.data,
@@ -130,8 +105,8 @@ export async function POST(request: NextRequest) {
       })
       return NextResponse.json(
         { 
-          error: 'Failed to upload photo',
-          details: uploadError.message || 'Photo upload failed',
+          error: 'Failed to create media record',
+          details: uploadError.message || 'Media record creation failed',
           ...(process.env.NODE_ENV === 'development' && {
             stack: uploadError.stack,
             data: uploadError.data,
@@ -144,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     if (!photoId) {
       return NextResponse.json(
-        { error: 'Photo upload failed - no photo ID returned' },
+        { error: 'Failed to create media record - no photo ID returned' },
         { status: 500 }
       )
     }

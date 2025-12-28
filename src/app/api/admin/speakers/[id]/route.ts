@@ -40,28 +40,28 @@ export async function PATCH(
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
-    const photoFile = formData.get('photo') as File | null
+    const photoUrl = formData.get('photoUrl') as string | null // Photo URL from client-side upload
     
-    // Upload photo if provided
+    // Create media record with photo URL if provided
     let photoId: string | undefined
-    if (photoFile && photoFile.size > 0) {
+    if (photoUrl && photoUrl.startsWith('https://')) {
       try {
-        // Convert File to Buffer for Payload CMS (required in serverless environments)
-        const arrayBuffer = await photoFile.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
+        console.log('Creating media record with blob URL for update...', photoUrl)
         
-        // Add buffer property to File for Payload/sharp compatibility
-        const fileForPayload = Object.assign(photoFile, {
-          data: buffer,
-          buffer: buffer,
-        })
+        // Extract filename from URL for better metadata
+        const urlPath = new URL(photoUrl).pathname
+        const filename = urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
+        
+        // Decode URL-encoded filename
+        const decodedFilename = decodeURIComponent(filename)
         
         const photoUpload = await payload.create({
           collection: 'media',
           data: {
             alt: `Speaker photo: ${name}`,
+            url: photoUrl, // Set the URL directly
+            filename: decodedFilename,
           },
-          file: fileForPayload,
           overrideAccess: true, // Allow admin uploads
         })
         photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id

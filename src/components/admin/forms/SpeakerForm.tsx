@@ -137,6 +137,48 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
 
     setLoading(true)
     try {
+      // CLIENT-SIDE UPLOAD: Upload photo to dedicated upload endpoint first
+      // This bypasses MIME type validation issues and improves performance
+      let photoBlobUrl: string | null = null
+      if (formData.photo instanceof File) {
+        try {
+          console.log('📤 Uploading speaker photo to upload endpoint...', {
+            name: formData.photo.name,
+            size: formData.photo.size,
+            type: formData.photo.type,
+          })
+
+          // Upload to dedicated upload endpoint
+          // Include speaker name to create consistent filename and prevent duplicates
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.photo)
+          uploadFormData.append('speakerName', formData.name) // Include name for duplicate prevention
+
+          const uploadResponse = await fetch('/api/upload/speaker-photo', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Photo upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          photoBlobUrl = uploadResult.url
+          console.log('✅ Speaker photo uploaded to Vercel Blob:', photoBlobUrl)
+        } catch (uploadError: any) {
+          console.error('❌ Photo upload error:', uploadError)
+          setErrors({ photo: uploadError.message || 'Failed to upload photo. Please try again.' })
+          setLoading(false)
+          return
+        }
+      } else if (typeof formData.photo === 'string' && formData.photo) {
+        // If it's already a URL (from edit mode), use it directly
+        photoBlobUrl = formData.photo
+      }
+
+      // Now submit the form data with the photo URL instead of the file
       const submitData = new FormData()
       submitData.append('name', formData.name)
       submitData.append('title', formData.title)
@@ -148,8 +190,9 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
-      if (formData.photo instanceof File) {
-        submitData.append('photo', formData.photo)
+      // Send photo URL instead of file
+      if (photoBlobUrl) {
+        submitData.append('photoUrl', photoBlobUrl)
       }
       
       if (formData.sessions && formData.sessions.length > 0) {
