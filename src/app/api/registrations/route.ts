@@ -47,12 +47,24 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('📩 Registration request body keys:', Object.keys(registrationData || {}))
+    console.log('📩 isInternational:', registrationData.isInternational)
+    console.log('📩 passportFile present:', !!passportFile)
     
     const payload = await getPayloadClient()
 
     // Handle passport file upload if present (for FormData requests)
     if (passportFile) {
       try {
+        // Convert File to Buffer for Payload CMS (required in serverless environments)
+        const arrayBuffer = await passportFile.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        
+        // Add buffer property to File for Payload/sharp compatibility
+        const fileForPayload = Object.assign(passportFile, {
+          data: buffer,
+          buffer: buffer,
+        })
+        
         // Upload file to Payload Media collection first
         // Use overrideAccess to allow public uploads for registrations
         const uploadedFile = await payload.create({
@@ -60,25 +72,69 @@ export async function POST(request: NextRequest) {
           data: {
             alt: `Passport scan for ${registrationData.email || 'registration'}`,
           },
-          file: passportFile,
+          file: fileForPayload,
           overrideAccess: true, // Allow public uploads for registration passport scans
         })
         
         // Link the uploaded file to the registration
         registrationData.passportScan = typeof uploadedFile === 'string' ? uploadedFile : uploadedFile.id
+        console.log('✅ Passport file uploaded successfully:', registrationData.passportScan)
       } catch (uploadError: any) {
         console.error('❌ File upload error:', uploadError)
-        // If file upload fails, continue without the file but log the error
-        // This allows registration to proceed even if file upload fails
-        // The registration will be created without the passport scan
-        console.warn('⚠️  Registration proceeding without passport scan due to upload error')
+        console.error('❌ Upload error details:', {
+          message: uploadError.message,
+          stack: uploadError.stack,
+          name: uploadError.name,
+        })
+        
+        // If user is international and file upload fails, return error
+        if (registrationData.isInternational === 'true' || registrationData.isInternational === true) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Failed to upload passport scan. Please try again.',
+              details: process.env.NODE_ENV === 'development' ? uploadError.message : undefined,
+            },
+            { status: 400 }
+          )
+        }
+        
+        // For non-international users, continue without the file
+        console.warn('⚠️  Registration proceeding without passport scan (non-international or upload failed)')
       }
+    } else if (registrationData.isInternational === 'true' || registrationData.isInternational === true) {
+      // International user but no passport file provided
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Passport scan is required for international attendees',
+        },
+        { status: 400 }
+      )
+    }
+
+    // Ensure boolean values are properly converted
+    if (registrationData.isInternational === 'true') registrationData.isInternational = true
+    if (registrationData.isInternational === 'false') registrationData.isInternational = false
+    if (registrationData.visaRequired === 'true') registrationData.visaRequired = true
+    if (registrationData.visaRequired === 'false') registrationData.visaRequired = false
+    if (registrationData.accommodationRequired === 'true') registrationData.accommodationRequired = true
+    if (registrationData.accommodationRequired === 'false') registrationData.accommodationRequired = false
+    if (registrationData.hasHealthInsurance === 'true') registrationData.hasHealthInsurance = true
+    if (registrationData.hasHealthInsurance === 'false') registrationData.hasHealthInsurance = false
+    if (registrationData.visaInvitationLetterRequired === 'true') registrationData.visaInvitationLetterRequired = true
+    if (registrationData.visaInvitationLetterRequired === 'false') registrationData.visaInvitationLetterRequired = false
+
+    // Remove passportScan if not international (to avoid validation errors)
+    if (!registrationData.isInternational && registrationData.passportScan) {
+      delete registrationData.passportScan
     }
 
     // Create registration in Payload CMS
     const registration = await payload.create({
       collection: 'registrations',
       data: registrationData,
+      overrideAccess: true, // Allow public registration creation
     })
 
     // Send confirmation email

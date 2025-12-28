@@ -191,10 +191,17 @@ const Registrations: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Passport Scan/Copy',
-      required: true, // Required for international attendees
+      required: false, // Conditionally required - validated in hooks
       admin: {
         condition: (data: any) => data.isInternational === true,
         description: 'Upload a clear scan or photo of your passport bio page (required for visa processing). Accepted formats: PDF, JPG, PNG. Max size: 5MB.',
+      },
+      validate: (value: any, { data }: any) => {
+        // Only require passport scan if user is international
+        if (data?.isInternational === true && !value) {
+          return 'Passport scan is required for international attendees'
+        }
+        return true
       },
     },
     {
