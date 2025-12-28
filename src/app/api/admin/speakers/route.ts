@@ -44,9 +44,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Log file details for debugging
+    console.log('Photo file details:', {
+      name: photoFile.name,
+      size: photoFile.size,
+      type: photoFile.type,
+      lastModified: photoFile.lastModified,
+    })
+
     // Upload photo
     let photoId: string | undefined
     try {
+      console.log('Attempting to upload photo to media collection...')
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
@@ -55,13 +64,46 @@ export async function POST(request: NextRequest) {
         file: photoFile,
         overrideAccess: true, // Allow admin uploads
       })
-      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
+      
+      console.log('Photo upload result:', {
+        type: typeof photoUpload,
+        id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
+        hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
+      })
+      
+      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+      
+      if (!photoId) {
+        console.error('Photo upload returned no ID:', photoUpload)
+        return NextResponse.json(
+          { 
+            error: 'Photo upload failed - no ID returned',
+            details: 'The upload completed but no file ID was returned',
+          },
+          { status: 500 }
+        )
+      }
+      
+      console.log('Photo uploaded successfully with ID:', photoId)
     } catch (uploadError: any) {
-      console.error('Photo upload error:', uploadError)
+      console.error('Photo upload error details:', {
+        message: uploadError.message,
+        stack: uploadError.stack,
+        data: uploadError.data,
+        status: uploadError.status,
+        statusCode: uploadError.statusCode,
+        errors: uploadError.errors,
+        name: uploadError.name,
+      })
       return NextResponse.json(
         { 
           error: 'Failed to upload photo',
           details: uploadError.message || 'Photo upload failed',
+          ...(process.env.NODE_ENV === 'development' && {
+            stack: uploadError.stack,
+            data: uploadError.data,
+            errors: uploadError.errors,
+          }),
         },
         { status: 500 }
       )
