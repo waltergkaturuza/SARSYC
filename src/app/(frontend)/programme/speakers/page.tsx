@@ -6,17 +6,61 @@ import { getPayloadClient } from '@/lib/payload'
 
 // Helper function to get speaker photo URL
 function getSpeakerPhotoUrl(photo: any): string | null {
-  if (!photo) return null
-  if (typeof photo === 'string') return null
+  if (!photo) {
+    return null
+  }
   
-  // Try different URL locations for Vercel Blob or local storage
-  return (
-    photo.url ||
-    photo.sizes?.card?.url ||
-    photo.sizes?.thumbnail?.url ||
-    photo.sizes?.hero?.url ||
-    null
-  )
+  // If it's just an ID (string), it wasn't populated - return null
+  if (typeof photo === 'string') {
+    console.warn('Photo is just an ID, not populated:', photo)
+    return null
+  }
+  
+  // If it's an object, try different URL locations
+  if (typeof photo === 'object') {
+    // Try direct URL first (for Vercel Blob or external storage)
+    if (photo.url && typeof photo.url === 'string') {
+      // Check if it's a valid HTTP(S) URL
+      if (photo.url.startsWith('http://') || photo.url.startsWith('https://')) {
+        return photo.url
+      }
+      // If it's a relative URL, log warning
+      if (photo.url.startsWith('/')) {
+        console.warn('Photo has relative URL (unexpected):', photo.url)
+        return null
+      }
+    }
+    
+    // Try sizes (for local storage with image processing)
+    if (photo.sizes) {
+      if (photo.sizes.card?.url && photo.sizes.card.url.startsWith('http')) {
+        return photo.sizes.card.url
+      }
+      if (photo.sizes.thumbnail?.url && photo.sizes.thumbnail.url.startsWith('http')) {
+        return photo.sizes.thumbnail.url
+      }
+      if (photo.sizes.hero?.url && photo.sizes.hero.url.startsWith('http')) {
+        return photo.sizes.hero.url
+      }
+    }
+    
+    // Try thumbnailURL (legacy field)
+    if (photo.thumbnailURL && photo.thumbnailURL.startsWith('http')) {
+      return photo.thumbnailURL
+    }
+    
+    // Log warning if we have photo object but no valid URL
+    if (!photo.url && !photo.sizes) {
+      console.warn('Photo object exists but has no URL or sizes:', {
+        id: photo.id,
+        filename: photo.filename,
+        hasUrl: !!photo.url,
+        hasSizes: !!photo.sizes,
+      })
+    }
+  }
+  
+  return null
 }
 
 // Helper function to get speaker initials
