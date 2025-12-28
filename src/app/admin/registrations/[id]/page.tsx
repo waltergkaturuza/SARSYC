@@ -288,12 +288,22 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-2"
+                                onError={(e) => {
+                                  console.error('Failed to load passport scan:', registration.passportScan.url)
+                                  e.preventDefault()
+                                }}
                               >
                                 <FiPaperclip className="w-4 h-4" />
                                 {registration.passportScan.mimeType === 'application/pdf' 
                                   ? 'View Passport Scan (PDF)' 
                                   : 'View Passport Scan'}
                               </a>
+                              {/* Debug info - remove in production */}
+                              {process.env.NODE_ENV === 'development' && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  URL: {registration.passportScan.url?.substring(0, 80)}...
+                                </div>
+                              )}
                               {registration.passportScan.mimeType?.startsWith('image/') && (
                                 <div className="mt-3 max-w-md">
                                   <Image
