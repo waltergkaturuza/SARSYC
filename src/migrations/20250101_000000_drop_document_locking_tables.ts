@@ -1,5 +1,4 @@
-import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
-import { sql } from 'drizzle-orm'
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /**
  * Migration to drop Payload CMS document locking tables
