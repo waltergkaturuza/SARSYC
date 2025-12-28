@@ -154,9 +154,16 @@ export async function POST(request: NextRequest) {
       // NEW: Client-side upload - create media record from blob URL
       console.log('📦 Creating media record from client-uploaded blob URL...')
       try {
-        // Extract filename from URL or use a default
+        // Extract filename from URL and decode it
         const urlParts = registrationData.passportScanUrl.split('/')
-        const filename = urlParts[urlParts.length - 1] || `passport-${Date.now()}.pdf`
+        let filename = urlParts[urlParts.length - 1] || `passport-${Date.now()}.pdf`
+        
+        // Decode URL-encoded filename (e.g., "walter%20passport.pdf" -> "walter passport.pdf")
+        // Also remove query parameters if present
+        filename = decodeURIComponent(filename.split('?')[0])
+        
+        console.log('📦 Extracted filename from URL:', filename)
+        console.log('📦 Blob URL:', registrationData.passportScanUrl)
         
         // Create media record with the blob URL
         const uploadedFile = await payload.create({

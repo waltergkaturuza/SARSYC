@@ -66,10 +66,23 @@ export async function POST(request: NextRequest) {
     // Convert File to Blob for Vercel Blob SDK
     const fileBlob = new Blob([file], { type: file.type || 'application/octet-stream' })
 
+    // Sanitize filename to avoid URL encoding issues
+    // Replace spaces and special characters with hyphens
+    const sanitizedFilename = file.name
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9.-]/g, '-') // Replace special chars with hyphens
+      .toLowerCase()
+
     // Upload to Vercel Blob
-    const blob = await put(`passport-scans/${Date.now()}-${file.name}`, fileBlob, {
+    const blob = await put(`passport-scans/${Date.now()}-${sanitizedFilename}`, fileBlob, {
       access: 'public',
       token: blobToken,
+    })
+    
+    console.log('✅ File uploaded to Vercel Blob:', {
+      url: blob.url,
+      pathname: blob.pathname,
+      filename: sanitizedFilename,
     })
 
     return NextResponse.json({
