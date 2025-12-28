@@ -63,12 +63,21 @@ export async function POST(request: NextRequest) {
       // Decode URL-encoded filename
       const decodedFilename = decodeURIComponent(filename)
       
+      // Determine MIME type from filename
+      const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
+                      decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
+                      decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
+                      'image/jpeg' // Default to JPEG
+      
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
-          url: photoUrl, // Set the URL directly
+          url: photoUrl, // Set the URL directly (for Vercel Blob)
           filename: decodedFilename,
+          mimeType: mimeType,
+          // Note: filesize, width, height will be set by Payload if it can process the image
+          // For external URLs, these may remain null, which is fine
         },
         overrideAccess: true, // Allow admin uploads
       })
