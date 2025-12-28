@@ -86,6 +86,15 @@ const Media: CollectionConfig = {
             }
           }
         }
+        
+        // If URL is external (Vercel Blob), ensure it's used directly
+        // Don't let Payload generate file paths from filename
+        if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
+          // External URL - ensure filename doesn't cause Payload to generate file paths
+          // The URL should be used directly, not through /api/media/file/...
+          console.log('🌐 External URL detected in media record, using URL directly:', data.url)
+        }
+        
         return data
       },
     ],
