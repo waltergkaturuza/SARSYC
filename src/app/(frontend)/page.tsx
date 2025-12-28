@@ -400,7 +400,7 @@ export default async function HomePage() {
                         </div>
                       )}
                       {speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote') && (
-                        <div className="absolute top-2 right-2 bg-accent-500 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
+                        <div className="absolute top-2 right-2 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-xs font-bold uppercase">
                           KEYNOTE
                         </div>
                       )}

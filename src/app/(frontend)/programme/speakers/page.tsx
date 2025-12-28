@@ -270,12 +270,12 @@ export default async function SpeakersPage() {
                     {(isKeynote || isPlenary) && (
                       <div className="px-4 pt-3 pb-2 flex gap-2">
                         {isKeynote && (
-                          <span className="px-3 py-1 bg-yellow-400 text-white text-xs font-bold rounded uppercase">
+                          <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
                             KEYNOTE
                           </span>
                         )}
                         {isPlenary && (
-                          <span className="px-3 py-1 bg-yellow-400 text-white text-xs font-bold rounded uppercase">
+                          <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
                             PLENARY
                           </span>
                         )}

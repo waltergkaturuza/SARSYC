@@ -207,7 +207,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                   {speakerTypes.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-6">
                       {speakerTypes.map((type: string) => (
-                        <span key={type} className="px-3 py-1 bg-yellow-400 text-white text-xs font-bold rounded uppercase">
+                        <span key={type} className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
                           {type.toUpperCase()}
                         </span>
                       ))}
