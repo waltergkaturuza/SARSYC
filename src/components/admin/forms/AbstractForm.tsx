@@ -467,14 +467,25 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
                 </select>
               </FormField>
 
-              {(formData.status === 'revisions' || formData.status === 'rejected') && (
-                <FormField label="Reviewer Comments">
+              {(formData.status === 'revisions' || formData.status === 'rejected' || formData.status === 'accepted') && (
+                <FormField 
+                  label="Reviewer Comments" 
+                  hint={formData.status === 'accepted' 
+                    ? "Optional: Add congratulatory message or feedback for the author" 
+                    : "These comments will be visible to the author. Be constructive and encouraging."}
+                >
                   <textarea
                     value={formData.reviewerComments || ''}
                     onChange={(e) => handleInputChange('reviewerComments', e.target.value)}
                     rows={6}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Enter reviewer comments..."
+                    placeholder={
+                      formData.status === 'accepted' 
+                        ? "Congratulations! Your abstract has been accepted. [Optional feedback...]"
+                        : formData.status === 'rejected'
+                        ? "We appreciate your submission. [Constructive feedback...]"
+                        : "Please address the following points in your revision: [Feedback...]"
+                    }
                   />
                 </FormField>
               )}

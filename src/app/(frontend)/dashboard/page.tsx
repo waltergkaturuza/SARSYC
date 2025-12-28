@@ -34,12 +34,23 @@ export default function DashboardPage() {
   const fetchDashboardData = async (email: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/user/dashboard?email=${encodeURIComponent(email)}`)
-      const data = await response.json()
+      // Fetch registration data
+      const dashboardResponse = await fetch(`/api/user/dashboard?email=${encodeURIComponent(email)}`)
+      const dashboardData = await dashboardResponse.json()
       
-      if (response.ok) {
-        setRegistration(data.registration)
-        setAbstractSubmissions(data.abstractSubmissions || [])
+      if (dashboardResponse.ok) {
+        setRegistration(dashboardData.registration)
+      }
+
+      // Fetch detailed abstract data with reviewer comments
+      const abstractsResponse = await fetch(`/api/abstracts/track?email=${encodeURIComponent(email)}`)
+      const abstractsData = await abstractsResponse.json()
+      
+      if (abstractsResponse.ok && abstractsData.success) {
+        setAbstractSubmissions(abstractsData.abstracts || [])
+      } else {
+        // Fallback to basic data if detailed fetch fails
+        setAbstractSubmissions(dashboardData.abstractSubmissions || [])
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
@@ -176,19 +187,77 @@ export default function DashboardPage() {
                             <p className="text-sm text-gray-600">Track: <span className="font-medium text-gray-900">{abstract.track}</span></p>
                           </div>
 
-                          {abstract.status === 'received' || abstract.status === 'under-review' && (
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          {/* Status Messages with Feedback */}
+                          {(abstract.status === 'received' || abstract.status === 'under-review') && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
                               <p className="text-sm text-blue-800">
-                                <strong>Status:</strong> Your abstract is currently being reviewed by our committee.
+                                <strong>Status:</strong> Your abstract is currently being reviewed by our committee. We will notify you once a decision has been made.
                               </p>
                             </div>
                           )}
 
                           {abstract.status === 'accepted' && (
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                              <p className="text-sm text-green-800">
-                                <strong>Congratulations!</strong> Your abstract has been accepted.
-                              </p>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                              <div className="flex items-start gap-2">
+                                <FiCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-green-900 mb-1">
+                                    Congratulations! Your abstract has been accepted.
+                                  </p>
+                                  {abstract.reviewerComments && (
+                                    <div className="mt-2 pt-2 border-t border-green-200">
+                                      <p className="text-xs font-medium text-green-800 mb-1">Feedback from Reviewers:</p>
+                                      <p className="text-sm text-green-700 whitespace-pre-wrap">{abstract.reviewerComments}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {abstract.status === 'rejected' && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-3">
+                              <div className="flex items-start gap-2">
+                                <FiAlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-red-900 mb-1">
+                                    Your abstract was not accepted for this conference.
+                                  </p>
+                                  {abstract.reviewerComments ? (
+                                    <div className="mt-2 pt-2 border-t border-red-200">
+                                      <p className="text-xs font-medium text-red-800 mb-1">Feedback from Reviewers:</p>
+                                      <p className="text-sm text-red-700 whitespace-pre-wrap">{abstract.reviewerComments}</p>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-red-700 mt-2">
+                                      We appreciate your submission and encourage you to submit again in the future.
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {abstract.status === 'revisions' && (
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-3">
+                              <div className="flex items-start gap-2">
+                                <FiEdit className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-orange-900 mb-1">
+                                    Revisions Requested
+                                  </p>
+                                  {abstract.reviewerComments ? (
+                                    <div className="mt-2 pt-2 border-t border-orange-200">
+                                      <p className="text-xs font-medium text-orange-800 mb-1">Reviewer Feedback:</p>
+                                      <p className="text-sm text-orange-700 whitespace-pre-wrap">{abstract.reviewerComments}</p>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-orange-700 mt-2">
+                                      Please review the feedback and submit a revised version of your abstract.
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>

@@ -12,8 +12,9 @@ const Abstracts: CollectionConfig = {
     read: (args: any) => {
       const { req: { user } } = args
       if (user) {
-        return true
+        return true // Admins can read all
       }
+      // Public API can read abstracts by email/submissionId (handled via API routes)
       return false
     },
     create: () => true, // Public can submit
@@ -190,9 +191,12 @@ const Abstracts: CollectionConfig = {
       type: 'textarea',
       label: 'Reviewer Comments',
       admin: {
-        condition: (data: any) => ['revisions', 'rejected'].includes(data.status),
+        condition: (data: any) => ['revisions', 'rejected', 'accepted'].includes(data.status),
+        description: 'These comments will be visible to the author when status is updated',
       },
       access: {
+        // Authors can read their own reviewer comments via API
+        // Admins can always read/write
         read: (args: any) => Boolean(args.req?.user),
         create: (args: any) => Boolean(args.req?.user),
         update: (args: any) => Boolean(args.req?.user),
@@ -227,14 +231,41 @@ const Abstracts: CollectionConfig = {
     afterChange: [
       async (args: any) => {
         const { doc, operation, previousDoc, req } = args
+        
+        // Import email function dynamically to avoid circular dependencies
+        const { sendAbstractStatusUpdate } = await import('@/lib/mail')
+        
         // Send confirmation email on submission
         if (operation === 'create') {
-          console.log('Send abstract submission confirmation to:', doc.primaryAuthor.email)
+          try {
+            await sendAbstractStatusUpdate({
+              to: doc.primaryAuthor?.email,
+              firstName: doc.primaryAuthor?.firstName,
+              submissionId: doc.submissionId || `ABS-${doc.id}`,
+              title: doc.title,
+              status: 'received',
+            })
+            console.log('Abstract submission confirmation sent to:', doc.primaryAuthor?.email)
+          } catch (error: any) {
+            console.error('Failed to send abstract confirmation email:', error.message)
+          }
         }
         
         // Send status update email when status changes
-        if (operation === 'update' && previousDoc.status !== doc.status) {
-          console.log('Send status update email to:', doc.primaryAuthor.email, '- New status:', doc.status)
+        if (operation === 'update' && previousDoc?.status !== doc.status) {
+          try {
+            await sendAbstractStatusUpdate({
+              to: doc.primaryAuthor?.email,
+              firstName: doc.primaryAuthor?.firstName,
+              submissionId: doc.submissionId || `ABS-${doc.id}`,
+              title: doc.title,
+              status: doc.status,
+              reviewerComments: doc.reviewerComments || undefined,
+            })
+            console.log('Abstract status update email sent to:', doc.primaryAuthor?.email, '- New status:', doc.status)
+          } catch (error: any) {
+            console.error('Failed to send abstract status update email:', error.message)
+          }
         }
       },
     ],

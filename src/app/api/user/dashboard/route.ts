@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Get latest registration if exists
     const registration = registrations.docs.length > 0 ? registrations.docs[0] : null
 
-    // Format abstracts for dashboard
+    // Format abstracts for dashboard (basic info - detailed info comes from /api/abstracts/track)
     const abstractSubmissions = abstracts.docs.map((abstract: any) => ({
       id: abstract.id.toString(),
       title: abstract.title,
