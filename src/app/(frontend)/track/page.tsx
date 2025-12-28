@@ -28,11 +28,13 @@ export default function TrackPage() {
   const [error, setError] = useState('')
   const [registration, setRegistration] = useState<any>(null)
   const [abstracts, setAbstracts] = useState<any[]>([])
+  const [partnership, setPartnership] = useState<any>(null)
+  const [volunteer, setVolunteer] = useState<any>(null)
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!registrationId.trim()) {
-      setError('Please enter a Registration ID')
+      setError('Please enter an ID')
       return
     }
 
@@ -40,13 +42,15 @@ export default function TrackPage() {
     setError('')
     setRegistration(null)
     setAbstracts([])
+    setPartnership(null)
+    setVolunteer(null)
 
     try {
       const response = await fetch(`/api/track?registrationId=${encodeURIComponent(registrationId.trim())}`)
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch registration status')
+        throw new Error(data.error || 'Failed to fetch status')
       }
 
       if (data.registration) {
@@ -55,9 +59,15 @@ export default function TrackPage() {
       if (data.abstracts) {
         setAbstracts(data.abstracts)
       }
+      if (data.partnership) {
+        setPartnership(data.partnership)
+      }
+      if (data.volunteer) {
+        setVolunteer(data.volunteer)
+      }
 
-      if (!data.registration && !data.abstracts?.length) {
-        setError('No registration or abstract found with this ID. Please check your Registration ID or Abstract Submission ID and try again.')
+      if (!data.registration && !data.abstracts?.length && !data.partnership && !data.volunteer) {
+        setError('No registration, abstract, partnership inquiry, or volunteer application found with this ID. Please check your ID and try again.')
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching your status')
@@ -76,7 +86,7 @@ export default function TrackPage() {
               Track Your Application
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8">
-              Enter your Registration ID or Abstract Submission ID to check your application status
+              Enter your Registration ID, Abstract Submission ID, Partnership Inquiry ID, or Volunteer Application ID to check your status
             </p>
 
             {/* Search Form */}
@@ -88,7 +98,7 @@ export default function TrackPage() {
                     type="text"
                     value={registrationId}
                     onChange={(e) => setRegistrationId(e.target.value.toUpperCase())}
-                    placeholder="Enter Registration ID (e.g., SARSYC-261224-ABC123) or Abstract ID (e.g., ABS-2025-XFYT)"
+                    placeholder="Enter ID (e.g., SARSYC-261224-ABC123, ABS-2025-XFYT, PART-123, VOL-456)"
                     className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-white"
                   />
                 </div>
@@ -118,7 +128,7 @@ export default function TrackPage() {
       </section>
 
       {/* Results Section */}
-      {(registration || abstracts.length > 0) && (
+      {(registration || abstracts.length > 0 || partnership || volunteer) && (
         <section className="section bg-gray-50">
           <div className="container-custom">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -272,12 +282,198 @@ export default function TrackPage() {
                 </div>
               )}
 
+              {/* Partnership Inquiry */}
+              {partnership && (
+                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Partnership Inquiry</h2>
+                    {(() => {
+                      const statusMap: Record<string, { label: string; color: string }> = {
+                        'new': { label: 'New', color: 'blue' },
+                        'contacted': { label: 'Contacted', color: 'yellow' },
+                        'in-discussion': { label: 'In Discussion', color: 'purple' },
+                        'approved': { label: 'Approved', color: 'green' },
+                        'declined': { label: 'Declined', color: 'red' },
+                        'closed': { label: 'Closed', color: 'gray' },
+                      }
+                      const status = statusMap[partnership.status] || statusMap.new
+                      return (
+                        <span className={`px-4 py-2 bg-${status.color}-100 text-${status.color}-700 rounded-full font-medium`}>
+                          {status.label}
+                        </span>
+                      )
+                    })()}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiUser className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Organization</p>
+                          <p className="font-semibold text-gray-900">{partnership.organizationName}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiUser className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Contact Person</p>
+                          <p className="font-semibold text-gray-900">{partnership.contactPerson}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMail className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Email</p>
+                          <p className="font-semibold text-gray-900">{partnership.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiFileText className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Inquiry ID</p>
+                          <p className="font-semibold text-gray-900 font-mono">{partnership.inquiryId}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiCalendar className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Submitted</p>
+                          <p className="font-semibold text-gray-900">
+                            {partnership.createdAt ? format(new Date(partnership.createdAt), 'PPP') : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMapPin className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Partnership Tier</p>
+                          <p className="font-semibold text-gray-900 capitalize">{partnership.tier || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {partnership.message && (
+                    <div className="mt-6 p-4 bg-primary-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Message</p>
+                      <p className="font-semibold text-gray-900 whitespace-pre-wrap">{partnership.message}</p>
+                    </div>
+                  )}
+
+                  {partnership.adminNotes && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Admin Notes:</p>
+                      <p className="text-sm text-blue-800 whitespace-pre-wrap">{partnership.adminNotes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Volunteer Application */}
+              {volunteer && (
+                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Volunteer Application</h2>
+                    {(() => {
+                      const statusMap: Record<string, { label: string; color: string }> = {
+                        'pending': { label: 'Pending Review', color: 'yellow' },
+                        'approved': { label: 'Approved', color: 'green' },
+                        'rejected': { label: 'Rejected', color: 'red' },
+                        'confirmed': { label: 'Confirmed', color: 'green' },
+                      }
+                      const status = statusMap[volunteer.status] || statusMap.pending
+                      return (
+                        <span className={`px-4 py-2 bg-${status.color}-100 text-${status.color}-700 rounded-full font-medium`}>
+                          {status.label}
+                        </span>
+                      )
+                    })()}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiUser className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Full Name</p>
+                          <p className="font-semibold text-gray-900">
+                            {volunteer.firstName} {volunteer.lastName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMail className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Email</p>
+                          <p className="font-semibold text-gray-900">{volunteer.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiPhone className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Phone</p>
+                          <p className="font-semibold text-gray-900">{volunteer.phone || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiFileText className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Application ID</p>
+                          <p className="font-semibold text-gray-900 font-mono">{volunteer.applicationId}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiCalendar className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Submitted</p>
+                          <p className="font-semibold text-gray-900">
+                            {volunteer.createdAt ? format(new Date(volunteer.createdAt), 'PPP') : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMapPin className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Country</p>
+                          <p className="font-semibold text-gray-900">{volunteer.country || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {volunteer.roles && Array.isArray(volunteer.roles) && volunteer.roles.length > 0 && (
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Volunteer Roles</p>
+                      <div className="flex flex-wrap gap-2">
+                        {volunteer.roles.map((role: string, idx: number) => (
+                          <span key={idx} className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium capitalize">
+                            {role.replace('-', ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {volunteer.organization && (
+                    <div className="mt-4 p-4 bg-primary-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Organization</p>
+                      <p className="font-semibold text-gray-900">{volunteer.organization}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* No Results Message */}
-              {!registration && abstracts.length === 0 && !loading && (
+              {!registration && abstracts.length === 0 && !partnership && !volunteer && !loading && (
                 <div className="bg-white rounded-xl shadow-lg p-8 text-center">
                   <FiFileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg text-gray-600">No registration or abstract found with this ID.</p>
-                  <p className="text-sm text-gray-500 mt-2">Please check your Registration ID and try again.</p>
+                  <p className="text-lg text-gray-600">No registration, abstract, partnership inquiry, or volunteer application found with this ID.</p>
+                  <p className="text-sm text-gray-500 mt-2">Please check your ID and try again.</p>
                 </div>
               )}
             </div>
