@@ -36,7 +36,19 @@ const Media: CollectionConfig = {
         position: 'centre',
       },
     ],
-    mimeTypes: ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    // Explicitly list all allowed MIME types instead of using wildcards
+    // Payload validates MIME types strictly, so we need to be explicit
+    mimeTypes: [
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
     // Ensure PDFs are handled correctly
     adminThumbnail: ({ doc }: any) => {
       // For PDFs, don't try to generate a thumbnail (would fail)
