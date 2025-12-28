@@ -57,7 +57,7 @@ export default function TrackPage() {
       }
 
       if (!data.registration && !data.abstracts?.length) {
-        setError('No registration or abstract found with this ID. Please check your Registration ID and try again.')
+        setError('No registration or abstract found with this ID. Please check your Registration ID or Abstract Submission ID and try again.')
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching your status')
@@ -76,7 +76,7 @@ export default function TrackPage() {
               Track Your Application
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8">
-              Enter your Registration ID to check your application status
+              Enter your Registration ID or Abstract Submission ID to check your application status
             </p>
 
             {/* Search Form */}
@@ -88,7 +88,7 @@ export default function TrackPage() {
                     type="text"
                     value={registrationId}
                     onChange={(e) => setRegistrationId(e.target.value.toUpperCase())}
-                    placeholder="Enter your Registration ID (e.g., REG-1234-5678)"
+                    placeholder="Enter Registration ID (e.g., SARSYC-261224-ABC123) or Abstract ID (e.g., ABS-2025-XFYT)"
                     className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-white"
                   />
                 </div>
