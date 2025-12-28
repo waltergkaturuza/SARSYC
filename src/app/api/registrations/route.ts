@@ -575,13 +575,36 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('✅ No duplicate registrations found, proceeding with creation...')
+    console.log('📝 Registration data keys:', Object.keys(registrationData))
+    console.log('📝 Registration data sample:', {
+      email: registrationData.email,
+      firstName: registrationData.firstName,
+      lastName: registrationData.lastName,
+      isInternational: registrationData.isInternational,
+      hasPassportScan: !!registrationData.passportScan,
+    })
 
     // Create registration in Payload CMS
-    const registration = await payload.create({
-      collection: 'registrations',
-      data: registrationData,
-      overrideAccess: true, // Allow public registration creation
-    })
+    console.log('💾 Creating registration in Payload...')
+    let registration
+    try {
+      registration = await payload.create({
+        collection: 'registrations',
+        data: registrationData,
+        overrideAccess: true, // Allow public registration creation
+      })
+      console.log('✅ Registration created successfully:', registration.id)
+    } catch (createError: any) {
+      console.error('❌ Registration creation failed:', {
+        message: createError.message,
+        stack: createError.stack,
+        name: createError.name,
+        data: createError.data,
+        errors: createError.errors,
+        status: createError.status,
+      })
+      throw createError
+    }
 
     // Send confirmation email
     try {
