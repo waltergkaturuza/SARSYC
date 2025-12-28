@@ -14,21 +14,30 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
     return null
   }
 
+  const getTwitterUrl = (handle: string) => {
+    if (handle.startsWith('http://') || handle.startsWith('https://')) {
+      return handle
+    }
+    return `https://twitter.com/${handle.replace('@', '')}`
+  }
+
+  const getGenericUrl = (url: string) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url
+    }
+    return `https://${url}`
+  }
+
   if (variant === 'profile') {
     return (
       <div className="space-y-3">
         <p className="text-sm font-semibold text-gray-700">Connect:</p>
         {twitter && (
           <a
-            href={`https://twitter.com/${twitter.replace('@', '')}`}
+            href={getTwitterUrl(twitter)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 text-gray-700 hover:text-sky-500 transition-colors cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              window.open(`https://twitter.com/${twitter.replace('@', '')}`, '_blank', 'noopener,noreferrer')
-            }}
           >
             <FiTwitter className="w-5 h-5" />
             <span className="text-sm">{twitter}</span>
@@ -36,16 +45,10 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
         )}
         {linkedin && (
           <a
-            href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`}
+            href={getGenericUrl(linkedin)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              const url = linkedin.startsWith('http') ? linkedin : `https://${linkedin}`
-              window.open(url, '_blank', 'noopener,noreferrer')
-            }}
           >
             <FiLinkedin className="w-5 h-5" />
             <span className="text-sm">LinkedIn</span>
@@ -53,16 +56,10 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
         )}
         {website && (
           <a
-            href={website.startsWith('http') ? website : `https://${website}`}
+            href={getGenericUrl(website)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 text-gray-700 hover:text-primary-600 transition-colors cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              const url = website.startsWith('http') ? website : `https://${website}`
-              window.open(url, '_blank', 'noopener,noreferrer')
-            }}
           >
             <FiGlobe className="w-5 h-5" />
             <span className="text-sm">Website</span>
@@ -77,14 +74,12 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
     <div className="flex gap-3 pt-2 border-t border-gray-100 relative z-20">
       {twitter && (
         <a
-          href={`https://twitter.com/${twitter.replace('@', '')}`}
+          href={getTwitterUrl(twitter)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20 p-1 -m-1"
           onClick={(e) => {
-            e.preventDefault()
             e.stopPropagation()
-            window.open(`https://twitter.com/${twitter.replace('@', '')}`, '_blank', 'noopener,noreferrer')
           }}
         >
           <FiTwitter className="w-5 h-5" />
@@ -92,15 +87,12 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
       )}
       {linkedin && (
         <a
-          href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`}
+          href={getGenericUrl(linkedin)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20 p-1 -m-1"
           onClick={(e) => {
-            e.preventDefault()
             e.stopPropagation()
-            const url = linkedin.startsWith('http') ? linkedin : `https://${linkedin}`
-            window.open(url, '_blank', 'noopener,noreferrer')
           }}
         >
           <FiLinkedin className="w-5 h-5" />
@@ -108,15 +100,12 @@ export default function SocialLinks({ twitter, linkedin, website, variant = 'car
       )}
       {website && (
         <a
-          href={website.startsWith('http') ? website : `https://${website}`}
+          href={getGenericUrl(website)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+          className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20 p-1 -m-1"
           onClick={(e) => {
-            e.preventDefault()
             e.stopPropagation()
-            const url = website.startsWith('http') ? website : `https://${website}`
-            window.open(url, '_blank', 'noopener,noreferrer')
           }}
         >
           <FiGlobe className="w-5 h-5" />
