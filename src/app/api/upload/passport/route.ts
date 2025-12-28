@@ -121,12 +121,14 @@ export async function POST(request: NextRequest) {
       token: blobToken,
     })
     
+    // Extract filename from pathname for logging
+    const loggedFilename = filename.split('/').pop() || file.name
+    
     console.log('✅ File uploaded to Vercel Blob:', {
       url: blob.url,
       pathname: blob.pathname,
-      filename: sanitizedFilename,
-      size: blob.size,
-      uploadedAt: blob.uploadedAt,
+      filename: loggedFilename,
+      originalSize: file.size,
     })
 
     // Verify the URL is accessible (quick check)
@@ -139,7 +141,6 @@ export async function POST(request: NextRequest) {
       success: true,
       url: blob.url,
       pathname: blob.pathname,
-      size: blob.size,
     })
   } catch (error: any) {
     console.error('Passport upload error:', error)

@@ -32,6 +32,7 @@ export default async function SpeakersManagementPage({
   // Build where clause
   const where: any = {}
   
+  // Type is a hasMany field (array), so use 'contains' correctly
   if (type && type !== 'all') {
     where.type = { contains: type }
   }
@@ -48,18 +49,31 @@ export default async function SpeakersManagementPage({
     ]
   }
 
-  const results = await payload.find({
-    collection: 'speakers',
-    where,
-    limit: perPage,
-    page,
-    sort: '-createdAt',
-    depth: 2, // Populate photo relationship fully (including nested sizes)
-  })
+  let speakers: any[] = []
+  let totalPages = 1
+  let totalDocs = 0
 
-  const speakers = results.docs
-  const totalPages = results.totalPages
-  const totalDocs = results.totalDocs
+  try {
+    const results = await payload.find({
+      collection: 'speakers',
+      where,
+      limit: perPage,
+      page,
+      sort: '-createdAt',
+      depth: 2, // Populate photo relationship fully (including nested sizes)
+      overrideAccess: true, // Ensure we can read all speakers in admin
+    })
+
+    speakers = results.docs
+    totalPages = results.totalPages
+    totalDocs = results.totalDocs
+  } catch (error: any) {
+    console.error('Error fetching speakers:', error)
+    // Return empty results on error instead of crashing
+    speakers = []
+    totalPages = 1
+    totalDocs = 0
+  }
 
   const typeConfig: Record<string, { color: string, label: string }> = {
     'keynote': { color: 'bg-purple-100 text-purple-700', label: 'Keynote' },
