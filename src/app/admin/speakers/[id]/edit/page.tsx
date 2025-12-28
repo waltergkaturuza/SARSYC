@@ -18,6 +18,7 @@ export default async function EditSpeakerPage({ params }: EditSpeakerPageProps) 
     const speaker = await payload.findByID({
       collection: 'speakers',
       id: params.id,
+      depth: 2, // Populate photo relationship fully
     })
 
     return (

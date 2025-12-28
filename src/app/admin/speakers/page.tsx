@@ -54,6 +54,7 @@ export default async function SpeakersManagementPage({
     limit: perPage,
     page,
     sort: '-createdAt',
+    depth: 1, // Populate photo relationship
   })
 
   const speakers = results.docs

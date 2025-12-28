@@ -28,12 +28,22 @@ export async function PATCH(
     let photoId: string | undefined
     if (photoFile && photoFile.size > 0) {
       try {
+        // Convert File to Buffer for Payload CMS (required in serverless environments)
+        const arrayBuffer = await photoFile.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        
+        // Add buffer property to File for Payload/sharp compatibility
+        const fileForPayload = Object.assign(photoFile, {
+          data: buffer,
+          buffer: buffer,
+        })
+        
         const photoUpload = await payload.create({
           collection: 'media',
           data: {
             alt: `Speaker photo: ${name}`,
           },
-          file: photoFile,
+          file: fileForPayload,
           overrideAccess: true, // Allow admin uploads
         })
         photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
