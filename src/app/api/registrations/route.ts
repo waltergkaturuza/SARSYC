@@ -114,30 +114,60 @@ export async function POST(request: NextRequest) {
           fileType: fileForPayload.type,
           hasData: 'data' in fileForPayload,
           hasBuffer: 'buffer' in fileForPayload,
+          bufferLength: (fileForPayload as any).buffer?.length,
         })
         
         // Upload file to Payload Media collection first
         // Use overrideAccess to allow public uploads for registrations
-        const uploadedFile = await payload.create({
-          collection: 'media',
-          data: {
-            alt: `Passport scan for ${registrationData.email || 'registration'}`,
-          },
-          file: fileForPayload,
-          overrideAccess: true, // Allow public uploads for registration passport scans
-        })
-        
-        console.log('📤 Upload response:', {
-          type: typeof uploadedFile,
-          isString: typeof uploadedFile === 'string',
-          hasId: typeof uploadedFile === 'object' && uploadedFile !== null && 'id' in uploadedFile,
-          id: typeof uploadedFile === 'object' && uploadedFile !== null ? (uploadedFile as any).id : null,
-        })
+        let uploadedFile: any
+        try {
+          uploadedFile = await payload.create({
+            collection: 'media',
+            data: {
+              alt: `Passport scan for ${registrationData.email || 'registration'}`,
+            },
+            file: fileForPayload,
+            overrideAccess: true, // Allow public uploads for registration passport scans
+          })
+          
+          console.log('📤 Upload response:', {
+            type: typeof uploadedFile,
+            isString: typeof uploadedFile === 'string',
+            hasId: typeof uploadedFile === 'object' && uploadedFile !== null && 'id' in uploadedFile,
+            id: typeof uploadedFile === 'object' && uploadedFile !== null ? (uploadedFile as any).id : null,
+            fullResponse: JSON.stringify(uploadedFile, null, 2).substring(0, 500), // First 500 chars
+          })
+        } catch (payloadError: any) {
+          // Log detailed Payload error information
+          console.error('❌ Payload create error:', {
+            message: payloadError.message,
+            name: payloadError.name,
+            stack: payloadError.stack,
+            data: payloadError.data,
+            errors: payloadError.errors,
+            status: payloadError.status,
+            statusCode: payloadError.statusCode,
+            response: payloadError.response,
+            // Check for validation errors
+            validationErrors: payloadError.data?.errors || payloadError.errors,
+          })
+          
+          // Re-throw with more context
+          throw new Error(
+            `Payload upload failed: ${payloadError.message || 'Unknown error'}. ` +
+            `Errors: ${JSON.stringify(payloadError.data?.errors || payloadError.errors || {})}`
+          )
+        }
         
         // Link the uploaded file to the registration
         const fileId = typeof uploadedFile === 'string' ? uploadedFile : (uploadedFile as any)?.id
         if (!fileId) {
-          throw new Error('File upload succeeded but no ID was returned')
+          console.error('❌ Upload response structure:', {
+            uploadedFile,
+            type: typeof uploadedFile,
+            keys: typeof uploadedFile === 'object' && uploadedFile !== null ? Object.keys(uploadedFile) : [],
+          })
+          throw new Error('File upload succeeded but no ID was returned. Response: ' + JSON.stringify(uploadedFile).substring(0, 200))
         }
         
         registrationData.passportScan = fileId
@@ -152,7 +182,10 @@ export async function POST(request: NextRequest) {
           status: uploadError.status,
           statusCode: uploadError.statusCode,
           data: uploadError.data,
+          errors: uploadError.errors,
           response: uploadError.response,
+          // Extract validation errors if present
+          validationErrors: uploadError.data?.errors || uploadError.errors || uploadError.data?.validationErrors,
         })
         
         // If user is international and file upload fails, return error
@@ -160,10 +193,27 @@ export async function POST(request: NextRequest) {
           const errorMessage = uploadError.message || 'Unknown error'
           const isDevelopment = process.env.NODE_ENV === 'development'
           
+          // Extract validation errors for better user feedback
+          const validationErrors = uploadError.data?.errors || uploadError.errors || uploadError.data?.validationErrors
+          let userFriendlyMessage = 'Failed to upload passport scan. Please try again.'
+          
+          if (validationErrors && Array.isArray(validationErrors) && validationErrors.length > 0) {
+            const firstError = validationErrors[0]
+            if (firstError.message) {
+              userFriendlyMessage = firstError.message
+            } else if (typeof firstError === 'string') {
+              userFriendlyMessage = firstError
+            }
+          } else if (uploadError.message && uploadError.message.includes('validation')) {
+            userFriendlyMessage = 'The passport file format is invalid. Please ensure it is a PDF, JPG, or PNG file.'
+          } else if (uploadError.message && uploadError.message.includes('size')) {
+            userFriendlyMessage = 'The passport file is too large. Please ensure it is less than 5MB.'
+          }
+          
           return NextResponse.json(
             {
               success: false,
-              error: 'Failed to upload passport scan. Please try again.',
+              error: userFriendlyMessage,
               details: isDevelopment 
                 ? `Upload failed: ${errorMessage}` 
                 : 'Please ensure the file is a valid PDF, JPG, or PNG and is less than 5MB.',
@@ -172,6 +222,8 @@ export async function POST(request: NextRequest) {
                 fileName: passportFile.name,
                 fileSize: passportFile.size,
                 fileType: passportFile.type,
+                validationErrors: validationErrors,
+                fullError: uploadError,
               } : undefined,
             },
             { status: 400 }
