@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload/types'
 import { getCountryOptions } from '@/lib/countries'
+import crypto from 'crypto'
 
 const Speakers: CollectionConfig = {
   slug: 'speakers',
@@ -20,6 +21,25 @@ const Speakers: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'Full Name',
+    },
+    {
+      name: 'email',
+      type: 'email',
+      required: true,
+      label: 'Email Address',
+      admin: {
+        description: 'Email address for speaker account and communications',
+      },
+    },
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'User Account',
+      admin: {
+        description: 'Automatically created user account for this speaker',
+        readOnly: true,
+      },
     },
     {
       name: 'title',
@@ -121,6 +141,143 @@ const Speakers: CollectionConfig = {
     },
   ],
   timestamps: true,
+  hooks: {
+    afterChange: [
+      async (args: any) => {
+        try {
+          const { doc, operation, req } = args
+          
+          // Only create user on speaker creation
+          if (operation !== 'create') {
+            return
+          }
+          
+          // Check if email exists
+          if (!doc?.email) {
+            console.warn('Speaker created without email, skipping user account creation')
+            return
+          }
+          
+          // Check if user already exists for this email
+          const payload = req.payload
+          const existingUsers = await payload.find({
+            collection: 'users',
+            where: {
+              email: {
+                equals: doc.email.toLowerCase().trim(),
+              },
+            },
+            limit: 1,
+            depth: 0,
+          })
+          
+          if (existingUsers.totalDocs > 0) {
+            // User already exists, link speaker to existing user
+            const existingUser = existingUsers.docs[0]
+            await payload.update({
+              collection: 'speakers',
+              id: doc.id,
+              data: {
+                user: existingUser.id,
+              },
+              overrideAccess: true,
+            })
+            
+            // Update user to link to speaker if not already linked
+            if (!existingUser.speaker) {
+              await payload.update({
+                collection: 'users',
+                id: existingUser.id,
+                data: {
+                  speaker: doc.id,
+                },
+                overrideAccess: true,
+              })
+            }
+            
+            console.log(`Speaker ${doc.id} linked to existing user ${existingUser.id}`)
+            return
+          }
+          
+          // Generate random password
+          const randomPassword = crypto.randomBytes(16).toString('hex')
+          
+          // Create user account
+          const nameParts = doc.name.split(' ').filter((p: string) => p.trim())
+          const firstName = nameParts[0] || doc.name
+          const lastName = nameParts.slice(1).join(' ') || nameParts[0] || doc.name
+          
+          const newUser = await payload.create({
+            collection: 'users',
+            data: {
+              email: doc.email.toLowerCase().trim(),
+              password: randomPassword, // Will be hashed automatically
+              firstName,
+              lastName,
+              role: 'speaker',
+              organization: doc.organization || undefined,
+              phone: undefined, // Speakers don't have phone in their collection
+              speaker: doc.id,
+            },
+            overrideAccess: true,
+          })
+          
+          // Link speaker to user
+          await payload.update({
+            collection: 'speakers',
+            id: doc.id,
+            data: {
+              user: typeof newUser === 'string' ? newUser : newUser.id,
+            },
+            overrideAccess: true,
+          })
+          
+          // Generate password reset token
+          const resetToken = crypto.randomBytes(32).toString('hex')
+          const resetTokenExpiry = new Date()
+          resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 24) // 24 hours
+          
+          // Store reset token
+          await payload.update({
+            collection: 'users',
+            id: typeof newUser === 'string' ? newUser : newUser.id,
+            data: {
+              resetPasswordToken: resetToken,
+              resetPasswordExpiration: resetTokenExpiry.toISOString(),
+            },
+            overrideAccess: true,
+          })
+          
+          // Send welcome email (non-blocking)
+          const emailPromise = (async () => {
+            try {
+              const { sendWelcomeEmail } = await import('@/lib/mail')
+              await sendWelcomeEmail({
+                to: doc.email,
+                firstName,
+                lastName,
+                role: 'speaker',
+                resetToken,
+              })
+              console.log(`Welcome email sent to speaker: ${doc.email}`)
+            } catch (emailError: any) {
+              console.error('Failed to send welcome email to speaker:', emailError.message || emailError)
+            }
+          })()
+          
+          // Don't await - let it run in background
+          emailPromise.catch((err) => {
+            console.error('Email promise error (non-blocking):', err)
+          })
+          
+          console.log(`User account created for speaker ${doc.id} (${doc.email})`)
+        } catch (error: any) {
+          // Log but don't throw - user creation failure shouldn't block speaker creation
+          console.error('Error creating user account for speaker:', error.message || error)
+        }
+      },
+    ],
+  },
 }
 
 export default Speakers

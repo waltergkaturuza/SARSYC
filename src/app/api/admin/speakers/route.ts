@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     
     // Extract form fields
     const name = formData.get('name') as string
+    const email = formData.get('email') as string
     const title = formData.get('title') as string
     const organization = formData.get('organization') as string
     const country = formData.get('country') as string
@@ -29,9 +30,17 @@ export async function POST(request: NextRequest) {
     })
     
     // Validate required fields
-    if (!name || !title || !organization || !country || !bio) {
+    if (!name || !email || !title || !organization || !country || !bio) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, title, organization, country, and bio are required' },
+        { error: 'Missing required fields: name, email, title, organization, country, and bio are required' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email address format' },
         { status: 400 }
       )
     }
@@ -138,6 +147,7 @@ export async function POST(request: NextRequest) {
       collection: 'speakers',
       data: {
         name,
+        email: email.toLowerCase().trim(),
         title,
         organization,
         country,

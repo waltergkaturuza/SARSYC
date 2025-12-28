@@ -50,10 +50,36 @@ const Users: CollectionConfig = {
           label: 'Contributor',
           value: 'contributor',
         },
+        {
+          label: 'Speaker',
+          value: 'speaker',
+        },
+        {
+          label: 'Presenter',
+          value: 'presenter',
+        },
       ],
       access: {
         create: (args: any) => args.req?.user?.role === 'admin',
         update: (args: any) => args.req?.user?.role === 'admin',
+      },
+    },
+    {
+      name: 'speaker',
+      type: 'relationship',
+      relationTo: 'speakers',
+      label: 'Associated Speaker Profile',
+      admin: {
+        description: 'Link to speaker profile (if this user is a speaker)',
+      },
+    },
+    {
+      name: 'abstract',
+      type: 'relationship',
+      relationTo: 'abstracts',
+      label: 'Associated Abstract',
+      admin: {
+        description: 'Link to abstract submission (if this user is a presenter)',
       },
     },
     {

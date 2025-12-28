@@ -9,6 +9,7 @@ import { countries } from '@/lib/countries'
 
 interface SpeakerData {
   name: string
+  email: string
   title: string
   organization: string
   country: string
@@ -38,6 +39,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
 
   const [formData, setFormData] = useState<SpeakerData>({
     name: initialData?.name || '',
+    email: initialData?.email || '',
     title: initialData?.title || '',
     organization: initialData?.organization || '',
     country: initialData?.country || '',
@@ -114,6 +116,10 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     const newErrors: Record<string, string> = {}
     
     if (!formData.name.trim()) newErrors.name = 'Name is required'
+    if (!formData.email.trim()) newErrors.email = 'Email is required'
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
     if (!formData.title.trim()) newErrors.title = 'Professional title is required'
     if (!formData.organization.trim()) newErrors.organization = 'Organization is required'
     if (!formData.country.trim()) newErrors.country = 'Country is required'
@@ -181,6 +187,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       // Now submit the form data with the photo URL instead of the file
       const submitData = new FormData()
       submitData.append('name', formData.name)
+      submitData.append('email', formData.email)
       submitData.append('title', formData.title)
       submitData.append('organization', formData.organization)
       submitData.append('country', formData.country)
@@ -243,6 +250,16 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
               onChange={(e) => handleInputChange('name', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Dr. Jane Doe"
+            />
+          </FormField>
+
+          <FormField label="Email Address" required error={errors.email} hint="Used for account creation and communications">
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="speaker@example.com"
             />
           </FormField>
 

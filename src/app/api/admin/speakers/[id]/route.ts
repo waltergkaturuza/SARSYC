@@ -32,6 +32,7 @@ export async function PATCH(
     
     // Extract form fields
     const name = formData.get('name') as string
+    const email = formData.get('email') as string
     const title = formData.get('title') as string
     const organization = formData.get('organization') as string
     const country = formData.get('country') as string
@@ -94,6 +95,11 @@ export async function PATCH(
       featured,
       socialMedia,
       expertise: expertise.map((area: string) => ({ area })),
+    }
+    
+    // Add email if provided
+    if (email) {
+      updateData.email = email.toLowerCase().trim()
     }
     
     if (photoId) {
