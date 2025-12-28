@@ -94,6 +94,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare data for creation
+    // Note: status has access.create: () => false, but overrideAccess: true should bypass this
+    // However, to be safe, we'll let Payload set the default status
     const abstractData: any = {
       title: body.title.trim(),
       abstract: body.abstract.trim(),
@@ -107,7 +109,8 @@ export async function POST(request: NextRequest) {
         country: body.primaryAuthor.country.trim(),
       },
       presentationType: body.presentationType,
-      status: 'received',
+      // Don't set status explicitly - let Payload use the defaultValue: 'received'
+      // The access control prevents setting it, but defaultValue should still work
     }
 
     // Handle keywords - Payload requires minRows: 3, so pad if needed
