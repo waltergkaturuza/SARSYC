@@ -8,11 +8,17 @@ export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   // Log immediately to ensure we capture errors
+  // Use multiple logging methods to ensure visibility
   console.log('🚀 Registration API called')
+  console.error('🚀 Registration API called (error stream)')
+  console.warn('🚀 Registration API called (warn stream)')
   console.log('📋 Request method:', request.method)
   console.log('📋 Request URL:', request.url)
   console.log('📋 Content-Type:', request.headers.get('content-type'))
   console.log('📋 Content-Length:', request.headers.get('content-length'))
+  
+  // Also write to stderr which Vercel definitely captures
+  process.stderr.write('🚀 Registration API called\n')
   
   try {
     const contentType = request.headers.get('content-type') || ''
@@ -624,7 +630,7 @@ export async function POST(request: NextRequest) {
       message: 'Registration successful',
     })
   } catch (error: any) {
-    // Log error immediately and aggressively
+    // Log error immediately and aggressively using ALL methods
     const errorDetails = {
       message: error.message || 'Unknown error',
       name: error.name || 'Error',
@@ -636,11 +642,14 @@ export async function POST(request: NextRequest) {
       status: error.status,
     }
     
+    // Use all logging methods
     console.error('❌ ==========================================')
     console.error('❌ REGISTRATION ERROR - FULL DETAILS:')
     console.error('❌ ==========================================')
     console.error(JSON.stringify(errorDetails, null, 2))
     console.error('❌ ==========================================')
+    console.warn('❌ ERROR (warn stream):', errorDetails)
+    process.stderr.write(`❌ ERROR: ${JSON.stringify(errorDetails)}\n`)
     
     // Determine status code
     let statusCode = 500
@@ -650,21 +659,28 @@ export async function POST(request: NextRequest) {
       statusCode = 400
     }
     
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || 'Registration failed',
-        details: errorDetails.message,
-        // Include more details in production for debugging
-        debug: {
-          name: errorDetails.name,
-          code: errorDetails.code,
-        },
-        // Full stack in development only
-        stack: process.env.NODE_ENV === 'development' ? errorDetails.stack : undefined,
+    // Return detailed error response that will be visible in browser
+    const errorResponse = {
+      success: false,
+      error: error.message || 'Registration failed',
+      details: errorDetails.message,
+      // ALWAYS include debug info in production to help diagnose
+      debug: {
+        name: errorDetails.name,
+        code: errorDetails.code,
+        status: errorDetails.status,
+        hasErrors: !!errorDetails.errors,
+        errorCount: errorDetails.errors?.length || 0,
       },
-      { status: statusCode }
-    )
+      // Include first few errors if available
+      errors: errorDetails.errors?.slice(0, 3) || undefined,
+      // Include stack trace in production for now (we'll remove later)
+      stack: errorDetails.stack?.split('\n').slice(0, 10).join('\n'), // First 10 lines
+    }
+    
+    console.error('❌ Returning error response:', JSON.stringify(errorResponse, null, 2))
+    
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
 
