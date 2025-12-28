@@ -48,8 +48,16 @@ async function backfillUserAccounts() {
     for (const speaker of speakers.docs) {
       try {
         // Check if speaker has email
-        if (!speaker.email) {
+        if (!speaker.email || speaker.email.trim() === '') {
           console.log(`   ⚠️  Skipping speaker "${speaker.name}" (ID: ${speaker.id}) - no email`)
+          speakersSkipped++
+          continue
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(speaker.email)) {
+          console.log(`   ⚠️  Skipping speaker "${speaker.name}" (ID: ${speaker.id}) - invalid email: ${speaker.email}`)
           speakersSkipped++
           continue
         }
