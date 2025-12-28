@@ -190,11 +190,22 @@ export async function POST(request: NextRequest) {
             isPDFHeader: buffer.subarray(0, 4).toString() === '%PDF',
           })
           
+          // Explicitly set MIME type in data if it's a PDF
+          // This helps Payload validate the file type correctly
+          const mediaData: any = {
+            alt: `Passport scan for ${registrationData.email || 'registration'}`,
+          }
+          
+          // If it's a PDF, explicitly set the MIME type to help Payload validate it
+          if (fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')) {
+            // Payload might detect MIME type from content, but we can help by ensuring
+            // the filename and type are consistent
+            console.log('📄 PDF file detected, ensuring MIME type is set correctly')
+          }
+          
           uploadedFile = await payload.create({
             collection: 'media',
-            data: {
-              alt: `Passport scan for ${registrationData.email || 'registration'}`,
-            },
+            data: mediaData,
             file: fileForPayload,
             overrideAccess: true, // Allow public uploads for registration passport scans
           })

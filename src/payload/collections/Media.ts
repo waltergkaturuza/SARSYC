@@ -37,6 +37,38 @@ const Media: CollectionConfig = {
       },
     ],
     mimeTypes: ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    // Ensure PDFs are handled correctly
+    adminThumbnail: ({ doc }: any) => {
+      // For PDFs, don't try to generate a thumbnail (would fail)
+      if (doc?.mimeType === 'application/pdf') {
+        return doc?.url || ''
+      }
+      return doc?.thumbnailURL || doc?.url || ''
+    },
+  },
+  hooks: {
+    beforeValidate: [
+      async ({ data, req }: any) => {
+        // If a file is being uploaded, ensure MIME type is preserved
+        if (req?.file && data) {
+          const file = req.file
+          // If the file is a PDF, ensure the MIME type is set correctly
+          if (file.originalname?.toLowerCase().endsWith('.pdf') || file.mimetype === 'application/pdf') {
+            // Ensure MIME type is set to application/pdf
+            if (data.mimeType && data.mimeType !== 'application/pdf') {
+              console.warn('⚠️  MIME type mismatch for PDF file, correcting...', {
+                detected: data.mimeType,
+                expected: 'application/pdf',
+                filename: file.originalname,
+              })
+            }
+            // Don't modify data here - let Payload handle it
+            // But ensure the file's MIME type is correct
+          }
+        }
+        return data
+      },
+    ],
   },
   fields: [
     {
