@@ -44,13 +44,13 @@ const navigation = [
       { name: 'Register', href: '/participate/register' },
       { name: 'Submit Abstract', href: '/participate/submit-abstract' },
       { name: 'Volunteer', href: '/participate/volunteer' },
+      { name: 'Track Status', href: '/track' },
     ]
   },
   { name: 'Resources', href: '/resources' },
   { name: 'News', href: '/news' },
   { name: 'Partnerships', href: '/partnerships' },
   { name: 'Contact', href: '/contact' },
-  { name: 'Track Status', href: '/track' },
 ]
 
 export default function Header() {
