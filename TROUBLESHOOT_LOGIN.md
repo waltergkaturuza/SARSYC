@@ -74,3 +74,4 @@ Remove-Item Env:\DATABASE_URL
 4. **Wrong email/password** - Double-check exact spelling
 5. **API not deployed** - Wait for Vercel deployment to complete
 
+

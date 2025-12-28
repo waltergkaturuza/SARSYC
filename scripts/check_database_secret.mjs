@@ -137,3 +137,4 @@ checkDatabaseSecret()
     process.exit(1)
   })
 
+

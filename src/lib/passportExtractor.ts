@@ -30,25 +30,46 @@ function parseMRZ(mrzLines: string[]): Partial<ExtractedPassportData> {
   // Line 2: Contains passport number, dates, etc.
   const line2 = mrzLines[1]
   
-  // Extract passport number (first 9 characters after document type)
+  // Extract passport number (first 9 characters of line 2, before check digit)
+  // Format: BE152196<3ZWE... (passport number is first 9 chars, then check digit)
   if (line2 && line2.length > 9) {
-    const passportNum = line2.substring(0, 9).replace(/[<O0]/g, '').trim()
+    // Passport number is typically the first 9 characters, but may have < separator
+    // For Zimbabwe: BE152196<3ZWE... - passport number is BE152196
+    let passportNum = line2.substring(0, 9)
+    // Remove < characters and trailing spaces
+    passportNum = passportNum.replace(/</g, '').trim()
+    // If we have a check digit at position 9, take first 8 chars
+    if (line2.length > 9 && line2[9] === '<') {
+      passportNum = line2.substring(0, 9).replace(/</g, '').trim()
+    }
     if (passportNum.length >= 6) {
       data.passportNumber = passportNum
     }
   }
   
-  // Extract date of birth (YYMMDD format, position 13-18 in line 2)
-  if (line2 && line2.length > 18) {
-    const dobStr = line2.substring(13, 19)
-    if (dobStr.match(/^\d{6}$/)) {
-      const year = parseInt(dobStr.substring(0, 2))
-      const month = parseInt(dobStr.substring(2, 4))
-      const day = parseInt(dobStr.substring(4, 6))
-      // Determine century (assume 1900-2099)
-      const fullYear = year < 50 ? 2000 + year : 1900 + year
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        data.dateOfBirth = `${fullYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  // Extract date of birth (YYMMDD format)
+  // Position varies by passport type:
+  // - Standard ICAO: position 13-18 (after passport number, check digit, country code)
+  // - Zimbabwe format: position 13-18 (after passport number, check digit, country code)
+  // Try multiple positions to handle different formats
+  const dobPositions = [
+    { start: 13, end: 19 }, // Standard ICAO position
+    { start: 14, end: 20 }, // Alternative position
+  ]
+  
+  for (const pos of dobPositions) {
+    if (line2 && line2.length > pos.end) {
+      const dobStr = line2.substring(pos.start, pos.end)
+      if (dobStr.match(/^\d{6}$/)) {
+        const year = parseInt(dobStr.substring(0, 2))
+        const month = parseInt(dobStr.substring(2, 4))
+        const day = parseInt(dobStr.substring(4, 6))
+        // Determine century (assume 1900-2099)
+        const fullYear = year < 50 ? 2000 + year : 1900 + year
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+          data.dateOfBirth = `${fullYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          break // Found valid date, stop searching
+        }
       }
     }
   }
@@ -63,16 +84,25 @@ function parseMRZ(mrzLines: string[]): Partial<ExtractedPassportData> {
     }
   }
   
-  // Extract expiry date (YYMMDD format, position 21-26 in line 2)
-  if (line2 && line2.length > 26) {
-    const expiryStr = line2.substring(21, 27)
-    if (expiryStr.match(/^\d{6}$/)) {
-      const year = parseInt(expiryStr.substring(0, 2))
-      const month = parseInt(expiryStr.substring(2, 4))
-      const day = parseInt(expiryStr.substring(4, 6))
-      const fullYear = year < 50 ? 2000 + year : 1900 + year
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        data.expiryDate = `${fullYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  // Extract expiry date (YYMMDD format)
+  // Position varies: typically 21-26, but may be offset
+  const expiryPositions = [
+    { start: 21, end: 27 }, // Standard ICAO position
+    { start: 22, end: 28 }, // Alternative position
+  ]
+  
+  for (const pos of expiryPositions) {
+    if (line2 && line2.length > pos.end) {
+      const expiryStr = line2.substring(pos.start, pos.end)
+      if (expiryStr.match(/^\d{6}$/)) {
+        const year = parseInt(expiryStr.substring(0, 2))
+        const month = parseInt(expiryStr.substring(2, 4))
+        const day = parseInt(expiryStr.substring(4, 6))
+        const fullYear = year < 50 ? 2000 + year : 1900 + year
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+          data.expiryDate = `${fullYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          break // Found valid date, stop searching
+        }
       }
     }
   }
@@ -101,9 +131,22 @@ function parseMRZ(mrzLines: string[]): Partial<ExtractedPassportData> {
   }
   
   // Extract name from line 1
+  // Format varies:
+  // - Standard: P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<<
+  // - Zimbabwe: PNZWEKATURUZA<<GREENFORD<WALTER<<<<<<<<<<<<<
   if (line1 && line1.length > 5) {
-    // Format: P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<<
-    const namePart = line1.substring(5).replace(/</g, ' ').trim()
+    // Skip document type (P) and country code (3 chars) if present
+    // For Zimbabwe: PNZWE... (P = passport, N = type, ZWE = country)
+    // For standard: P<UTO... (P = passport, < = separator, UTO = country)
+    let nameStart = 5
+    // Check if format is PNZWE (Zimbabwe format) - skip 5 chars
+    if (line1.substring(0, 2) === 'PN' && line1.length > 5) {
+      nameStart = 5 // Skip PN + 3-char country code
+    } else if (line1[1] === '<') {
+      nameStart = 5 // Standard format: P<UTO...
+    }
+    
+    const namePart = line1.substring(nameStart).replace(/</g, ' ').trim()
     const nameParts = namePart.split(/\s+/).filter(p => p.length > 0)
     if (nameParts.length > 0) {
       data.surname = nameParts[0]
@@ -121,6 +164,16 @@ function parseMRZ(mrzLines: string[]): Partial<ExtractedPassportData> {
  */
 export async function extractPassportData(imageFile: File): Promise<ExtractedPassportData> {
   try {
+    // Validate file exists and is valid
+    if (!imageFile || !(imageFile instanceof File)) {
+      throw new Error('Invalid file provided')
+    }
+
+    // Check file size
+    if (imageFile.size === 0) {
+      throw new Error('File is empty')
+    }
+
     // Dynamically import Tesseract to avoid SSR issues
     const Tesseract = (await import('tesseract.js')).default
     
@@ -133,7 +186,8 @@ export async function extractPassportData(imageFile: File): Promise<ExtractedPas
       },
     })
     
-    // Perform OCR
+    // Perform OCR - Tesseract can handle File objects directly
+    // But we need to ensure it's a valid image file
     const { data: { text, confidence } } = await worker.recognize(imageFile)
     
     // Clean up worker

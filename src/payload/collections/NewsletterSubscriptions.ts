@@ -98,3 +98,4 @@ const NewsletterSubscriptions: CollectionConfig = {
 
 export default NewsletterSubscriptions
 
+

@@ -74,3 +74,4 @@ After this fix:
 - `src/lib/getSecret.ts` - Added `processPayloadSecret()` and `getProcessedSecret()`
 - `src/lib/getCurrentUser.ts` - Updated both functions to use `getProcessedSecret()`
 
+

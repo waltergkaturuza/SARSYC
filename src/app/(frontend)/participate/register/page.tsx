@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader } from 'react-icons/fi'
+import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
+import { showToast } from '@/lib/toast'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -192,6 +193,7 @@ export default function RegisterPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isExtracting, setIsExtracting] = useState(false)
   const [extractionStatus, setExtractionStatus] = useState<string | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   const {
     register,
@@ -930,6 +932,9 @@ export default function RegisterPage() {
                                   setIsExtracting(true)
                                   setExtractionStatus('Extracting passport information...')
                                   
+                                  // Show warning about OCR accuracy
+                                  showToast.info('⚠️ OCR extraction may not be 100% accurate. Please review all extracted information carefully before submitting.')
+                                  
                                   try {
                                     const extracted = await extractPassportData(file)
                                     
@@ -1048,8 +1053,12 @@ export default function RegisterPage() {
                               </div>
                             )}
                             {extractionStatus && !isExtracting && (
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-                                <p className="text-blue-800 whitespace-pre-line">{extractionStatus}</p>
+                              <div className="text-sm bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                                <p className="font-medium text-yellow-800 mb-2">⚠️ OCR Extraction Results:</p>
+                                <p className="text-yellow-700 whitespace-pre-line">{extractionStatus}</p>
+                                <p className="text-xs text-yellow-600 mt-2">
+                                  <strong>Please verify all extracted information carefully.</strong> OCR may not be 100% accurate. Review and correct any errors before submitting.
+                                </p>
                               </div>
                             )}
                           </div>
@@ -1586,24 +1595,15 @@ export default function RegisterPage() {
                   </button>
                 ) : (
                   <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="btn-primary ml-auto flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="button"
+                    onClick={() => {
+                      // Show preview before final submission
+                      setShowPreview(true)
+                    }}
+                    className="btn-primary ml-auto flex items-center gap-2"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        Complete Registration
-                        <FiCheck />
-                      </>
-                    )}
+                    <FiEye />
+                    Review & Submit
                   </button>
                 )}
               </div>
@@ -1618,6 +1618,219 @@ export default function RegisterPage() {
                 registration@sarsyc.org
               </a>
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <FiEye />
+                Review Your Registration
+              </h2>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>⚠️ Important:</strong> Please review all information carefully, especially passport details if they were auto-extracted. OCR may not be 100% accurate. Make any necessary corrections before submitting.
+                </p>
+              </div>
+
+              {/* Preview Content */}
+              <RegistrationPreview data={watch()} passportFile={passportFile} />
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(false)}
+                  className="btn-outline flex items-center gap-2"
+                >
+                  <FiEdit />
+                  Edit Information
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowPreview(false)
+                    // Validate and submit
+                    const isValid = await trigger()
+                    if (isValid) {
+                      handleSubmit(onSubmit)()
+                    } else {
+                      showToast.error('Please fix errors before submitting')
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <FiLoader className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <FiCheck />
+                      Confirm & Submit
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Preview Component
+function RegistrationPreview({ data, passportFile }: { data: any, passportFile: File | null }) {
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return 'Not provided'
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    } catch {
+      return dateStr
+    }
+  }
+
+  const getCountryName = (code?: string) => {
+    if (!code) return 'Not provided'
+    const country = countries.find(c => c.value === code)
+    return country?.label || code
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Personal Information */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FiUser />
+          Personal Information
+        </h3>
+        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium text-gray-700">Name:</span>
+              <span className="ml-2 text-gray-900">{data.firstName} {data.lastName}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Email:</span>
+              <span className="ml-2 text-gray-900">{data.email}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Phone:</span>
+              <span className="ml-2 text-gray-900">{data.phone}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Date of Birth:</span>
+              <span className="ml-2 text-gray-900">{formatDate(data.dateOfBirth)}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Gender:</span>
+              <span className="ml-2 text-gray-900 capitalize">{data.gender?.replace(/-/g, ' ')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FiMapPin />
+          Location
+        </h3>
+        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium text-gray-700">Country:</span>
+              <span className="ml-2 text-gray-900">{getCountryName(data.country)}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Nationality:</span>
+              <span className="ml-2 text-gray-900">{getCountryName(data.nationality)}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">City:</span>
+              <span className="ml-2 text-gray-900">{data.city}</span>
+            </div>
+            <div className="md:col-span-2">
+              <span className="font-medium text-gray-700">Address:</span>
+              <span className="ml-2 text-gray-900">{data.address}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Passport Information (if international) */}
+      {data.isInternational && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <FiGlobe />
+            Passport Information
+          </h3>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 text-sm">
+            <p className="text-xs text-yellow-800 mb-3 font-medium">
+              ⚠️ Please verify these details carefully - OCR extraction may contain errors
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium text-gray-700">Passport Number:</span>
+                <span className="ml-2 text-gray-900">{data.passportNumber || 'Not provided'}</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Expiry Date:</span>
+                <span className="ml-2 text-gray-900">{formatDate(data.passportExpiry)}</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Issuing Country:</span>
+                <span className="ml-2 text-gray-900">{getCountryName(data.passportIssuingCountry)}</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Passport File:</span>
+                <span className="ml-2 text-gray-900">{passportFile ? passportFile.name : 'Not uploaded'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Contact */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FiShield />
+          Emergency Contact
+        </h3>
+        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium text-gray-700">Name:</span>
+              <span className="ml-2 text-gray-900">{data.emergencyContactName}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Relationship:</span>
+              <span className="ml-2 text-gray-900 capitalize">{data.emergencyContactRelationship?.replace(/-/g, ' ')}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Phone:</span>
+              <span className="ml-2 text-gray-900">{data.emergencyContactPhone}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Email:</span>
+              <span className="ml-2 text-gray-900">{data.emergencyContactEmail}</span>
+            </div>
           </div>
         </div>
       </div>

@@ -101,3 +101,4 @@ const PartnershipInquiries: CollectionConfig = {
 
 export default PartnershipInquiries
 
+

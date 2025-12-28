@@ -128,3 +128,4 @@ deleteAllRegistrations()
     process.exit(1)
   })
 
+

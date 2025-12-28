@@ -161,3 +161,4 @@ The old hardcoded tiers are still in the code as a reference, but they're no lon
 
 **🎉 Your sponsorship tiers are now fully manageable through the admin panel!**
 
+

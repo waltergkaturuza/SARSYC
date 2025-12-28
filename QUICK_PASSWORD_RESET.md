@@ -63,3 +63,4 @@ After resetting and confirming login works:
 2. Change the password to something more secure through the admin panel
 3. Consider implementing a proper password reset flow
 
+

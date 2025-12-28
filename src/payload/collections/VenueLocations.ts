@@ -138,3 +138,4 @@ const VenueLocations: CollectionConfig = {
 
 export default VenueLocations
 
+
