@@ -241,13 +241,19 @@ export default async function SpeakersPage() {
                 const websiteUrl = speaker.socialMedia?.website
                 
                 return (
-                  <Link
+                  <div
                     key={speaker.id}
-                    href={`/programme/speakers/${speaker.id}`}
-                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg"
+                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg relative"
                   >
+                    {/* Clickable overlay for card navigation */}
+                    <Link
+                      href={`/programme/speakers/${speaker.id}`}
+                      className="absolute inset-0 z-0"
+                      aria-label={`View ${speaker.name}'s profile`}
+                    />
+                    
                     {/* Photo Section with Gradient Background */}
-                    <div className="aspect-square relative overflow-hidden rounded-t-lg">
+                    <div className="aspect-square relative overflow-hidden rounded-t-lg z-10">
                       {photoUrl ? (
                         <Image
                           src={photoUrl}
@@ -283,7 +289,7 @@ export default async function SpeakersPage() {
                     )}
                     
                     {/* Info Section */}
-                    <div className="p-6 bg-white space-y-4">
+                    <div className="p-6 bg-white space-y-4 relative z-10">
                       {/* Position */}
                       {speaker.title && (
                         <div className="flex items-start gap-3">
@@ -329,15 +335,18 @@ export default async function SpeakersPage() {
                       
                       {/* Social Links */}
                       {(twitterHandle || linkedinUrl || websiteUrl) && (
-                        <div className="flex gap-3 pt-2 border-t border-gray-100 relative z-10">
+                        <div className="flex gap-3 pt-2 border-t border-gray-100 relative z-20">
                           {twitterHandle && (
                             <a
                               href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'relative', zIndex: 10 }}
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                window.open(`https://twitter.com/${twitterHandle.replace('@', '')}`, '_blank', 'noopener,noreferrer')
+                              }}
                             >
                               <FiTwitter className="w-5 h-5" />
                             </a>
@@ -347,9 +356,13 @@ export default async function SpeakersPage() {
                               href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'relative', zIndex: 10 }}
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                const url = linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`
+                                window.open(url, '_blank', 'noopener,noreferrer')
+                              }}
                             >
                               <FiLinkedin className="w-5 h-5" />
                             </a>
@@ -359,9 +372,13 @@ export default async function SpeakersPage() {
                               href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                              style={{ position: 'relative', zIndex: 10 }}
+                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                const url = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`
+                                window.open(url, '_blank', 'noopener,noreferrer')
+                              }}
                             >
                               <FiGlobe className="w-5 h-5" />
                             </a>
@@ -369,7 +386,7 @@ export default async function SpeakersPage() {
                         </div>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 )
               })}
             </div>
