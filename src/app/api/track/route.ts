@@ -34,17 +34,18 @@ export async function GET(request: NextRequest) {
     let volunteer = null
     let foundEmail: string | null = null
 
-    // Check if it's a partnership inquiry ID (starts with PART- or is numeric)
-    if (trimmedId.startsWith('PART-') || (!isNaN(Number(trimmedId)) && !trimmedId.startsWith('ABS-') && !trimmedId.startsWith('REG-') && !trimmedId.startsWith('SARSYC-'))) {
+    // Check if it's a partnership inquiry ID (starts with PART-)
+    if (trimmedId.startsWith('PART-')) {
       console.log('🔍 Searching for partnership inquiry with ID:', trimmedId)
       
-      // Try to find by numeric ID first
+      // Try to find by numeric ID from PART-XXX format
+      const numericId = trimmedId.replace('PART-', '')
       let partnershipResult
-      if (!isNaN(Number(trimmedId))) {
+      if (!isNaN(Number(numericId))) {
         try {
           const inquiry = await payload.findByID({
             collection: 'partnership-inquiries',
-            id: Number(trimmedId),
+            id: Number(numericId),
             depth: 0,
           })
           partnershipResult = { docs: [inquiry] }
@@ -52,13 +53,13 @@ export async function GET(request: NextRequest) {
           partnershipResult = { docs: [] }
         }
       } else {
-        // Search by email or organization name if PART- format
+        // Search by email or organization name if PART- format but not numeric
         partnershipResult = await payload.find({
           collection: 'partnership-inquiries',
           where: {
             or: [
-              { email: { contains: trimmedId.replace('PART-', '') } },
-              { organizationName: { contains: trimmedId.replace('PART-', '') } },
+              { email: { contains: numericId } },
+              { organizationName: { contains: numericId } },
             ],
           },
           limit: 1,
