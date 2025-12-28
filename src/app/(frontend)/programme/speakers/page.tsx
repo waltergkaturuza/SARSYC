@@ -347,7 +347,6 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                         <Link
                           href={`/programme/speakers/${speaker.id}`}
                           className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors relative z-20"
-                          onClick={(e) => e.stopPropagation()}
                         >
                           Read More
                           <FiArrowRight className="w-4 h-4" />
