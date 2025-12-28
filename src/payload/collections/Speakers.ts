@@ -7,8 +7,6 @@ const Speakers: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'organization', 'type', 'featured'],
     group: 'Conference',
-    // Disable document locking for this collection
-    disableDuplicate: true,
   },
   access: {
     read: () => true, // Public can read

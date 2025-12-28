@@ -21,7 +21,7 @@ export default async function SpeakerDetailPage({ params }: SpeakerDetailPagePro
     const speaker = await payload.findByID({
       collection: 'speakers',
       id: params.id,
-      depth: 2,
+      depth: 2, // Populate photo relationship fully
     })
 
     return (
