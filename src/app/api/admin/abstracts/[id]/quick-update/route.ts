@@ -97,7 +97,6 @@ export async function PATCH(
       statusCode: error.statusCode,
       code: error.code,
       id: params.id,
-      body: body,
     })
     
     // Return more detailed error in development
