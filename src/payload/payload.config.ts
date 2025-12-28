@@ -68,6 +68,9 @@ export default buildConfig({
       favicon: '/favicon.ico',
       ogImage: '/og-image.jpg',
     },
+    // Disable document locking to prevent concurrent edit conflicts
+    // This prevents the "payload_locked_documents" query errors
+    maxConcurrentEditing: 0,
   },
   editor: slateEditor({}),
   db: postgresAdapter({
@@ -78,9 +81,6 @@ export default buildConfig({
       },
     },
   }),
-  // Disable document locking to prevent concurrent edit conflicts
-  // This prevents the "payload_locked_documents" query errors
-  lockDocument: false,
   collections: [
     Users,
     Registrations,
