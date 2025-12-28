@@ -581,7 +581,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
+                      Email Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       {...register('email')}
@@ -599,7 +599,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
+                      Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
                       {...register('phone')}
