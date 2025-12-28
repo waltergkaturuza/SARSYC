@@ -12,29 +12,35 @@ export async function POST(request: NextRequest) {
   console.log('🚀 Registration API called')
   console.error('🚀 Registration API called (error stream)')
   console.warn('🚀 Registration API called (warn stream)')
-  console.log('📋 Request method:', request.method)
-  console.log('📋 Request URL:', request.url)
-  console.log('📋 Content-Type:', request.headers.get('content-type'))
-  console.log('📋 Content-Length:', request.headers.get('content-length'))
-  
-  // Also write to stderr which Vercel definitely captures
   process.stderr.write('🚀 Registration API called\n')
   
+  console.log('📋 Step 1: Getting request headers...')
+  const contentType = request.headers.get('content-type') || ''
+  const contentLength = request.headers.get('content-length')
+  console.log('📋 Request method:', request.method)
+  console.log('📋 Request URL:', request.url)
+  console.log('📋 Content-Type:', contentType)
+  console.log('📋 Content-Length:', contentLength)
+  console.log('✅ Step 1 complete: Headers retrieved')
+  
   try {
-    const contentType = request.headers.get('content-type') || ''
+    console.log('📋 Step 2: Initializing registration data...')
     let registrationData: any = {
       status: 'pending',
       paymentStatus: 'pending',
     }
     let passportFile: File | null = null
+    console.log('✅ Step 2 complete: Registration data initialized')
 
     // Handle FormData (for file uploads) or JSON
     if (contentType.includes('multipart/form-data')) {
-      console.log('📦 Parsing FormData...')
+      console.log('📦 Step 3: Parsing FormData...')
       let formData: FormData
       try {
+        console.log('📦 About to call request.formData()...')
         formData = await request.formData()
         console.log('✅ FormData parsed successfully')
+        console.log('📦 FormData entries count:', Array.from(formData.entries()).length)
       } catch (formDataError: any) {
         console.error('❌ FormData parsing failed:', {
           message: formDataError.message,
