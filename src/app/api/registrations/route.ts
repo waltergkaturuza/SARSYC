@@ -209,10 +209,17 @@ export async function POST(request: NextRequest) {
           if (fileForPayload.type === 'application/pdf' || fileForPayload.name.toLowerCase().endsWith('.pdf')) {
             console.log('📄 Uploading PDF directly to Vercel Blob to bypass Payload validation...')
             
+            // Get the token from environment variable
+            const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+            if (!blobToken) {
+              throw new Error('BLOB_READ_WRITE_TOKEN is required for PDF uploads. Please set it in your .env file.')
+            }
+            
             // Upload to Vercel Blob
             const blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, buffer, {
               access: 'public',
               contentType: 'application/pdf',
+              token: blobToken, // Explicitly pass the token
             })
             
             console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
