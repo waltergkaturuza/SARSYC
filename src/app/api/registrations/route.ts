@@ -68,15 +68,37 @@ export async function POST(request: NextRequest) {
     // Handle passport file upload if present (for FormData requests)
     if (passportFile) {
       try {
-        // Convert File to Buffer for Payload CMS (required in serverless environments)
-        const arrayBuffer = await passportFile.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        
-        // Add buffer property to File for Payload/sharp compatibility
-        const fileForPayload = Object.assign(passportFile, {
-          data: buffer,
-          buffer: buffer,
+        console.log('📤 Starting passport file upload...', {
+          fileName: passportFile.name,
+          fileSize: passportFile.size,
+          fileType: passportFile.type,
         })
+        
+        // For PDFs, we don't need to convert to buffer (sharp is for images)
+        // For images, convert to Buffer for Payload/sharp compatibility
+        let fileForPayload: File
+        if (passportFile.type.startsWith('image/')) {
+          // Convert image File to Buffer for Payload/sharp compatibility
+          const arrayBuffer = await passportFile.arrayBuffer()
+          const buffer = Buffer.from(arrayBuffer)
+          
+          // Create a new File-like object with buffer properties
+          fileForPayload = Object.assign(new File([buffer], passportFile.name, { type: passportFile.type }), {
+            data: buffer,
+            buffer: buffer,
+          })
+        } else {
+          // For PDFs and other non-image files, use the file as-is
+          // But still convert to buffer for consistency
+          const arrayBuffer = await passportFile.arrayBuffer()
+          const buffer = Buffer.from(arrayBuffer)
+          fileForPayload = Object.assign(new File([buffer], passportFile.name, { type: passportFile.type }), {
+            data: buffer,
+            buffer: buffer,
+          })
+        }
+        
+        console.log('📤 Uploading file to Payload Media collection...')
         
         // Upload file to Payload Media collection first
         // Use overrideAccess to allow public uploads for registrations
@@ -98,6 +120,9 @@ export async function POST(request: NextRequest) {
           message: uploadError.message,
           stack: uploadError.stack,
           name: uploadError.name,
+          code: uploadError.code,
+          status: uploadError.status,
+          data: uploadError.data,
         })
         
         // If user is international and file upload fails, return error
@@ -106,7 +131,9 @@ export async function POST(request: NextRequest) {
             {
               success: false,
               error: 'Failed to upload passport scan. Please try again.',
-              details: process.env.NODE_ENV === 'development' ? uploadError.message : undefined,
+              details: process.env.NODE_ENV === 'development' 
+                ? `Upload failed: ${uploadError.message || 'Unknown error'}` 
+                : 'Please ensure the file is a valid PDF, JPG, or PNG and is less than 5MB.',
             },
             { status: 400 }
           )
