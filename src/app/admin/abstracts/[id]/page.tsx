@@ -58,18 +58,24 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold mb-2">{abstract.title}</h1>
-                <div className="flex items-center gap-4 mt-4">
-                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
-                    {abstract.track?.toUpperCase() || 'N/A'}
-                  </span>
-                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm capitalize">
-                    {abstract.presentationType || 'N/A'}
-                  </span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    statusColors[abstract.status] || 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {abstract.status?.replace('-', ' ') || 'N/A'}
-                  </span>
+                <div className="flex items-center gap-4 mt-4 flex-wrap">
+                  {abstract.track && (
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                      {String(abstract.track).toUpperCase()}
+                    </span>
+                  )}
+                  {abstract.presentationType && (
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm capitalize">
+                      {String(abstract.presentationType)}
+                    </span>
+                  )}
+                  {abstract.status && (
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      statusColors[abstract.status] || 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {String(abstract.status).replace(/-/g, ' ')}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -85,18 +91,20 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
             </div>
 
             {/* Keywords */}
-            {abstract.keywords && abstract.keywords.length > 0 && (
+            {abstract.keywords && Array.isArray(abstract.keywords) && abstract.keywords.length > 0 && (
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Keywords</h3>
                 <div className="flex flex-wrap gap-2">
-                  {abstract.keywords.map((kw: any, index: number) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
-                    >
-                      {kw.keyword || kw}
-                    </span>
-                  ))}
+                  {abstract.keywords
+                    .filter((kw: any) => kw && (kw.keyword || kw))
+                    .map((kw: any, index: number) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
+                      >
+                        {typeof kw === 'object' ? (kw.keyword || '') : String(kw || '')}
+                      </span>
+                    ))}
                 </div>
               </div>
             )}
@@ -109,39 +117,47 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
                   <div className="flex items-center gap-2">
                     <FiUser className="w-5 h-5 text-gray-400" />
                     <span className="font-medium text-gray-900">
-                      {abstract.primaryAuthor.firstName} {abstract.primaryAuthor.lastName}
+                      {abstract.primaryAuthor.firstName || ''} {abstract.primaryAuthor.lastName || ''}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FiMail className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-700">{abstract.primaryAuthor.email}</span>
-                  </div>
+                  {abstract.primaryAuthor.email && (
+                    <div className="flex items-center gap-2">
+                      <FiMail className="w-5 h-5 text-gray-400" />
+                      <span className="text-gray-700">{abstract.primaryAuthor.email}</span>
+                    </div>
+                  )}
                   {abstract.primaryAuthor.phone && (
                     <div className="flex items-center gap-2">
                       <FiPhone className="w-5 h-5 text-gray-400" />
                       <span className="text-gray-700">{abstract.primaryAuthor.phone}</span>
                     </div>
                   )}
-                  <div className="text-gray-700">
-                    {abstract.primaryAuthor.organization}, {abstract.primaryAuthor.country}
-                  </div>
+                  {(abstract.primaryAuthor.organization || abstract.primaryAuthor.country) && (
+                    <div className="text-gray-700">
+                      {abstract.primaryAuthor.organization || ''}
+                      {abstract.primaryAuthor.organization && abstract.primaryAuthor.country && ', '}
+                      {abstract.primaryAuthor.country || ''}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Co-Authors */}
-            {abstract.coAuthors && abstract.coAuthors.length > 0 && (
+            {abstract.coAuthors && Array.isArray(abstract.coAuthors) && abstract.coAuthors.length > 0 && (
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Co-Authors</h3>
                 <div className="space-y-2">
-                  {abstract.coAuthors.map((author: any, index: number) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                      <div className="font-medium text-gray-900">{author.name}</div>
-                      {author.organization && (
-                        <div className="text-sm text-gray-600">{author.organization}</div>
-                      )}
-                    </div>
-                  ))}
+                  {abstract.coAuthors
+                    .filter((author: any) => author && author.name)
+                    .map((author: any, index: number) => (
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="font-medium text-gray-900">{author.name || 'N/A'}</div>
+                        {author.organization && (
+                          <div className="text-sm text-gray-600">{author.organization}</div>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
@@ -166,19 +182,73 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
               </div>
             )}
 
+            {/* Abstract File */}
+            {abstract.abstractFile && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Abstract File</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  {typeof abstract.abstractFile === 'object' && abstract.abstractFile.url ? (
+                    <a
+                      href={abstract.abstractFile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
+                    >
+                      <FiFileText className="w-5 h-5" />
+                      <span>{abstract.abstractFile.filename || 'View File'}</span>
+                    </a>
+                  ) : (
+                    <span className="text-gray-600">File ID: {abstract.abstractFile}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Metadata */}
             <div className="pt-6 border-t border-gray-200">
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-500">Submitted:</span>{' '}
                   <span className="text-gray-900">
-                    {abstract.createdAt ? format(new Date(abstract.createdAt), 'PPpp') : 'N/A'}
+                    {abstract.createdAt 
+                      ? (() => {
+                          try {
+                            const date = new Date(abstract.createdAt)
+                            if (isNaN(date.getTime())) {
+                              return 'Invalid Date'
+                            }
+                            return format(date, 'PPpp')
+                          } catch (e) {
+                            try {
+                              return new Date(abstract.createdAt).toLocaleString()
+                            } catch {
+                              return 'N/A'
+                            }
+                          }
+                        })()
+                      : 'N/A'}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-500">Last Updated:</span>{' '}
                   <span className="text-gray-900">
-                    {abstract.updatedAt ? format(new Date(abstract.updatedAt), 'PPpp') : 'N/A'}
+                    {abstract.updatedAt 
+                      ? (() => {
+                          try {
+                            const date = new Date(abstract.updatedAt)
+                            if (isNaN(date.getTime())) {
+                              return 'Invalid Date'
+                            }
+                            return format(date, 'PPpp')
+                          } catch (e) {
+                            try {
+                              return new Date(abstract.updatedAt).toLocaleString()
+                            } catch {
+                              return 'N/A'
+                            }
+                          }
+                        })()
+                      : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -187,8 +257,22 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
         </div>
       </div>
     )
-  } catch (error) {
-    notFound()
+  } catch (error: any) {
+    console.error('Error loading abstract:', error)
+    // Return error page instead of just calling notFound
+    return (
+      <div className="container-custom py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-900 mb-2">Error Loading Abstract</h2>
+          <p className="text-red-700 mb-4">
+            {error.message || 'Failed to load abstract details. Please try again.'}
+          </p>
+          <Link href="/admin/abstracts" className="btn-primary">
+            Back to Abstracts
+          </Link>
+        </div>
+      </div>
+    )
   }
 }
 
