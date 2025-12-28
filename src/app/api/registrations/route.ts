@@ -601,21 +601,46 @@ export async function POST(request: NextRequest) {
       message: 'Registration successful',
     })
   } catch (error: any) {
-    console.error('❌ Registration error:', error)
-    console.error('Error stack:', error.stack)
-    console.error('Error details:', {
-      message: error.message,
-      name: error.name,
+    // Log error immediately and aggressively
+    const errorDetails = {
+      message: error.message || 'Unknown error',
+      name: error.name || 'Error',
       code: error.code,
+      stack: error.stack,
       responseData: error?.response?.data,
-    })
+      data: error.data,
+      errors: error.errors,
+      status: error.status,
+    }
+    
+    console.error('❌ ==========================================')
+    console.error('❌ REGISTRATION ERROR - FULL DETAILS:')
+    console.error('❌ ==========================================')
+    console.error(JSON.stringify(errorDetails, null, 2))
+    console.error('❌ ==========================================')
+    
+    // Determine status code
+    let statusCode = 500
+    if (error.status && typeof error.status === 'number') {
+      statusCode = error.status
+    } else if (error.message?.includes('required') || error.message?.includes('invalid')) {
+      statusCode = 400
+    }
+    
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Registration failed',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        details: errorDetails.message,
+        // Include more details in production for debugging
+        debug: {
+          name: errorDetails.name,
+          code: errorDetails.code,
+        },
+        // Full stack in development only
+        stack: process.env.NODE_ENV === 'development' ? errorDetails.stack : undefined,
       },
-      { status: 500 }
+      { status: statusCode }
     )
   }
 }
