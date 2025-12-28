@@ -2,6 +2,7 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
 import AbstractsFilters from '@/components/admin/AbstractsFilters'
+import AbstractQuickActions from '@/components/admin/AbstractQuickActions'
 import { 
   FiFileText, FiDownload, FiEye, FiCheck, FiX, FiClock, FiEdit 
 } from 'react-icons/fi'
@@ -191,6 +192,10 @@ export default async function AbstractsManagementPage({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <AbstractQuickActions
+                            abstractId={abstract.id.toString()}
+                            currentStatus={abstract.status}
+                          />
                           <Link
                             href={`/admin/abstracts/${abstract.id}`}
                             className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
@@ -201,7 +206,7 @@ export default async function AbstractsManagementPage({
                           <Link
                             href={`/admin/abstracts/${abstract.id}/edit`}
                             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Edit"
+                            title="Edit Full Details"
                           >
                             <FiEdit className="w-4 h-4" />
                           </Link>

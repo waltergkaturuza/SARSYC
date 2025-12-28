@@ -146,13 +146,17 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
             {/* Co-Authors */}
             {abstract.coAuthors && Array.isArray(abstract.coAuthors) && abstract.coAuthors.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-3">Co-Authors</h3>
-                <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">
+                  Co-Authors ({abstract.coAuthors.filter((a: any) => a && a.name).length})
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
                   {abstract.coAuthors
                     .filter((author: any) => author && author.name)
                     .map((author: any, index: number) => (
-                      <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                        <div className="font-medium text-gray-900">{author.name || 'N/A'}</div>
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        <div className="font-medium text-gray-900 mb-1">
+                          {author.name || 'N/A'}
+                        </div>
                         {author.organization && (
                           <div className="text-sm text-gray-600">{author.organization}</div>
                         )}
