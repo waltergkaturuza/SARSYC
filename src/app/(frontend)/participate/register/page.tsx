@@ -8,7 +8,6 @@ import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, 
 import { countries } from '@/lib/countries'
 import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 import { showToast } from '@/lib/toast'
-import { put } from '@vercel/blob/client'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -277,25 +276,34 @@ export default function RegisterPage() {
         return
       }
 
-      // CLIENT-SIDE UPLOAD: Upload passport file directly to Vercel Blob first
+      // CLIENT-SIDE UPLOAD: Upload passport file to dedicated upload endpoint first
       // This bypasses the 4.5MB API limit and improves performance
       let passportBlobUrl: string | null = null
       if (passportFile) {
         try {
           showToast.loading('Uploading passport scan...')
-          console.log('📤 Uploading passport file directly to Vercel Blob...', {
+          console.log('📤 Uploading passport file to upload endpoint...', {
             name: passportFile.name,
             size: passportFile.size,
             type: passportFile.type,
           })
 
-          // Upload directly to Vercel Blob from client
-          const blob = await put(`passport-scans/${Date.now()}-${passportFile.name}`, passportFile, {
-            access: 'public',
-            addRandomSuffix: false, // We're already adding timestamp
+          // Upload to dedicated upload endpoint
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', passportFile)
+
+          const uploadResponse = await fetch('/api/upload/passport', {
+            method: 'POST',
+            body: uploadFormData,
           })
 
-          passportBlobUrl = blob.url
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          passportBlobUrl = uploadResult.url
           console.log('✅ Passport file uploaded to Vercel Blob:', passportBlobUrl)
           showToast.success('Passport scan uploaded successfully!')
         } catch (uploadError: any) {
