@@ -266,43 +266,51 @@ export default async function SpeakersPage() {
                       )}
                       
                       {bioText && (
-                        <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-                          {bioText}
-                        </p>
+                        <div className="pt-2 border-t border-gray-100">
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {bioText}
+                          </p>
+                        </div>
                       )}
-
-                      <div className="flex items-center gap-3">
-                        {twitterHandle && (
-                          <a
-                            href={twitterHandle.startsWith('http') ? twitterHandle : `https://twitter.com/${twitterHandle.replace('@', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-sky-500 transition-colors"
-                          >
-                            <FiTwitter className="w-5 h-5" />
-                          </a>
-                        )}
-                        {linkedinUrl && (
-                          <a
-                            href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-blue-600 transition-colors"
-                          >
-                            <FiLinkedin className="w-5 h-5" />
-                          </a>
-                        )}
-                        {websiteUrl && (
-                          <a
-                            href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary-600 transition-colors"
-                          >
-                            <FiGlobe className="w-5 h-5" />
-                          </a>
-                        )}
-                      </div>
+                      
+                      {/* Social Links */}
+                      {(twitterHandle || linkedinUrl || websiteUrl) && (
+                        <div className="flex gap-3 pt-2 border-t border-gray-100">
+                          {twitterHandle && (
+                            <a
+                              href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FiTwitter className="w-5 h-5" />
+                            </a>
+                          )}
+                          {linkedinUrl && (
+                            <a
+                              href={linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FiLinkedin className="w-5 h-5" />
+                            </a>
+                          )}
+                          {websiteUrl && (
+                            <a
+                              href={websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-primary-600 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FiGlobe className="w-5 h-5" />
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 )
