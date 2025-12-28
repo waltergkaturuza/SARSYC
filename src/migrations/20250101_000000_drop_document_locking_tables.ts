@@ -1,59 +1,23 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /**
- * Migration to drop Payload CMS document locking tables
+ * Migration to create stub Payload CMS document locking tables
  * 
- * This migration removes the payload_locked_documents and payload_locked_documents_rels
- * tables. These tables are used for Payload's document locking feature, which we've
- * disabled with maxConcurrentEditing: 0 in payload.config.ts.
+ * Instead of dropping the tables (which causes "table does not exist" errors),
+ * we create empty stub tables that satisfy Payload's queries but don't actually lock anything.
  * 
- * Document locking doesn't work well in serverless environments (like Vercel) and
- * causes database query errors. By dropping these tables, we prevent Payload from
- * attempting to query them.
+ * This approach:
+ * - Prevents "table does not exist" errors
+ * - Allows Payload to query the tables without errors
+ * - Keeps document locking effectively disabled (tables are always empty)
+ * - Works better in serverless environments than dropping tables
  * 
- * This migration is safe to run multiple times (uses DROP TABLE IF EXISTS).
+ * Document locking is disabled with maxConcurrentEditing: 0 in payload.config.ts.
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  console.log('🗑️  Dropping Payload document locking tables...')
+  console.log('📋 Creating stub Payload document locking tables...')
   
-  // Drop the relationship table first (has foreign keys)
-  await db.execute(sql`
-    DROP TABLE IF EXISTS "payload_locked_documents_rels" CASCADE;
-  `)
-  console.log('   ✅ Dropped payload_locked_documents_rels')
-  
-  // Drop the main locking table
-  await db.execute(sql`
-    DROP TABLE IF EXISTS "payload_locked_documents" CASCADE;
-  `)
-  console.log('   ✅ Dropped payload_locked_documents')
-  
-  // Verify tables are dropped
-  const result = await db.execute(sql`
-    SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = 'public' 
-    AND table_name LIKE 'payload_locked%';
-  `)
-  
-  if (Array.isArray(result) && result.length === 0) {
-    console.log('✅ Successfully dropped all document locking tables')
-  } else {
-    console.warn('⚠️  Warning: Some locking tables may still exist')
-  }
-}
-
-/**
- * Migration down: Recreate the document locking tables
- * 
- * Note: This is provided for completeness, but you likely don't want to run this
- * unless you're re-enabling document locking (which requires maxConcurrentEditing > 0).
- */
-export async function down({ db }: MigrateDownArgs): Promise<void> {
-  console.log('⚠️  Recreating Payload document locking tables...')
-  console.log('   Note: This is only needed if re-enabling document locking')
-  
-  // Recreate main locking table
+  // Create main locking table (minimal structure)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "payload_locked_documents" (
       "id" serial PRIMARY KEY NOT NULL,
@@ -62,8 +26,9 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
       "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
     );
   `)
+  console.log('   ✅ Created payload_locked_documents (stub)')
   
-  // Recreate relationship table
+  // Create relationship table with all possible foreign keys
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "payload_locked_documents_rels" (
       "id" serial PRIMARY KEY NOT NULL,
@@ -88,15 +53,72 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
       "venue_locations_id" integer
     );
   `)
+  console.log('   ✅ Created payload_locked_documents_rels (stub)')
   
   // Add foreign key constraint
   await db.execute(sql`
     ALTER TABLE "payload_locked_documents_rels" 
-    ADD CONSTRAINT IF NOT EXISTS "payload_locked_documents_rels_parent_fk" 
+    DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_parent_fk";
+  `)
+  
+  await db.execute(sql`
+    ALTER TABLE "payload_locked_documents_rels" 
+    ADD CONSTRAINT "payload_locked_documents_rels_parent_fk" 
     FOREIGN KEY ("parent_id") REFERENCES "payload_locked_documents"("id") 
     ON DELETE CASCADE;
   `)
+  console.log('   ✅ Added foreign key constraint')
   
-  console.log('✅ Recreated document locking tables')
+  // Create essential indexes
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_global_slug_idx" 
+    ON "payload_locked_documents" USING btree ("global_slug");
+  `)
+  
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_created_at_idx" 
+    ON "payload_locked_documents" USING btree ("created_at");
+  `)
+  
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_parent_idx" 
+    ON "payload_locked_documents_rels" USING btree ("parent_id");
+  `)
+  
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_path_idx" 
+    ON "payload_locked_documents_rels" USING btree ("path");
+  `)
+  
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_speakers_id_idx" 
+    ON "payload_locked_documents_rels" USING btree ("speakers_id");
+  `)
+  
+  console.log('   ✅ Created essential indexes')
+  console.log('✅ Stub locking tables created - Payload can query them but they remain empty')
+}
+
+/**
+ * Migration down: Drop the stub document locking tables
+ * 
+ * This will drop the stub tables if you want to remove them completely.
+ */
+export async function down({ db }: MigrateDownArgs): Promise<void> {
+  console.log('🗑️  Dropping stub Payload document locking tables...')
+  
+  // Drop relationship table first (has foreign keys)
+  await db.execute(sql`
+    DROP TABLE IF EXISTS "payload_locked_documents_rels" CASCADE;
+  `)
+  console.log('   ✅ Dropped payload_locked_documents_rels')
+  
+  // Drop main locking table
+  await db.execute(sql`
+    DROP TABLE IF EXISTS "payload_locked_documents" CASCADE;
+  `)
+  console.log('   ✅ Dropped payload_locked_documents')
+  
+  console.log('✅ Stub locking tables dropped')
 }
 
