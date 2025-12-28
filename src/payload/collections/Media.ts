@@ -59,9 +59,36 @@ const Media: CollectionConfig = {
     },
   },
   hooks: {
+    beforeChange: [
+      async ({ data, req, operation }: any) => {
+        // Intercept before Payload's internal validation
+        // This runs before the upload field's beforeChange hook
+        if (operation === 'create' && req?.file) {
+          const file = req.file
+          const filename = file.originalname || file.filename || ''
+          const mimetype = file.mimetype || ''
+          
+          // If it's a PDF file, ensure the MIME type is set correctly
+          if (filename.toLowerCase().endsWith('.pdf') || mimetype === 'application/pdf') {
+            console.log('📄 PDF file detected in beforeChange hook, ensuring MIME type...', {
+              filename,
+              mimetype,
+              dataMimeType: data?.mimeType,
+            })
+            
+            // Force set the MIME type to application/pdf
+            // This should happen before Payload's validation
+            if (data) {
+              data.mimeType = 'application/pdf'
+            }
+          }
+        }
+        return data
+      },
+    ],
     beforeValidate: [
       async ({ data, req }: any) => {
-        // If a file is being uploaded, ensure MIME type is preserved
+        // Additional validation hook
         if (req?.file && data) {
           const file = req.file
           // If the file is a PDF, ensure the MIME type is set correctly
@@ -73,9 +100,10 @@ const Media: CollectionConfig = {
                 expected: 'application/pdf',
                 filename: file.originalname,
               })
+              data.mimeType = 'application/pdf'
+            } else if (!data.mimeType) {
+              data.mimeType = 'application/pdf'
             }
-            // Don't modify data here - let Payload handle it
-            // But ensure the file's MIME type is correct
           }
         }
         return data
