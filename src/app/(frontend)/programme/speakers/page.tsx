@@ -182,7 +182,6 @@ export default async function SpeakersPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-400 hover:text-sky-500 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
                           >
                             <FiTwitter className="w-5 h-5" />
                           </a>
@@ -193,7 +192,6 @@ export default async function SpeakersPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-400 hover:text-blue-600 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
                           >
                             <FiLinkedin className="w-5 h-5" />
                           </a>
@@ -204,7 +202,6 @@ export default async function SpeakersPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-400 hover:text-primary-600 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
                           >
                             <FiGlobe className="w-5 h-5" />
                           </a>
