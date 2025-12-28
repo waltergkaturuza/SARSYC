@@ -202,30 +202,55 @@ export async function POST(request: NextRequest) {
             // Get the token from environment variable
             const blobToken = process.env.BLOB_READ_WRITE_TOKEN
             if (!blobToken) {
-              throw new Error('BLOB_READ_WRITE_TOKEN is required for PDF uploads. Please set it in your .env file.')
+              console.error('❌ BLOB_READ_WRITE_TOKEN is missing!')
+              throw new Error('BLOB_READ_WRITE_TOKEN is required for PDF uploads. Please set it in your environment variables.')
             }
             
-            // Upload to Vercel Blob
-            const blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, buffer, {
-              access: 'public',
-              contentType: 'application/pdf',
-              token: blobToken, // Explicitly pass the token
-            })
+            console.log('📤 Uploading to Vercel Blob with token:', blobToken.substring(0, 20) + '...')
             
-            console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
+            // Upload to Vercel Blob
+            let blob: any
+            try {
+              blob = await put(`passport-scans/${Date.now()}-${fileForPayload.name}`, buffer, {
+                access: 'public',
+                contentType: 'application/pdf',
+                token: blobToken, // Explicitly pass the token
+              })
+              console.log('✅ PDF uploaded to Vercel Blob:', blob.url)
+            } catch (blobError: any) {
+              console.error('❌ Vercel Blob upload error:', {
+                message: blobError.message,
+                name: blobError.name,
+                stack: blobError.stack,
+              })
+              throw new Error(`Failed to upload PDF to Vercel Blob: ${blobError.message}`)
+            }
             
             // Create media record with the blob URL (without file upload)
-            uploadedFile = await payload.create({
-              collection: 'media',
-              data: {
-                alt: `Passport scan for ${registrationData.email || 'registration'}`,
-                url: blob.url,
-                filename: fileForPayload.name,
-                mimeType: 'application/pdf',
-                filesize: fileForPayload.size,
-              },
-              overrideAccess: true,
-            })
+            // Payload should accept this since we're providing url, filename, mimeType, and filesize
+            try {
+              uploadedFile = await payload.create({
+                collection: 'media',
+                data: {
+                  alt: `Passport scan for ${registrationData.email || 'registration'}`,
+                  url: blob.url,
+                  filename: fileForPayload.name,
+                  mimeType: 'application/pdf',
+                  filesize: fileForPayload.size,
+                },
+                overrideAccess: true,
+              })
+              console.log('✅ Media record created with blob URL')
+            } catch (mediaError: any) {
+              console.error('❌ Media record creation error:', {
+                message: mediaError.message,
+                data: mediaError.data,
+                errors: mediaError.errors,
+              })
+              // If media record creation fails, we still have the blob URL
+              // We could store it directly in the registration, but let's try to fix the media creation first
+              throw new Error(`Failed to create media record: ${mediaError.message}`)
+            }
           } else {
             // For images, use normal Payload upload
             uploadedFile = await payload.create({
