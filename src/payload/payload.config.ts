@@ -74,8 +74,8 @@ const getEmailAdapter = () => {
 
   // Create transport with timeout settings to prevent build-time hangs
   const transport = nodemailer.createTransport({
-    host,
-    port,
+    host: host!,
+    port: port!,
     secure: port === 465, // true for 465, false for other ports
     auth: user && pass ? { user, pass } : undefined,
     // Add connection timeout settings to prevent hanging during build
@@ -85,7 +85,7 @@ const getEmailAdapter = () => {
     // Disable verification during build/initialization
     // Verification will happen on first email send if needed
     pool: false, // Disable connection pooling to avoid persistent connections
-  })
+  } as any)
 
   // Verify connection asynchronously (non-blocking)
   // This prevents build-time timeouts
