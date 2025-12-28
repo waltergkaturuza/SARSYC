@@ -50,6 +50,7 @@ const navigation = [
   { name: 'News', href: '/news' },
   { name: 'Partnerships', href: '/partnerships' },
   { name: 'Contact', href: '/contact' },
+  { name: 'Track Status', href: '/track' },
 ]
 
 export default function Header() {
