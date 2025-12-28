@@ -309,7 +309,22 @@ export default function RegisterPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.message || errorData.error || 'Registration failed. Please try again.'
+        let errorMessage = errorData.message || errorData.error || 'Registration failed. Please try again.'
+        
+        // Handle duplicate registration (409 Conflict)
+        if (response.status === 409) {
+          errorMessage = errorData.error || 'You have already registered for this conference.'
+          if (errorData.existingRegistrationId) {
+            errorMessage += ` Your existing registration ID is: ${errorData.existingRegistrationId}`
+          }
+          if (errorData.details) {
+            errorMessage += ` (${errorData.details})`
+          }
+          showToast.error(errorMessage)
+        } else {
+          showToast.error(errorMessage)
+        }
+        
         setSubmitError(errorMessage)
         // Scroll to top to show error
         window.scrollTo({ top: 0, behavior: 'smooth' })
