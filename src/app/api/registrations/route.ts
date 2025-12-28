@@ -15,12 +15,17 @@ export async function POST(request: NextRequest) {
   process.stderr.write('🚀 Registration API called\n')
   
   console.log('📋 Step 1: Getting request headers...')
+  // Log ALL headers to diagnose Content-Type issues
+  const allHeaders = Object.fromEntries(request.headers.entries())
+  console.log('📋 All request headers:', JSON.stringify(allHeaders, null, 2))
+  
   const contentType = request.headers.get('content-type') || ''
   const contentLength = request.headers.get('content-length')
   console.log('📋 Request method:', request.method)
   console.log('📋 Request URL:', request.url)
   console.log('📋 Content-Type:', contentType)
   console.log('📋 Content-Length:', contentLength)
+  console.log('📋 Is multipart?', contentType.includes('multipart/form-data'))
   console.log('✅ Step 1 complete: Headers retrieved')
   
   try {
