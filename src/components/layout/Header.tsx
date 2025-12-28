@@ -71,8 +71,8 @@ export default function Header() {
         scrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
-      <nav className="container-custom">
-        <div className="flex items-center justify-between h-24 md:h-28 gap-4">
+      <nav className="max-w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-24 md:h-28 w-full">
           {/* Logo - Circular */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3">
@@ -97,12 +97,12 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation - Flex with flex-1 to take available space */}
-          <div className="hidden lg:flex lg:items-center lg:justify-center lg:flex-1 lg:gap-1 lg:px-4">
+          {/* Desktop Navigation - Spread evenly across available space */}
+          <div className="hidden lg:flex lg:items-center lg:flex-1 lg:justify-center lg:gap-1 xl:gap-2 lg:mx-4">
             {navigation.map((item) => (
               <div
                 key={item.name}
-                className="relative"
+                className="relative flex-shrink-0"
                 onMouseEnter={() => item.dropdown && setActiveDropdown(item.name)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
@@ -132,7 +132,7 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Buttons - Flex shrink to prevent being pushed off */}
+          {/* CTA Buttons - Right side */}
           <div className="hidden lg:flex lg:items-center lg:gap-3 lg:flex-shrink-0">
             <Link href="/login" className="text-sm xl:text-base font-bold text-gray-700 hover:text-primary-600 transition-colors whitespace-nowrap">
               Login
