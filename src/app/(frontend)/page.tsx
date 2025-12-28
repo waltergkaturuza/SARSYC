@@ -69,8 +69,18 @@ export default async function HomePage() {
       limit: 6,
       sort: '-createdAt',
       depth: 2, // Populate photo relationship fully
+      overrideAccess: true, // Ensure all speakers are fetched regardless of access control
     })
     featuredSpeakers = speakersResult.docs || []
+    
+    // Log for debugging
+    console.log(`✅ Fetched ${featuredSpeakers.length} featured speakers`)
+    featuredSpeakers.forEach((speaker: any) => {
+      const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+      if (!photoUrl) {
+        console.warn(`⚠️  Featured speaker ${speaker.id} (${speaker.name}) has no photo URL`)
+      }
+    })
   } catch (error) {
     console.error('Error fetching featured speakers:', error)
   }

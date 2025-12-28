@@ -31,6 +31,15 @@ export async function GET(request: NextRequest) {
       limit,
       sort: '-createdAt',
       depth: 2, // Populate photo relationship fully
+      overrideAccess: true, // Ensure all speakers are fetched regardless of access control
+    })
+
+    // Log for debugging
+    console.log(`✅ API: Fetched ${speakers.docs.length} speakers`)
+    speakers.docs.forEach((speaker: any) => {
+      if (!speaker.photo || (typeof speaker.photo === 'object' && !speaker.photo.url && !speaker.photo.sizes)) {
+        console.warn(`⚠️  API: Speaker ${speaker.id} (${speaker.name}) has missing or unpopulated photo`)
+      }
     })
 
     return NextResponse.json(speakers)
