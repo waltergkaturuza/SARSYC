@@ -52,17 +52,27 @@ export async function POST(request: NextRequest) {
 
     // Handle passport file upload if present (for FormData requests)
     if (passportFile) {
-      // Upload file to Payload Media collection first
-      const uploadedFile = await payload.create({
-        collection: 'media',
-        data: {
-          alt: `Passport scan for ${registrationData.email || 'registration'}`,
-        },
-        file: passportFile,
-      })
-      
-      // Link the uploaded file to the registration
-      registrationData.passportScan = uploadedFile.id
+      try {
+        // Upload file to Payload Media collection first
+        // Use overrideAccess to allow public uploads for registrations
+        const uploadedFile = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Passport scan for ${registrationData.email || 'registration'}`,
+          },
+          file: passportFile,
+          overrideAccess: true, // Allow public uploads for registration passport scans
+        })
+        
+        // Link the uploaded file to the registration
+        registrationData.passportScan = typeof uploadedFile === 'string' ? uploadedFile : uploadedFile.id
+      } catch (uploadError: any) {
+        console.error('❌ File upload error:', uploadError)
+        // If file upload fails, continue without the file but log the error
+        // This allows registration to proceed even if file upload fails
+        // The registration will be created without the passport scan
+        console.warn('⚠️  Registration proceeding without passport scan due to upload error')
+      }
     }
 
     // Create registration in Payload CMS

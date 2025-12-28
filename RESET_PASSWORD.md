@@ -59,3 +59,4 @@ If both methods fail, you can update the password directly in the database using
 To secure it later, uncomment the token check in `src/app/api/admin/reset-password/route.ts` and set `PASSWORD_RESET_TOKEN` in your environment variables.
 
 
+

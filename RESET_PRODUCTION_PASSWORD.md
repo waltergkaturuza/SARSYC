@@ -82,3 +82,4 @@ DATABASE_URL=$(grep DATABASE_URL .env.production) node scripts/reset_password_di
 3. Consider setting up proper password reset flow for future use
 
 
+

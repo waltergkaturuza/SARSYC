@@ -134,3 +134,4 @@ const SponsorshipTiers: CollectionConfig = {
 export default SponsorshipTiers
 
 
+

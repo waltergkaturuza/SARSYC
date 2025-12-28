@@ -151,6 +151,10 @@ const Abstracts: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Upload Abstract (PDF/Word)',
+      required: false, // Make it optional for public submissions
+      admin: {
+        description: 'Optional: Upload a PDF or Word document version of your abstract',
+      },
     },
     {
       name: 'presentationType',

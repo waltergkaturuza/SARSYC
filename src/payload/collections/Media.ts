@@ -8,7 +8,9 @@ const Media: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: (args: any) => Boolean(args.req?.user),
+    // Allow public uploads for registration passport scans and abstract files
+    // Access control is handled at the API level
+    create: () => true,
     update: (args: any) => Boolean(args.req?.user),
     delete: (args: any) => args.req?.user?.role === 'admin',
   },

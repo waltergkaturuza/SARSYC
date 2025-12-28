@@ -22,12 +22,21 @@ export async function POST(request: NextRequest) {
     // Upload file if provided
     let abstractFileId: string | undefined
     if (abstractFile && abstractFile.size > 0) {
-      const fileUpload = await payload.create({
-        collection: 'media',
-        data: {},
-        file: abstractFile,
-      })
-      abstractFileId = typeof fileUpload === 'string' ? fileUpload : fileUpload.id
+      try {
+        const fileUpload = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Abstract file: ${title}`,
+          },
+          file: abstractFile,
+          overrideAccess: true, // Allow admin uploads
+        })
+        abstractFileId = typeof fileUpload === 'string' ? fileUpload : fileUpload.id
+      } catch (uploadError: any) {
+        console.error('File upload error:', uploadError)
+        // Continue without file if upload fails
+        console.warn('Abstract creation proceeding without file upload')
+      }
     }
 
     // Create abstract

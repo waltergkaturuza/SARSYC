@@ -115,7 +115,8 @@ export default buildConfig({
   ].filter(Boolean),
   plugins: [
     // Configure Vercel Blob storage for file uploads
-    // Only enable when BLOB_READ_WRITE_TOKEN is available (Vercel automatically provides this)
+    // Vercel automatically provides BLOB_READ_WRITE_TOKEN in production
+    // For local development, set BLOB_READ_WRITE_TOKEN in .env or use local storage
     ...(process.env.BLOB_READ_WRITE_TOKEN
       ? [
           vercelBlobStorage({

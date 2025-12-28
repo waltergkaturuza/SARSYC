@@ -15,8 +15,22 @@ export async function POST(request: NextRequest) {
       ? body.keywords.split(',').map((k: string) => ({ keyword: k.trim() }))
       : []
 
+    // Transform coAuthors from array of strings or objects to proper format
+    let coAuthors = []
+    if (body.coAuthors && Array.isArray(body.coAuthors)) {
+      coAuthors = body.coAuthors.map((ca: any) => {
+        if (typeof ca === 'string') {
+          // If it's just a string, assume it's a name
+          return { name: ca.trim(), organization: '' }
+        }
+        // If it's an object, use it as is
+        return { name: ca.name?.trim() || '', organization: ca.organization?.trim() || '' }
+      }).filter((ca: any) => ca.name.length > 0)
+    }
+
     // Create abstract submission
     // Use overrideAccess: true to bypass access control since this is a public submission endpoint
+    // Note: abstractFile is not included here as the public form doesn't support file uploads
     const abstract = await payload.create({
       collection: 'abstracts',
       data: {
@@ -25,9 +39,11 @@ export async function POST(request: NextRequest) {
         keywords: keywords,
         track: body.track,
         primaryAuthor: body.primaryAuthor,
-        coAuthors: body.coAuthors || [],
+        coAuthors: coAuthors,
         presentationType: body.presentationType,
         status: 'received',
+        // Explicitly set abstractFile to undefined/null to avoid storage adapter issues
+        abstractFile: undefined,
       },
       overrideAccess: true, // Bypass access control for public submissions
     })
