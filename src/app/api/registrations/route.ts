@@ -246,10 +246,49 @@ export async function POST(request: NextRequest) {
                 message: mediaError.message,
                 data: mediaError.data,
                 errors: mediaError.errors,
+                status: mediaError.status,
+                stack: mediaError.stack,
               })
-              // If media record creation fails, we still have the blob URL
-              // We could store it directly in the registration, but let's try to fix the media creation first
-              throw new Error(`Failed to create media record: ${mediaError.message}`)
+              
+              // Fallback: Create a file-like object from the buffer and try again
+              // Payload's upload field might require a file object, so we'll create one from the buffer
+              try {
+                console.log('🔄 Attempting to create media record with file-like object from buffer...')
+                
+                // Create a Blob from the buffer
+                const blobForPayload = new Blob([buffer], { type: 'application/pdf' })
+                
+                // Create a File-like object from the Blob
+                const fileFromBlob = new File([blobForPayload], fileForPayload.name, {
+                  type: 'application/pdf',
+                  lastModified: Date.now(),
+                })
+                
+                // Add buffer property for Payload/sharp compatibility
+                Object.assign(fileFromBlob, {
+                  data: buffer,
+                  buffer: buffer,
+                })
+                
+                // Try creating the media record with the file-like object
+                uploadedFile = await payload.create({
+                  collection: 'media',
+                  data: {
+                    alt: `Passport scan for ${registrationData.email || 'registration'}`,
+                  },
+                  file: fileFromBlob,
+                  overrideAccess: true,
+                })
+                console.log('✅ Media record created with file-like object from buffer')
+              } catch (fallbackError: any) {
+                console.error('❌ Fallback file creation also failed:', {
+                  message: fallbackError.message,
+                  stack: fallbackError.stack,
+                  errors: fallbackError.errors,
+                })
+                // Last resort: throw the original error with fallback details
+                throw new Error(`Failed to create media record: ${mediaError.message}. Fallback attempt also failed: ${fallbackError.message}`)
+              }
             }
           } else {
             // For images, use normal Payload upload
