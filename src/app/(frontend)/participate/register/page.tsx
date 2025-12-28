@@ -543,7 +543,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name *
+                        First Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('firstName')}
@@ -561,7 +561,7 @@ export default function RegisterPage() {
 
                     <div>
                       <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                        Last Name *
+                        Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('lastName')}
@@ -619,7 +619,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
-                        Date of Birth *
+                        Date of Birth <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('dateOfBirth')}
@@ -636,7 +636,7 @@ export default function RegisterPage() {
 
                     <div>
                       <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                        Gender *
+                        Gender <span className="text-red-500">*</span>
                       </label>
                       <select
                         {...register('gender')}
@@ -668,7 +668,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
-                        Country of Residence *
+                        Country of Residence <span className="text-red-500">*</span>
                     </label>
                     <select
                       {...register('country')}
@@ -691,7 +691,7 @@ export default function RegisterPage() {
 
                     <div>
                       <label htmlFor="nationality" className="block text-sm font-medium text-gray-700 mb-2">
-                        Nationality *
+                        Nationality <span className="text-red-500">*</span>
                       </label>
                       <select
                         {...register('nationality')}
@@ -733,7 +733,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Address *
+                      Full Address <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       {...register('address')}
@@ -758,7 +758,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
-                      Organization/Institution *
+                      Organization/Institution <span className="text-red-500">*</span>
                     </label>
                     <input
                       {...register('organization')}
@@ -789,7 +789,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Participation Category *
+                      Participation Category <span className="text-red-500">*</span>
                     </label>
                     <div className="space-y-3">
                       {categories.map((category) => (
@@ -844,7 +844,7 @@ export default function RegisterPage() {
                     <>
                       <div>
                         <label htmlFor="passportNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                          Passport Number *
+                          Passport Number <span className="text-red-500">*</span>
                         </label>
                         <input
                           {...register('passportNumber')}
@@ -863,7 +863,7 @@ export default function RegisterPage() {
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
                           <label htmlFor="passportExpiry" className="block text-sm font-medium text-gray-700 mb-2">
-                            Passport Expiration Date *
+                            Passport Expiration Date <span className="text-red-500">*</span>
                           </label>
                           <input
                             {...register('passportExpiry')}
@@ -883,7 +883,7 @@ export default function RegisterPage() {
 
                         <div>
                           <label htmlFor="passportIssuingCountry" className="block text-sm font-medium text-gray-700 mb-2">
-                            Passport Issuing Country *
+                            Passport Issuing Country <span className="text-red-500">*</span>
                           </label>
                           <select
                             {...register('passportIssuingCountry')}
@@ -907,7 +907,7 @@ export default function RegisterPage() {
 
                       <div>
                         <label htmlFor="passportScan" className="block text-sm font-medium text-gray-700 mb-2">
-                          Passport Scan/Copy *
+                          Passport Scan/Copy <span className="text-red-500">*</span>
                         </label>
                         <div className="mt-1">
                           <input
@@ -1220,7 +1220,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="emergencyContactName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name *
+                      Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       {...register('emergencyContactName')}
@@ -1239,7 +1239,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="emergencyContactRelationship" className="block text-sm font-medium text-gray-700 mb-2">
-                        Relationship to You *
+                        Relationship to You <span className="text-red-500">*</span>
                       </label>
                       <select
                         {...register('emergencyContactRelationship')}
@@ -1262,7 +1262,7 @@ export default function RegisterPage() {
 
                     <div>
                       <label htmlFor="emergencyContactPhone" className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number *
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('emergencyContactPhone')}
@@ -1299,7 +1299,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="emergencyContactAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Home Address *
+                      Full Home Address <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       {...register('emergencyContactAddress')}
@@ -1318,7 +1318,7 @@ export default function RegisterPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="emergencyContactCountry" className="block text-sm font-medium text-gray-700 mb-2">
-                        Country *
+                        Country <span className="text-red-500">*</span>
                       </label>
                       <select
                         {...register('emergencyContactCountry')}
@@ -1341,7 +1341,7 @@ export default function RegisterPage() {
 
                     <div>
                       <label htmlFor="emergencyContactCity" className="block text-sm font-medium text-gray-700 mb-2">
-                        City *
+                        City <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register('emergencyContactCity')}
