@@ -74,29 +74,17 @@ export async function POST(request: NextRequest) {
           fileType: passportFile.type,
         })
         
-        // For PDFs, we don't need to convert to buffer (sharp is for images)
-        // For images, convert to Buffer for Payload/sharp compatibility
-        let fileForPayload: File
-        if (passportFile.type.startsWith('image/')) {
-          // Convert image File to Buffer for Payload/sharp compatibility
-          const arrayBuffer = await passportFile.arrayBuffer()
-          const buffer = Buffer.from(arrayBuffer)
-          
-          // Create a new File-like object with buffer properties
-          fileForPayload = Object.assign(new File([buffer], passportFile.name, { type: passportFile.type }), {
-            data: buffer,
-            buffer: buffer,
-          })
-        } else {
-          // For PDFs and other non-image files, use the file as-is
-          // But still convert to buffer for consistency
-          const arrayBuffer = await passportFile.arrayBuffer()
-          const buffer = Buffer.from(arrayBuffer)
-          fileForPayload = Object.assign(new File([buffer], passportFile.name, { type: passportFile.type }), {
-            data: buffer,
-            buffer: buffer,
-          })
-        }
+        // Convert File to Buffer for Payload CMS (required in serverless environments)
+        // This works for both images (processed by sharp) and PDFs
+        const arrayBuffer = await passportFile.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        
+        // Create a File-like object with buffer properties for Payload compatibility
+        // Use the original file's properties but add buffer for serverless compatibility
+        const fileForPayload = Object.assign(passportFile, {
+          data: buffer,
+          buffer: buffer,
+        }) as File & { data: Buffer; buffer: Buffer }
         
         console.log('📤 Uploading file to Payload Media collection...')
         
