@@ -28,12 +28,21 @@ export async function PATCH(
     // Upload featured image if provided
     let featuredImageId: string | undefined
     if (featuredImageFile && featuredImageFile.size > 0) {
-      const imageUpload = await payload.create({
-        collection: 'media',
-        data: {},
-        file: featuredImageFile,
-      })
-      featuredImageId = typeof imageUpload === 'string' ? imageUpload : imageUpload.id
+      try {
+        const imageUpload = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Featured image: ${title}`,
+          },
+          file: featuredImageFile,
+          overrideAccess: true, // Allow admin uploads
+        })
+        featuredImageId = typeof imageUpload === 'string' ? imageUpload : imageUpload.id
+      } catch (uploadError: any) {
+        console.error('Image upload error:', uploadError)
+        // Continue without image if upload fails
+        console.warn('News article update proceeding without featured image')
+      }
     }
 
     // Update data

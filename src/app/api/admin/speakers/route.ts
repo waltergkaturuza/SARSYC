@@ -24,12 +24,21 @@ export async function POST(request: NextRequest) {
     // Upload photo if provided
     let photoId: string | undefined
     if (photoFile && photoFile.size > 0) {
-      const photoUpload = await payload.create({
-        collection: 'media',
-        data: {},
-        file: photoFile,
-      })
-      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
+      try {
+        const photoUpload = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Speaker photo: ${name}`,
+          },
+          file: photoFile,
+          overrideAccess: true, // Allow admin uploads
+        })
+        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
+      } catch (uploadError: any) {
+        console.error('Photo upload error:', uploadError)
+        // Continue without photo if upload fails
+        console.warn('Speaker creation proceeding without photo')
+      }
     }
 
     // Create speaker

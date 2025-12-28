@@ -26,12 +26,21 @@ export async function PATCH(
     // Upload logo if provided
     let logoId: string | undefined
     if (logoFile && logoFile.size > 0) {
-      const logoUpload = await payload.create({
-        collection: 'media',
-        data: {},
-        file: logoFile,
-      })
-      logoId = typeof logoUpload === 'string' ? logoUpload : logoUpload.id
+      try {
+        const logoUpload = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Partner logo: ${name}`,
+          },
+          file: logoFile,
+          overrideAccess: true, // Allow admin uploads
+        })
+        logoId = typeof logoUpload === 'string' ? logoUpload : logoUpload.id
+      } catch (uploadError: any) {
+        console.error('Logo upload error:', uploadError)
+        // Continue without logo if upload fails
+        console.warn('Partner update proceeding without logo')
+      }
     }
 
     // Update data
