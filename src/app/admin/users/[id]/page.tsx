@@ -28,6 +28,7 @@ export default async function UserDetailPage({
     const user = await payload.findByID({
       collection: 'users',
       id: params.id,
+      overrideAccess: true, // Ensure we can read all fields including lockUntil
     })
 
     const roleConfig: Record<string, { color: string, label: string }> = {

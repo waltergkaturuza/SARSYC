@@ -8,6 +8,7 @@ import {
   FiUsers, FiPlus, FiEdit, FiEye, FiSearch, FiShield, FiUser, FiMail, FiPhone, FiLock
 } from 'react-icons/fi'
 import UserUnlockButton from '@/components/admin/UserUnlockButton'
+import UserLockButton from '@/components/admin/UserLockButton'
 
 export const revalidate = 0
 
@@ -58,6 +59,7 @@ export default async function UsersManagementPage({
     limit: perPage,
     page,
     sort: '-createdAt',
+    overrideAccess: true, // Ensure we can read all fields including lockUntil
   })
 
   const users = results.docs
@@ -229,10 +231,14 @@ export default async function UsersManagementPage({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          {locked && (
+                          {locked ? (
                             <UserUnlockButton
                               userId={user.id}
                               isLocked={locked}
+                            />
+                          ) : (
+                            <UserLockButton
+                              userId={user.id}
                             />
                           )}
                           <Link
