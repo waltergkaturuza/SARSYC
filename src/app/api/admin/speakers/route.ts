@@ -68,24 +68,23 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Attempting to upload photo to media collection...')
       
-      // Convert File to ArrayBuffer then Buffer for Payload
+      // In serverless environments, Payload needs the file data as a Buffer
+      // Convert File to Buffer for image processing (sharp)
       const arrayBuffer = await photoFile.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
       
-      // Create a new File-like object with the buffer
-      // Payload expects either a File or a Buffer with file metadata
-      const fileForPayload = {
-        data: buffer,
-        name: photoFile.name,
-        size: photoFile.size,
-        type: photoFile.type,
-        mimetype: photoFile.type,
-      }
-      
       console.log('File converted to buffer:', {
         bufferSize: buffer.length,
-        name: fileForPayload.name,
-        type: fileForPayload.type,
+        originalName: photoFile.name,
+        originalSize: photoFile.size,
+        originalType: photoFile.type,
+      })
+      
+      // Payload CMS with sharp expects the file to have a data property
+      // Create a file object that Payload can process
+      const fileForPayload = Object.assign(photoFile, {
+        data: buffer,
+        buffer: buffer,
       })
       
       const photoUpload = await payload.create({
@@ -93,7 +92,7 @@ export async function POST(request: NextRequest) {
         data: {
           alt: `Speaker photo: ${name}`,
         },
-        file: fileForPayload as any, // Payload accepts File-like objects
+        file: fileForPayload,
         overrideAccess: true, // Allow admin uploads
       })
       
