@@ -21,13 +21,16 @@ export async function PATCH(
       )
     }
 
-    // Get current abstract to preserve other fields
-    const currentAbstract = await payload.findByID({
-      collection: 'abstracts',
-      id: params.id,
-    })
+    // Validate status value
+    const validStatuses = ['received', 'under-review', 'revisions', 'accepted', 'rejected']
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      )
+    }
 
-    // Update data
+    // Update data - only update status and reviewerComments
     const updateData: any = {
       status,
     }
@@ -37,21 +40,36 @@ export async function PATCH(
       updateData.reviewerComments = reviewerComments || null
     }
 
-    // Update abstract (this will trigger the email hook)
+    // Update abstract with overrideAccess to ensure admin can update
+    // This will trigger the email hook automatically
     const updatedAbstract = await payload.update({
       collection: 'abstracts',
       id: params.id,
       data: updateData,
+      overrideAccess: true, // Ensure admin can update even if access control blocks it
     })
 
     return NextResponse.json({
       success: true,
-      abstract: updatedAbstract,
+      abstract: {
+        id: updatedAbstract.id,
+        status: updatedAbstract.status,
+        reviewerComments: updatedAbstract.reviewerComments,
+      },
     })
   } catch (error: any) {
-    console.error('Quick update abstract error:', error)
+    console.error('Quick update abstract error:', {
+      message: error.message,
+      stack: error.stack,
+      data: error.data,
+      status: error.status,
+      id: params.id,
+    })
     return NextResponse.json(
-      { error: error.message || 'Failed to update abstract' },
+      { 
+        error: error.message || 'Failed to update abstract',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
       { status: 500 }
     )
   }
