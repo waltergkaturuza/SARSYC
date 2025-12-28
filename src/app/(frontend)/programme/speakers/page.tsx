@@ -1,26 +1,54 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiLinkedin, FiTwitter, FiGlobe } from 'react-icons/fi'
+import { FiLinkedin, FiTwitter, FiGlobe, FiUser } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
+import { getPayloadClient } from '@/lib/payload'
 
-// This will fetch from Payload CMS - placeholder data for now
-const speakers = [
-  {
-    id: '1',
-    name: 'Dr. Sarah Mwangi',
-    title: 'Director of Public Health',
-    organization: 'WHO Africa',
-    country: 'Kenya',
-    photo: '/speakers/placeholder.jpg',
-    type: ['keynote'],
-    bio: 'Leading expert in youth health policy with over 15 years of experience...',
-    social: {
-      twitter: '@sarahmwangi',
-      linkedin: 'linkedin.com/in/sarah-mwangi',
-    }
-  },
-  // Add more speaker data...
-]
+// Helper function to get speaker photo URL
+function getSpeakerPhotoUrl(photo: any): string | null {
+  if (!photo) return null
+  if (typeof photo === 'string') return null
+  
+  // Try different URL locations for Vercel Blob or local storage
+  return (
+    photo.url ||
+    photo.sizes?.card?.url ||
+    photo.sizes?.thumbnail?.url ||
+    photo.sizes?.hero?.url ||
+    null
+  )
+}
+
+// Helper function to get speaker initials
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3) // Max 3 initials
+}
+
+// Helper function to extract bio text from rich text
+function extractBioText(bio: any): string {
+  if (!bio) return ''
+  if (typeof bio === 'string') return bio
+  
+  // If it's a rich text object (Slate editor format)
+  if (Array.isArray(bio)) {
+    return bio
+      .map((node: any) => {
+        if (node.children) {
+          return node.children.map((child: any) => child.text || '').join('')
+        }
+        return node.text || ''
+      })
+      .join(' ')
+      .trim()
+  }
+  
+  return ''
+}
 
 const speakerTypes = [
   { value: 'all', label: 'All Speakers' },
@@ -31,9 +59,21 @@ const speakerTypes = [
 ]
 
 export default async function SpeakersPage() {
-  // In production, fetch from Payload CMS:
-  // const payload = await getPayloadClient()
-  // const speakers = await payload.find({ collection: 'speakers' })
+  // Fetch speakers from Payload CMS
+  let speakers: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const speakersResult = await payload.find({
+      collection: 'speakers',
+      limit: 100,
+      sort: '-createdAt',
+      depth: 2, // Populate photo relationship fully
+    })
+    speakers = speakersResult.docs || []
+  } catch (error) {
+    console.error('Error fetching speakers:', error)
+    speakers = []
+  }
 
   return (
     <>
@@ -78,62 +118,102 @@ export default async function SpeakersPage() {
             />
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {speakers.map((speaker) => (
-              <div key={speaker.id} className="card group overflow-hidden">
-                <div className="aspect-square relative overflow-hidden bg-gray-200">
-                  {/* Placeholder - will use real images */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
-                    <div className="text-white text-6xl font-bold opacity-50">
-                      {speaker.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                    <div className="flex gap-2">
-                      {speaker.type.includes('keynote') && (
-                        <span className="px-2 py-1 bg-accent-500 text-xs font-bold rounded text-gray-900">
-                          KEYNOTE
-                        </span>
+              {speakers.map((speaker: any) => {
+                const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+                const initials = getInitials(speaker.name)
+                const bioText = extractBioText(speaker.bio)
+                const isKeynote = speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote')
+                const twitterHandle = speaker.socialMedia?.twitter
+                const linkedinUrl = speaker.socialMedia?.linkedin
+                const websiteUrl = speaker.socialMedia?.website
+                
+                return (
+                  <Link
+                    key={speaker.id}
+                    href={`/programme/speakers/${speaker.id}`}
+                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="aspect-square relative overflow-hidden bg-gray-200">
+                      {photoUrl ? (
+                        <Image
+                          src={photoUrl}
+                          alt={speaker.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+                          <div className="text-white text-6xl font-bold opacity-50">
+                            {initials}
+                          </div>
+                        </div>
+                      )}
+                      {/* KEYNOTE badge in bottom-left */}
+                      {isKeynote && (
+                        <div className="absolute bottom-0 left-0 p-4">
+                          <span className="px-3 py-1.5 bg-yellow-400 text-gray-900 text-xs font-bold rounded-md">
+                            KEYNOTE
+                          </span>
+                        </div>
                       )}
                     </div>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
-                    {speaker.name}
-                  </h3>
-                  <p className="text-sm font-medium text-primary-600 mb-1">{speaker.title}</p>
-                  <p className="text-sm text-gray-600 mb-4">{speaker.organization} • {speaker.country}</p>
-                  
-                  <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-                    {speaker.bio}
-                  </p>
+                    
+                    <div className="p-6 bg-white">
+                      <h3 className="text-xl font-bold text-primary-600 mb-1 group-hover:text-primary-700 transition-colors">
+                        {speaker.name}
+                      </h3>
+                      <p className="text-sm font-medium text-gray-700 mb-1">{speaker.title}</p>
+                      <p className="text-sm text-gray-600 mb-4">
+                        {speaker.organization}{speaker.country ? ` • ${speaker.country}` : ''}
+                      </p>
+                      
+                      {bioText && (
+                        <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                          {bioText}
+                        </p>
+                      )}
 
-                  <div className="flex items-center gap-3">
-                    {speaker.social.twitter && (
-                      <a
-                        href={`https://twitter.com/${speaker.social.twitter.replace('@', '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-sky-500 transition-colors"
-                      >
-                        <FiTwitter className="w-5 h-5" />
-                      </a>
-                    )}
-                    {speaker.social.linkedin && (
-                      <a
-                        href={`https://${speaker.social.linkedin}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-blue-600 transition-colors"
-                      >
-                        <FiLinkedin className="w-5 h-5" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-              ))}
+                      <div className="flex items-center gap-3">
+                        {twitterHandle && (
+                          <a
+                            href={twitterHandle.startsWith('http') ? twitterHandle : `https://twitter.com/${twitterHandle.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-sky-500 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FiTwitter className="w-5 h-5" />
+                          </a>
+                        )}
+                        {linkedinUrl && (
+                          <a
+                            href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FiLinkedin className="w-5 h-5" />
+                          </a>
+                        )}
+                        {websiteUrl && (
+                          <a
+                            href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-primary-600 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FiGlobe className="w-5 h-5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           )}
 
