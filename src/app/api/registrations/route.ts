@@ -145,11 +145,47 @@ export async function POST(request: NextRequest) {
     console.log('📩 Registration request body keys:', Object.keys(registrationData || {}))
     console.log('📩 isInternational:', registrationData.isInternational)
     console.log('📩 passportFile present:', !!passportFile)
+    console.log('📩 passportScanUrl present:', !!registrationData.passportScanUrl)
     
     const payload = await getPayloadClient()
 
-    // Handle passport file upload if present (for FormData requests)
-    if (passportFile) {
+    // Handle passport file - either from FormData (legacy) or from client-side upload (new)
+    if (registrationData.passportScanUrl) {
+      // NEW: Client-side upload - create media record from blob URL
+      console.log('📦 Creating media record from client-uploaded blob URL...')
+      try {
+        // Extract filename from URL or use a default
+        const urlParts = registrationData.passportScanUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || `passport-${Date.now()}.pdf`
+        
+        // Create media record with the blob URL
+        const uploadedFile = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Passport scan for ${registrationData.email || 'registration'}`,
+            url: registrationData.passportScanUrl,
+            filename: filename,
+            mimeType: 'application/pdf', // Assume PDF for passport scans
+            filesize: 0, // We don't have the size from the URL
+          },
+          overrideAccess: true,
+        })
+        
+        const fileId = typeof uploadedFile === 'string' ? uploadedFile : uploadedFile.id
+        registrationData.passportScan = fileId
+        delete registrationData.passportScanUrl // Remove the URL, we have the media ID now
+        console.log('✅ Media record created from client upload:', fileId)
+      } catch (mediaError: any) {
+        console.error('❌ Failed to create media record from blob URL:', {
+          message: mediaError.message,
+          stack: mediaError.stack,
+        })
+        // Continue without media record - registration can still proceed
+        console.warn('⚠️  Continuing registration without media record')
+        delete registrationData.passportScanUrl
+      }
+    } else if (passportFile) {
+      // LEGACY: Handle passport file upload from FormData
       try {
         console.log('📤 Starting passport file upload...', {
           fileName: passportFile.name,

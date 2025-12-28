@@ -8,6 +8,7 @@ import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, 
 import { countries } from '@/lib/countries'
 import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 import { showToast } from '@/lib/toast'
+import { put } from '@vercel/blob/client'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -276,30 +277,50 @@ export default function RegisterPage() {
         return
       }
 
-      // Create FormData for file upload
-      const formData = new FormData()
-      
-      // Add all form fields
-      Object.keys(data).forEach((key) => {
-        const value = data[key as keyof RegistrationFormData]
-        if (value !== undefined && value !== null && value !== '') {
-          if (Array.isArray(value)) {
-            value.forEach((item) => formData.append(key, item))
-          } else {
-            formData.append(key, String(value))
-          }
-        }
-      })
-
-      // Add passport file if exists
+      // CLIENT-SIDE UPLOAD: Upload passport file directly to Vercel Blob first
+      // This bypasses the 4.5MB API limit and improves performance
+      let passportBlobUrl: string | null = null
       if (passportFile) {
-        formData.append('passportScan', passportFile)
+        try {
+          showToast.loading('Uploading passport scan...')
+          console.log('📤 Uploading passport file directly to Vercel Blob...', {
+            name: passportFile.name,
+            size: passportFile.size,
+            type: passportFile.type,
+          })
+
+          // Upload directly to Vercel Blob from client
+          const blob = await put(`passport-scans/${Date.now()}-${passportFile.name}`, passportFile, {
+            access: 'public',
+            addRandomSuffix: false, // We're already adding timestamp
+          })
+
+          passportBlobUrl = blob.url
+          console.log('✅ Passport file uploaded to Vercel Blob:', passportBlobUrl)
+          showToast.success('Passport scan uploaded successfully!')
+        } catch (uploadError: any) {
+          console.error('❌ Passport upload error:', uploadError)
+          showToast.error('Failed to upload passport scan. Please try again.')
+          setSubmitError('Failed to upload passport scan. Please try again.')
+          setIsSubmitting(false)
+          return
+        }
       }
 
-      // Submit to Payload CMS API
+      // Create JSON payload (no FormData needed - file is already uploaded)
+      const registrationPayload = {
+        ...data,
+        // Replace passportScan file with the blob URL
+        passportScanUrl: passportBlobUrl, // We'll handle this in the API
+      }
+
+      // Submit to Payload CMS API as JSON (much smaller payload)
       const response = await fetch('/api/registrations', {
         method: 'POST',
-        body: formData, // Use FormData instead of JSON
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationPayload),
       })
 
       if (response.ok) {
