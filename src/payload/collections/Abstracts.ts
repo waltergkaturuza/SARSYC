@@ -60,6 +60,7 @@ const Abstracts: CollectionConfig = {
       label: 'Keywords (3-5)',
       minRows: 3,
       maxRows: 5,
+      required: false, // Make it optional for public submissions
       fields: [
         {
           name: 'keyword',

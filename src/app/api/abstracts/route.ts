@@ -12,9 +12,29 @@ export async function POST(request: NextRequest) {
     const payload = await getPayloadClient()
 
     // Transform keywords from string to array
-    const keywords = body.keywords 
-      ? body.keywords.split(',').map((k: string) => ({ keyword: k.trim() }))
-      : []
+    // Payload requires minRows: 3, so ensure we have at least 3 keywords
+    let keywords: any[] = []
+    if (body.keywords) {
+      const keywordArray = typeof body.keywords === 'string' 
+        ? body.keywords.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0)
+        : Array.isArray(body.keywords) 
+          ? body.keywords.map((k: any) => typeof k === 'string' ? k.trim() : k.keyword?.trim() || '').filter((k: string) => k.length > 0)
+          : []
+      
+      keywords = keywordArray.map((k: string) => ({ keyword: k }))
+      
+      // If less than 3 keywords, pad with empty ones to meet minRows requirement
+      // Or we can make it optional by not including it if empty
+      if (keywords.length === 0) {
+        // If no keywords provided, don't include the field (it's not required)
+        keywords = []
+      } else if (keywords.length < 3) {
+        // Pad to meet minimum requirement
+        while (keywords.length < 3) {
+          keywords.push({ keyword: '' })
+        }
+      }
+    }
 
     // Transform coAuthors from array of strings or objects to proper format
     let coAuthors: any[] = []
@@ -73,30 +93,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Prepare data for creation
+    const abstractData: any = {
+      title: body.title.trim(),
+      abstract: body.abstract.trim(),
+      track: body.track,
+      primaryAuthor: {
+        firstName: body.primaryAuthor.firstName.trim(),
+        lastName: body.primaryAuthor.lastName.trim(),
+        email: body.primaryAuthor.email.trim(),
+        phone: body.primaryAuthor.phone?.trim() || undefined,
+        organization: body.primaryAuthor.organization.trim(),
+        country: body.primaryAuthor.country.trim(),
+      },
+      presentationType: body.presentationType,
+      status: 'received',
+    }
+
+    // Handle keywords - Payload requires minRows: 3, so pad if needed
+    if (keywords.length > 0) {
+      // If we have keywords but less than 3, pad with empty strings to meet minRows
+      while (keywords.length < 3) {
+        keywords.push({ keyword: '' })
+      }
+      abstractData.keywords = keywords
+    }
+    // If no keywords, don't include the field (it's optional)
+
+    // Only include coAuthors if there are any
+    if (coAuthors.length > 0) {
+      abstractData.coAuthors = coAuthors
+    }
+
+    // Don't include abstractFile at all (let Payload handle it)
+    // abstractFile is optional and should not be set to undefined
+
+    console.log('Creating abstract with data:', JSON.stringify(abstractData, null, 2))
+
     // Create abstract submission
     // Use overrideAccess: true to bypass access control since this is a public submission endpoint
-    // Note: abstractFile is not included here as the public form doesn't support file uploads
     const abstract = await payload.create({
       collection: 'abstracts',
-      data: {
-        title: body.title.trim(),
-        abstract: body.abstract.trim(),
-        keywords: keywords,
-        track: body.track,
-        primaryAuthor: {
-          firstName: body.primaryAuthor.firstName.trim(),
-          lastName: body.primaryAuthor.lastName.trim(),
-          email: body.primaryAuthor.email.trim(),
-          phone: body.primaryAuthor.phone?.trim() || '',
-          organization: body.primaryAuthor.organization.trim(),
-          country: body.primaryAuthor.country.trim(),
-        },
-        coAuthors: coAuthors,
-        presentationType: body.presentationType,
-        status: 'received',
-        // Explicitly set abstractFile to undefined/null to avoid storage adapter issues
-        abstractFile: undefined,
-      },
+      data: abstractData,
       overrideAccess: true, // Bypass access control for public submissions
     })
 
