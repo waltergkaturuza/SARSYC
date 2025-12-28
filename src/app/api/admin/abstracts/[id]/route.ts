@@ -58,14 +58,12 @@ export async function PATCH(
       status,
     }
     
+    // Always include these fields, even if empty (to allow clearing)
+    updateData.reviewerComments = reviewerComments || null
+    updateData.adminNotes = adminNotes || null
+    
     if (abstractFileId) {
       updateData.abstractFile = abstractFileId
-    }
-    if (reviewerComments) {
-      updateData.reviewerComments = reviewerComments
-    }
-    if (adminNotes) {
-      updateData.adminNotes = adminNotes
     }
     if (assignedSession) {
       updateData.assignedSession = assignedSession

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
+import { showToast } from '@/lib/toast'
 
 interface AuthorData {
   firstName: string
@@ -171,12 +172,10 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       submitData.append('presentationType', formData.presentationType)
       submitData.append('status', formData.status)
       
-      if (formData.reviewerComments) {
-        submitData.append('reviewerComments', formData.reviewerComments)
-      }
-      if (formData.adminNotes) {
-        submitData.append('adminNotes', formData.adminNotes)
-      }
+      // Always include these fields, even if empty (to allow clearing)
+      submitData.append('reviewerComments', formData.reviewerComments || '')
+      submitData.append('adminNotes', formData.adminNotes || '')
+      
       if (formData.assignedSession) {
         submitData.append('assignedSession', formData.assignedSession)
       }
@@ -202,10 +201,15 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
         throw new Error(result.error || 'Failed to save abstract')
       }
 
+      // Show success message
+      showToast.success('Abstract updated successfully')
+
       router.push('/admin/abstracts')
       router.refresh()
     } catch (error: any) {
-      setErrors({ submit: error.message })
+      console.error('Abstract save error:', error)
+      showToast.error(error.message || 'Failed to save abstract')
+      setErrors({ submit: error.message || 'Failed to save abstract' })
     } finally {
       setLoading(false)
     }
