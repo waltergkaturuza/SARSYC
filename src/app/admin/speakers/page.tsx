@@ -110,12 +110,27 @@ export default async function SpeakersManagementPage({
                   <div className="relative h-48 bg-gray-100">
                     {(() => {
                       // Handle different photo object structures
-                      const photoUrl = 
-                        typeof speaker.photo === 'string' 
-                          ? null // Just an ID, not populated
-                          : speaker.photo?.url || 
-                            (speaker.photo as any)?.sizes?.card?.url ||
-                            (speaker.photo as any)?.sizes?.thumbnail?.url;
+                      // Payload with Vercel Blob returns: photo.url or photo.sizes.card.url
+                      let photoUrl: string | null = null;
+                      
+                      if (typeof speaker.photo === 'string') {
+                        // Just an ID, not populated - this shouldn't happen with depth: 2
+                        console.warn(`Speaker ${speaker.id} photo is just an ID:`, speaker.photo);
+                        photoUrl = null;
+                      } else if (speaker.photo) {
+                        // Try different URL locations
+                        photoUrl = 
+                          speaker.photo.url || 
+                          (speaker.photo as any)?.sizes?.card?.url ||
+                          (speaker.photo as any)?.sizes?.thumbnail?.url ||
+                          (speaker.photo as any)?.sizes?.hero?.url ||
+                          null;
+                        
+                        // Log for debugging if URL is missing
+                        if (!photoUrl) {
+                          console.warn(`Speaker ${speaker.id} (${speaker.name}) photo object:`, JSON.stringify(speaker.photo, null, 2));
+                        }
+                      }
                       
                       return photoUrl ? (
                         <Image
@@ -123,7 +138,11 @@ export default async function SpeakersManagementPage({
                           alt={speaker.name}
                           fill
                           className="object-cover"
-                          unoptimized={photoUrl?.includes('blob.vercel-storage.com')} // Vercel Blob URLs
+                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                          onError={(e) => {
+                            console.error(`Failed to load image for speaker ${speaker.id}:`, photoUrl);
+                            console.error('Error:', e);
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
