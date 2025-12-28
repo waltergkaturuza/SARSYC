@@ -148,22 +148,31 @@ function extractBioText(bio: any): string {
   return ''
 }
 
-const speakerTypes = [
-  { value: 'all', label: 'All Speakers' },
-  { value: 'keynote', label: 'Keynote Speakers' },
-  { value: 'plenary', label: 'Plenary Speakers' },
-  { value: 'moderator', label: 'Panel Moderators' },
-  { value: 'facilitator', label: 'Workshop Facilitators' },
-]
+import SpeakerFilters from '@/components/speakers/SpeakerFilters'
 
-export default async function SpeakersPage() {
+interface SpeakersPageProps {
+  searchParams: { type?: string }
+}
+
+export default async function SpeakersPage({ searchParams }: SpeakersPageProps) {
+  const filterType = searchParams?.type || 'all'
+  
   // Fetch speakers from Payload CMS
   let speakers: any[] = []
   try {
     const payload = await getPayloadClient()
+    
+    // Build where clause for filtering
+    const where: any = {}
+    if (filterType && filterType !== 'all') {
+      // Type is a hasMany field (array), so use 'contains' to check if array includes the type
+      where.type = { contains: filterType }
+    }
+    
     // Fetch all speakers - no limit to ensure all are displayed
     const speakersResult = await payload.find({
       collection: 'speakers',
+      where,
       limit: 1000, // Increased limit to fetch all speakers
       sort: '-createdAt',
       depth: 2, // Populate photo relationship fully
@@ -206,16 +215,7 @@ export default async function SpeakersPage() {
       {/* Filters */}
       <section className="bg-gray-50 py-8">
         <div className="container-custom">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {speakerTypes.map((type) => (
-              <button
-                key={type.value}
-                className="px-6 py-2 rounded-full bg-white border-2 border-gray-200 hover:border-primary-600 hover:text-primary-600 transition-all font-medium text-sm"
-              >
-                {type.label}
-              </button>
-            ))}
-          </div>
+          <SpeakerFilters />
         </div>
       </section>
 
