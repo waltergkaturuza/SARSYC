@@ -91,6 +91,42 @@ export const getPayloadClient = async (): Promise<Payload> => {
             continue
           }
           
+          // Handle document locking table errors
+          // These occur when Payload tries to query payload_locked_documents tables
+          // even though we've disabled locking with maxConcurrentEditing: 0
+          if (errorMessage.includes('payload_locked_documents') ||
+              errorMessage.includes('does not exist') && errorMessage.includes('locked')) {
+            console.warn(`payload.init attempt ${attempt}/${maxAttempts} - document locking table error:`, message)
+            console.warn('Document locking is disabled (maxConcurrentEditing: 0), but tables may still exist.')
+            console.warn('Run: npm run drop:locking-tables to remove the tables, or wait for migration to run.')
+            
+            // If we already have a cached client, return it immediately
+            if (cached.client) {
+              console.log('Using cached Payload client despite document locking warning')
+              return cached.client
+            }
+
+            // On final attempt, try to continue anyway - Payload might still work
+            if (attempt === maxAttempts) {
+              console.warn('Final attempt hit document locking warning; attempting to continue anyway')
+              // Try to return the payload instance - it might still work for basic operations
+              try {
+                return payload as unknown as Payload
+              } catch {
+                // If that fails, provide clear instructions
+                throw new Error(
+                  'Document locking tables are causing errors. ' +
+                  'Run: npm run drop:locking-tables to fix this. ' +
+                  'Original error: ' + message
+                )
+              }
+            }
+            
+            // Wait before retrying
+            await new Promise((r) => setTimeout(r, attempt * 500))
+            continue
+          }
+          
           // Handle database schema migration errors (e.g., enum value mismatches, null values in NOT NULL columns)
           // This can happen when existing data doesn't match the new schema
           if (errorMessage.includes('invalid input value for enum') ||

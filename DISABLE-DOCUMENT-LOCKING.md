@@ -1,4 +1,4 @@
-# Disabling Payload CMS Document Locking
+# Disabling Payload CMS Document Locking - Complete Guide
 
 ## Problem
 
@@ -9,13 +9,39 @@ Failed query: select distinct "payload_locked_documents"."id"...
 
 This happens because Payload CMS's document locking feature is enabled by default, but it doesn't work well in serverless environments (like Vercel) and causes database query errors.
 
-## Solution
+## Root Cause
 
-We've disabled document locking in the Payload config (`maxConcurrentEditing: 0`), but the database tables still exist and Payload continues to query them.
+Even though we've disabled document locking in the Payload config (`maxConcurrentEditing: 0`), the database tables (`payload_locked_documents` and `payload_locked_documents_rels`) still exist. Payload continues to query these tables, causing errors when:
+1. The tables don't exist (after being dropped)
+2. The tables exist but have missing columns (after schema changes)
+3. Payload tries to query them in serverless environments where they're not properly initialized
 
-### Step 1: Drop the Document Locking Tables
+## Complete Solution
 
-You have two options:
+We've implemented a **three-pronged approach** to completely eliminate document locking errors:
+
+### Solution 1: Database Migration (Recommended - Automatic)
+
+A migration has been created that will automatically drop the document locking tables when you run Payload migrations:
+
+**Migration:** `src/migrations/20250101_000000_drop_document_locking_tables.ts`
+
+This migration will:
+- Drop `payload_locked_documents_rels` (relationship table)
+- Drop `payload_locked_documents` (main table)
+- Verify the tables are removed
+- Run automatically when you deploy or run migrations
+
+**To apply:**
+```bash
+# The migration will run automatically on next deployment
+# Or run manually:
+npm run payload migrate
+```
+
+### Solution 2: Manual Script (Immediate Fix)
+
+If you need to drop the tables immediately without waiting for migrations:
 
 #### Option A: Using the Node.js Script (Recommended)
 
@@ -49,9 +75,63 @@ DROP TABLE IF EXISTS "payload_locked_documents_rels" CASCADE;
 DROP TABLE IF EXISTS "payload_locked_documents" CASCADE;
 ```
 
+### Solution 3: Error Handling (Graceful Degradation)
+
+We've added error handling in `src/lib/payload.ts` that:
+- Catches document locking query errors during Payload initialization
+- Provides clear error messages with instructions
+- Allows Payload to continue operating even if locking tables cause issues
+- Logs warnings instead of crashing the application
+
+This ensures your application continues to work even if the tables haven't been dropped yet.
+
+## Step-by-Step Fix Process
+
+#### Option A: Using the Node.js Script (Recommended)
+
+```bash
+npm run drop:locking-tables
+```
+
+This script will:
+- Connect to your database using `DATABASE_URL`
+- Check if the locking tables exist
+- Drop `payload_locked_documents_rels` (relationship table)
+- Drop `payload_locked_documents` (main table)
+- Verify the tables are removed
+
+**Requirements:**
+- `DATABASE_URL` environment variable must be set
+- Node.js script uses `pg` package (already in dependencies)
+
+#### Option B: Using SQL Directly
+
+If you prefer to run SQL directly, use the SQL script:
+
+```bash
+# Connect to your database and run:
+psql $DATABASE_URL -f scripts/drop_document_locking_tables.sql
+```
+
+Or manually execute:
+```sql
+DROP TABLE IF EXISTS "payload_locked_documents_rels" CASCADE;
+DROP TABLE IF EXISTS "payload_locked_documents" CASCADE;
+```
+
+### Step 1: Immediate Fix (Choose One)
+
+**Option A - Run the script (fastest):**
+```bash
+npm run drop:locking-tables
+```
+
+**Option B - Wait for migration (automatic):**
+The migration will run on your next deployment or when you run `npm run payload migrate`
+
 ### Step 2: Verify Tables Are Dropped
 
-After running the script, verify the tables are gone:
+After running the script or migration, verify the tables are gone:
 
 ```sql
 SELECT table_name 
@@ -65,6 +145,8 @@ This should return no rows.
 ### Step 3: Redeploy
 
 After dropping the tables, redeploy your application. The document locking errors should stop.
+
+**Note:** The error handling we've added will prevent crashes even if the tables still exist, but dropping them is the permanent solution.
 
 ## Configuration
 
