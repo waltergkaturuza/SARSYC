@@ -15,7 +15,10 @@ const Media: CollectionConfig = {
     delete: (args: any) => args.req?.user?.role === 'admin',
   },
   upload: {
-    staticDir: 'media',
+    // Remove staticDir when using Vercel Blob storage
+    // staticDir is only needed for local file storage
+    // When using Vercel Blob, files are stored externally and accessed via URL
+    ...(process.env.BLOB_READ_WRITE_TOKEN ? {} : { staticDir: 'media' }),
     imageSizes: [
       {
         name: 'thumbnail',
