@@ -114,18 +114,19 @@ export async function POST(request: NextRequest) {
           match: buffer.length === passportFile.size,
         })
         
-        // Create a new File object with buffer for Payload compatibility
-        // Payload needs the file to have buffer/data properties in serverless environments
-        // Ensure we have a valid MIME type
+        // Preserve the original MIME type from the uploaded file
+        // This is critical - Payload validates MIME types strictly
         let mimeType = passportFile.type || ''
+        
+        // If no MIME type, infer from file extension
         if (!mimeType) {
-          // Try to infer from file extension
           const ext = passportFile.name.split('.').pop()?.toLowerCase()
           const mimeMap: Record<string, string> = {
             'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg',
             'png': 'image/png',
             'gif': 'image/gif',
+            'webp': 'image/webp',
             'pdf': 'application/pdf',
             'doc': 'application/msword',
             'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -133,25 +134,50 @@ export async function POST(request: NextRequest) {
           mimeType = mimeMap[ext || ''] || 'application/octet-stream'
         }
         
-        const fileForPayload = new File([buffer], passportFile.name, {
+        // Ensure MIME type is exactly as Payload expects
+        // Payload is strict about MIME type matching
+        if (mimeType === 'application/pdf' && !passportFile.name.toLowerCase().endsWith('.pdf')) {
+          console.warn('⚠️  MIME type is PDF but filename does not end with .pdf')
+        }
+        
+        // Create a Blob first, then convert to File - this preserves MIME type better
+        const blob = new Blob([buffer], { type: mimeType })
+        const fileForPayload = new File([blob], passportFile.name, {
           type: mimeType,
           lastModified: passportFile.lastModified || Date.now(),
         }) as File & { data: Buffer; buffer: Buffer }
         
-        // Add buffer properties that Payload/sharp expect
+        // Add buffer properties that Payload expects
         // These are required for Payload to process the file in serverless environments
         Object.assign(fileForPayload, {
           data: buffer,
           buffer: buffer,
         })
         
+        // Verify the MIME type is set correctly
+        if (fileForPayload.type !== mimeType) {
+          console.warn('⚠️  File MIME type mismatch:', {
+            expected: mimeType,
+            actual: fileForPayload.type,
+          })
+          // Force set the type
+          Object.defineProperty(fileForPayload, 'type', {
+            value: mimeType,
+            writable: false,
+            enumerable: true,
+            configurable: true,
+          })
+        }
+        
         console.log('📤 File prepared for Payload:', {
           name: fileForPayload.name,
           type: fileForPayload.type,
+          originalType: passportFile.type,
           size: fileForPayload.size,
           bufferLength: buffer.length,
           hasData: 'data' in fileForPayload,
           hasBuffer: 'buffer' in fileForPayload,
+          isPDF: mimeType === 'application/pdf',
         })
         
         console.log('📤 Uploading file to Payload Media collection...', {
