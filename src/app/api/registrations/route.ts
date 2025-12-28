@@ -72,21 +72,49 @@ export async function POST(request: NextRequest) {
           fileName: passportFile.name,
           fileSize: passportFile.size,
           fileType: passportFile.type,
+          hasBuffer: 'buffer' in passportFile,
         })
+        
+        // Validate file before processing
+        if (passportFile.size === 0) {
+          throw new Error('File is empty')
+        }
+        
+        if (passportFile.size > 5 * 1024 * 1024) {
+          throw new Error('File size exceeds 5MB limit')
+        }
         
         // Convert File to Buffer for Payload CMS (required in serverless environments)
         // This works for both images (processed by sharp) and PDFs
         const arrayBuffer = await passportFile.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
         
-        // Create a File-like object with buffer properties for Payload compatibility
-        // Use the original file's properties but add buffer for serverless compatibility
-        const fileForPayload = Object.assign(passportFile, {
-          data: buffer,
-          buffer: buffer,
+        console.log('📤 File converted to buffer:', {
+          bufferSize: buffer.length,
+          originalSize: passportFile.size,
+          match: buffer.length === passportFile.size,
+        })
+        
+        // Create a new File object with buffer for Payload compatibility
+        // Payload needs the file to have buffer/data properties in serverless environments
+        const fileForPayload = new File([buffer], passportFile.name, {
+          type: passportFile.type,
+          lastModified: passportFile.lastModified,
         }) as File & { data: Buffer; buffer: Buffer }
         
-        console.log('📤 Uploading file to Payload Media collection...')
+        // Add buffer properties that Payload/sharp expect
+        Object.assign(fileForPayload, {
+          data: buffer,
+          buffer: buffer,
+        })
+        
+        console.log('📤 Uploading file to Payload Media collection...', {
+          fileName: fileForPayload.name,
+          fileSize: fileForPayload.size,
+          fileType: fileForPayload.type,
+          hasData: 'data' in fileForPayload,
+          hasBuffer: 'buffer' in fileForPayload,
+        })
         
         // Upload file to Payload Media collection first
         // Use overrideAccess to allow public uploads for registrations
@@ -99,8 +127,20 @@ export async function POST(request: NextRequest) {
           overrideAccess: true, // Allow public uploads for registration passport scans
         })
         
+        console.log('📤 Upload response:', {
+          type: typeof uploadedFile,
+          isString: typeof uploadedFile === 'string',
+          hasId: typeof uploadedFile === 'object' && uploadedFile !== null && 'id' in uploadedFile,
+          id: typeof uploadedFile === 'object' && uploadedFile !== null ? (uploadedFile as any).id : null,
+        })
+        
         // Link the uploaded file to the registration
-        registrationData.passportScan = typeof uploadedFile === 'string' ? uploadedFile : uploadedFile.id
+        const fileId = typeof uploadedFile === 'string' ? uploadedFile : (uploadedFile as any)?.id
+        if (!fileId) {
+          throw new Error('File upload succeeded but no ID was returned')
+        }
+        
+        registrationData.passportScan = fileId
         console.log('✅ Passport file uploaded successfully:', registrationData.passportScan)
       } catch (uploadError: any) {
         console.error('❌ File upload error:', uploadError)
@@ -110,18 +150,29 @@ export async function POST(request: NextRequest) {
           name: uploadError.name,
           code: uploadError.code,
           status: uploadError.status,
+          statusCode: uploadError.statusCode,
           data: uploadError.data,
+          response: uploadError.response,
         })
         
         // If user is international and file upload fails, return error
         if (registrationData.isInternational === 'true' || registrationData.isInternational === true) {
+          const errorMessage = uploadError.message || 'Unknown error'
+          const isDevelopment = process.env.NODE_ENV === 'development'
+          
           return NextResponse.json(
             {
               success: false,
               error: 'Failed to upload passport scan. Please try again.',
-              details: process.env.NODE_ENV === 'development' 
-                ? `Upload failed: ${uploadError.message || 'Unknown error'}` 
+              details: isDevelopment 
+                ? `Upload failed: ${errorMessage}` 
                 : 'Please ensure the file is a valid PDF, JPG, or PNG and is less than 5MB.',
+              debug: isDevelopment ? {
+                error: errorMessage,
+                fileName: passportFile.name,
+                fileSize: passportFile.size,
+                fileType: passportFile.type,
+              } : undefined,
             },
             { status: 400 }
           )
