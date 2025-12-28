@@ -176,6 +176,20 @@ export async function POST(request: NextRequest) {
         // Use overrideAccess to allow public uploads for registrations
         let uploadedFile: any
         try {
+          // Log the exact file properties before upload
+          console.log('📤 File object properties before Payload upload:', {
+            name: fileForPayload.name,
+            type: fileForPayload.type,
+            size: fileForPayload.size,
+            hasData: 'data' in fileForPayload,
+            hasBuffer: 'buffer' in fileForPayload,
+            dataType: typeof (fileForPayload as any).data,
+            bufferType: typeof (fileForPayload as any).buffer,
+            // Check first few bytes to verify it's actually a PDF
+            firstBytes: buffer.subarray(0, 4).toString('hex'),
+            isPDFHeader: buffer.subarray(0, 4).toString() === '%PDF',
+          })
+          
           uploadedFile = await payload.create({
             collection: 'media',
             data: {
