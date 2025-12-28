@@ -1281,7 +1281,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="emergencyContactEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
+                      Email Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       {...register('emergencyContactEmail')}
