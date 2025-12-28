@@ -1,35 +1,23 @@
 #!/usr/bin/env node
 /**
- * Script to drop Payload CMS document locking tables
- * 
- * This script removes the payload_locked_documents and payload_locked_documents_rels
- * tables from the database. These tables are used for Payload's document locking
- * feature, which we've disabled with maxConcurrentEditing: 0.
- * 
- * Run this script if you're still getting document locking query errors after
- * setting maxConcurrentEditing: 0 in payload.config.ts
+ * Script to drop Payload CMS document locking tables (with connection string parameter)
  * 
  * Usage:
- *   node scripts/drop_document_locking_tables.mjs
+ *   node scripts/drop_document_locking_tables_direct.mjs "postgresql://user:pass@host/db"
+ *   Or set DATABASE_URL and run: node scripts/drop_document_locking_tables_direct.mjs
  */
 
 import pg from 'pg'
-import { readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 
 const { Client } = pg
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 // Get database URL from command line argument or environment
 const databaseUrl = process.argv[2] || process.env.DATABASE_URL
 
 if (!databaseUrl) {
   console.error('❌ DATABASE_URL is required')
-  console.error('   Usage: node scripts/drop_document_locking_tables.mjs "postgresql://user:pass@host/db"')
+  console.error('   Usage: node scripts/drop_document_locking_tables_direct.mjs "postgresql://user:pass@host/db"')
   console.error('   Or set DATABASE_URL environment variable')
-  console.error('   Or run: npm run drop:locking-tables (requires DATABASE_URL in .env)')
   process.exit(1)
 }
 
@@ -98,7 +86,11 @@ async function dropLockingTables() {
     console.log('\n✅ Script completed successfully')
   } catch (error) {
     console.error('\n❌ Error dropping document locking tables:')
-    console.error(error)
+    console.error(error.message)
+    if (error.stack) {
+      console.error('\nStack trace:')
+      console.error(error.stack)
+    }
     await client.end()
     process.exit(1)
   }
