@@ -1,8 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiLinkedin, FiTwitter, FiGlobe, FiUser, FiAward, FiMapPin } from 'react-icons/fi'
+import { FiAward, FiMapPin } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
+import SocialLinks from '@/components/speakers/SocialLinks'
 
 // Helper function to get speaker photo URL
 function getSpeakerPhotoUrl(photo: any): string | null {
@@ -334,57 +335,12 @@ export default async function SpeakersPage() {
                       )}
                       
                       {/* Social Links */}
-                      {(twitterHandle || linkedinUrl || websiteUrl) && (
-                        <div className="flex gap-3 pt-2 border-t border-gray-100 relative z-20">
-                          {twitterHandle && (
-                            <a
-                              href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                window.open(`https://twitter.com/${twitterHandle.replace('@', '')}`, '_blank', 'noopener,noreferrer')
-                              }}
-                            >
-                              <FiTwitter className="w-5 h-5" />
-                            </a>
-                          )}
-                          {linkedinUrl && (
-                            <a
-                              href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                const url = linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`
-                                window.open(url, '_blank', 'noopener,noreferrer')
-                              }}
-                            >
-                              <FiLinkedin className="w-5 h-5" />
-                            </a>
-                          )}
-                          {websiteUrl && (
-                            <a
-                              href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-primary-600 transition-colors cursor-pointer relative z-20"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                const url = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`
-                                window.open(url, '_blank', 'noopener,noreferrer')
-                              }}
-                            >
-                              <FiGlobe className="w-5 h-5" />
-                            </a>
-                          )}
-                        </div>
-                      )}
+                      <SocialLinks
+                        twitter={twitterHandle}
+                        linkedin={linkedinUrl}
+                        website={websiteUrl}
+                        variant="card"
+                      />
                     </div>
                   </div>
                 )

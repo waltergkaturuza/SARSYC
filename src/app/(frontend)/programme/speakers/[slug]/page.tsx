@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiArrowLeft, FiTwitter, FiLinkedin, FiGlobe, FiMapPin, FiAward, FiCalendar, FiClock } from 'react-icons/fi'
+import { FiArrowLeft, FiMapPin, FiAward, FiCalendar, FiClock } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
+import SocialLinks from '@/components/speakers/SocialLinks'
 
 // Helper function to get speaker photo URL
 function getSpeakerPhotoUrl(photo: any): string | null {
@@ -246,50 +247,12 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                   </div>
 
                   {/* Social Links */}
-                  {(twitterHandle || linkedinUrl || websiteUrl) && (
-                    <div className="space-y-3">
-                      <p className="text-sm font-semibold text-gray-700">Connect:</p>
-                      {twitterHandle && (
-                        <a
-                          href={`https://twitter.com/${twitterHandle.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-sky-500 transition-colors cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ position: 'relative', zIndex: 10 }}
-                        >
-                          <FiTwitter className="w-5 h-5" />
-                          <span className="text-sm">{twitterHandle}</span>
-                        </a>
-                      )}
-                      {linkedinUrl && (
-                        <a
-                          href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ position: 'relative', zIndex: 10 }}
-                        >
-                          <FiLinkedin className="w-5 h-5" />
-                          <span className="text-sm">LinkedIn</span>
-                        </a>
-                      )}
-                      {websiteUrl && (
-                        <a
-                          href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-700 hover:text-primary-600 transition-colors cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ position: 'relative', zIndex: 10 }}
-                        >
-                          <FiGlobe className="w-5 h-5" />
-                          <span className="text-sm">Website</span>
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <SocialLinks
+                    twitter={twitterHandle}
+                    linkedin={linkedinUrl}
+                    website={websiteUrl}
+                    variant="profile"
+                  />
                 </div>
               </div>
 
