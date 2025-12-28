@@ -72,15 +72,36 @@ const getEmailAdapter = () => {
     return undefined
   }
 
+  // Create transport with timeout settings to prevent build-time hangs
+  const transport = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // true for 465, false for other ports
+    auth: user && pass ? { user, pass } : undefined,
+    // Add connection timeout settings to prevent hanging during build
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 5000, // 5 seconds
+    // Disable verification during build/initialization
+    // Verification will happen on first email send if needed
+    pool: false, // Disable connection pooling to avoid persistent connections
+  })
+
+  // Verify connection asynchronously (non-blocking)
+  // This prevents build-time timeouts
+  if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+    // Only verify in development, not during Vercel builds
+    transport.verify().catch((err: any) => {
+      console.warn('SMTP connection verification failed (non-blocking):', err?.message || err)
+      // Don't throw - allow the adapter to be created even if verification fails
+      // Emails will still attempt to send, and will fail gracefully if SMTP is misconfigured
+    })
+  }
+
   return nodemailerAdapter({
     defaultFromAddress: from,
     defaultFromName: 'SARSYC VI',
-    transport: nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // true for 465, false for other ports
-      auth: user && pass ? { user, pass } : undefined,
-    }),
+    transport,
   })
 }
 
