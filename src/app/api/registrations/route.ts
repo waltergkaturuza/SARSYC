@@ -114,13 +114,23 @@ export async function POST(request: NextRequest) {
           match: buffer.length === passportFile.size,
         })
         
-        // Preserve the original MIME type from the uploaded file
-        // This is critical - Payload validates MIME types strictly
-        let mimeType = passportFile.type || ''
+        // Use the original file and add buffer properties to it
+        // This preserves the original MIME type and file metadata
+        // Payload validates MIME types strictly, so we need to preserve the original
+        const fileForPayload = passportFile as File & { data: Buffer; buffer: Buffer }
         
-        // If no MIME type, infer from file extension
-        if (!mimeType) {
-          const ext = passportFile.name.split('.').pop()?.toLowerCase()
+        // Add buffer properties that Payload expects for serverless environments
+        // These are required for Payload to process the file correctly
+        Object.assign(fileForPayload, {
+          data: buffer,
+          buffer: buffer,
+        })
+        
+        // Ensure the MIME type is preserved
+        // Payload will validate this against the mimeTypes array in Media collection
+        if (!fileForPayload.type) {
+          // If no MIME type, infer from file extension
+          const ext = fileForPayload.name.split('.').pop()?.toLowerCase()
           const mimeMap: Record<string, string> = {
             'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg',
@@ -131,39 +141,12 @@ export async function POST(request: NextRequest) {
             'doc': 'application/msword',
             'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           }
-          mimeType = mimeMap[ext || ''] || 'application/octet-stream'
-        }
-        
-        // Ensure MIME type is exactly as Payload expects
-        // Payload is strict about MIME type matching
-        if (mimeType === 'application/pdf' && !passportFile.name.toLowerCase().endsWith('.pdf')) {
-          console.warn('⚠️  MIME type is PDF but filename does not end with .pdf')
-        }
-        
-        // Create a Blob first, then convert to File - this preserves MIME type better
-        const blob = new Blob([buffer], { type: mimeType })
-        const fileForPayload = new File([blob], passportFile.name, {
-          type: mimeType,
-          lastModified: passportFile.lastModified || Date.now(),
-        }) as File & { data: Buffer; buffer: Buffer }
-        
-        // Add buffer properties that Payload expects
-        // These are required for Payload to process the file in serverless environments
-        Object.assign(fileForPayload, {
-          data: buffer,
-          buffer: buffer,
-        })
-        
-        // Verify the MIME type is set correctly
-        if (fileForPayload.type !== mimeType) {
-          console.warn('⚠️  File MIME type mismatch:', {
-            expected: mimeType,
-            actual: fileForPayload.type,
-          })
-          // Force set the type
+          const inferredType = mimeMap[ext || ''] || 'application/octet-stream'
+          
+          // Set the MIME type on the file
           Object.defineProperty(fileForPayload, 'type', {
-            value: mimeType,
-            writable: false,
+            value: inferredType,
+            writable: true,
             enumerable: true,
             configurable: true,
           })
@@ -177,7 +160,7 @@ export async function POST(request: NextRequest) {
           bufferLength: buffer.length,
           hasData: 'data' in fileForPayload,
           hasBuffer: 'buffer' in fileForPayload,
-          isPDF: mimeType === 'application/pdf',
+          isPDF: fileForPayload.type === 'application/pdf',
         })
         
         console.log('📤 Uploading file to Payload Media collection...', {
