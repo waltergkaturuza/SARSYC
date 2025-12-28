@@ -311,7 +311,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                           <div className="flex-1">
                             <p className="text-xs text-gray-500 mb-1">Country</p>
                             <p className="text-sm font-semibold text-gray-900">
-                              {speaker.country}
+                              {getCountryLabel(speaker.country)}
                             </p>
                           </div>
                         </div>
@@ -341,6 +341,18 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                         website={websiteUrl}
                         variant="card"
                       />
+                      
+                      {/* Read More Button */}
+                      <div className="pt-2 border-t border-gray-100 relative z-20">
+                        <Link
+                          href={`/programme/speakers/${speaker.id}`}
+                          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors relative z-20"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Read More
+                          <FiArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 )

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiArrowLeft, FiMapPin, FiAward, FiCalendar, FiClock } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
+import { getCountryLabel } from '@/lib/countries'
 import SocialLinks from '@/components/speakers/SocialLinks'
 
 // Helper function to get speaker photo URL
@@ -231,7 +232,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                         <FiMapPin className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-sm text-gray-600">Country</p>
-                          <p className="font-medium text-gray-900">{speaker.country}</p>
+                          <p className="font-medium text-gray-900">{getCountryLabel(speaker.country)}</p>
                         </div>
                       </div>
                     )}
