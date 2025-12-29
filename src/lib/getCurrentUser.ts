@@ -89,6 +89,7 @@ export async function getCurrentUserFromRequest(req: Request) {
       const userResult = await payload.findByID({
         collection: 'users',
         id: decoded.id,
+        overrideAccess: true, // Allow reading all user fields
       })
 
       if (!userResult) {
@@ -187,6 +188,7 @@ export async function getCurrentUserFromCookies() {
       const userResult = await payload.findByID({
         collection: 'users',
         id: decoded.id,
+        overrideAccess: true, // Allow reading all user fields including relationships
       })
 
       if (!userResult) {
