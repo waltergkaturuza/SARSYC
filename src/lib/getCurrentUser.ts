@@ -98,17 +98,12 @@ export async function getCurrentUserFromRequest(req: Request) {
         return null
       }
 
-      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromRequest] ✅ Admin user authenticated:', userResult.email)
-        }
-        return userResult
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromRequest] User role is not admin:', userResult.role)
-        }
-        return null
+      // Return user regardless of role (for dashboard access)
+      // Admin-only checks should be done at the page/route level
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[getCurrentUserFromRequest] ✅ User authenticated:', userResult.email, 'Role:', userResult.role)
       }
+      return userResult
     } catch (authError: any) {
       // User not found or other error
       if (process.env.NODE_ENV === 'development') {
@@ -201,18 +196,12 @@ export async function getCurrentUserFromCookies() {
         return null
       }
 
-      // Check if user has admin role
-      if (userResult && ['admin', 'super-admin'].includes(userResult.role)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] ✅ Admin user authenticated:', userResult.email)
-        }
-        return userResult
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[getCurrentUserFromCookies] User role is not admin:', userResult.role)
-        }
-        return null
+      // Return user regardless of role (for dashboard access)
+      // Admin-only checks should be done at the page/route level
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[getCurrentUserFromCookies] ✅ User authenticated:', userResult.email, 'Role:', userResult.role)
       }
+      return userResult
     } catch (authError: any) {
       if (process.env.NODE_ENV === 'development') {
         console.error('[getCurrentUserFromCookies] Authentication error:', authError.message)
