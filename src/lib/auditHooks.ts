@@ -5,8 +5,13 @@ import { createAuditLog, getFieldChanges, createAuditDescription } from './audit
  */
 export function createBeforeChangeHook(collectionSlug: string) {
   return async ({ data, req, operation }: any) => {
+    // Skip during login/auth operations
+    if (operation === 'login' || operation === 'auth' || !req.payload) {
+      return data
+    }
+    
     // Store original data for comparison
-    if (operation === 'update' && req.payload) {
+    if (operation === 'update' && data?.id) {
       try {
         const originalDoc = await req.payload.findByID({
           collection: collectionSlug as any,
@@ -30,15 +35,24 @@ export function createBeforeChangeHook(collectionSlug: string) {
  */
 export function createAfterChangeHook(collectionSlug: string) {
   return async ({ doc, req, operation }: any) => {
-    if (!req.user || !req.payload) {
+    // Skip audit logging during login/auth operations
+    if (!req.user || !req.payload || operation === 'login' || operation === 'auth') {
       return doc
     }
 
     try {
       const originalDoc = (req as any).originalDocument
-      const changes = operation === 'update' && originalDoc
-        ? getFieldChanges(originalDoc, doc)
-        : {}
+      
+      // Safely get field changes, ensuring arrays are handled
+      let changes = {}
+      if (operation === 'update' && originalDoc) {
+        try {
+          changes = getFieldChanges(originalDoc, doc) || {}
+        } catch (error) {
+          console.warn(`[Audit] Error getting field changes for ${collectionSlug}:`, error)
+          changes = {}
+        }
+      }
 
       const description = createAuditDescription(
         operation === 'create' ? 'create' : 'update',

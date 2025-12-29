@@ -61,26 +61,47 @@ export async function createAuditLog(
 export function getFieldChanges(before: any, after: any): Record<string, { before: any; after: any }> {
   const changes: Record<string, { before: any; after: any }> = {}
 
+  // Safety check: ensure both are objects
+  if (!before || typeof before !== 'object') before = {}
+  if (!after || typeof after !== 'object') after = {}
+
   // Get all unique keys from both objects
   const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})])
 
   for (const key of allKeys) {
-    const beforeValue = before?.[key]
-    const afterValue = after?.[key]
+    try {
+      const beforeValue = before?.[key]
+      const afterValue = after?.[key]
 
-    // Skip if values are the same
-    if (JSON.stringify(beforeValue) === JSON.stringify(afterValue)) {
+      // Skip if values are the same
+      if (JSON.stringify(beforeValue) === JSON.stringify(afterValue)) {
+        continue
+      }
+
+      // Skip internal Payload fields
+      if (['updatedAt', 'createdAt', '_status', 'id'].includes(key)) {
+        continue
+      }
+
+      // Safely handle arrays - ensure they're arrays before comparing
+      if (Array.isArray(beforeValue) || Array.isArray(afterValue)) {
+        const safeBefore = Array.isArray(beforeValue) ? beforeValue : []
+        const safeAfter = Array.isArray(afterValue) ? afterValue : []
+        changes[key] = {
+          before: safeBefore,
+          after: safeAfter,
+        }
+        continue
+      }
+
+      changes[key] = {
+        before: beforeValue,
+        after: afterValue,
+      }
+    } catch (error) {
+      // Skip fields that cause errors during comparison
+      console.warn(`[Audit] Error comparing field ${key}:`, error)
       continue
-    }
-
-    // Skip internal Payload fields
-    if (['updatedAt', 'createdAt', '_status', 'id'].includes(key)) {
-      continue
-    }
-
-    changes[key] = {
-      before: beforeValue,
-      after: afterValue,
     }
   }
 
