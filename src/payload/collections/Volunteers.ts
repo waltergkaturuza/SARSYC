@@ -207,6 +207,7 @@ const Volunteers: CollectionConfig = {
           name: 'technical',
           type: 'array',
           label: 'Technical Skills',
+          defaultValue: [],
           fields: [
             {
               name: 'skill',
@@ -230,6 +231,7 @@ const Volunteers: CollectionConfig = {
           name: 'soft',
           type: 'array',
           label: 'Soft Skills',
+          defaultValue: [],
           fields: [
             {
               name: 'skill',
@@ -255,6 +257,7 @@ const Volunteers: CollectionConfig = {
           label: 'Languages Spoken',
           required: true,
           minRows: 1,
+          defaultValue: [],
           fields: [
             {
               name: 'language',
@@ -281,6 +284,7 @@ const Volunteers: CollectionConfig = {
       name: 'workExperience',
       type: 'array',
       label: 'Work Experience',
+      defaultValue: [],
       fields: [
         {
           name: 'position',
@@ -326,6 +330,7 @@ const Volunteers: CollectionConfig = {
       name: 'volunteerExperience',
       type: 'array',
       label: 'Previous Volunteer Experience',
+      defaultValue: [],
       fields: [
         {
           name: 'organization',
@@ -626,8 +631,93 @@ const Volunteers: CollectionConfig = {
     },
   ],
   timestamps: true,
+  hooks: {
+    beforeValidate: [
+      ({ data, operation }: any) => {
+        // Ensure all array fields are initialized
+        if (operation === 'create' || operation === 'update') {
+          // Initialize skills group
+          if (!data.skills) {
+            data.skills = {
+              technical: [],
+              soft: [],
+              languages: [],
+            }
+          } else {
+            if (!Array.isArray(data.skills.technical)) data.skills.technical = []
+            if (!Array.isArray(data.skills.soft)) data.skills.soft = []
+            if (!Array.isArray(data.skills.languages)) data.skills.languages = []
+          }
+          
+          // Initialize other arrays
+          if (!Array.isArray(data.education)) data.education = []
+          if (!Array.isArray(data.workExperience)) data.workExperience = []
+          if (!Array.isArray(data.volunteerExperience)) data.volunteerExperience = []
+          if (!Array.isArray(data.preferredRoles)) data.preferredRoles = []
+          if (!Array.isArray(data.references)) data.references = []
+          
+          // Initialize availability
+          if (!data.availability) {
+            data.availability = {
+              days: [],
+              timePreference: '',
+              hoursAvailable: undefined,
+            }
+          } else {
+            if (!Array.isArray(data.availability.days)) data.availability.days = []
+          }
+        }
+        return data
+      },
+    ],
+    afterRead: [
+      ({ doc }: any) => {
+        // Ensure arrays are always arrays after reading from DB
+        if (!Array.isArray(doc.education)) doc.education = []
+        if (!doc.skills) {
+          doc.skills = { technical: [], soft: [], languages: [] }
+        } else {
+          if (!Array.isArray(doc.skills.technical)) doc.skills.technical = []
+          if (!Array.isArray(doc.skills.soft)) doc.skills.soft = []
+          if (!Array.isArray(doc.skills.languages)) doc.skills.languages = []
+        }
+        if (!Array.isArray(doc.workExperience)) doc.workExperience = []
+        if (!Array.isArray(doc.volunteerExperience)) doc.volunteerExperience = []
+        if (!Array.isArray(doc.preferredRoles)) doc.preferredRoles = []
+        if (!Array.isArray(doc.references)) doc.references = []
+        if (!doc.availability) {
+          doc.availability = { days: [], timePreference: '', hoursAvailable: undefined }
+        } else {
+          if (!Array.isArray(doc.availability.days)) doc.availability.days = []
+        }
+        return doc
+      },
+    ],
+  },
 }
 
-// Add audit hooks
-export default addAuditHooks(Volunteers)
+// Add audit hooks (preserves existing hooks)
+const VolunteersWithHooks = addAuditHooks(Volunteers)
+
+// Merge hooks
+if (Volunteers.hooks) {
+  if (Volunteers.hooks.beforeValidate) {
+    VolunteersWithHooks.hooks!.beforeValidate = [
+      ...Volunteers.hooks.beforeValidate,
+      ...VolunteersWithHooks.hooks!.beforeValidate.filter((hook: any) => 
+        !Volunteers.hooks!.beforeValidate!.some((existing: any) => existing === hook)
+      ),
+    ]
+  }
+  if (Volunteers.hooks.afterRead) {
+    VolunteersWithHooks.hooks!.afterRead = [
+      ...Volunteers.hooks.afterRead,
+      ...VolunteersWithHooks.hooks!.afterRead.filter((hook: any) => 
+        !Volunteers.hooks!.afterRead!.some((existing: any) => existing === hook)
+      ),
+    ]
+  }
+}
+
+export default VolunteersWithHooks
 
