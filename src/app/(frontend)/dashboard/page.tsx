@@ -11,6 +11,18 @@ import DashboardClient from '@/components/dashboard/DashboardClient'
 
 export const revalidate = 0
 
+// Status config with icon names (not components) for passing to client components
+const statusConfigData = {
+  'confirmed': { color: 'green', iconName: 'check', label: 'Confirmed' },
+  'pending': { color: 'yellow', iconName: 'clock', label: 'Pending' },
+  'under-review': { color: 'blue', iconName: 'clock', label: 'Under Review' },
+  'received': { color: 'blue', iconName: 'clock', label: 'Received' },
+  'accepted': { color: 'green', iconName: 'check', label: 'Accepted' },
+  'rejected': { color: 'red', iconName: 'alert', label: 'Not Accepted' },
+  'revisions': { color: 'orange', iconName: 'edit', label: 'Revisions Requested' },
+}
+
+// Status config with components for server-side rendering
 const statusConfig: any = {
   'confirmed': { color: 'green', icon: FiCheck, label: 'Confirmed' },
   'pending': { color: 'yellow', icon: FiClock, label: 'Pending' },
@@ -395,7 +407,7 @@ export default async function DashboardPage() {
                   </div>
 
                   {abstractSubmissions.length > 0 ? (
-                    <DashboardClient abstracts={abstractSubmissions} statusConfig={statusConfig} />
+                    <DashboardClient abstracts={abstractSubmissions} statusConfig={statusConfigData} />
                   ) : (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

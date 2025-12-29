@@ -18,7 +18,7 @@ interface Abstract {
 interface StatusConfig {
   [key: string]: {
     color: string
-    icon: any
+    iconName: string
     label: string
   }
 }
@@ -28,12 +28,20 @@ interface DashboardClientProps {
   statusConfig: StatusConfig
 }
 
+// Icon mapping for client component
+const iconMap: Record<string, React.ComponentType<any>> = {
+  check: FiCheck,
+  clock: FiClock,
+  alert: FiAlertCircle,
+  edit: FiEdit,
+}
+
 export default function DashboardClient({ abstracts, statusConfig }: DashboardClientProps) {
   return (
     <div className="space-y-4">
       {abstracts.map((abstract) => {
         const status = statusConfig[abstract.status] || statusConfig.received
-        const Icon = status.icon
+        const Icon = iconMap[status.iconName] || FiClock
         
         return (
           <div key={abstract.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
