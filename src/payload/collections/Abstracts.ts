@@ -421,7 +421,8 @@ const Abstracts: CollectionConfig = {
   },
 }
 
-export default Abstracts
+// Add audit hooks (preserves existing hooks automatically)
+export default addAuditHooks(Abstracts)
 
 
 

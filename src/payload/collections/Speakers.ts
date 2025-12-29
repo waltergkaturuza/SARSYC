@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload/types'
 import { getCountryOptions } from '@/lib/countries'
 import crypto from 'crypto'
+import { addAuditHooks } from '@/lib/auditHooks'
 
 const Speakers: CollectionConfig = {
   slug: 'speakers',
@@ -280,7 +281,8 @@ const Speakers: CollectionConfig = {
   },
 }
 
-export default Speakers
+// Add audit hooks
+export default addAuditHooks(Speakers)
 
 
 
