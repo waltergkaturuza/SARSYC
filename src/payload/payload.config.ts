@@ -25,6 +25,7 @@ import ContactMessages from './collections/ContactMessages'
 import SponsorshipTiers from './collections/SponsorshipTiers'
 import PartnershipInquiries from './collections/PartnershipInquiries'
 import VenueLocations from './collections/VenueLocations'
+import AuditLogs from './collections/AuditLogs'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -147,6 +148,7 @@ export default buildConfig({
     SponsorshipTiers,
     PartnershipInquiries,
     VenueLocations,
+    AuditLogs,
   ],
   globals: [
     SiteSettings,

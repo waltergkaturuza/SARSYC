@@ -7,7 +7,7 @@ import {
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
-  FiAward
+  FiAward, FiActivity
 } from 'react-icons/fi'
 
 const navigation = [
@@ -70,6 +70,12 @@ const navigation = [
     href: '/admin/users',
     icon: FiShield,
     description: 'Manage admin users',
+  },
+  {
+    name: 'Audit Trail',
+    href: '/admin/audit-logs',
+    icon: FiActivity,
+    description: 'System activity logs',
   },
   {
     name: 'Settings',
