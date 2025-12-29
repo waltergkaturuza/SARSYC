@@ -125,10 +125,10 @@ function LoginForm() {
         
         // Prevent any further execution
         return
-      } else if (userType === 'participant') {
+      } else {
+        // For all other user types (speaker, presenter, contributor, etc.)
+        // Redirect to dashboard
         router.push(redirectUrl || '/dashboard')
-      } else if (userType === 'speaker') {
-        router.push(redirectUrl || '/dashboard?type=speaker')
       }
     } catch (err: any) {
       console.error('[Login] Error caught:', err)

@@ -134,36 +134,39 @@ export async function POST(request: NextRequest) {
         return response
       }
 
-      if (type === 'participant' || type === 'speaker') {
-        // For participants/speakers, check if they have a registration
-        // This is a simplified check - you may want to add a separate collection
-        const response = NextResponse.json({
-          success: true,
-          user: {
-            id: result.user.id,
-            email: result.user.email,
-            name: result.user.name,
-          },
-          token: result.token,
-        })
-        
-        // Set cookie for participants/speakers too
-        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-        response.cookies.set('payload-token', result.token, {
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-          sameSite: 'lax',
-          secure: isProduction,
-          httpOnly: false,
-        })
-        
-        return response
-      }
-
-      return NextResponse.json(
-        { error: 'Invalid credentials or insufficient permissions' },
-        { status: 403 }
-      )
+      // For all other user types (speaker, presenter, contributor, editor, etc.)
+      // Allow login for any authenticated user
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+      
+      const response = NextResponse.json({
+        success: true,
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          name: (result.user as any).firstName && (result.user as any).lastName 
+            ? `${(result.user as any).firstName} ${(result.user as any).lastName}`
+            : (result.user as any).name || result.user.email,
+          role: userRole,
+        },
+        token: result.token,
+      })
+      
+      // Set cookie for all user types
+      response.cookies.set('payload-token', result.token, {
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        sameSite: 'lax',
+        secure: isProduction,
+        httpOnly: false,
+      })
+      
+      // Also set via Set-Cookie header as backup
+      const cookieHeader = `payload-token=${result.token}; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
+      response.headers.append('Set-Cookie', cookieHeader)
+      
+      console.log('[Login API] User login successful, cookie set for:', result.user.email, 'Role:', userRole)
+      
+      return response
     } catch (authError: any) {
       // Provide more detailed error messages
       const errorMessage = authError?.message || 'Invalid email or password'
