@@ -59,6 +59,10 @@ const Users: CollectionConfig = {
           label: 'Presenter',
           value: 'presenter',
         },
+        {
+          label: 'Volunteer',
+          value: 'volunteer',
+        },
       ],
       access: {
         create: (args: any) => args.req?.user?.role === 'admin',
@@ -81,6 +85,15 @@ const Users: CollectionConfig = {
       label: 'Associated Abstract',
       admin: {
         description: 'Link to abstract submission (if this user is a presenter)',
+      },
+    },
+    {
+      name: 'volunteer',
+      type: 'relationship',
+      relationTo: 'volunteers',
+      label: 'Associated Volunteer Profile',
+      admin: {
+        description: 'Link to volunteer application (if this user is a volunteer)',
       },
     },
     {

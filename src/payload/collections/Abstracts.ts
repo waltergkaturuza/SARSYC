@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload/types'
 import { getCountryOptions } from '@/lib/countries'
 import crypto from 'crypto'
+import { addAuditHooks } from '@/lib/auditHooks'
 
 const Abstracts: CollectionConfig = {
   slug: 'abstracts',

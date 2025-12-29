@@ -1,11 +1,10 @@
-import { CollectionBeforeChangeHook, CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload/types'
 import { createAuditLog, getFieldChanges, createAuditDescription } from './audit'
 
 /**
  * Create beforeChange hook for audit logging
  */
-export function createBeforeChangeHook(collectionSlug: string): CollectionBeforeChangeHook {
-  return async ({ data, req, operation }) => {
+export function createBeforeChangeHook(collectionSlug: string) {
+  return async ({ data, req, operation }: any) => {
     // Store original data for comparison
     if (operation === 'update' && req.payload) {
       try {
@@ -29,8 +28,8 @@ export function createBeforeChangeHook(collectionSlug: string): CollectionBefore
 /**
  * Create afterChange hook for audit logging
  */
-export function createAfterChangeHook(collectionSlug: string): CollectionAfterChangeHook {
-  return async ({ doc, req, operation }) => {
+export function createAfterChangeHook(collectionSlug: string) {
+  return async ({ doc, req, operation }: any) => {
     if (!req.user || !req.payload) {
       return doc
     }
@@ -71,8 +70,8 @@ export function createAfterChangeHook(collectionSlug: string): CollectionAfterCh
 /**
  * Create afterDelete hook for audit logging
  */
-export function createAfterDeleteHook(collectionSlug: string): CollectionAfterDeleteHook {
-  return async ({ doc, req }) => {
+export function createAfterDeleteHook(collectionSlug: string) {
+  return async ({ doc, req }: any) => {
     if (!req.user || !req.payload) {
       return doc
     }

@@ -9,7 +9,7 @@ const AuditLogs: CollectionConfig = {
     group: 'System',
   },
   access: {
-    read: ({ req }) => {
+    read: ({ req }: any) => {
       // Only admins can read audit logs
       return req.user?.role === 'admin'
     },

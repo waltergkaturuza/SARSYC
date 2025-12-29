@@ -98,14 +98,14 @@ export default async function AuditLogsPage({
     new Set(
       collectionsResult.docs.map((log: any) => log.collection).filter(Boolean)
     )
-  ).sort()
+  ).sort() as string[]
 
   // Get unique actions for filter
   const uniqueActions = Array.from(
     new Set(
       collectionsResult.docs.map((log: any) => log.action).filter(Boolean)
     )
-  ).sort()
+  ).sort() as string[]
 
   return (
     <div className="space-y-6">
@@ -157,7 +157,7 @@ export default async function AuditLogsPage({
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">All Actions</option>
-              {uniqueActions.map((act) => (
+              {uniqueActions.map((act: string) => (
                 <option key={act} value={act}>
                   {act.charAt(0).toUpperCase() + act.slice(1).replace(/_/g, ' ')}
                 </option>
@@ -177,7 +177,7 @@ export default async function AuditLogsPage({
               <option value="">All Collections</option>
               {uniqueCollections.map((coll) => (
                 <option key={coll} value={coll}>
-                  {coll.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {coll.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                 </option>
               ))}
             </select>
@@ -296,7 +296,7 @@ export default async function AuditLogsPage({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {log.collection?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '-'}
+                        {log.collection?.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
                         {log.documentId || '-'}

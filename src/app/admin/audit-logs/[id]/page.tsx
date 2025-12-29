@@ -82,7 +82,7 @@ export default async function AuditLogDetailPage({
             <div>
               <label className="text-sm font-medium text-gray-500">Collection</label>
               <p className="text-gray-900">
-                {auditLog.collection?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '-'}
+                {auditLog.collection?.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || '-'}
               </p>
             </div>
 

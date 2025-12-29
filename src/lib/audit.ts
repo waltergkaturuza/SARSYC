@@ -1,9 +1,8 @@
 import { Payload } from 'payload'
-import { CollectionSlug } from 'payload/types'
 
 interface AuditLogData {
   action: 'create' | 'update' | 'delete' | 'login' | 'logout' | 'password_reset' | 'account_locked' | 'account_unlocked'
-  collection: CollectionSlug
+  collection: string
   documentId: string | number
   userId: string | number
   userEmail?: string
