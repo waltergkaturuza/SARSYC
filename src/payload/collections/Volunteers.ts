@@ -360,10 +360,10 @@ const Volunteers: CollectionConfig = {
     // Volunteer Preferences
     {
       name: 'preferredRoles',
-      type: 'array',
+      type: 'select',
       label: 'Preferred Volunteer Roles',
       required: true,
-      minRows: 1,
+      hasMany: true,
       options: [
         { label: 'Registration Desk', value: 'registration' },
         { label: 'Logistics Support', value: 'logistics' },
@@ -384,10 +384,10 @@ const Volunteers: CollectionConfig = {
       fields: [
         {
           name: 'days',
-          type: 'array',
+          type: 'select',
           label: 'Available Days',
           required: true,
-          minRows: 1,
+          hasMany: true,
           options: [
             { label: 'August 4 (Setup Day)', value: 'aug-4' },
             { label: 'August 5 (Day 1)', value: 'aug-5' },
