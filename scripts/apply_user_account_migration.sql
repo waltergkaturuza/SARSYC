@@ -116,3 +116,4 @@ BEGIN
   RAISE NOTICE 'Added speaker and presenter roles';
 END $$;
 
+

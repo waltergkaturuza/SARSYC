@@ -1,6 +1,13 @@
 /**
+ * ⚠️ EXTREMELY DANGEROUS SCRIPT - USE WITH EXTREME CAUTION ⚠️
+ * 
  * Script to delete all existing registration data (non-interactive)
  * Use this to clean the database before schema migrations
+ * 
+ * 🚨 NEVER RUN THIS IN PRODUCTION! 🚨
+ * This will DELETE ALL registration data permanently WITHOUT confirmation!
+ * 
+ * This script is ONLY for development/testing environments.
  */
 
 import { Pool } from 'pg'
@@ -83,6 +90,7 @@ deleteAllRegistrations()
     console.error('❌ Fatal error:', error)
     process.exit(1)
   })
+
 
 
 

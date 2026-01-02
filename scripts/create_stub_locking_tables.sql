@@ -117,3 +117,4 @@ SELECT
   (SELECT COUNT(*) FROM "payload_locked_documents") as locked_docs_count,
   (SELECT COUNT(*) FROM "payload_locked_documents_rels") as rels_count;
 
+

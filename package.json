@@ -20,7 +20,8 @@
     "create:stub-locking-tables": "node scripts/create_stub_locking_tables.mjs",
     "verify:locking-tables": "node scripts/verify_locking_tables.mjs",
     "cleanup:orphaned-photos": "node scripts/cleanup_orphaned_speaker_photos.mjs",
-    "backfill:user-accounts": "npx tsx scripts/backfill_user_accounts.mjs"
+    "backfill:user-accounts": "npx tsx scripts/backfill_user_accounts.mjs",
+    "backup:database": "node scripts/backup_database.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",

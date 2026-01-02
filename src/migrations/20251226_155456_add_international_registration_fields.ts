@@ -99,6 +99,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+  // ⚠️ WARNING: This down() function will DELETE ALL participants data!
+  // ⚠️ NEVER run this in production! This is ONLY for development/testing.
+  // ⚠️ If you need to rollback in production, create a new migration instead.
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
+    throw new Error(
+      '🚨 CRITICAL: Migration rollback is FORBIDDEN in production! ' +
+      'This would DELETE ALL participants data. If you need to fix something, create a new migration instead.'
+    )
+  }
+  
   await db.execute(sql`
    ALTER TABLE "participants_dietary_restrictions" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "participants_tags" DISABLE ROW LEVEL SECURITY;

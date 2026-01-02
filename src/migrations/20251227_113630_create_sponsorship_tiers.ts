@@ -83,6 +83,16 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
+  // ⚠️ WARNING: This down() function will DELETE ALL sponsorship tiers data!
+  // ⚠️ NEVER run this in production! This is ONLY for development/testing.
+  // ⚠️ If you need to rollback in production, create a new migration instead.
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
+    throw new Error(
+      '🚨 CRITICAL: Migration rollback is FORBIDDEN in production! ' +
+      'This would DELETE ALL sponsorship tiers data. If you need to fix something, create a new migration instead.'
+    )
+  }
+  
   await db.execute(sql`
     -- Drop indexes
     DROP INDEX IF EXISTS "payload_locked_documents_rels_sponsorship_tiers_id_idx";

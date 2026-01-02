@@ -113,3 +113,4 @@ async function verifyLockingTables() {
 // Run the script
 verifyLockingTables()
 
+

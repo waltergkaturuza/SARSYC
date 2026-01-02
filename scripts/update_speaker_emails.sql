@@ -16,3 +16,4 @@ WHERE "id" = 2 AND ("email" IS NULL OR "email" = '');
 -- Verify the updates
 SELECT "id", "name", "email" FROM "speakers" WHERE "id" IN (1, 2);
 
+

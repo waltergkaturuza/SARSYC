@@ -99,3 +99,4 @@ async function dropLockingTables() {
 // Run the script
 dropLockingTables()
 
+
