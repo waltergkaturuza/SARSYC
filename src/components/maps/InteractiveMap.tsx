@@ -41,9 +41,17 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
   const map = useMap()
   const [tileLayer, setTileLayer] = useState<L.TileLayer | null>(null)
   const [overlayLayer, setOverlayLayer] = useState<L.TileLayer | null>(null)
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    // Remove existing layers
+    // Remove all existing tile layers first
+    map.eachLayer((existingLayer) => {
+      if (existingLayer instanceof L.TileLayer) {
+        map.removeLayer(existingLayer)
+      }
+    })
+
+    // Remove tracked layers
     if (tileLayer) {
       map.removeLayer(tileLayer)
     }
@@ -107,6 +115,7 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
 
     setTileLayer(newTileLayer)
     setOverlayLayer(newOverlayLayer)
+    setInitialized(true)
 
     // Force a redraw to ensure tiles load
     setTimeout(() => {
@@ -114,7 +123,10 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
       if (newTileLayer) {
         newTileLayer.redraw()
       }
-    }, 100)
+      if (newOverlayLayer) {
+        newOverlayLayer.redraw()
+      }
+    }, 150)
   }, [map, layer])
 
   return null
@@ -213,11 +225,11 @@ export default function InteractiveMap({
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full ${className}`} style={{ height }}>
       {/* Map Container */}
       <div
-        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 w-full"
-        style={{ height, minHeight: '400px', position: 'relative' }}
+        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 w-full h-full"
+        style={{ minHeight: '400px', position: 'relative' }}
       >
         <MapContainer
           center={[venue.latitude, venue.longitude]}
@@ -237,18 +249,7 @@ export default function InteractiveMap({
             }, 500)
           }}
         >
-          {/* Default TileLayer - shown initially, then replaced by MapLayerController */}
-          {currentLayer === 'street' && (
-            <TileLayer
-              key="default-street"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              subdomains={['a', 'b', 'c']}
-              maxZoom={20}
-              minZoom={1}
-            />
-          )}
-          
+          {/* MapLayerController handles all tile layers */}
           <MapLayerController layer={currentLayer} />
           <ZoomController zoom={zoomLevel} />
           <MapInitializer />
