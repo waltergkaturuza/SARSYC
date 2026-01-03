@@ -241,15 +241,6 @@ export default function InteractiveMap({
           maxZoom={20}
           minZoom={1}
           zoomControl={true}
-          whenReady={(map) => {
-            // Ensure map is properly sized when ready
-            setTimeout(() => {
-              map.target.invalidateSize()
-            }, 100)
-            setTimeout(() => {
-              map.target.invalidateSize()
-            }, 500)
-          }}
         >
           {/* Default TileLayer for initial display */}
           <TileLayer
