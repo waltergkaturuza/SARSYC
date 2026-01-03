@@ -309,7 +309,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Connect</h3>
               <p className="text-gray-600">
-                Network with 500+ young leaders, researchers, policymakers, and development partners from across
+                Network with 500+ young leaders, researchers, policymakers, development partners, and the private sector from across
                 Southern Africa.
               </p>
             </div>
