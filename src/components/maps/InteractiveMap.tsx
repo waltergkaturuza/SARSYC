@@ -41,17 +41,9 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
   const map = useMap()
   const [tileLayer, setTileLayer] = useState<L.TileLayer | null>(null)
   const [overlayLayer, setOverlayLayer] = useState<L.TileLayer | null>(null)
-  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    // Remove all existing tile layers first
-    map.eachLayer((existingLayer) => {
-      if (existingLayer instanceof L.TileLayer) {
-        map.removeLayer(existingLayer)
-      }
-    })
-
-    // Remove tracked layers
+    // Remove tracked layers first
     if (tileLayer) {
       map.removeLayer(tileLayer)
     }
@@ -115,7 +107,6 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
 
     setTileLayer(newTileLayer)
     setOverlayLayer(newOverlayLayer)
-    setInitialized(true)
 
     // Force a redraw to ensure tiles load
     setTimeout(() => {
