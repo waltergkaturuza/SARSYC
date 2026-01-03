@@ -232,10 +232,10 @@ export default function VenuePage() {
               </div>
 
               {/* Interactive Map */}
-              <div className="w-full">
+              <div className="w-full h-[600px] lg:h-[700px]">
                 <InteractiveMap
                   venue={venue}
-                  height="600px"
+                  height="100%"
                   showControls={true}
                 />
               </div>

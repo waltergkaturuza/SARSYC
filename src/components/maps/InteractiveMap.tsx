@@ -76,7 +76,7 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
         newTileLayer.addTo(map)
         break
       case 'hybrid':
-        // Hybrid: Satellite with labels
+        // Hybrid: Satellite with labels overlay
         newTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: '© Esri',
           maxZoom: 20,
@@ -85,12 +85,11 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
         })
         newTileLayer.addTo(map)
         
-        newOverlayLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap',
+        newOverlayLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© Esri',
           maxZoom: 20,
           minZoom: 1,
-          opacity: 0.4,
-          subdomains: ['a', 'b', 'c'],
+          opacity: 0.7,
           crossOrigin: true,
         })
         newOverlayLayer.addTo(map)
@@ -110,7 +109,12 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
     setOverlayLayer(newOverlayLayer)
 
     // Force a redraw to ensure tiles load
-    map.invalidateSize()
+    setTimeout(() => {
+      map.invalidateSize()
+      if (newTileLayer) {
+        newTileLayer.redraw()
+      }
+    }, 100)
   }, [map, layer])
 
   return null
@@ -133,19 +137,32 @@ function MapInitializer() {
 
   useEffect(() => {
     // Ensure map is properly sized and tiles load
-    map.invalidateSize()
-    
-    // Force tile reload after a short delay to ensure they load
-    const timer = setTimeout(() => {
+    const initializeMap = () => {
       map.invalidateSize()
-      map.eachLayer((layer) => {
-        if (layer instanceof L.TileLayer) {
-          layer.redraw()
-        }
-      })
-    }, 100)
+      
+      // Force tile reload after delays to ensure they load
+      setTimeout(() => {
+        map.invalidateSize()
+        map.eachLayer((layer) => {
+          if (layer instanceof L.TileLayer) {
+            layer.redraw()
+          }
+        })
+      }, 200)
+      
+      setTimeout(() => {
+        map.invalidateSize()
+      }, 500)
+    }
 
-    return () => clearTimeout(timer)
+    initializeMap()
+    
+    // Also invalidate on window resize
+    window.addEventListener('resize', initializeMap)
+    
+    return () => {
+      window.removeEventListener('resize', initializeMap)
+    }
   }, [map])
 
   return null
@@ -199,8 +216,8 @@ export default function InteractiveMap({
     <div className={`relative ${className}`}>
       {/* Map Container */}
       <div
-        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100"
-        style={{ height, minHeight: '400px' }}
+        className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 w-full"
+        style={{ height, minHeight: '400px', position: 'relative' }}
       >
         <MapContainer
           center={[venue.latitude, venue.longitude]}
@@ -210,7 +227,28 @@ export default function InteractiveMap({
           maxZoom={20}
           minZoom={1}
           zoomControl={true}
+          whenReady={(map) => {
+            // Ensure map is properly sized when ready
+            setTimeout(() => {
+              map.target.invalidateSize()
+            }, 100)
+            setTimeout(() => {
+              map.target.invalidateSize()
+            }, 500)
+          }}
         >
+          {/* Default TileLayer - shown initially, then replaced by MapLayerController */}
+          {currentLayer === 'street' && (
+            <TileLayer
+              key="default-street"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              subdomains={['a', 'b', 'c']}
+              maxZoom={20}
+              minZoom={1}
+            />
+          )}
+          
           <MapLayerController layer={currentLayer} />
           <ZoomController zoom={zoomLevel} />
           <MapInitializer />
