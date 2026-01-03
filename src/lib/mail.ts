@@ -153,7 +153,7 @@ export async function sendAbstractStatusUpdate({
 
         <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
           <p style="margin: 0 0 15px 0; font-weight: bold;">Track Your Abstract</p>
-          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://sarsyc.vercel.app'}/dashboard?email=${encodeURIComponent(to)}" 
+          <a href="${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'https://sarsyc.org'}/dashboard?email=${encodeURIComponent(to)}" 
              style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
             View Your Dashboard
           </a>
@@ -184,7 +184,7 @@ Abstract Details:
 
 ${reviewerComments ? `\nFeedback from Reviewers:\n${reviewerComments}\n` : ''}
 
-Track your abstract: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://sarsyc.vercel.app'}/dashboard?email=${encodeURIComponent(to)}
+Track your abstract: ${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'https://sarsyc.org'}/dashboard?email=${encodeURIComponent(to)}
 
 If you have any questions, please contact us at info@sarsyc.org
 
