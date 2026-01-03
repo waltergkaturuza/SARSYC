@@ -1,5 +1,6 @@
 import { FiTarget, FiEye, FiHeart, FiUsers, FiGlobe, FiAward } from 'react-icons/fi'
 import Link from 'next/link'
+import JourneyTimeline from '@/components/about/JourneyTimeline'
 
 const values = [
   {
@@ -127,59 +128,14 @@ export default function AboutPage() {
       </section>
 
       {/* SARSYC Journey */}
-      <section className="section bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-        <div className="container-custom">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">The SARSYC Journey</h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              {/* Timeline Line */}
-              <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-white/20"></div>
-
-              {/* Milestones */}
-              <div className="space-y-8">
-                {milestones.map((milestone, index) => (
-                  <div
-                    key={milestone.year}
-                    className={`relative flex items-center ${
-                      index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                    }`}
-                  >
-                    {/* Timeline Dot */}
-                    <div className={`absolute left-8 md:left-1/2 w-4 h-4 ${
-                      milestone.isCurrent ? 'bg-accent-500' : 'bg-white'
-                    } rounded-full transform md:-translate-x-1/2 border-4 border-gray-900`}></div>
-
-                    {/* Content */}
-                    <div className={`flex-1 ml-16 md:ml-0 ${
-                      index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'
-                    }`}>
-                      <div className={`card p-6 ${
-                        milestone.isCurrent ? 'ring-2 ring-accent-500' : ''
-                      }`}>
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 ${
-                          milestone.isCurrent
-                            ? 'bg-accent-500 text-gray-900'
-                            : 'bg-primary-100 text-primary-600'
-                        }`}>
-                          {milestone.year}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{milestone.edition}</h3>
-                        <p className="text-gray-600 mb-2">{milestone.location}</p>
-                        <p className="text-sm text-gray-500">{milestone.participants} participants</p>
-                        {milestone.isCurrent && (
-                          <div className="mt-4">
-                            <Link href="/sarsyc-vi" className="text-primary-600 font-medium text-sm hover:underline">
-                              Learn more about SARSYC VI →
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <section className="section bg-white py-0">
+        <div className="container-custom px-0">
+          <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-12 mb-0">
+            <div className="container-custom">
+              <h2 className="text-3xl md:text-5xl font-bold text-center">The SARSYC Journey</h2>
             </div>
           </div>
+          <JourneyTimeline />
         </div>
       </section>
 

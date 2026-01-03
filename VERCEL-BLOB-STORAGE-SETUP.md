@@ -77,3 +77,4 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_I27XTi3L8IoQ07MK_qxde4QTkuG77CO81m50YWLsgYA
 **Note:** Local development will work without this token (uses local file storage), but adding it ensures consistent behavior between local and production.
 
 
+
