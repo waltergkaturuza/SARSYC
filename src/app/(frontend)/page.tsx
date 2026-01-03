@@ -220,7 +220,16 @@ export default async function HomePage() {
               #DrivingRegionalSolidarity
             </p>
             <p className="text-sm md:text-base text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
-              A flagship, youth-led regional conference convened by SAYWHAT, bringing together students, youth leaders, 
+              A flagship, youth-led regional conference convened by{' '}
+              <a 
+                href="https://www.saywhat.org.zw" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white font-semibold underline hover:text-white/80 transition-colors"
+              >
+                SAYWHAT
+              </a>
+              , bringing together students, youth leaders, 
               policymakers, civil society, development partners, and the private sector from across Southern Africa 
               to drive transnational advocacy on youth health and education.
             </p>
