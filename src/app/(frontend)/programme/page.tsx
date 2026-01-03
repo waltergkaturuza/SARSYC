@@ -39,10 +39,11 @@ const days = ['All Days', 'Day 1', 'Day 2', 'Day 3']
 const tracks = [
   { value: 'all', label: 'All Tracks', color: 'gray' },
   { value: 'general', label: 'Plenary', color: 'blue' },
-  { value: 'srhr', label: 'Track 1: SRHR', color: 'blue' },
-  { value: 'education', label: 'Track 2: Education', color: 'purple' },
-  { value: 'advocacy', label: 'Track 3: Advocacy', color: 'pink' },
-  { value: 'innovation', label: 'Track 4: Innovation', color: 'orange' },
+  { value: 'education-rights', label: 'Track 1: Education Rights, Gender Equality, Social Inclusion, and Climate Resilience', color: 'blue' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS and key populations: People Who Use and Inject Drugs', color: 'purple' },
+  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles', color: 'pink' },
+  { value: 'digital-health', label: 'Track 4: Digital Health and Safety: Tackling Online Risks and Gender-Based Violence', color: 'orange' },
+  { value: 'mental-health', label: 'Track 5: Mental health and substance abuse', color: 'green' },
 ]
 const types = ['All Types', 'Keynote', 'Plenary', 'Panel', 'Workshop', 'Oral Presentations', 'Poster Session']
 

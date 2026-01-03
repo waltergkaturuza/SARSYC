@@ -15,27 +15,33 @@ const stats = [
 const tracks = [
   {
     number: '01',
-    title: 'Youth Sexual & Reproductive Health',
-    description: 'Advancing SRHR access, education, and rights for young people across Southern Africa.',
+    title: 'Education Rights, Gender Equality, Social Inclusion, and Climate Resilience',
+    description: 'Advancing education rights, gender equality, social inclusion, and climate resilience for young people across Southern Africa.',
     color: 'from-blue-500 to-blue-600',
   },
   {
     number: '02',
-    title: 'Education & Skills Development',
-    description: 'Empowering youth through education, vocational training, and leadership skills.',
+    title: 'HIV/AIDS and key populations: People Who Use and Inject Drugs',
+    description: 'Addressing HIV/AIDS prevention, treatment, and support for key populations, including people who use and inject drugs.',
     color: 'from-purple-500 to-purple-600',
   },
   {
     number: '03',
-    title: 'Advocacy & Policy Influence',
-    description: 'Strengthening youth voices in policy-making and institutional decision-making.',
+    title: 'Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles',
+    description: 'Promoting prevention of non-communicable diseases and healthy lifestyle choices among youth.',
     color: 'from-pink-500 to-pink-600',
   },
   {
     number: '04',
-    title: 'Innovation & Technology for Youth',
-    description: 'Leveraging digital solutions and innovation for youth development and engagement.',
+    title: 'Digital Health and Safety: Tackling Online Risks and Gender-Based Violence',
+    description: 'Addressing digital health, online safety, and combating gender-based violence in digital spaces.',
     color: 'from-orange-500 to-orange-600',
+  },
+  {
+    number: '05',
+    title: 'Mental health and substance abuse',
+    description: 'Supporting youth mental health and addressing substance abuse prevention and treatment.',
+    color: 'from-green-500 to-green-600',
   },
 ]
 
@@ -345,7 +351,7 @@ export default async function HomePage() {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2 className="section-title">Conference Tracks</h2>
             <p className="section-subtitle">
-              SARSYC VI features four thematic tracks addressing critical issues in youth development.
+              SARSYC VI features five thematic tracks addressing critical issues in youth development.
             </p>
           </div>
 

@@ -77,10 +77,11 @@ const Abstracts: CollectionConfig = {
       required: true,
       label: 'Conference Track',
       options: [
-        { label: 'Track 1: Youth Sexual & Reproductive Health', value: 'srhr' },
-        { label: 'Track 2: Education & Skills Development', value: 'education' },
-        { label: 'Track 3: Advocacy & Policy Influence', value: 'advocacy' },
-        { label: 'Track 4: Innovation & Technology for Youth', value: 'innovation' },
+        { label: 'Track 1: Education Rights, Gender Equality, Social Inclusion, and Climate Resilience', value: 'education-rights' },
+        { label: 'Track 2: HIV/AIDS and key populations: People Who Use and Inject Drugs', value: 'hiv-aids' },
+        { label: 'Track 3: Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles', value: 'ncd-prevention' },
+        { label: 'Track 4: Digital Health and Safety: Tackling Online Risks and Gender-Based Violence', value: 'digital-health' },
+        { label: 'Track 5: Mental health and substance abuse', value: 'mental-health' },
       ],
     },
     {

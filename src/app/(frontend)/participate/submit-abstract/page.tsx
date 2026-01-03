@@ -12,7 +12,7 @@ const abstractSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
   abstract: z.string().min(100, 'Abstract must be at least 100 words').max(2000, 'Abstract must not exceed 300 words'),
   keywords: z.string().min(1, 'Please provide at least 3 keywords'),
-  track: z.enum(['srhr', 'education', 'advocacy', 'innovation'], {
+  track: z.enum(['education-rights', 'hiv-aids', 'ncd-prevention', 'digital-health', 'mental-health'], {
     required_error: 'Please select a conference track',
   }),
   primaryAuthor: z.object({
@@ -34,10 +34,11 @@ const abstractSchema = z.object({
 type AbstractFormData = z.infer<typeof abstractSchema>
 
 const tracks = [
-  { value: 'srhr', label: 'Track 1: Youth Sexual & Reproductive Health', color: 'from-blue-500 to-blue-600' },
-  { value: 'education', label: 'Track 2: Education & Skills Development', color: 'from-purple-500 to-purple-600' },
-  { value: 'advocacy', label: 'Track 3: Advocacy & Policy Influence', color: 'from-pink-500 to-pink-600' },
-  { value: 'innovation', label: 'Track 4: Innovation & Technology for Youth', color: 'from-orange-500 to-orange-600' },
+  { value: 'education-rights', label: 'Track 1: Education Rights, Gender Equality, Social Inclusion, and Climate Resilience', color: 'from-blue-500 to-blue-600' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS and key populations: People Who Use and Inject Drugs', color: 'from-purple-500 to-purple-600' },
+  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles', color: 'from-pink-500 to-pink-600' },
+  { value: 'digital-health', label: 'Track 4: Digital Health and Safety: Tackling Online Risks and Gender-Based Violence', color: 'from-orange-500 to-orange-600' },
+  { value: 'mental-health', label: 'Track 5: Mental health and substance abuse', color: 'from-green-500 to-green-600' },
 ]
 
 export default function SubmitAbstractPage() {

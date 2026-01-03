@@ -126,31 +126,38 @@ const importantDates = [
 const tracks = [
   {
     number: '01',
-    title: 'Youth Sexual & Reproductive Health',
-    description: 'Advancing SRHR access, education, and rights for young people.',
-    topics: ['SRHR services access', 'Comprehensive sexuality education', 'Youth-friendly policies', 'HIV prevention'],
+    title: 'Education Rights, Gender Equality, Social Inclusion, and Climate Resilience',
+    description: 'Advancing education rights, gender equality, social inclusion, and climate resilience for young people.',
+    topics: ['Education access', 'Gender equality', 'Social inclusion', 'Climate resilience'],
     color: 'from-blue-500 to-blue-600',
   },
   {
     number: '02',
-    title: 'Education & Skills Development',
-    description: 'Empowering youth through quality education and skills.',
-    topics: ['Quality education access', 'Vocational training', 'Leadership development', 'Digital literacy'],
+    title: 'HIV/AIDS and key populations: People Who Use and Inject Drugs',
+    description: 'Addressing HIV/AIDS prevention, treatment, and support for key populations.',
+    topics: ['HIV prevention', 'Key populations', 'People who use drugs', 'Harm reduction'],
     color: 'from-purple-500 to-purple-600',
   },
   {
     number: '03',
-    title: 'Advocacy & Policy Influence',
-    description: 'Strengthening youth voices in policy-making.',
-    topics: ['Youth participation', 'Policy advocacy', 'Institutional engagement', 'Youth-led movements'],
+    title: 'Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles',
+    description: 'Promoting prevention of non-communicable diseases and healthy lifestyle choices.',
+    topics: ['NCD prevention', 'Healthy lifestyles', 'Disease management', 'Youth wellness'],
     color: 'from-pink-500 to-pink-600',
   },
   {
     number: '04',
-    title: 'Innovation & Technology for Youth',
-    description: 'Leveraging digital solutions for youth development.',
-    topics: ['Digital health solutions', 'EdTech innovations', 'Youth entrepreneurship', 'Tech for advocacy'],
+    title: 'Digital Health and Safety: Tackling Online Risks and Gender-Based Violence',
+    description: 'Addressing digital health, online safety, and combating gender-based violence.',
+    topics: ['Digital health', 'Online safety', 'Gender-based violence', 'Cyber security'],
     color: 'from-orange-500 to-orange-600',
+  },
+  {
+    number: '05',
+    title: 'Mental health and substance abuse',
+    description: 'Supporting youth mental health and addressing substance abuse.',
+    topics: ['Mental health', 'Substance abuse', 'Youth support', 'Prevention and treatment'],
+    color: 'from-green-500 to-green-600',
   },
 ]
 
@@ -256,7 +263,7 @@ export default function SarsycVIPage() {
         <div className="container-custom">
           <h2 className="section-title">Conference Tracks</h2>
           <p className="section-subtitle">
-            SARSYC VI features four thematic tracks addressing critical priorities in youth development.
+            SARSYC VI features five thematic tracks addressing critical priorities in youth development.
           </p>
 
           <div className="grid md:grid-cols-2 gap-8">
