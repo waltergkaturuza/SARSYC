@@ -13,7 +13,7 @@ const faqData = [
       },
       {
         question: 'What is the registration fee?',
-        answer: 'Early Bird (by June 15): $50 for students, $100 for professionals. Regular (after June 15): $75 for students, $150 for professionals. The fee covers conference materials, meals, and certificate of participation.',
+        answer: 'Early Bird (by May 31): $50 for students, $100 for professionals. Regular (after May 31): $75 for students, $150 for professionals. The fee covers conference materials, meals, and certificate of participation.',
       },
       {
         question: 'Can I get a registration waiver or scholarship?',
@@ -30,7 +30,7 @@ const faqData = [
     questions: [
       {
         question: 'What is the abstract submission deadline?',
-        answer: 'Abstracts must be submitted by June 30, 2026, at 11:59 PM (GMT+2). Late submissions will not be considered.',
+        answer: 'Abstracts must be submitted by April 30, 2026, at 11:59 PM (GMT+2). Late submissions will not be considered.',
       },
       {
         question: 'What are the abstract guidelines?',
@@ -42,7 +42,7 @@ const faqData = [
       },
       {
         question: 'When will I know if my abstract is accepted?',
-        answer: 'All submitters will be notified of decisions by June 30, 2026. You\'ll receive an email with the review outcome and next steps.',
+        answer: 'All submitters will be notified of decisions by May 31, 2026. You\'ll receive an email with the review outcome and next steps.',
       },
     ],
   },

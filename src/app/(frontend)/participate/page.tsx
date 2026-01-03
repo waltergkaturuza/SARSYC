@@ -31,7 +31,7 @@ const participationOptions = [
     cta: 'Submit Abstract',
     href: '/participate/submit-abstract',
     color: 'from-secondary-500 to-secondary-600',
-    deadline: 'Deadline: June 30, 2026',
+    deadline: 'Deadline: April 30, 2026',
   },
   {
     icon: FiHeart,

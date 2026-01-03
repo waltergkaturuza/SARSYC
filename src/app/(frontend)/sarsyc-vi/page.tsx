@@ -115,9 +115,10 @@ const objectives = [
 
 const importantDates = [
   { date: 'March 1, 2026', event: 'Call for Abstracts Opens', status: 'upcoming' },
-  { date: 'May 20, 2026', event: 'Registration Opens', status: 'upcoming' },
-  { date: 'June 15, 2026', event: 'Early Bird Deadline', status: 'upcoming' },
-  { date: 'June 30, 2026', event: 'Abstract Submission Deadline', status: 'critical' },
+  { date: 'March 31, 2026', event: 'Registration Opens', status: 'upcoming' },
+  { date: 'April 30, 2026', event: 'Abstract Submission Deadline', status: 'critical' },
+  { date: 'May 31, 2026', event: 'Abstract Notification', status: 'critical' },
+  { date: 'May 31, 2026', event: 'Early Bird Deadline', status: 'upcoming' },
   { date: 'July 31, 2026', event: 'Regular Registration Closes', status: 'critical' },
   { date: 'August 5-7, 2026', event: 'SARSYC VI Conference', status: 'conference' },
 ]

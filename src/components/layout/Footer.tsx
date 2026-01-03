@@ -149,8 +149,8 @@ export default function Footer() {
               <div className="flex items-start gap-3 text-sm">
                 <FiMail className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <a href="mailto:saywhat@mweb.co.zw" className="hover:text-white transition-colors block">
-                    saywhat@mweb.co.zw
+                  <a href="mailto:sarsyc@saywhat.org.zw" className="hover:text-white transition-colors block">
+                    sarsyc@saywhat.org.zw
                   </a>
                   <a href="mailto:info@sarsyc.org" className="hover:text-white transition-colors block">
                     info@sarsyc.org

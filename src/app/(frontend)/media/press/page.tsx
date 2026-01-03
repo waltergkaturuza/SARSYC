@@ -91,8 +91,8 @@ export default function PressReleasesPage() {
                 Communications Team
               </p>
               <p className="text-primary-600">
-                <a href="mailto:saywhat@mweb.co.zw" className="hover:underline">
-                  saywhat@mweb.co.zw
+                <a href="mailto:sarsyc@saywhat.org.zw" className="hover:underline">
+                  sarsyc@saywhat.org.zw
                 </a>
               </p>
             </div>
