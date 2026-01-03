@@ -51,6 +51,17 @@ function MapLayerController({ layer }: { layer: MapLayer }) {
       map.removeLayer(overlayLayer)
     }
 
+    // Remove any React TileLayer components (they appear as L.TileLayer instances)
+    map.eachLayer((existingLayer) => {
+      if (existingLayer instanceof L.TileLayer && existingLayer !== tileLayer && existingLayer !== overlayLayer) {
+        // Check if it's the default React TileLayer by checking its URL
+        const layerUrl = (existingLayer as any).getUrl?.() || ''
+        if (layerUrl.includes('openstreetmap') || layerUrl.includes('arcgisonline') || layerUrl.includes('opentopomap')) {
+          map.removeLayer(existingLayer)
+        }
+      }
+    })
+
     let newTileLayer: L.TileLayer | null = null
     let newOverlayLayer: L.TileLayer | null = null
 
@@ -240,7 +251,17 @@ export default function InteractiveMap({
             }, 500)
           }}
         >
-          {/* MapLayerController handles all tile layers */}
+          {/* Default TileLayer for initial display */}
+          <TileLayer
+            key="default-tilelayer"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            subdomains={['a', 'b', 'c']}
+            maxZoom={20}
+            minZoom={1}
+          />
+          
+          {/* MapLayerController handles layer switching - will replace default layer */}
           <MapLayerController layer={currentLayer} />
           <ZoomController zoom={zoomLevel} />
           <MapInitializer />
