@@ -64,7 +64,7 @@ export default function AboutPage() {
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
                 SARSYC focuses on <strong>SRHR, HIV/AIDS, education rights, youth well-being, and integrated advocacy</strong>. 
-                It is designed as a feeder platform to major regional forums such as ICASA and the SADC Summit.
+                It is designed as a feeder platform to major regional forums such as ICASA, the SADC Summit, World Conference on Lung Health, and International Conference on Family Planning.
               </p>
               <p className="text-gray-600 leading-relaxed">
                 Since 2015, SARSYC has brought together students, young researchers, policymakers, civil society, 
