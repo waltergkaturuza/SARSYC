@@ -161,7 +161,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
             filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
           }
 
-          // Get upload token from server
+          // Get upload token from server (currently just returns the BLOB_READ_WRITE_TOKEN)
           const tokenResponse = await fetch('/api/upload/resource/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -175,11 +175,13 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
           const { token } = await tokenResponse.json()
 
-          // Upload directly to Vercel Blob using client-side SDK
+          // Upload directly to Vercel Blob using client-side SDK.
+          // Use addRandomSuffix to avoid \"blob already exists\" errors when reusing filenames.
           const { put } = await import('@vercel/blob')
           const blob = await put(filename, formData.file, {
             access: 'public',
             token,
+            addRandomSuffix: true,
           })
 
           fileUrl = blob.url
