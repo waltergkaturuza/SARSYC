@@ -1,33 +1,19 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight } from 'react-icons/fi'
-import { showToast } from '@/lib/toast'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
-  // Get user type from URL params or default to participant
-  const urlType = searchParams.get('type') as 'participant' | 'speaker' | 'admin' | null
-  const [userType, setUserType] = useState<'participant' | 'speaker' | 'admin'>(
-    urlType || 'participant'
-  )
-  
-  // Update user type when URL param changes
-  useEffect(() => {
-    if (urlType && ['participant', 'speaker', 'admin'].includes(urlType)) {
-      setUserType(urlType)
-    }
-  }, [urlType])
+  const [userType, setUserType] = useState<'participant' | 'speaker' | 'admin'>('participant')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,16 +21,17 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      console.log('[Login] Starting login attempt...')
-      console.log('[Login] Email:', formData.email)
-      console.log('[Login] User Type:', userType)
-      
-      // Authenticate ALL users via API (including admin)
-      // IMPORTANT: Use credentials: 'include' to ensure cookies are sent and received
+      // Handle different login types
+      if (userType === 'admin') {
+        // Redirect to Payload admin panel (Payload handles its own login)
+        window.location.href = '/admin'
+        return
+      }
+
+      // For participants and speakers, authenticate via API
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include cookies in request and response
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -52,89 +39,27 @@ function LoginForm() {
         }),
       })
 
-      console.log('[Login] Response status:', response.status, response.statusText)
-      
-      let data
-      try {
-        data = await response.json()
-        console.log('[Login] Response data:', { 
-          success: data.success, 
-          hasToken: !!data.token, 
-          error: data.error,
-          user: data.user ? { email: data.user.email, role: data.user.role } : null
-        })
-      } catch (parseError) {
-        console.error('[Login] Failed to parse JSON response:', parseError)
-        const text = await response.text()
-        console.error('[Login] Response text:', text)
-        throw new Error('Invalid response from server')
-      }
+      const data = await response.json()
 
       if (!response.ok) {
-        const errorMsg = data.error || `Login failed (${response.status})`
-        showToast.error(errorMsg)
-        throw new Error(errorMsg)
+        throw new Error(data.error || 'Login failed')
       }
 
-      // Verify authentication was successful
-      if (!data.success || !data.token) {
-        showToast.error('Authentication failed - invalid response')
-        throw new Error('Authentication failed - invalid response')
-      }
-      
-      showToast.success('Login successful!')
-
-      // Store token and user info in localStorage for client-side use
+      // Store token and redirect
       if (data.token) {
         localStorage.setItem('auth_token', data.token)
         localStorage.setItem('user_type', userType)
-        if (data.user) {
-          localStorage.setItem('user_data', JSON.stringify(data.user))
-        }
       }
 
-      // Get redirect URL from query params or use default
-      const redirectUrl = searchParams.get('redirect')
-      
-      // For admin, ensure cookie is set and redirect
-      if (userType === 'admin') {
-        // Set cookie client-side (this is the most reliable method)
-        // The server-side cookie from the API response should also be set, but we set it client-side as backup
-        const isProduction = window.location.hostname !== 'localhost'
-        const cookieString = `payload-token=${encodeURIComponent(data.token)}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${isProduction ? '; Secure' : ''}`
-        document.cookie = cookieString
-        
-        // Log for debugging
-        console.log('[Admin Login] Login successful!')
-        console.log('[Admin Login] Token received:', !!data.token)
-        console.log('[Admin Login] Cookie set:', cookieString.substring(0, 50) + '...')
-        console.log('[Admin Login] All cookies:', document.cookie)
-        
-        // Use redirect URL if provided, otherwise default to /admin
-        const targetUrl = redirectUrl || '/admin'
-        
-        console.log('[Admin Login] About to redirect to:', targetUrl)
-        
-        // Small delay to ensure cookie is processed
-        await new Promise(resolve => setTimeout(resolve, 50))
-        
-        // ALWAYS redirect - don't block on cookie check
-        // The cookie is set, and if there's an issue, the middleware will handle it
-        console.log('[Admin Login] Executing redirect now...')
-        window.location.href = targetUrl
-        
-        // Prevent any further execution
-        return
-      } else {
-        // For all other user types (speaker, presenter, contributor, etc.)
-        // Redirect to dashboard
-        router.push(redirectUrl || '/dashboard')
+      // Redirect based on user type
+      if (userType === 'participant') {
+        router.push('/dashboard')
+      } else if (userType === 'speaker') {
+        router.push('/dashboard?type=speaker')
       }
     } catch (err: any) {
-      console.error('[Login] Error caught:', err)
-      const errorMessage = err.message || 'An error occurred. Please try again.'
-      console.error('[Login] Setting error message:', errorMessage)
-      setError(errorMessage)
+      setError(err.message || 'An error occurred. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -296,20 +221,5 @@ function LoginForm() {
         </div>
       </section>
     </>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   )
 }
