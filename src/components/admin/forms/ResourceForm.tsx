@@ -187,11 +187,11 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   ]
 
   const sarsycEditions = [
-    { value: '1', label: 'SARSYC I (2014)' },
-    { value: '2', label: 'SARSYC II (2016)' },
-    { value: '3', label: 'SARSYC III (2018)' },
-    { value: '4', label: 'SARSYC IV (2020)' },
-    { value: '5', label: 'SARSYC V (2022)' },
+    { value: '1', label: 'SARSYC I (2015)' },
+    { value: '2', label: 'SARSYC II (2017)' },
+    { value: '3', label: 'SARSYC III (2019)' },
+    { value: '4', label: 'SARSYC IV (2022)' },
+    { value: '5', label: 'SARSYC V (2024)' },
     { value: '6', label: 'SARSYC VI (2026)' },
     { value: 'other', label: 'Other/General' },
   ]

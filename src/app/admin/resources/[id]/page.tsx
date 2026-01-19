@@ -25,11 +25,11 @@ const typeLabels: Record<string, string> = {
 }
 
 const sarsycEditionsMap: Record<string, string> = {
-  '1': 'SARSYC I (2014)',
-  '2': 'SARSYC II (2016)',
-  '3': 'SARSYC III (2018)',
-  '4': 'SARSYC IV (2020)',
-  '5': 'SARSYC V (2022)',
+  '1': 'SARSYC I (2015)',
+  '2': 'SARSYC II (2017)',
+  '3': 'SARSYC III (2019)',
+  '4': 'SARSYC IV (2022)',
+  '5': 'SARSYC V (2024)',
   '6': 'SARSYC VI (2026)',
   'other': 'Other/General',
 }
