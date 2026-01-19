@@ -68,10 +68,11 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size (50MB limit for blob storage)
-      const maxSize = 50 * 1024 * 1024 // 50MB in bytes
+      // Vercel serverless functions have a ~4.5MB body limit.
+      // Enforce a 4MB max here so we never hit a 413 error.
+      const maxSize = 4 * 1024 * 1024 // 4MB in bytes
       if (file.size > maxSize) {
-        setErrors({ file: 'File size must be less than 50MB' })
+        setErrors({ file: 'File size must be less than 4MB. For larger files, please host externally and link in the description.' })
         e.target.value = '' // Clear the input
         return
       }
@@ -79,7 +80,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
       if (errors.file) {
         setErrors(prev => ({ ...prev, file: '' }))
       }
-      setFormData(prev => ({ ...prev, file: file }))
+      setFormData(prev => ({ ...prev, file }))
     }
   }
 
@@ -127,65 +128,39 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
     setLoading(true)
     try {
-      // CLIENT-SIDE UPLOAD: Upload file to blob storage first (if it's a new file)
+      // SERVER-SIDE UPLOAD: Send file to /api/upload/resource (max ~4MB due to Vercel limits)
       let fileUrl: string | null = null
       if (formData.file instanceof File) {
         try {
-          console.log('📤 Uploading resource file to blob storage...', {
+          console.log('📤 Uploading resource file via API route...', {
             name: formData.file.name,
             size: formData.file.size,
             type: formData.file.type,
           })
 
-          // Build filename on client side
-          const editionMap: Record<string, string> = {
-            '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', 'other': 'general',
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.file)
+          if (formData.sarsycEdition) {
+            uploadFormData.append('sarsycEdition', formData.sarsycEdition)
           }
-          const edition = formData.sarsycEdition ? editionMap[formData.sarsycEdition] || formData.sarsycEdition : 'general'
-          const typeFolder = formData.type || 'other'
-          
-          let filename: string
-          if (formData.title) {
-            const sanitizedTitle = formData.title
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-+|-+$/g, '')
-              .substring(0, 100)
-            const fileExt = formData.file.name.split('.').pop() || 'pdf'
-            filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedTitle}.${fileExt}`
-          } else {
-            const sanitizedFilename = formData.file.name
-              .replace(/\s+/g, '-')
-              .replace(/[^a-zA-Z0-9.-]/g, '-')
-              .toLowerCase()
-            filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
+          if (formData.type) {
+            uploadFormData.append('resourceType', formData.type)
           }
+          uploadFormData.append('title', formData.title)
 
-          // Get upload token from server (currently just returns the BLOB_READ_WRITE_TOKEN)
-          const tokenResponse = await fetch('/api/upload/resource/token', {
+          const uploadResponse = await fetch('/api/upload/resource', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filename, contentType: formData.file.type }),
+            body: uploadFormData,
           })
 
-          if (!tokenResponse.ok) {
-            const errorData = await tokenResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Failed to get upload token')
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
           }
 
-          const { token } = await tokenResponse.json()
-
-          // Upload directly to Vercel Blob using client-side SDK.
-          // Use addRandomSuffix to avoid \"blob already exists\" errors when reusing filenames.
-          const { put } = await import('@vercel/blob')
-          const blob = await put(filename, formData.file, {
-            access: 'public',
-            token,
-            addRandomSuffix: true,
-          })
-
-          fileUrl = blob.url
-          console.log('✅ Resource file uploaded to Vercel Blob:', fileUrl)
+          const uploadResult = await uploadResponse.json()
+          fileUrl = uploadResult.url
+          console.log('✅ Resource file uploaded via API route:', fileUrl)
         } catch (uploadError: any) {
           console.error('❌ Resource upload error:', uploadError)
           setErrors({ submit: `Failed to upload file: ${uploadError.message}` })

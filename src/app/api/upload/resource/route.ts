@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (50MB limit for resources)
-    const maxSize = 50 * 1024 * 1024 // 50MB
+    // Validate file size (4MB limit to stay under Vercel's 4.5MB function body limit)
+    const maxSize = 4 * 1024 * 1024 // 4MB
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: 'File size exceeds 50MB limit' },
@@ -124,10 +124,11 @@ export async function POST(request: NextRequest) {
       type: typeFolder,
     })
 
-    // Upload to Vercel Blob
+    // Upload to Vercel Blob. Use addRandomSuffix to avoid \"blob already exists\" errors.
     const blob = await put(filename, fileBlob, {
       access: 'public',
       token: blobToken,
+      addRandomSuffix: true,
     })
     
     console.log('✅ Resource file uploaded to Vercel Blob:', {
