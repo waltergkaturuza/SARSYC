@@ -66,22 +66,26 @@ export async function POST(request: NextRequest) {
         } else if (filename.toLowerCase().endsWith('.png')) {
           mimeType = 'image/png'
         }
-        
-        // Use Payload's database adapter to create media record with external URL
-        // This bypasses the file upload requirement
-        const result = await payload.db.collections.media.create({
+       
+        // Create media record in Payload with the external URL.
+        // We use the standard Payload create API so that hooks and defaults run correctly.
+        const mediaDoc: any = await payload.create({
+          collection: 'media',
           data: {
             alt: `Resource file: ${title}`,
-            filename: filename,
-            mimeType: mimeType,
+            caption: description || '',
+            filename,
+            mimeType,
             url: fileUrl,
-            filesize: 0,
-            width: null,
-            height: null,
           },
+          overrideAccess: true,
         })
-        fileId = typeof result === 'string' ? result : result.id
-        console.log('✅ Created media record with blob URL:', fileUrl)
+
+        fileId = typeof mediaDoc === 'string' ? mediaDoc : mediaDoc.id
+        console.log('✅ Created media record with blob URL for resource:', {
+          fileUrl,
+          fileId,
+        })
       } catch (uploadError: any) {
         console.error('Media record creation error:', uploadError)
         // Continue without file if media creation fails
