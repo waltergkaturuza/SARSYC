@@ -5,19 +5,15 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 /**
- * Dedicated endpoint for speaker photo uploads
- * This allows client to upload files directly to Vercel Blob, bypassing MIME type validation issues
- * Returns the blob URL which can then be sent to the speaker API
- * 
- * Prevents duplicates by:
- * 1. Using speaker name-based filename for consistency
- * 2. Checking for existing files and deleting them before upload
+ * Dedicated endpoint for partner logo uploads
+ * File structure: Partners/logos/{sanitized_partner_name}.{ext}
+ * Example: Partners/logos/saywhat.png
  */
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
-    const speakerName = formData.get('speakerName') as string | null // Speaker name to create unique filename
+    const partnerName = formData.get('partnerName') as string | null // Partner name for filename
 
     if (!file) {
       return NextResponse.json(
@@ -26,7 +22,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (10MB limit for high-quality photos)
+    // Validate file size (10MB limit for high-quality logos)
     const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
       return NextResponse.json(
@@ -42,15 +38,16 @@ export async function POST(request: NextRequest) {
       'image/png',
       'image/gif',
       'image/webp',
+      'image/svg+xml',
     ]
 
     const fileType = file.type || ''
     const isValidType = allowedTypes.includes(fileType) || 
-      file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/i)
+      file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
 
     if (!isValidType) {
       return NextResponse.json(
-        { error: 'File type not allowed. Please upload an image (JPG, PNG, GIF, or WebP)' },
+        { error: 'File type not allowed. Please upload an image (JPG, PNG, GIF, WebP, or SVG)' },
         { status: 400 }
       )
     }
@@ -65,31 +62,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Convert File to Blob for Vercel Blob SDK
-    const fileBlob = new Blob([file], { type: file.type || 'image/jpeg' })
+    const fileBlob = new Blob([file], { type: file.type || 'image/png' })
 
-    // Create a consistent filename based on speaker name (if provided) or use timestamp
+    // Create a consistent filename based on partner name (if provided) or use timestamp
     let filename: string
-    if (speakerName) {
-      // Use speaker name to create a unique, consistent filename
-      const nameHash = speakerName
+    if (partnerName) {
+      // Use partner name to create a unique, consistent filename
+      const nameHash = partnerName
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '-')
         .replace(/-+/g, '-')
         .substring(0, 50) // Limit length
-      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      filename = `Speakers/photos/${nameHash}.${fileExt}`
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
+      filename = `Partners/logos/${nameHash}.${fileExt}`
       
-      console.log('📧 Using speaker name-based filename:', filename)
+      console.log('📧 Using partner name-based filename:', filename)
       
       // Check for existing files with this name-based pattern and delete them
       try {
         const existingBlobs = await list({
-          prefix: `Speakers/photos/${nameHash}`,
+          prefix: `Partners/logos/${nameHash}`,
           token: blobToken,
         })
         
         if (existingBlobs.blobs.length > 0) {
-          console.log(`🗑️  Found ${existingBlobs.blobs.length} existing file(s) for this speaker, deleting...`)
+          console.log(`🗑️  Found ${existingBlobs.blobs.length} existing file(s) for this partner, deleting...`)
           for (const existingBlob of existingBlobs.blobs) {
             try {
               await del(existingBlob.url, { token: blobToken })
@@ -105,14 +102,20 @@ export async function POST(request: NextRequest) {
         // Continue with upload even if list check fails
       }
     } else {
-      // Fallback: use timestamp if no speaker name provided
+      // Fallback: use timestamp if no partner name provided
       const sanitizedFilename = file.name
         .replace(/\s+/g, '-')
         .replace(/[^a-zA-Z0-9.-]/g, '-')
         .toLowerCase()
-      filename = `Speakers/photos/${Date.now()}-${sanitizedFilename}`
+      filename = `Partners/logos/${Date.now()}-${sanitizedFilename}`
       console.log('📝 Using timestamp-based filename:', filename)
     }
+
+    console.log('📁 Uploading partner logo:', {
+      originalName: file.name,
+      path: filename,
+      size: file.size,
+    })
 
     // Upload to Vercel Blob
     const blob = await put(filename, fileBlob, {
@@ -120,17 +123,14 @@ export async function POST(request: NextRequest) {
       token: blobToken,
     })
     
-    // Extract filename from pathname for logging
-    const loggedFilename = filename.split('/').pop() || file.name
-    
-    console.log('✅ Speaker photo uploaded to Vercel Blob:', {
+    console.log('✅ Partner logo uploaded to Vercel Blob:', {
       url: blob.url,
       pathname: blob.pathname,
-      filename: loggedFilename,
+      filename: filename.split('/').pop(),
       originalSize: file.size,
     })
 
-    // Verify the URL is accessible (quick check)
+    // Verify the URL is accessible
     if (!blob.url || !blob.url.startsWith('https://')) {
       console.error('❌ Invalid blob URL returned:', blob.url)
       throw new Error('Invalid blob URL returned from upload')
@@ -142,13 +142,10 @@ export async function POST(request: NextRequest) {
       pathname: blob.pathname,
     })
   } catch (error: any) {
-    console.error('Speaker photo upload error:', error)
+    console.error('Partner logo upload error:', error)
     return NextResponse.json(
       { error: 'Failed to upload file', details: error.message },
       { status: 500 }
     )
   }
 }
-
-
-

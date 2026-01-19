@@ -18,25 +18,46 @@ export async function POST(request: NextRequest) {
     const active = formData.get('active') === 'true'
     const sarsycEditions = JSON.parse(formData.get('sarsycEditions') as string || '[]')
     const displayOrder = formData.get('displayOrder') ? parseInt(formData.get('displayOrder') as string) : undefined
-    const logoFile = formData.get('logo') as File | null
+    const logoUrl = formData.get('logoUrl') as string | null // URL from blob storage
     
-    // Upload logo if provided
+    // Create media record with the blob URL if provided
     let logoId: string | undefined
-    if (logoFile && logoFile.size > 0) {
+    if (logoUrl) {
       try {
-        const logoUpload = await payload.create({
-          collection: 'media',
+        // Extract filename from URL for better metadata
+        const urlParts = logoUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || 'partner-logo'
+        
+        // Determine MIME type from file extension
+        let mimeType = 'image/png' // Default
+        if (filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg')) {
+          mimeType = 'image/jpeg'
+        } else if (filename.toLowerCase().endsWith('.gif')) {
+          mimeType = 'image/gif'
+        } else if (filename.toLowerCase().endsWith('.webp')) {
+          mimeType = 'image/webp'
+        } else if (filename.toLowerCase().endsWith('.svg')) {
+          mimeType = 'image/svg+xml'
+        }
+        
+        // Create media record with the blob URL
+        const result = await payload.db.collections.media.create({
           data: {
             alt: `Partner logo: ${name}`,
+            filename: filename,
+            mimeType: mimeType,
+            url: logoUrl,
+            filesize: 0,
+            width: null,
+            height: null,
           },
-          file: logoFile,
-          overrideAccess: true, // Allow admin uploads
         })
-        logoId = typeof logoUpload === 'string' ? logoUpload : logoUpload.id
+        logoId = typeof result === 'string' ? result : result.id
+        console.log('✅ Created media record with blob URL:', logoUrl)
       } catch (uploadError: any) {
-        console.error('Logo upload error:', uploadError)
-        // Continue without logo if upload fails
-        console.warn('Partner creation proceeding without logo')
+        console.error('Media record creation error:', uploadError)
+        // Continue without logo if media creation fails
+        console.warn('Partner creation proceeding without media record')
       }
     }
 

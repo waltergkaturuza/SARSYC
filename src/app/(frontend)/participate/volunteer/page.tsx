@@ -206,6 +206,11 @@ export default function VolunteerPage() {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('type', type)
+      // Include email if available for better filename organization
+      const email = watch('email')
+      if (email) {
+        formData.append('email', email)
+      }
 
       const response = await fetch('/api/upload/volunteer-document', {
         method: 'POST',
@@ -213,14 +218,15 @@ export default function VolunteerPage() {
       })
 
       if (!response.ok) {
-        throw new Error('File upload failed')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'File upload failed')
       }
 
       const data = await response.json()
       setValue(type, data.url)
       showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
-    } catch (error) {
-      showToast.error(`Failed to upload ${type === 'cv' ? 'CV' : 'cover letter'}`)
+    } catch (error: any) {
+      showToast.error(`Failed to upload ${type === 'cv' ? 'CV' : 'cover letter'}: ${error.message || 'Unknown error'}`)
     }
   }
 

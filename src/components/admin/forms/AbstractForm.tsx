@@ -180,8 +180,54 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
         submitData.append('assignedSession', formData.assignedSession)
       }
       
+      // CLIENT-SIDE UPLOAD: Upload abstract file to blob storage first (if it's a new file)
+      let abstractFileUrl: string | null = null
       if (formData.abstractFile instanceof File) {
-        submitData.append('abstractFile', formData.abstractFile)
+        try {
+          console.log('📤 Uploading abstract file to blob storage...', {
+            name: formData.abstractFile.name,
+            size: formData.abstractFile.size,
+            type: formData.abstractFile.type,
+          })
+
+          // Upload to dedicated upload endpoint
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.abstractFile)
+          if (formData.track) {
+            uploadFormData.append('track', formData.track)
+          }
+          if (formData.primaryAuthor?.email) {
+            uploadFormData.append('email', formData.primaryAuthor.email)
+          }
+          uploadFormData.append('title', formData.title)
+
+          const uploadResponse = await fetch('/api/upload/abstract', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          abstractFileUrl = uploadResult.url
+          console.log('✅ Abstract file uploaded to Vercel Blob:', abstractFileUrl)
+        } catch (uploadError: any) {
+          console.error('❌ Abstract upload error:', uploadError)
+          setErrors({ submit: `Failed to upload file: ${uploadError.message}` })
+          setLoading(false)
+          return
+        }
+      } else if (typeof formData.abstractFile === 'string') {
+        // File is already a URL (from existing abstract)
+        abstractFileUrl = formData.abstractFile
+      }
+      
+      // Append file URL instead of file object
+      if (abstractFileUrl) {
+        submitData.append('abstractFileUrl', abstractFileUrl)
       }
 
       const url = mode === 'create' 

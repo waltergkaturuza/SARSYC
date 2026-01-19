@@ -24,25 +24,40 @@ export async function PATCH(
     const reviewerComments = formData.get('reviewerComments') as string | null
     const adminNotes = formData.get('adminNotes') as string | null
     const assignedSession = formData.get('assignedSession') as string | null
-    const abstractFile = formData.get('abstractFile') as File | null
+    const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
     
-    // Upload file if provided
+    // Create media record with the blob URL if provided
     let abstractFileId: string | undefined
-    if (abstractFile && abstractFile.size > 0) {
+    if (abstractFileUrl) {
       try {
-        const fileUpload = await payload.create({
-          collection: 'media',
+        // Extract filename from URL for better metadata
+        const urlParts = abstractFileUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || 'abstract-file'
+        
+        // Determine MIME type from file extension
+        let mimeType = 'application/pdf' // Default
+        if (filename.toLowerCase().endsWith('.doc') || filename.toLowerCase().endsWith('.docx')) {
+          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        }
+        
+        // Create media record with the blob URL
+        const result = await payload.db.collections.media.create({
           data: {
             alt: `Abstract file: ${title}`,
+            filename: filename,
+            mimeType: mimeType,
+            url: abstractFileUrl,
+            filesize: 0,
+            width: null,
+            height: null,
           },
-          file: abstractFile,
-          overrideAccess: true, // Allow admin uploads
         })
-        abstractFileId = typeof fileUpload === 'string' ? fileUpload : fileUpload.id
+        abstractFileId = typeof result === 'string' ? result : result.id
+        console.log('✅ Created media record with blob URL:', abstractFileUrl)
       } catch (uploadError: any) {
-        console.error('File upload error:', uploadError)
-        // Continue without file if upload fails
-        console.warn('Abstract update proceeding without file upload')
+        console.error('Media record creation error:', uploadError)
+        // Continue without file if media creation fails
+        console.warn('Abstract update proceeding without media record')
       }
     }
 

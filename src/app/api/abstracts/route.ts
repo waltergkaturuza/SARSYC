@@ -125,8 +125,39 @@ export async function POST(request: NextRequest) {
       abstractData.coAuthors = coAuthors
     }
 
-    // Don't include abstractFile at all (let Payload handle it)
-    // abstractFile is optional and should not be set to undefined
+    // Handle abstract file URL from blob storage
+    if (body.abstractFileUrl) {
+      try {
+        // Extract filename from URL for better metadata
+        const urlParts = body.abstractFileUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || 'abstract-file'
+        
+        // Determine MIME type from file extension
+        let mimeType = 'application/pdf' // Default
+        if (filename.toLowerCase().endsWith('.doc') || filename.toLowerCase().endsWith('.docx')) {
+          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        }
+        
+        // Create media record with the blob URL
+        const fileUpload = await payload.db.collections.media.create({
+          data: {
+            alt: `Abstract file: ${body.title.trim()}`,
+            filename: filename,
+            mimeType: mimeType,
+            url: body.abstractFileUrl,
+            filesize: 0,
+            width: null,
+            height: null,
+          },
+        })
+        abstractData.abstractFile = typeof fileUpload === 'string' ? fileUpload : fileUpload.id
+        console.log('✅ Created media record with blob URL:', body.abstractFileUrl)
+      } catch (uploadError: any) {
+        console.error('Media record creation error:', uploadError)
+        // Continue without file if media creation fails
+        console.warn('Abstract creation proceeding without media record')
+      }
+    }
 
     console.log('Creating abstract with data:', JSON.stringify(abstractData, null, 2))
 

@@ -93,9 +93,9 @@ export default function SubmitAbstractPage() {
         showToast.error('Please upload a PDF or Word document')
         return
       }
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        showToast.error('File size must be less than 5MB')
+      // Validate file size (50MB max for blob storage)
+      if (file.size > 50 * 1024 * 1024) {
+        showToast.error('File size must be less than 50MB')
         return
       }
       setAbstractFile(file)
@@ -107,12 +107,59 @@ export default function SubmitAbstractPage() {
     setIsSubmitting(true)
     
     try {
+      // CLIENT-SIDE UPLOAD: Upload abstract file to blob storage first (if provided)
+      let abstractFileUrl: string | null = null
+      if (abstractFile) {
+        try {
+          showToast.loading('Uploading abstract file...')
+          console.log('📤 Uploading abstract file to blob storage...', {
+            name: abstractFile.name,
+            size: abstractFile.size,
+            type: abstractFile.type,
+          })
+
+          // Upload to dedicated upload endpoint
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', abstractFile)
+          if (data.track) {
+            uploadFormData.append('track', data.track)
+          }
+          if (data.primaryAuthor?.email) {
+            uploadFormData.append('email', data.primaryAuthor.email)
+          }
+          if (data.title) {
+            uploadFormData.append('title', data.title)
+          }
+
+          const uploadResponse = await fetch('/api/upload/abstract', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          abstractFileUrl = uploadResult.url
+          console.log('✅ Abstract file uploaded to Vercel Blob:', abstractFileUrl)
+          showToast.success('Abstract file uploaded successfully!')
+        } catch (uploadError: any) {
+          console.error('❌ Abstract upload error:', uploadError)
+          showToast.error(`Failed to upload file: ${uploadError.message}`)
+          setIsSubmitting(false)
+          return
+        }
+      }
+
+      // Now submit the abstract data with the file URL
       const response = await fetch('/api/abstracts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          abstractFile: undefined, // File upload not supported in public API
+          abstractFileUrl: abstractFileUrl, // Send the blob URL instead
         }),
       })
 

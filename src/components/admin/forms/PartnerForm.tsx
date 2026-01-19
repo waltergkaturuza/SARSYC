@@ -87,6 +87,46 @@ export default function PartnerForm({ initialData, mode }: PartnerFormProps) {
 
     setLoading(true)
     try {
+      // CLIENT-SIDE UPLOAD: Upload logo to blob storage first (if it's a new file)
+      let logoUrl: string | null = null
+      if (formData.logo instanceof File) {
+        try {
+          console.log('📤 Uploading partner logo to blob storage...', {
+            name: formData.logo.name,
+            size: formData.logo.size,
+            type: formData.logo.type,
+          })
+
+          // Upload to dedicated upload endpoint
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.logo)
+          uploadFormData.append('partnerName', formData.name)
+
+          const uploadResponse = await fetch('/api/upload/partner-logo', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          logoUrl = uploadResult.url
+          console.log('✅ Partner logo uploaded to Vercel Blob:', logoUrl)
+        } catch (uploadError: any) {
+          console.error('❌ Logo upload error:', uploadError)
+          setErrors({ submit: `Failed to upload logo: ${uploadError.message}` })
+          setLoading(false)
+          return
+        }
+      } else if (typeof formData.logo === 'string') {
+        // Logo is already a URL (from existing partner)
+        logoUrl = formData.logo
+      }
+
+      // Now submit the partner data with the logo URL
       const submitData = new FormData()
       submitData.append('name', formData.name)
       submitData.append('description', formData.description || '')
@@ -103,8 +143,9 @@ export default function PartnerForm({ initialData, mode }: PartnerFormProps) {
         submitData.append('displayOrder', formData.displayOrder.toString())
       }
       
-      if (formData.logo instanceof File) {
-        submitData.append('logo', formData.logo)
+      // Append logo URL instead of file object
+      if (logoUrl) {
+        submitData.append('logoUrl', logoUrl)
       }
 
       const url = mode === 'create' 

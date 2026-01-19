@@ -27,48 +27,73 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    // Validate file size (max 50MB for blob storage)
+    const maxSize = 50 * 1024 * 1024 // 50MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size exceeds 5MB limit' },
+        { error: 'File size exceeds 50MB limit' },
         { status: 400 }
       )
     }
 
-    // Convert File to Buffer
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    // Get the blob token
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    if (!blobToken) {
+      return NextResponse.json(
+        { error: 'Blob storage not configured' },
+        { status: 500 }
+      )
+    }
 
-    // Generate unique filename
-    const timestamp = Date.now()
-    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const filename = `volunteers/${type}/${timestamp}-${sanitizedFilename}`
+    // Convert File to Blob for Vercel Blob SDK
+    const fileBlob = new Blob([file], { type: file.type || 'application/octet-stream' })
+
+    // Generate organized filename: Volunteers/{type}/{email_hash}-{sanitized_filename}
+    const email = formData.get('email') as string | null
+    let filename: string
+    if (email) {
+      const emailHash = email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)
+      const sanitizedFilename = file.name
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9.-]/g, '-')
+        .toLowerCase()
+      filename = `Volunteers/${type}/${emailHash}-${sanitizedFilename}`
+    } else {
+      const timestamp = Date.now()
+      const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase()
+      filename = `Volunteers/${type}/${timestamp}-${sanitizedFilename}`
+    }
+
+    console.log('📁 Uploading volunteer document:', {
+      originalName: file.name,
+      path: filename,
+      size: file.size,
+      type,
+    })
 
     // Upload to Vercel Blob
-    const blob = await put(filename, buffer, {
+    const blob = await put(filename, fileBlob, {
       access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      contentType: file.type,
+      token: blobToken,
     })
 
-    // Create media record in Payload
-    const payload = await getPayloadClient()
-    const media = await payload.create({
-      collection: 'media',
-      data: {
-        filename: file.name,
-        mimeType: file.type,
-        filesize: file.size,
-        url: blob.url,
-      },
-      overrideAccess: true,
+    console.log('✅ Volunteer document uploaded to Vercel Blob:', {
+      url: blob.url,
+      pathname: blob.pathname,
+      filename: filename.split('/').pop(),
+      originalSize: file.size,
     })
+
+    // Verify the URL is accessible
+    if (!blob.url || !blob.url.startsWith('https://')) {
+      console.error('❌ Invalid blob URL returned:', blob.url)
+      throw new Error('Invalid blob URL returned from upload')
+    }
 
     return NextResponse.json({
       success: true,
       url: blob.url,
-      mediaId: media.id,
+      pathname: blob.pathname,
     })
   } catch (error: any) {
     console.error('Volunteer document upload error:', error)
