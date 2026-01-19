@@ -126,37 +126,62 @@ const importantDates = [
 const tracks = [
   {
     number: '01',
-    title: 'Education Rights, Gender Equality, Social Inclusion, and Climate Resilience',
-    description: 'Advancing education rights, gender equality, social inclusion, and climate resilience for young people.',
-    topics: ['Education access', 'Gender equality', 'Social inclusion', 'Climate resilience'],
+    title: 'Education Rights and Equity',
+    description: 'Advancing education rights and equity for young people across Southern Africa.',
+    topics: [
+      'Financing and innovation for equitable digital learning in rural communities',
+      'Evaluating the effectiveness of climate resilience in education systems',
+      'Gender Equality & Social Inclusion (GESI) through responsive education budgeting',
+      'CSE as a driver for quality education and retention',
+    ],
     color: 'from-blue-500 to-blue-600',
   },
   {
     number: '02',
-    title: 'HIV/AIDS and key populations: People Who Use and Inject Drugs',
-    description: 'Addressing HIV/AIDS prevention, treatment, and support for key populations.',
-    topics: ['HIV prevention', 'Key populations', 'People who use drugs', 'Harm reduction'],
+    title: 'HIV/AIDS, STIs and Vulnerable Groups',
+    description: 'Addressing HIV/AIDS, STIs prevention and treatment, and support for vulnerable groups.',
+    topics: [
+      'Sustaining gains in HIV/AIDS and STIs prevention and treatment',
+      'Addressing resurgence among People Who Use and Inject Drugs',
+      'Expanding harm reduction programs',
+      'Domestic health financing and resource mobilization',
+    ],
     color: 'from-purple-500 to-purple-600',
   },
   {
     number: '03',
-    title: 'Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles',
+    title: 'Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles',
     description: 'Promoting prevention of non-communicable diseases and healthy lifestyle choices.',
-    topics: ['NCD prevention', 'Healthy lifestyles', 'Disease management', 'Youth wellness'],
+    topics: [
+      'Community-led NCD prevention and integration into primary health care',
+      'Promoting healthy behaviors, nutrition, exercise, and reducing harmful habits',
+      'Digital health tools for lifestyle change and risk monitoring',
+      'Innovations for early detection and screening in low-resource settings',
+    ],
     color: 'from-pink-500 to-pink-600',
   },
   {
     number: '04',
-    title: 'Digital Health and Safety: Tackling Online Risks and Gender-Based Violence',
-    description: 'Addressing digital health, online safety, and combating gender-based violence.',
-    topics: ['Digital health', 'Online safety', 'Gender-based violence', 'Cyber security'],
+    title: 'Digital Health and Safety',
+    description: 'Addressing digital health, online safety, and combating digital violence.',
+    topics: [
+      'Digital violence/ online harassment: gendered vulnerabilities and responses',
+      'Social media algorithms and adolescent mental health and behavior',
+      'Online gambling and betting addiction, emerging trends and policy responses',
+      'Leveraging technology for health, education and service delivery',
+    ],
     color: 'from-orange-500 to-orange-600',
   },
   {
     number: '05',
-    title: 'Mental health and substance abuse',
-    description: 'Supporting youth mental health and addressing substance abuse.',
-    topics: ['Mental health', 'Substance abuse', 'Youth support', 'Prevention and treatment'],
+    title: 'Mental Health and Substance Abuse',
+    description: 'Supporting youth mental health and addressing substance abuse prevention and treatment.',
+    topics: [
+      'Rising mental health challenges among boys and young men',
+      'Suicide prevention strategies and psychosocial support',
+      'Substance abuse trends and government responses, progress and gaps',
+      'Community-driven interventions for mental health and addiction recovery',
+    ],
     color: 'from-green-500 to-green-600',
   },
 ]
@@ -277,13 +302,14 @@ export default function SarsycVIPage() {
                 
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Key Topics:</p>
-                  <div className="flex flex-wrap gap-2">
+                  <ul className="space-y-2">
                     {track.topics.map((topic) => (
-                      <span key={topic} className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
-                        {topic}
-                      </span>
+                      <li key={topic} className="text-sm text-gray-600 flex items-start">
+                        <span className="text-primary-600 mr-2 mt-1">•</span>
+                        <span>{topic}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </div>
             ))}

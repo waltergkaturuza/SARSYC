@@ -34,11 +34,11 @@ const abstractSchema = z.object({
 type AbstractFormData = z.infer<typeof abstractSchema>
 
 const tracks = [
-  { value: 'education-rights', label: 'Track 1: Education Rights, Gender Equality, Social Inclusion, and Climate Resilience', color: 'from-blue-500 to-blue-600' },
-  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS and key populations: People Who Use and Inject Drugs', color: 'from-purple-500 to-purple-600' },
-  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles', color: 'from-pink-500 to-pink-600' },
-  { value: 'digital-health', label: 'Track 4: Digital Health and Safety: Tackling Online Risks and Gender-Based Violence', color: 'from-orange-500 to-orange-600' },
-  { value: 'mental-health', label: 'Track 5: Mental health and substance abuse', color: 'from-green-500 to-green-600' },
+  { value: 'education-rights', label: 'Track 1: Education Rights and Equity', color: 'from-blue-500 to-blue-600' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs and Vulnerable Groups', color: 'from-purple-500 to-purple-600' },
+  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles', color: 'from-pink-500 to-pink-600' },
+  { value: 'digital-health', label: 'Track 4: Digital Health and Safety', color: 'from-orange-500 to-orange-600' },
+  { value: 'mental-health', label: 'Track 5: Mental Health and Substance Abuse', color: 'from-green-500 to-green-600' },
 ]
 
 export default function SubmitAbstractPage() {

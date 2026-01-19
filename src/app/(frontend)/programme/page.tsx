@@ -39,11 +39,11 @@ const days = ['All Days', 'Day 1', 'Day 2', 'Day 3']
 const tracks = [
   { value: 'all', label: 'All Tracks', color: 'gray' },
   { value: 'general', label: 'Plenary', color: 'blue' },
-  { value: 'education-rights', label: 'Track 1: Education Rights, Gender Equality, Social Inclusion, and Climate Resilience', color: 'blue' },
-  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS and key populations: People Who Use and Inject Drugs', color: 'purple' },
-  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles', color: 'pink' },
-  { value: 'digital-health', label: 'Track 4: Digital Health and Safety: Tackling Online Risks and Gender-Based Violence', color: 'orange' },
-  { value: 'mental-health', label: 'Track 5: Mental health and substance abuse', color: 'green' },
+  { value: 'education-rights', label: 'Track 1: Education Rights and Equity', color: 'blue' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs and Vulnerable Groups', color: 'purple' },
+  { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles', color: 'pink' },
+  { value: 'digital-health', label: 'Track 4: Digital Health and Safety', color: 'orange' },
+  { value: 'mental-health', label: 'Track 5: Mental Health and Substance Abuse', color: 'green' },
 ]
 const types = ['All Types', 'Keynote', 'Plenary', 'Panel', 'Workshop', 'Oral Presentations', 'Poster Session']
 

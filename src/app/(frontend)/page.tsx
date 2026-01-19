@@ -15,32 +15,32 @@ const stats = [
 const tracks = [
   {
     number: '01',
-    title: 'Education Rights, Gender Equality, Social Inclusion, and Climate Resilience',
-    description: 'Advancing education rights, gender equality, social inclusion, and climate resilience for young people across Southern Africa.',
+    title: 'Education Rights and Equity',
+    description: 'Financing and innovation for equitable digital learning in rural communities, evaluating the effectiveness of climate resilience in education systems, Gender Equality & Social Inclusion (GESI) through responsive education budgeting, and CSE as a driver for quality education and retention.',
     color: 'from-blue-500 to-blue-600',
   },
   {
     number: '02',
-    title: 'HIV/AIDS and key populations: People Who Use and Inject Drugs',
-    description: 'Addressing HIV/AIDS prevention, treatment, and support for key populations, including people who use and inject drugs.',
+    title: 'HIV/AIDS, STIs and Vulnerable Groups',
+    description: 'Sustaining gains in HIV/AIDS and STIs prevention and treatment, addressing resurgence among People Who Use and Inject Drugs, expanding harm reduction programs, and domestic health financing and resource mobilization.',
     color: 'from-purple-500 to-purple-600',
   },
   {
     number: '03',
-    title: 'Non-Communicable Diseases (NCD) Prevention and Healthy Lifestyles',
-    description: 'Promoting prevention of non-communicable diseases and healthy lifestyle choices among youth.',
+    title: 'Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles',
+    description: 'Community-led NCD prevention and integration into primary health care, promoting healthy behaviors, nutrition, exercise, and reducing harmful habits, digital health tools for lifestyle change and risk monitoring, and innovations for early detection and screening in low-resource settings.',
     color: 'from-pink-500 to-pink-600',
   },
   {
     number: '04',
-    title: 'Digital Health and Safety: Tackling Online Risks and Gender-Based Violence',
-    description: 'Addressing digital health, online safety, and combating gender-based violence in digital spaces.',
+    title: 'Digital Health and Safety',
+    description: 'Digital violence/ online harassment: gendered vulnerabilities and responses, social media algorithms and adolescent mental health and behavior, online gambling and betting addiction, emerging trends and policy responses, and leveraging technology for health, education and service delivery.',
     color: 'from-orange-500 to-orange-600',
   },
   {
     number: '05',
-    title: 'Mental health and substance abuse',
-    description: 'Supporting youth mental health and addressing substance abuse prevention and treatment.',
+    title: 'Mental Health and Substance Abuse',
+    description: 'Rising mental health challenges among boys and young men, suicide prevention strategies and psychosocial support, substance abuse trends and government responses, progress and gaps, and community-driven interventions for mental health and addiction recovery.',
     color: 'from-green-500 to-green-600',
   },
 ]
