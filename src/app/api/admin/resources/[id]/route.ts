@@ -24,25 +24,48 @@ export async function PATCH(
     const country = formData.get('country') as string | null
     const language = formData.get('language') as string
     const featured = formData.get('featured') === 'true'
-    const resourceFile = formData.get('file') as File | null
+    const fileUrl = formData.get('fileUrl') as string | null // URL from blob storage
     
-    // Upload file if provided
+    // Create media record with the blob URL if provided
     let fileId: string | undefined
-    if (resourceFile && resourceFile.size > 0) {
+    if (fileUrl) {
       try {
-        const fileUpload = await payload.create({
-          collection: 'media',
+        // Extract filename from URL for better metadata
+        const urlParts = fileUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || 'resource-file'
+        
+        // Determine MIME type from file extension
+        let mimeType = 'application/pdf' // Default
+        if (filename.toLowerCase().endsWith('.doc') || filename.toLowerCase().endsWith('.docx')) {
+          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        } else if (filename.toLowerCase().endsWith('.xls') || filename.toLowerCase().endsWith('.xlsx')) {
+          mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        } else if (filename.toLowerCase().endsWith('.ppt') || filename.toLowerCase().endsWith('.pptx')) {
+          mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        } else if (filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg')) {
+          mimeType = 'image/jpeg'
+        } else if (filename.toLowerCase().endsWith('.png')) {
+          mimeType = 'image/png'
+        }
+        
+        // Use Payload's database adapter to create media record with external URL
+        const result = await payload.db.collections.media.create({
           data: {
             alt: `Resource file: ${title}`,
+            filename: filename,
+            mimeType: mimeType,
+            url: fileUrl,
+            filesize: 0,
+            width: null,
+            height: null,
           },
-          file: resourceFile,
-          overrideAccess: true, // Allow admin uploads
         })
-        fileId = typeof fileUpload === 'string' ? fileUpload : fileUpload.id
+        fileId = typeof result === 'string' ? result : result.id
+        console.log('✅ Created media record with blob URL:', fileUrl)
       } catch (uploadError: any) {
-        console.error('File upload error:', uploadError)
-        // Continue without file if upload fails
-        console.warn('Resource update proceeding without file upload')
+        console.error('Media record creation error:', uploadError)
+        // Continue without file if media creation fails
+        console.warn('Resource update proceeding without media record')
       }
     }
 

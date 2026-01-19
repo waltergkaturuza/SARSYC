@@ -68,10 +68,10 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size (4MB limit for Vercel serverless functions)
-      const maxSize = 4 * 1024 * 1024 // 4MB in bytes (Vercel limit)
+      // Check file size (50MB limit for blob storage)
+      const maxSize = 50 * 1024 * 1024 // 50MB in bytes
       if (file.size > maxSize) {
-        setErrors({ file: 'File size must be less than 4MB. For larger files, please use a file hosting service and provide a link instead.' })
+        setErrors({ file: 'File size must be less than 50MB' })
         e.target.value = '' // Clear the input
         return
       }
@@ -127,6 +127,52 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
     setLoading(true)
     try {
+      // CLIENT-SIDE UPLOAD: Upload file to blob storage first (if it's a new file)
+      let fileUrl: string | null = null
+      if (formData.file instanceof File) {
+        try {
+          console.log('📤 Uploading resource file to blob storage...', {
+            name: formData.file.name,
+            size: formData.file.size,
+            type: formData.file.type,
+          })
+
+          // Upload to dedicated upload endpoint
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.file)
+          if (formData.sarsycEdition) {
+            uploadFormData.append('sarsycEdition', formData.sarsycEdition)
+          }
+          if (formData.type) {
+            uploadFormData.append('resourceType', formData.type)
+          }
+          uploadFormData.append('title', formData.title)
+
+          const uploadResponse = await fetch('/api/upload/resource', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          fileUrl = uploadResult.url
+          console.log('✅ Resource file uploaded to Vercel Blob:', fileUrl)
+        } catch (uploadError: any) {
+          console.error('❌ Resource upload error:', uploadError)
+          setErrors({ submit: `Failed to upload file: ${uploadError.message}` })
+          setLoading(false)
+          return
+        }
+      } else if (typeof formData.file === 'string') {
+        // File is already a URL (from existing resource)
+        fileUrl = formData.file
+      }
+
+      // Now submit the resource data with the file URL
       const submitData = new FormData()
       submitData.append('title', formData.title)
       submitData.append('slug', formData.slug)
@@ -148,8 +194,9 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
       submitData.append('language', formData.language)
       submitData.append('featured', formData.featured.toString())
       
-      if (formData.file instanceof File) {
-        submitData.append('file', formData.file)
+      // Append file URL instead of file object
+      if (fileUrl) {
+        submitData.append('fileUrl', fileUrl)
       }
 
       const url = mode === 'create' 
@@ -172,9 +219,6 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
         } catch (e) {
           // If response isn't JSON, use status text
           errorMessage = response.statusText || errorMessage
-          if (response.status === 413) {
-            errorMessage = 'File size too large. Please upload a smaller file (max 10MB).'
-          }
         }
         throw new Error(errorMessage)
       }
@@ -307,7 +351,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
       {/* File Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file">
+        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 50MB). Files are stored in organized folders by SARSYC edition and resource type.">
           <div className="space-y-4">
             {formData.file && typeof formData.file === 'string' && (
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
