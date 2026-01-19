@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+export const maxDuration = 60 // Allow up to 60 seconds for file uploads
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,10 +15,31 @@ export async function POST(request: NextRequest) {
     const slug = formData.get('slug') as string
     const description = formData.get('description') as string
     const type = formData.get('type') as string
-    const topics = JSON.parse(formData.get('topics') as string || '[]')
+    
+    // Safely parse JSON fields
+    let topics: string[] = []
+    try {
+      const topicsStr = formData.get('topics') as string
+      if (topicsStr && topicsStr.trim()) {
+        topics = JSON.parse(topicsStr)
+      }
+    } catch (e) {
+      console.warn('Failed to parse topics, using empty array:', e)
+    }
+    
     const year = parseInt(formData.get('year') as string)
     const sarsycEdition = formData.get('sarsycEdition') as string | null
-    const authors = JSON.parse(formData.get('authors') as string || '[]')
+    
+    let authors: string[] = []
+    try {
+      const authorsStr = formData.get('authors') as string
+      if (authorsStr && authorsStr.trim()) {
+        authors = JSON.parse(authorsStr)
+      }
+    } catch (e) {
+      console.warn('Failed to parse authors, using empty array:', e)
+    }
+    
     const country = formData.get('country') as string | null
     const language = formData.get('language') as string
     const featured = formData.get('featured') === 'true'

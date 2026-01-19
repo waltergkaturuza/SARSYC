@@ -68,6 +68,17 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Check file size (4MB limit for Vercel serverless functions)
+      const maxSize = 4 * 1024 * 1024 // 4MB in bytes (Vercel limit)
+      if (file.size > maxSize) {
+        setErrors({ file: 'File size must be less than 4MB. For larger files, please use a file hosting service and provide a link instead.' })
+        e.target.value = '' // Clear the input
+        return
+      }
+      // Clear any previous file errors
+      if (errors.file) {
+        setErrors(prev => ({ ...prev, file: '' }))
+      }
       setFormData(prev => ({ ...prev, file: file }))
     }
   }
@@ -121,12 +132,16 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
       submitData.append('slug', formData.slug)
       submitData.append('description', formData.description)
       submitData.append('type', formData.type)
-      submitData.append('topics', JSON.stringify(formData.topics))
+      // Ensure topics is always a valid JSON array
+      const topicsArray = Array.isArray(formData.topics) ? formData.topics : []
+      submitData.append('topics', JSON.stringify(topicsArray))
       submitData.append('year', formData.year.toString())
       if (formData.sarsycEdition) {
         submitData.append('sarsycEdition', formData.sarsycEdition)
       }
-      submitData.append('authors', JSON.stringify(formData.authors.filter(a => a.trim())))
+      // Ensure authors is always a valid JSON array
+      const authorsArray = formData.authors.filter(a => a && a.trim())
+      submitData.append('authors', JSON.stringify(authorsArray))
       if (formData.country) {
         submitData.append('country', formData.country)
       }
@@ -148,11 +163,23 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
         body: submitData,
       })
 
-      const result = await response.json()
-
+      // Check if response is ok before parsing JSON
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to save resource')
+        let errorMessage = 'Failed to save resource'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch (e) {
+          // If response isn't JSON, use status text
+          errorMessage = response.statusText || errorMessage
+          if (response.status === 413) {
+            errorMessage = 'File size too large. Please upload a smaller file (max 10MB).'
+          }
+        }
+        throw new Error(errorMessage)
       }
+
+      const result = await response.json()
 
       router.push('/admin/resources')
       router.refresh()
