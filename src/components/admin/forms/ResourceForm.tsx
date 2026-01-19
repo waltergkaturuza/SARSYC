@@ -137,29 +137,52 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
             type: formData.file.type,
           })
 
-          // Upload to dedicated upload endpoint
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', formData.file)
-          if (formData.sarsycEdition) {
-            uploadFormData.append('sarsycEdition', formData.sarsycEdition)
+          // Build filename on client side
+          const editionMap: Record<string, string> = {
+            '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', 'other': 'general',
           }
-          if (formData.type) {
-            uploadFormData.append('resourceType', formData.type)
+          const edition = formData.sarsycEdition ? editionMap[formData.sarsycEdition] || formData.sarsycEdition : 'general'
+          const typeFolder = formData.type || 'other'
+          
+          let filename: string
+          if (formData.title) {
+            const sanitizedTitle = formData.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .substring(0, 100)
+            const fileExt = formData.file.name.split('.').pop() || 'pdf'
+            filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedTitle}.${fileExt}`
+          } else {
+            const sanitizedFilename = formData.file.name
+              .replace(/\s+/g, '-')
+              .replace(/[^a-zA-Z0-9.-]/g, '-')
+              .toLowerCase()
+            filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
           }
-          uploadFormData.append('title', formData.title)
 
-          const uploadResponse = await fetch('/api/upload/resource', {
+          // Get upload token from server
+          const tokenResponse = await fetch('/api/upload/resource/token', {
             method: 'POST',
-            body: uploadFormData,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename, contentType: formData.file.type }),
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
+          if (!tokenResponse.ok) {
+            const errorData = await tokenResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Failed to get upload token')
           }
 
-          const uploadResult = await uploadResponse.json()
-          fileUrl = uploadResult.url
+          const { token } = await tokenResponse.json()
+
+          // Upload directly to Vercel Blob using client-side SDK
+          const { put } = await import('@vercel/blob')
+          const blob = await put(filename, formData.file, {
+            access: 'public',
+            token,
+          })
+
+          fileUrl = blob.url
           console.log('✅ Resource file uploaded to Vercel Blob:', fileUrl)
         } catch (uploadError: any) {
           console.error('❌ Resource upload error:', uploadError)
