@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
+import { uploadFile } from '@/lib/chunkedUpload'
 
 interface ResourceData {
   title: string

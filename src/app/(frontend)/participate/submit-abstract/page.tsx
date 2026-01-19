@@ -93,9 +93,9 @@ export default function SubmitAbstractPage() {
         showToast.error('Please upload a PDF or Word document')
         return
       }
-      // Validate file size (50MB max for blob storage)
-      if (file.size > 50 * 1024 * 1024) {
-        showToast.error('File size must be less than 50MB')
+      // Validate file size (100MB max for blob storage with chunking)
+      if (file.size > 100 * 1024 * 1024) {
+        showToast.error('File size must be less than 100MB')
         return
       }
       setAbstractFile(file)

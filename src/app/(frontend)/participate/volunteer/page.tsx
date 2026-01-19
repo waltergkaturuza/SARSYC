@@ -203,28 +203,75 @@ export default function VolunteerPage() {
 
   const handleFileUpload = async (file: File, type: 'cv' | 'coverLetter') => {
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', type)
-      // Include email if available for better filename organization
+      const CHUNK_SIZE = 3 * 1024 * 1024 // 3MB chunks
       const email = watch('email')
-      if (email) {
-        formData.append('email', email)
+
+      if (file.size <= CHUNK_SIZE) {
+        // Direct upload for small files
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', type)
+        if (email) {
+          formData.append('email', email)
+        }
+
+        const response = await fetch('/api/upload/volunteer-document', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'File upload failed')
+        }
+
+        const data = await response.json()
+        setValue(type, data.url)
+        showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
+      } else {
+        // Chunked upload for large files
+        const emailHash = email ? email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30) : 'volunteer'
+        const sanitizedFilename = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase()
+        const filename = `Volunteers/${type}/${emailHash}-${sanitizedFilename}`
+        
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
+        const uploadId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
+
+        showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}... 0%`)
+
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * CHUNK_SIZE
+          const end = Math.min(start + CHUNK_SIZE, file.size)
+          const chunk = file.slice(start, end)
+
+          const chunkFormData = new FormData()
+          chunkFormData.append('chunk', chunk)
+          chunkFormData.append('chunkIndex', i.toString())
+          chunkFormData.append('totalChunks', totalChunks.toString())
+          chunkFormData.append('uploadId', uploadId)
+          chunkFormData.append('filename', filename)
+          chunkFormData.append('contentType', file.type || 'application/octet-stream')
+
+          const chunkResponse = await fetch('/api/upload/volunteer-document/chunked', {
+            method: 'POST',
+            body: chunkFormData,
+          })
+
+          if (!chunkResponse.ok) {
+            const errorData = await chunkResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || `Failed to upload chunk ${i + 1}/${totalChunks}`)
+          }
+
+          const chunkResult = await chunkResponse.json()
+          const progress = Math.round(((i + 1) / totalChunks) * 100)
+          showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}... ${progress}%`)
+
+          if (chunkResult.complete && chunkResult.url) {
+            setValue(type, chunkResult.url)
+            showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
+          }
+        }
       }
-
-      const response = await fetch('/api/upload/volunteer-document', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'File upload failed')
-      }
-
-      const data = await response.json()
-      setValue(type, data.url)
-      showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
     } catch (error: any) {
       showToast.error(`Failed to upload ${type === 'cv' ? 'CV' : 'cover letter'}: ${error.message || 'Unknown error'}`)
     }

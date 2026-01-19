@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 4 * 1024 * 1024 // 4MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size exceeds 50MB limit' },
+        { error: 'File size exceeds 4MB limit for direct upload. Use chunked upload instead.' },
         { status: 400 }
       )
     }

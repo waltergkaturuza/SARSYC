@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (50MB limit)
-    const maxSize = 50 * 1024 * 1024 // 50MB
+    // Validate file size (4MB limit for direct upload, use chunked for larger)
+    const maxSize = 4 * 1024 * 1024 // 4MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size exceeds 50MB limit' },
+        { error: 'File size exceeds 4MB limit for direct upload. Use chunked upload instead.' },
         { status: 400 }
       )
     }
