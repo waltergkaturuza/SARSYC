@@ -69,11 +69,10 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Vercel serverless functions have a ~4.5MB body limit.
-      // Enforce a 4MB max here so we never hit a 413 error.
-      const maxSize = 4 * 1024 * 1024 // 4MB in bytes
+      // Allow files up to 100MB with automatic chunking for large files
+      const maxSize = 100 * 1024 * 1024 // 100MB in bytes
       if (file.size > maxSize) {
-        setErrors({ file: 'File size must be less than 4MB. For larger files, please host externally and link in the description.' })
+        setErrors({ file: 'File size must be less than 100MB' })
         e.target.value = '' // Clear the input
         return
       }
@@ -243,31 +242,21 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
         fileUrl = formData.file
       }
 
-      // Now submit the resource data with the file URL
-      const submitData = new FormData()
-      submitData.append('title', formData.title)
-      submitData.append('slug', formData.slug)
-      submitData.append('description', formData.description)
-      submitData.append('type', formData.type)
-      // Ensure topics is always a valid JSON array
-      const topicsArray = Array.isArray(formData.topics) ? formData.topics : []
-      submitData.append('topics', JSON.stringify(topicsArray))
-      submitData.append('year', formData.year.toString())
-      if (formData.sarsycEdition) {
-        submitData.append('sarsycEdition', formData.sarsycEdition)
-      }
-      // Ensure authors is always a valid JSON array
-      const authorsArray = formData.authors.filter(a => a && a.trim())
-      submitData.append('authors', JSON.stringify(authorsArray))
-      if (formData.country) {
-        submitData.append('country', formData.country)
-      }
-      submitData.append('language', formData.language)
-      submitData.append('featured', formData.featured.toString())
-      
-      // Append file URL instead of file object
-      if (fileUrl) {
-        submitData.append('fileUrl', fileUrl)
+      // Now submit the resource data with the file URL as JSON (not FormData)
+      // This matches how registration handles passport uploads
+      const resourcePayload = {
+        title: formData.title,
+        slug: formData.slug,
+        description: formData.description,
+        type: formData.type,
+        topics: Array.isArray(formData.topics) ? formData.topics : [],
+        year: formData.year,
+        sarsycEdition: formData.sarsycEdition || undefined,
+        authors: formData.authors.filter(a => a && a.trim()),
+        country: formData.country || undefined,
+        language: formData.language,
+        featured: formData.featured,
+        fileUrl: fileUrl, // Send blob URL as part of JSON payload
       }
 
       const url = mode === 'create' 
@@ -278,7 +267,10 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
       const response = await fetch(url, {
         method,
-        body: submitData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resourcePayload),
       })
 
       // Check if response is ok before parsing JSON
@@ -422,7 +414,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
       {/* File Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 100MB). Large files are uploaded in chunks automatically. Files are stored in organized folders by SARSYC edition and resource type.">
+        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 100MB). Files are uploaded directly to blob storage. Files are organized by SARSYC edition and resource type.">
           <div className="space-y-4">
             {formData.file && typeof formData.file === 'string' && (
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">

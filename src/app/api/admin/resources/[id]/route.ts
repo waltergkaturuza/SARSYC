@@ -10,21 +10,21 @@ export async function PATCH(
 ) {
   try {
     const payload = await getPayloadClient()
-    const formData = await request.formData()
+    const body = await request.json()
     
-    // Extract form fields
-    const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
-    const description = formData.get('description') as string
-    const type = formData.get('type') as string
-    const topics = JSON.parse(formData.get('topics') as string || '[]')
-    const year = parseInt(formData.get('year') as string)
-    const sarsycEdition = formData.get('sarsycEdition') as string | null
-    const authors = JSON.parse(formData.get('authors') as string || '[]')
-    const country = formData.get('country') as string | null
-    const language = formData.get('language') as string
-    const featured = formData.get('featured') === 'true'
-    const fileUrl = formData.get('fileUrl') as string | null // URL from blob storage
+    // Extract fields from JSON body
+    const title = body.title
+    const slug = body.slug
+    const description = body.description
+    const type = body.type
+    const topics = Array.isArray(body.topics) ? body.topics : []
+    const year = parseInt(body.year)
+    const sarsycEdition = body.sarsycEdition || null
+    const authors = Array.isArray(body.authors) ? body.authors : []
+    const country = body.country || null
+    const language = body.language
+    const featured = body.featured === true
+    const fileUrl = body.fileUrl || null // URL from blob storage
     
     // Create media record with the blob URL if provided
     let fileId: string | undefined

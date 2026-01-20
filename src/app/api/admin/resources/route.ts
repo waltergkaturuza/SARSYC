@@ -8,42 +8,21 @@ export const maxDuration = 60 // Allow up to 60 seconds for file uploads
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
-    const formData = await request.formData()
+    const body = await request.json()
     
-    // Extract form fields
-    const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
-    const description = formData.get('description') as string
-    const type = formData.get('type') as string
-    
-    // Safely parse JSON fields
-    let topics: string[] = []
-    try {
-      const topicsStr = formData.get('topics') as string
-      if (topicsStr && topicsStr.trim()) {
-        topics = JSON.parse(topicsStr)
-      }
-    } catch (e) {
-      console.warn('Failed to parse topics, using empty array:', e)
-    }
-    
-    const year = parseInt(formData.get('year') as string)
-    const sarsycEdition = formData.get('sarsycEdition') as string | null
-    
-    let authors: string[] = []
-    try {
-      const authorsStr = formData.get('authors') as string
-      if (authorsStr && authorsStr.trim()) {
-        authors = JSON.parse(authorsStr)
-      }
-    } catch (e) {
-      console.warn('Failed to parse authors, using empty array:', e)
-    }
-    
-    const country = formData.get('country') as string | null
-    const language = formData.get('language') as string
-    const featured = formData.get('featured') === 'true'
-    const fileUrl = formData.get('fileUrl') as string | null // URL from blob storage
+    // Extract fields from JSON body
+    const title = body.title
+    const slug = body.slug
+    const description = body.description
+    const type = body.type
+    const topics = Array.isArray(body.topics) ? body.topics : []
+    const year = parseInt(body.year)
+    const sarsycEdition = body.sarsycEdition || null
+    const authors = Array.isArray(body.authors) ? body.authors : []
+    const country = body.country || null
+    const language = body.language
+    const featured = body.featured === true
+    const fileUrl = body.fileUrl || null // URL from blob storage
     
     // Create media record with the blob URL if provided
     let fileId: string | undefined
