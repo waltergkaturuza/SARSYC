@@ -22,9 +22,19 @@ export async function POST(request: NextRequest) {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => {
-        // You can add validation here
-        console.log('Generating token for:', pathname)
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        // Parse client payload to check if addRandomSuffix is requested
+        let addRandomSuffix = false
+        try {
+          if (clientPayload) {
+            const payload = JSON.parse(clientPayload)
+            addRandomSuffix = payload.addRandomSuffix === true
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+
+        console.log('Generating token for:', pathname, { addRandomSuffix })
         
         return {
           allowedContentTypes: [
@@ -47,6 +57,7 @@ export async function POST(request: NextRequest) {
             'video/quicktime',
           ],
           maximumSizeInBytes: 100 * 1024 * 1024, // 100MB
+          addRandomSuffix: addRandomSuffix, // Add random suffix if requested
         }
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {

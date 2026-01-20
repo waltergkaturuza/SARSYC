@@ -162,12 +162,15 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
             pathname = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
           }
 
-          // Use Vercel Blob client-side upload
+          // Use Vercel Blob client-side upload with addRandomSuffix to avoid conflicts
           const { upload } = await import('@vercel/blob/client')
           
           const blob = await upload(pathname, formData.file, {
             access: 'public',
             handleUploadUrl: '/api/upload/resource/presigned-url',
+            clientPayload: JSON.stringify({
+              addRandomSuffix: true,
+            }),
           })
 
           fileUrl = blob.url
