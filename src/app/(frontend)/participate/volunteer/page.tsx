@@ -203,76 +203,36 @@ export default function VolunteerPage() {
 
   const handleFileUpload = async (file: File, type: 'cv' | 'coverLetter') => {
     try {
-      const CHUNK_SIZE = 3 * 1024 * 1024 // 3MB chunks
+      showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}...`)
       const email = watch('email')
 
-      if (file.size <= CHUNK_SIZE) {
-        // Direct upload for small files
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('type', type)
-        if (email) {
-          formData.append('email', email)
-        }
+      // Build pathname for organized storage
+      const emailHash = email ? email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30) : 'volunteer'
+      const sanitizedFilename = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase()
+      const pathname = `Volunteers/${type}/${emailHash}-${sanitizedFilename}`
 
-        const response = await fetch('/api/upload/volunteer-document', {
-          method: 'POST',
-          body: formData,
-        })
+      console.log('📤 Uploading volunteer document directly to blob storage...', {
+        name: file.name,
+        size: file.size,
+        pathname,
+      })
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.error || 'File upload failed')
-        }
+      // Use Vercel Blob client-side upload with presigned URL
+      const { upload } = await import('@vercel/blob/client')
+      
+      const blob = await upload(pathname, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload/volunteer-document/presigned-url',
+        clientPayload: JSON.stringify({
+          addRandomSuffix: true,
+        }),
+      })
 
-        const data = await response.json()
-        setValue(type, data.url)
-        showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
-      } else {
-        // Chunked upload for large files
-        const emailHash = email ? email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30) : 'volunteer'
-        const sanitizedFilename = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase()
-        const filename = `Volunteers/${type}/${emailHash}-${sanitizedFilename}`
-        
-        const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
-        const uploadId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
-
-        showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}... 0%`)
-
-        for (let i = 0; i < totalChunks; i++) {
-          const start = i * CHUNK_SIZE
-          const end = Math.min(start + CHUNK_SIZE, file.size)
-          const chunk = file.slice(start, end)
-
-          const chunkFormData = new FormData()
-          chunkFormData.append('chunk', chunk)
-          chunkFormData.append('chunkIndex', i.toString())
-          chunkFormData.append('totalChunks', totalChunks.toString())
-          chunkFormData.append('uploadId', uploadId)
-          chunkFormData.append('filename', filename)
-          chunkFormData.append('contentType', file.type || 'application/octet-stream')
-
-          const chunkResponse = await fetch('/api/upload/volunteer-document/chunked', {
-            method: 'POST',
-            body: chunkFormData,
-          })
-
-          if (!chunkResponse.ok) {
-            const errorData = await chunkResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || `Failed to upload chunk ${i + 1}/${totalChunks}`)
-          }
-
-          const chunkResult = await chunkResponse.json()
-          const progress = Math.round(((i + 1) / totalChunks) * 100)
-          showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}... ${progress}%`)
-
-          if (chunkResult.complete && chunkResult.url) {
-            setValue(type, chunkResult.url)
-            showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
-          }
-        }
-      }
+      setValue(type, blob.url)
+      console.log('✅ Volunteer document uploaded directly to Vercel Blob:', blob.url)
+      showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
     } catch (error: any) {
+      console.error('❌ Volunteer upload error:', error)
       showToast.error(`Failed to upload ${type === 'cv' ? 'CV' : 'cover letter'}: ${error.message || 'Unknown error'}`)
     }
   }

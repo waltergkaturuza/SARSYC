@@ -180,40 +180,40 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
         submitData.append('assignedSession', formData.assignedSession)
       }
       
-      // CLIENT-SIDE UPLOAD: Upload abstract file to blob storage first (if it's a new file)
+      // CLIENT-SIDE DIRECT UPLOAD: Upload abstract file directly to blob storage
       let abstractFileUrl: string | null = null
       if (formData.abstractFile instanceof File) {
         try {
-          console.log('📤 Uploading abstract file to blob storage...', {
+          console.log('📤 Uploading abstract file directly to blob storage...', {
             name: formData.abstractFile.name,
             size: formData.abstractFile.size,
             type: formData.abstractFile.type,
           })
 
-          // Upload to dedicated upload endpoint
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', formData.abstractFile)
-          if (formData.track) {
-            uploadFormData.append('track', formData.track)
-          }
-          if (formData.primaryAuthor?.email) {
-            uploadFormData.append('email', formData.primaryAuthor.email)
-          }
-          uploadFormData.append('title', formData.title)
+          // Build pathname for organized storage
+          const trackFolder = formData.track || 'general'
+          const emailHash = formData.primaryAuthor?.email
+            ? formData.primaryAuthor.email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)
+            : 'abstract'
+          const sanitizedTitle = formData.title
+            ? formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 50)
+            : 'abstract'
+          const fileExt = formData.abstractFile.name.split('.').pop() || 'pdf'
+          const pathname = `Abstracts/${trackFolder}/${emailHash}-${sanitizedTitle}.${fileExt}`
 
-          const uploadResponse = await fetch('/api/upload/abstract', {
-            method: 'POST',
-            body: uploadFormData,
+          // Use Vercel Blob client-side upload with presigned URL
+          const { upload } = await import('@vercel/blob/client')
+          
+          const blob = await upload(pathname, formData.abstractFile, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/abstract/presigned-url',
+            clientPayload: JSON.stringify({
+              addRandomSuffix: true,
+            }),
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          abstractFileUrl = uploadResult.url
-          console.log('✅ Abstract file uploaded to Vercel Blob:', abstractFileUrl)
+          abstractFileUrl = blob.url
+          console.log('✅ Abstract file uploaded directly to Vercel Blob:', abstractFileUrl)
         } catch (uploadError: any) {
           console.error('❌ Abstract upload error:', uploadError)
           setErrors({ submit: `Failed to upload file: ${uploadError.message}` })

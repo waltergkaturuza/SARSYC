@@ -143,36 +143,38 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
 
     setLoading(true)
     try {
-      // CLIENT-SIDE UPLOAD: Upload photo to dedicated upload endpoint first
-      // This bypasses MIME type validation issues and improves performance
+      // CLIENT-SIDE DIRECT UPLOAD: Upload photo directly to blob storage
       let photoBlobUrl: string | null = null
       if (formData.photo instanceof File) {
         try {
-          console.log('📤 Uploading speaker photo to upload endpoint...', {
+          console.log('📤 Uploading speaker photo directly to blob storage...', {
             name: formData.photo.name,
             size: formData.photo.size,
             type: formData.photo.type,
           })
 
-          // Upload to dedicated upload endpoint
-          // Include speaker name to create consistent filename and prevent duplicates
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', formData.photo)
-          uploadFormData.append('speakerName', formData.name) // Include name for duplicate prevention
+          // Build pathname for organized storage
+          const nameHash = formData.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .substring(0, 50)
+          const fileExt = formData.photo.name.split('.').pop()?.toLowerCase() || 'jpg'
+          const pathname = `Speakers/photos/${nameHash}.${fileExt}`
 
-          const uploadResponse = await fetch('/api/upload/speaker-photo', {
-            method: 'POST',
-            body: uploadFormData,
+          // Use Vercel Blob client-side upload with presigned URL
+          const { upload } = await import('@vercel/blob/client')
+          
+          const blob = await upload(pathname, formData.photo, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/speaker-photo/presigned-url',
+            clientPayload: JSON.stringify({
+              addRandomSuffix: true,
+            }),
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Photo upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          photoBlobUrl = uploadResult.url
-          console.log('✅ Speaker photo uploaded to Vercel Blob:', photoBlobUrl)
+          photoBlobUrl = blob.url
+          console.log('✅ Speaker photo uploaded directly to Vercel Blob:', photoBlobUrl)
         } catch (uploadError: any) {
           console.error('❌ Photo upload error:', uploadError)
           setErrors({ photo: uploadError.message || 'Failed to upload photo. Please try again.' })

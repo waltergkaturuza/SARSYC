@@ -87,34 +87,38 @@ export default function PartnerForm({ initialData, mode }: PartnerFormProps) {
 
     setLoading(true)
     try {
-      // CLIENT-SIDE UPLOAD: Upload logo to blob storage first (if it's a new file)
+      // CLIENT-SIDE DIRECT UPLOAD: Upload logo directly to blob storage
       let logoUrl: string | null = null
       if (formData.logo instanceof File) {
         try {
-          console.log('📤 Uploading partner logo to blob storage...', {
+          console.log('📤 Uploading partner logo directly to blob storage...', {
             name: formData.logo.name,
             size: formData.logo.size,
             type: formData.logo.type,
           })
 
-          // Upload to dedicated upload endpoint
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', formData.logo)
-          uploadFormData.append('partnerName', formData.name)
+          // Build pathname for organized storage
+          const nameHash = formData.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .substring(0, 50)
+          const fileExt = formData.logo.name.split('.').pop()?.toLowerCase() || 'png'
+          const pathname = `Partners/logos/${nameHash}.${fileExt}`
 
-          const uploadResponse = await fetch('/api/upload/partner-logo', {
-            method: 'POST',
-            body: uploadFormData,
+          // Use Vercel Blob client-side upload with presigned URL
+          const { upload } = await import('@vercel/blob/client')
+          
+          const blob = await upload(pathname, formData.logo, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/partner-logo/presigned-url',
+            clientPayload: JSON.stringify({
+              addRandomSuffix: true,
+            }),
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          logoUrl = uploadResult.url
-          console.log('✅ Partner logo uploaded to Vercel Blob:', logoUrl)
+          logoUrl = blob.url
+          console.log('✅ Partner logo uploaded directly to Vercel Blob:', logoUrl)
         } catch (uploadError: any) {
           console.error('❌ Logo upload error:', uploadError)
           setErrors({ submit: `Failed to upload logo: ${uploadError.message}` })

@@ -107,43 +107,41 @@ export default function SubmitAbstractPage() {
     setIsSubmitting(true)
     
     try {
-      // CLIENT-SIDE UPLOAD: Upload abstract file to blob storage first (if provided)
+      // CLIENT-SIDE DIRECT UPLOAD: Upload abstract file directly to blob storage (if provided)
       let abstractFileUrl: string | null = null
       if (abstractFile) {
         try {
           showToast.loading('Uploading abstract file...')
-          console.log('📤 Uploading abstract file to blob storage...', {
+          console.log('📤 Uploading abstract file directly to blob storage...', {
             name: abstractFile.name,
             size: abstractFile.size,
             type: abstractFile.type,
           })
 
-          // Upload to dedicated upload endpoint
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', abstractFile)
-          if (data.track) {
-            uploadFormData.append('track', data.track)
-          }
-          if (data.primaryAuthor?.email) {
-            uploadFormData.append('email', data.primaryAuthor.email)
-          }
-          if (data.title) {
-            uploadFormData.append('title', data.title)
-          }
+          // Build pathname for organized storage
+          const trackFolder = data.track || 'general'
+          const emailHash = data.primaryAuthor?.email 
+            ? data.primaryAuthor.email.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)
+            : 'abstract'
+          const sanitizedTitle = data.title
+            ? data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 50)
+            : 'abstract'
+          const fileExt = abstractFile.name.split('.').pop() || 'pdf'
+          const pathname = `Abstracts/${trackFolder}/${emailHash}-${sanitizedTitle}.${fileExt}`
 
-          const uploadResponse = await fetch('/api/upload/abstract', {
-            method: 'POST',
-            body: uploadFormData,
+          // Use Vercel Blob client-side upload with presigned URL
+          const { upload } = await import('@vercel/blob/client')
+          
+          const blob = await upload(pathname, abstractFile, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/abstract/presigned-url',
+            clientPayload: JSON.stringify({
+              addRandomSuffix: true,
+            }),
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          abstractFileUrl = uploadResult.url
-          console.log('✅ Abstract file uploaded to Vercel Blob:', abstractFileUrl)
+          abstractFileUrl = blob.url
+          console.log('✅ Abstract file uploaded directly to Vercel Blob:', abstractFileUrl)
           showToast.success('Abstract file uploaded successfully!')
         } catch (uploadError: any) {
           console.error('❌ Abstract upload error:', uploadError)
