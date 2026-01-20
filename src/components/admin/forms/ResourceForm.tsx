@@ -128,39 +128,50 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
     setLoading(true)
     try {
-      // DIRECT UPLOAD: Upload file to blob storage (up to 50MB with increased Vercel limits)
+      // CLIENT-SIDE DIRECT UPLOAD: Upload file directly to Vercel Blob (bypasses serverless limit)
       let fileUrl: string | null = null
       if (formData.file instanceof File) {
         try {
-          console.log('📤 Uploading resource file to blob storage...', {
+          console.log('📤 Uploading resource file directly to blob storage...', {
             name: formData.file.name,
             size: formData.file.size,
             type: formData.file.type,
           })
 
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', formData.file)
-          if (formData.sarsycEdition) {
-            uploadFormData.append('sarsycEdition', formData.sarsycEdition)
+          // Build filename
+          const editionMap: Record<string, string> = {
+            '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', 'other': 'general',
           }
-          if (formData.type) {
-            uploadFormData.append('resourceType', formData.type)
+          const edition = formData.sarsycEdition ? editionMap[formData.sarsycEdition] || formData.sarsycEdition : 'general'
+          const typeFolder = formData.type || 'other'
+          
+          let pathname: string
+          if (formData.title) {
+            const sanitizedTitle = formData.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .substring(0, 100)
+            const fileExt = formData.file.name.split('.').pop() || 'pdf'
+            pathname = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedTitle}.${fileExt}`
+          } else {
+            const sanitizedFilename = formData.file.name
+              .replace(/\s+/g, '-')
+              .replace(/[^a-zA-Z0-9.-]/g, '-')
+              .toLowerCase()
+            pathname = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
           }
-          uploadFormData.append('title', formData.title)
 
-          const uploadResponse = await fetch('/api/upload/resource', {
-            method: 'POST',
-            body: uploadFormData,
+          // Use Vercel Blob client-side upload
+          const { upload } = await import('@vercel/blob/client')
+          
+          const blob = await upload(pathname, formData.file, {
+            access: 'public',
+            handleUploadUrl: '/api/upload/resource/presigned-url',
           })
 
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          fileUrl = uploadResult.url
-          console.log('✅ Resource file uploaded to Vercel Blob:', fileUrl)
+          fileUrl = blob.url
+          console.log('✅ Resource file uploaded directly to Vercel Blob:', fileUrl)
         } catch (uploadError: any) {
           console.error('❌ Resource upload error:', uploadError)
           setErrors({ submit: `Failed to upload file: ${uploadError.message}` })
@@ -344,7 +355,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
       {/* File Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 50MB). Files are uploaded directly to blob storage and organized by SARSYC edition and resource type.">
+        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 100MB). Files are uploaded directly to blob storage (bypassing serverless limits) and organized by SARSYC edition and resource type.">
           <div className="space-y-4">
             {formData.file && typeof formData.file === 'string' && (
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
