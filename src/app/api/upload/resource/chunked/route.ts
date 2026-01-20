@@ -19,21 +19,67 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const chunk = formData.get('chunk') as File | null
-    const chunkIndex = parseInt(formData.get('chunkIndex') as string)
-    const totalChunks = parseInt(formData.get('totalChunks') as string)
+    const chunkIndexStr = formData.get('chunkIndex') as string
+    const totalChunksStr = formData.get('totalChunks') as string
     const uploadId = formData.get('uploadId') as string
     const filename = formData.get('filename') as string
     const contentType = formData.get('contentType') as string
 
-    if (!chunk || !uploadId || !filename) {
+    console.log('📦 Chunked upload request:', {
+      hasChunk: !!chunk,
+      chunkSize: chunk?.size,
+      chunkIndex: chunkIndexStr,
+      totalChunks: totalChunksStr,
+      uploadId,
+      filename,
+    })
+
+    if (!chunk || !uploadId || !filename || !chunkIndexStr || !totalChunksStr) {
+      console.error('❌ Missing required parameters:', {
+        hasChunk: !!chunk,
+        uploadId,
+        filename,
+        chunkIndex: chunkIndexStr,
+        totalChunks: totalChunksStr,
+      })
       return NextResponse.json(
-        { error: 'Missing required parameters' },
+        { 
+          error: 'Missing required parameters',
+          details: {
+            hasChunk: !!chunk,
+            hasUploadId: !!uploadId,
+            hasFilename: !!filename,
+            hasChunkIndex: !!chunkIndexStr,
+            hasTotalChunks: !!totalChunksStr,
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    const chunkIndex = parseInt(chunkIndexStr)
+    const totalChunks = parseInt(totalChunksStr)
+
+    if (isNaN(chunkIndex) || isNaN(totalChunks)) {
+      return NextResponse.json(
+        { error: 'Invalid chunk index or total chunks' },
         { status: 400 }
       )
     }
 
     // Convert chunk to buffer
-    const chunkBuffer = Buffer.from(await chunk.arrayBuffer())
+    let chunkBuffer: Buffer
+    try {
+      const arrayBuffer = await chunk.arrayBuffer()
+      chunkBuffer = Buffer.from(arrayBuffer)
+      console.log(`✅ Chunk ${chunkIndex + 1}/${totalChunks} converted to buffer (${chunkBuffer.length} bytes)`)
+    } catch (bufferError: any) {
+      console.error('❌ Failed to convert chunk to buffer:', bufferError)
+      return NextResponse.json(
+        { error: 'Failed to process chunk data', details: bufferError.message },
+        { status: 500 }
+      )
+    }
 
     // Initialize or get upload session
     if (!uploadSessions.has(uploadId)) {
