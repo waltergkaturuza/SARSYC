@@ -128,109 +128,39 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
     setLoading(true)
     try {
-      // SMART UPLOAD: Use chunked upload for large files (>3MB), direct upload for small files
+      // DIRECT UPLOAD: Upload file to blob storage (up to 50MB with increased Vercel limits)
       let fileUrl: string | null = null
       if (formData.file instanceof File) {
         try {
-          const file = formData.file
-          const CHUNK_SIZE = 3 * 1024 * 1024 // 3MB chunks to stay under 4.5MB limit
-          
-          console.log('📤 Uploading resource file...', {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            method: file.size > CHUNK_SIZE ? 'chunked' : 'direct',
+          console.log('📤 Uploading resource file to blob storage...', {
+            name: formData.file.name,
+            size: formData.file.size,
+            type: formData.file.type,
           })
 
-          if (file.size <= CHUNK_SIZE) {
-            // DIRECT UPLOAD for small files (<= 3MB)
-            const uploadFormData = new FormData()
-            uploadFormData.append('file', file)
-            if (formData.sarsycEdition) {
-              uploadFormData.append('sarsycEdition', formData.sarsycEdition)
-            }
-            if (formData.type) {
-              uploadFormData.append('resourceType', formData.type)
-            }
-            uploadFormData.append('title', formData.title)
-
-            const uploadResponse = await fetch('/api/upload/resource', {
-              method: 'POST',
-              body: uploadFormData,
-            })
-
-            if (!uploadResponse.ok) {
-              const errorData = await uploadResponse.json().catch(() => ({}))
-              throw new Error(errorData.error || 'Upload failed')
-            }
-
-            const uploadResult = await uploadResponse.json()
-            fileUrl = uploadResult.url
-            console.log('✅ Resource file uploaded via direct upload:', fileUrl)
-          } else {
-            // CHUNKED UPLOAD for large files (> 3MB)
-            const editionMap: Record<string, string> = {
-              '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', 'other': 'general',
-            }
-            const edition = formData.sarsycEdition ? editionMap[formData.sarsycEdition] || formData.sarsycEdition : 'general'
-            const typeFolder = formData.type || 'other'
-            
-            let filename: string
-            if (formData.title) {
-              const sanitizedTitle = formData.title
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '')
-                .substring(0, 100)
-              const fileExt = file.name.split('.').pop() || 'pdf'
-              filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedTitle}.${fileExt}`
-            } else {
-              const sanitizedFilename = file.name
-                .replace(/\s+/g, '-')
-                .replace(/[^a-zA-Z0-9.-]/g, '-')
-                .toLowerCase()
-              filename = `Resources/sarsyc_${edition}/${typeFolder}/${sanitizedFilename}`
-            }
-
-            const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
-            const uploadId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
-
-            console.log(`📦 Uploading ${totalChunks} chunks for large file...`)
-
-            // Upload chunks sequentially
-            for (let i = 0; i < totalChunks; i++) {
-              const start = i * CHUNK_SIZE
-              const end = Math.min(start + CHUNK_SIZE, file.size)
-              const chunk = file.slice(start, end)
-
-              const chunkFormData = new FormData()
-              chunkFormData.append('chunk', chunk)
-              chunkFormData.append('chunkIndex', i.toString())
-              chunkFormData.append('totalChunks', totalChunks.toString())
-              chunkFormData.append('uploadId', uploadId)
-              chunkFormData.append('filename', filename)
-              chunkFormData.append('contentType', file.type || 'application/octet-stream')
-
-              const chunkResponse = await fetch('/api/upload/resource/chunked', {
-                method: 'POST',
-                body: chunkFormData,
-              })
-
-              if (!chunkResponse.ok) {
-                const errorData = await chunkResponse.json().catch(() => ({}))
-                throw new Error(errorData.error || `Failed to upload chunk ${i + 1}/${totalChunks}`)
-              }
-
-              const chunkResult = await chunkResponse.json()
-              console.log(`✅ Uploaded chunk ${i + 1}/${totalChunks}`)
-
-              // If this was the last chunk, get the final URL
-              if (chunkResult.complete && chunkResult.url) {
-                fileUrl = chunkResult.url
-                console.log('✅ All chunks uploaded, file available at:', fileUrl)
-              }
-            }
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', formData.file)
+          if (formData.sarsycEdition) {
+            uploadFormData.append('sarsycEdition', formData.sarsycEdition)
           }
+          if (formData.type) {
+            uploadFormData.append('resourceType', formData.type)
+          }
+          uploadFormData.append('title', formData.title)
+
+          const uploadResponse = await fetch('/api/upload/resource', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Upload failed')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          fileUrl = uploadResult.url
+          console.log('✅ Resource file uploaded to Vercel Blob:', fileUrl)
         } catch (uploadError: any) {
           console.error('❌ Resource upload error:', uploadError)
           setErrors({ submit: `Failed to upload file: ${uploadError.message}` })
@@ -414,7 +344,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
 
       {/* File Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 100MB). Files are uploaded directly to blob storage. Files are organized by SARSYC edition and resource type.">
+        <FormField label="Resource File" required error={errors.file} hint="Upload PDF, Word document, or other resource file (max 50MB). Files are uploaded directly to blob storage and organized by SARSYC edition and resource type.">
           <div className="space-y-4">
             {formData.file && typeof formData.file === 'string' && (
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">

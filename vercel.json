@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "src/app/api/upload/resource/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/upload/abstract/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/upload/volunteer-document/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
+}
