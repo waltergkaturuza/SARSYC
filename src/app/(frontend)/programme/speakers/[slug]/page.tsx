@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { FiArrowLeft, FiMapPin, FiAward, FiCalendar, FiClock } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { getCountryLabel } from '@/lib/countries'
@@ -17,7 +16,18 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   }
   
   if (typeof photo === 'object') {
-    // Try direct URL first
+    // Debug: Log the photo object structure in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Photo object structure:', {
+        id: photo.id,
+        hasUrl: !!photo.url,
+        url: photo.url,
+        hasSizes: !!photo.sizes,
+        keys: Object.keys(photo),
+      })
+    }
+    
+    // Try direct URL first (for Vercel Blob or external storage)
     if (photo.url && typeof photo.url === 'string') {
       if (photo.url.startsWith('http://') || photo.url.startsWith('https://')) {
         return photo.url
@@ -95,6 +105,17 @@ function getSpeakerPhotoUrl(photo: any): string | null {
         }
       }
     }
+    
+    // Log warning if we have photo object but no valid URL
+    console.warn('Photo object exists but has no valid URL:', {
+      id: photo.id,
+      filename: photo.filename,
+      hasUrl: !!photo.url,
+      urlValue: photo.url,
+      hasSizes: !!photo.sizes,
+      sizesKeys: photo.sizes ? Object.keys(photo.sizes) : null,
+      allKeys: Object.keys(photo),
+    })
   }
   
   return null
@@ -190,13 +211,12 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                   {/* Photo */}
                   <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gradient-to-br from-blue-300 via-blue-400 to-purple-500">
                     {photoUrl ? (
-                      <Image
+                      // Use a regular img tag to avoid any Next.js Image domain/config issues
+                      <img
                         src={photoUrl}
                         alt={speaker.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 33vw"
-                        unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold opacity-60">

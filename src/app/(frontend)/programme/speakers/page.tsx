@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FiAward, FiMapPin, FiArrowRight } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
@@ -256,13 +255,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     {/* Photo Section with Gradient Background */}
                     <div className="aspect-square relative overflow-hidden rounded-t-lg z-10">
                       {photoUrl ? (
-                        <Image
+                        // Use a regular img tag to avoid any Next.js Image domain/config issues
+                        <img
                           src={photoUrl}
                           alt={speaker.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-300 via-blue-400 to-purple-500 flex items-center justify-center">

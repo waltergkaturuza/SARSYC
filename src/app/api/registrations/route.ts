@@ -117,8 +117,8 @@ export async function POST(request: NextRequest) {
     } else {
       // Handle JSON request (backward compatibility)
       console.log('📦 Parsing JSON body...')
-      try {
-        const body = await request.json()
+  try {
+    const body = await request.json()
         registrationData = {
           ...body,
           status: 'pending',
@@ -808,8 +808,8 @@ export async function POST(request: NextRequest) {
     
     // Return detailed error response that will be visible in browser
     const errorResponse = {
-      success: false,
-      error: error.message || 'Registration failed',
+        success: false,
+        error: error.message || 'Registration failed',
       details: errorDetails.message,
       // ALWAYS include debug info in production to help diagnose
       debug: {
