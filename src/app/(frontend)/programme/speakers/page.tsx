@@ -280,6 +280,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                             <p className="text-sm font-semibold text-gray-900 leading-tight">
                               {speaker.title}
                             </p>
+                            {/* Show organization under position */}
+                            {speaker.organization && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                {speaker.organization}
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}
@@ -294,15 +300,6 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                               {getCountryLabel(speaker.country)}
                             </p>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Organization (if no title/country structure) */}
-                      {speaker.organization && !speaker.title && (
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            {speaker.organization}
-                          </p>
                         </div>
                       )}
                       
