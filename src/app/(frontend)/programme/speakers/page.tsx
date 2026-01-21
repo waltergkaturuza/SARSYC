@@ -10,23 +10,34 @@ import SpeakerFilters from '@/components/speakers/SpeakerFilters'
 function getSpeakerPhotoUrl(photo: any): string | null {
   if (!photo) return null
 
+  // Helper to fix domain in URLs (ensure www.sarsyc.org instead of sarsyc.org)
+  const fixDomain = (url: string): string => {
+    if (url.includes('sarsyc.org') && !url.includes('www.sarsyc.org')) {
+      return url.replace('https://sarsyc.org', 'https://www.sarsyc.org')
+    }
+    return url
+  }
+
   // ✅ Vercel Blob stored as string URL (most common case)
   if (typeof photo === 'string') {
-    return photo.startsWith('http') ? photo : null
+    if (photo.startsWith('http')) {
+      return fixDomain(photo)
+    }
+    return null
   }
 
   // ✅ Blob or external storage object
   if (photo.url && typeof photo.url === 'string') {
-    return photo.url
+    return fixDomain(photo.url)
   }
 
   // Optional: Payload local storage fallback
   if (photo.sizes?.card?.url) {
-    return photo.sizes.card.url
+    return fixDomain(photo.sizes.card.url)
   }
 
   if (photo.sizes?.thumbnail?.url) {
-    return photo.sizes.thumbnail.url
+    return fixDomain(photo.sizes.thumbnail.url)
   }
 
   return null
