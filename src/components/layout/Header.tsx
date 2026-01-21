@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
@@ -57,6 +57,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,6 +66,22 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const handleMouseEnter = (itemName: string) => {
+    // Clear any pending close timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+    setActiveDropdown(itemName)
+  }
+
+  const handleMouseLeave = () => {
+    // Add a 300ms delay before closing
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null)
+    }, 300)
+  }
 
   return (
     <header
@@ -104,8 +121,8 @@ export default function Header() {
               <div
                 key={item.name}
                 className="relative flex-shrink-0"
-                onMouseEnter={() => item.dropdown && setActiveDropdown(item.name)}
-                onMouseLeave={() => setActiveDropdown(null)}
+                onMouseEnter={() => item.dropdown && handleMouseEnter(item.name)}
+                onMouseLeave={handleMouseLeave}
               >
                 <Link
                   href={item.href}
