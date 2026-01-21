@@ -132,34 +132,33 @@ export default async function SpeakersManagementPage({
                         console.warn(`Speaker ${speaker.id} photo is just an ID:`, speaker.photo);
                         photoUrl = null;
                       } else if (speaker.photo) {
-                        // Try different URL locations
-                        photoUrl = 
-                          speaker.photo.url || 
-                          (speaker.photo as any)?.sizes?.card?.url ||
-                          (speaker.photo as any)?.sizes?.thumbnail?.url ||
-                          (speaker.photo as any)?.sizes?.hero?.url ||
-                          null;
-                        
-                        // Log for debugging if URL is missing
-                        if (!photoUrl) {
-                          console.warn(`Speaker ${speaker.id} (${speaker.name}) photo object:`, JSON.stringify(speaker.photo, null, 2));
+                        // PRIORITY 1: Check thumbnailURL (where migration stores Blob URLs)
+                        const thumbnailURL = (speaker.photo as any)?.thumbnailURL;
+                        if (thumbnailURL && (thumbnailURL.includes('blob.vercel-storage.com') || thumbnailURL.includes('public.blob.vercel-storage.com'))) {
+                          photoUrl = thumbnailURL;
+                        } else {
+                          // PRIORITY 2: Try main URL and sizes (only if Blob URLs)
+                          const mainUrl = speaker.photo.url;
+                          const cardUrl = (speaker.photo as any)?.sizes?.card?.url;
+                          const thumbUrl = (speaker.photo as any)?.sizes?.thumbnail?.url;
+                          
+                          if (mainUrl && (mainUrl.includes('blob.vercel-storage.com') || mainUrl.includes('public.blob.vercel-storage.com'))) {
+                            photoUrl = mainUrl;
+                          } else if (cardUrl && (cardUrl.includes('blob.vercel-storage.com') || cardUrl.includes('public.blob.vercel-storage.com'))) {
+                            photoUrl = cardUrl;
+                          } else if (thumbUrl && (thumbUrl.includes('blob.vercel-storage.com') || thumbUrl.includes('public.blob.vercel-storage.com'))) {
+                            photoUrl = thumbUrl;
+                          }
                         }
                       }
                       
                       return photoUrl ? (
-                        // Skip Payload file URLs that don't exist
-                        photoUrl.includes('/api/media/file/') ? (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                            <FiUser className="w-16 h-16 text-gray-400" />
-                          </div>
-                        ) : (
-                          <img
-                            src={photoUrl}
-                            alt={speaker.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        )
+                        <img
+                          src={photoUrl}
+                          alt={speaker.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <FiUser className="w-16 h-16 text-gray-400" />
