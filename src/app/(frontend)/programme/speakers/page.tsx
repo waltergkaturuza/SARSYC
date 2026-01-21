@@ -31,10 +31,8 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   // ✅ Vercel Blob stored as string URL (most common case)
   if (typeof photo === 'string') {
     if (photo.startsWith('http')) {
-      // Skip Payload file URLs - they don't exist for Blob-stored files
-      if (isPayloadFileUrl(photo)) {
-        return null
-      }
+      // Skip Payload file URLs entirely (404 for Blob-stored files)
+      if (isPayloadFileUrl(photo)) return null
       return fixDomain(photo)
     }
     return null
@@ -46,7 +44,7 @@ function getSpeakerPhotoUrl(photo: any): string | null {
     if (isBlobUrl(photo.url)) {
       return fixDomain(photo.url)
     }
-    // If it's a Payload file URL, try to find a Blob URL in sizes first
+    // If it's a Payload file URL, skip it (likely missing on Blob-only storage)
     if (isPayloadFileUrl(photo.url)) {
       // Try to find a Blob URL in sizes instead
       if (photo.sizes?.card?.url && isBlobUrl(photo.sizes.card.url)) {
@@ -55,8 +53,7 @@ function getSpeakerPhotoUrl(photo: any): string | null {
       if (photo.sizes?.thumbnail?.url && isBlobUrl(photo.sizes.thumbnail.url)) {
         return fixDomain(photo.sizes.thumbnail.url)
       }
-      // Last resort: use the Payload URL anyway (might work if file exists)
-      return fixDomain(photo.url)
+      return null
     }
     // Use any other valid URL
     return fixDomain(photo.url)

@@ -32,9 +32,7 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   if (typeof photo === 'string') {
     if (photo.startsWith('http')) {
       // Skip Payload file URLs - they don't exist for Blob-stored files
-      if (isPayloadFileUrl(photo)) {
-        return null
-      }
+      if (isPayloadFileUrl(photo)) return null
       return fixDomain(photo)
     }
     return null
@@ -55,8 +53,8 @@ function getSpeakerPhotoUrl(photo: any): string | null {
       if (photo.sizes?.thumbnail?.url && isBlobUrl(photo.sizes.thumbnail.url)) {
         return fixDomain(photo.sizes.thumbnail.url)
       }
-      // Last resort: use the Payload URL anyway (might work if file exists)
-      return fixDomain(photo.url)
+      // Skip Payload URL if no Blob size found
+      return null
     }
     // Use any other valid URL
     return fixDomain(photo.url)
