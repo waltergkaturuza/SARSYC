@@ -143,6 +143,9 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   return null
 }
 
+// Force page to revalidate on every request to show latest featured speakers
+export const revalidate = 0
+
 export default async function HomePage() {
   const conferenceDate = process.env.NEXT_PUBLIC_CONFERENCE_DATE || '2026-08-05T09:00:00'
   
@@ -401,13 +404,11 @@ export default async function HomePage() {
                   >
                     <div className="relative aspect-square bg-gray-100 overflow-hidden">
                       {photoUrl ? (
-                        <Image
+                        <img
                           src={photoUrl}
                           alt={speaker.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-400 to-secondary-400">
