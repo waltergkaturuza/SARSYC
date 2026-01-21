@@ -87,17 +87,12 @@ const Media: CollectionConfig = {
           }
         }
         
-        // If URL is external (Vercel Blob), prevent Payload from generating file paths
+        // If URL is external (Vercel Blob), ensure it's used directly
+        // Don't let Payload generate file paths from filename
         if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
-          // External URL - ensure Payload doesn't generate /api/media/file/... paths
-          console.log('🌐 External URL detected in media record, preserving URL:', data.url)
-          
-          // Mark this as an external file so Payload doesn't try to generate paths
-          // We'll use a flag that Payload won't override
-          if (data.filename) {
-            // Keep filename for admin display, but don't let it trigger file path generation
-            data._externalUrl = data.url
-          }
+          // External URL - ensure filename doesn't cause Payload to generate file paths
+          // The URL should be used directly, not through /api/media/file/...
+          console.log('🌐 External URL detected in media record, using URL directly:', data.url)
         }
         
         return data
@@ -129,17 +124,11 @@ const Media: CollectionConfig = {
     afterRead: [
       async ({ doc, req }: any) => {
         // If the media has an external URL (e.g., from Vercel Blob), ensure it's used directly
-        // This is critical for Vercel Blob storage
-        if (doc?._externalUrl) {
-          // Restore the external URL if Payload overwrote it
-          doc.url = doc._externalUrl
-          console.log('🔄 Restored external URL from _externalUrl:', doc.url)
-        } else if (doc?.url && (doc.url.startsWith('https://') || doc.url.startsWith('http://'))) {
-          // External URL - ensure it's preserved
-          console.log('✅ External URL already set:', doc.url)
-        } else if (doc?.url && doc.url.includes('/api/media/file/')) {
-          // Payload generated a file URL, but check if we have an external URL stored
-          console.warn('⚠️ Payload file URL detected, may cause 404:', doc.url)
+        // This is important for serverless environments where files aren't stored locally
+        if (doc?.url && (doc.url.startsWith('https://') || doc.url.startsWith('http://'))) {
+          // External URL - ensure it's preserved and used directly
+          // Don't let Payload try to generate local file paths
+          return doc
         }
         return doc
       },
@@ -156,15 +145,6 @@ const Media: CollectionConfig = {
       name: 'caption',
       type: 'textarea',
       label: 'Caption',
-    },
-    {
-      name: '_externalUrl',
-      type: 'text',
-      label: 'External URL (Blob Storage)',
-      admin: {
-        readOnly: true,
-        description: 'Auto-populated for Vercel Blob storage',
-      },
     },
   ],
   timestamps: true,
