@@ -47,7 +47,31 @@ export default function ResourcesPage() {
   }
 
   const handleDownload = async (resource: any) => {
-    if (!resource.file?.url) return
+    if (!resource.file) return
+
+    // Get the actual file URL (prioritize thumbnailURL where Blob URLs are stored)
+    let fileUrl: string | null = null
+    
+    // PRIORITY 1: Check thumbnailURL (migration stores Blob URLs here)
+    if (resource.file.thumbnailURL && resource.file.thumbnailURL.includes('blob.vercel-storage.com')) {
+      fileUrl = resource.file.thumbnailURL
+    }
+    // PRIORITY 2: Check main URL (only if it's a Blob URL)
+    else if (resource.file.url && resource.file.url.includes('blob.vercel-storage.com')) {
+      fileUrl = resource.file.url
+    }
+    // PRIORITY 3: Check if it's any valid external URL
+    else if (resource.file.url && resource.file.url.startsWith('http')) {
+      // Skip Payload file URLs (they 404)
+      if (!resource.file.url.includes('/api/media/file/')) {
+        fileUrl = resource.file.url
+      }
+    }
+    
+    if (!fileUrl) {
+      console.error('No valid file URL found for resource:', resource.title)
+      return
+    }
 
     setDownloading(resource.id)
     
@@ -60,17 +84,10 @@ export default function ResourcesPage() {
       })
 
       // Open/download file
-      const fileUrl = resource.file.url.startsWith('http') 
-        ? resource.file.url 
-        : `${process.env.NEXT_PUBLIC_SERVER_URL || ''}${resource.file.url}`
-      
       window.open(fileUrl, '_blank')
     } catch (error) {
       console.error('Download tracking failed:', error)
       // Still open the file even if tracking fails
-      const fileUrl = resource.file.url.startsWith('http') 
-        ? resource.file.url 
-        : `${process.env.NEXT_PUBLIC_SERVER_URL || ''}${resource.file.url}`
       window.open(fileUrl, '_blank')
     } finally {
       setDownloading(null)
