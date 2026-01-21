@@ -42,7 +42,11 @@ function getSpeakerPhotoUrl(photo: any): string | null {
 
   // ✅ Blob or external storage object - prioritize Blob URLs
   if (photo.url && typeof photo.url === 'string') {
-    // If it's a Payload file URL, skip it (file doesn't exist in Payload storage)
+    // Prefer Blob URLs - they're the most reliable
+    if (isBlobUrl(photo.url)) {
+      return fixDomain(photo.url)
+    }
+    // If it's a Payload file URL, try to find a Blob URL in sizes first
     if (isPayloadFileUrl(photo.url)) {
       // Try to find a Blob URL in sizes instead
       if (photo.sizes?.card?.url && isBlobUrl(photo.sizes.card.url)) {
@@ -51,13 +55,10 @@ function getSpeakerPhotoUrl(photo: any): string | null {
       if (photo.sizes?.thumbnail?.url && isBlobUrl(photo.sizes.thumbnail.url)) {
         return fixDomain(photo.sizes.thumbnail.url)
       }
-      return null
-    }
-    // Prefer Blob URLs over other URLs
-    if (isBlobUrl(photo.url)) {
+      // Last resort: use the Payload URL anyway (might work if file exists)
       return fixDomain(photo.url)
     }
-    // Use the URL if it's not a Payload file URL
+    // Use any other valid URL
     return fixDomain(photo.url)
   }
 
