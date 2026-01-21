@@ -132,7 +132,6 @@ export default async function HomePage() {
       collection: 'speakers',
       where: {
         featured: { equals: true },
-        active: { equals: true }, // Only show active speakers
       },
       limit: 6,
       sort: '-createdAt',
