@@ -57,7 +57,7 @@ export default async function ContactMessageDetailPage({ params }: { params: { i
           <FiArrowLeft />
           Back to Contact Messages
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Message from {message.name}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Message from {message.firstName} {message.lastName}</h1>
         <div className="flex items-center gap-3">
           <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusInfo.color}`}>
             {statusInfo.label}
@@ -90,7 +90,7 @@ export default async function ContactMessageDetailPage({ params }: { params: { i
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-gray-500">Name</label>
-                <p className="text-gray-900">{message.name}</p>
+                <p className="text-gray-900">{message.firstName} {message.lastName}</p>
               </div>
               
               <div>
@@ -99,15 +99,6 @@ export default async function ContactMessageDetailPage({ params }: { params: { i
                   {message.email}
                 </a>
               </div>
-              
-              {message.phone && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <a href={`tel:${message.phone}`} className="text-primary-600 hover:underline block">
-                    {message.phone}
-                  </a>
-                </div>
-              )}
               
               <div>
                 <label className="text-sm font-medium text-gray-500">Subject</label>

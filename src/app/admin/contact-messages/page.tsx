@@ -122,7 +122,7 @@ export default async function ContactMessagesPage() {
                   return (
                     <tr key={message.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{message.name}</div>
+                        <div className="text-sm font-medium text-gray-900">{message.firstName} {message.lastName}</div>
                       </td>
                       <td className="px-6 py-4">
                         <a href={`mailto:${message.email}`} className="text-sm text-primary-600 hover:underline">

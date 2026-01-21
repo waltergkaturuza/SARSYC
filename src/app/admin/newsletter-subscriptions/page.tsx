@@ -1,31 +1,49 @@
-import React from 'react'
-import { getPayloadClient } from '@/lib/payload'
-import { FiMail, FiUserCheck, FiUserX, FiAlertCircle } from 'react-icons/fi'
+'use client'
 
-export const revalidate = 0
+import React, { useEffect, useState } from 'react'
+import { FiMail, FiUserCheck, FiUserX, FiAlertCircle, FiLoader, FiCopy } from 'react-icons/fi'
 
-export default async function NewsletterSubscriptionsPage() {
-  const payload = await getPayloadClient()
-  
-  let subscriptions: any[] = []
-  let totalDocs = 0
+export default function NewsletterSubscriptionsPage() {
+  const [subscriptions, setSubscriptions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalDocs, setTotalDocs] = useState(0)
 
-  try {
-    const results = await payload.find({
-      collection: 'newsletter-subscriptions',
-      limit: 1000,
-      sort: '-subscribedAt',
-      overrideAccess: true,
-    })
+  useEffect(() => {
+    fetchSubscriptions()
+  }, [])
 
-    subscriptions = results.docs
-    totalDocs = results.totalDocs
-  } catch (error: any) {
-    console.error('Error fetching newsletter subscriptions:', error)
-    subscriptions = []
-    totalDocs = 0
+  const fetchSubscriptions = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/newsletter-subscriptions')
+      const data = await response.json()
+      if (data.docs) {
+        setSubscriptions(data.docs)
+        setTotalDocs(data.totalDocs)
+      }
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
+  const handleCopyEmails = () => {
+    const emails = subscriptions
+      .filter(s => s.status === 'subscribed')
+      .map(s => s.email)
+      .join('\n')
+    navigator.clipboard.writeText(emails)
+    alert(`Copied ${subscriptions.filter(s => s.status === 'subscribed').length} active email addresses to clipboard!`)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <FiLoader className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    )
+  }
   const statusConfig: Record<string, { color: string, label: string, icon: any }> = {
     'subscribed': { color: 'bg-green-100 text-green-700', label: 'Subscribed', icon: FiUserCheck },
     'unsubscribed': { color: 'bg-gray-100 text-gray-700', label: 'Unsubscribed', icon: FiUserX },
@@ -78,16 +96,10 @@ export default async function NewsletterSubscriptionsPage() {
       {/* Export Button */}
       <div className="mb-6">
         <button
-          onClick={() => {
-            const emails = subscriptions
-              .filter(s => s.status === 'subscribed')
-              .map(s => s.email)
-              .join('\n')
-            navigator.clipboard.writeText(emails)
-            alert(`Copied ${subscriptions.filter(s => s.status === 'subscribed').length} active email addresses to clipboard!`)
-          }}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
+          onClick={handleCopyEmails}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
         >
+          <FiCopy className="w-4 h-4" />
           Copy Active Emails
         </button>
       </div>
