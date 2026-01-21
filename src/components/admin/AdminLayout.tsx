@@ -7,7 +7,7 @@ import {
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
-  FiAward, FiActivity
+  FiAward, FiActivity, FiMail, FiInbox
 } from 'react-icons/fi'
 
 const navigation = [
@@ -64,6 +64,24 @@ const navigation = [
     href: '/admin/sponsorship-tiers',
     icon: FiAward,
     description: 'Manage pricing tiers',
+  },
+  {
+    name: 'Partnership Inquiries',
+    href: '/admin/partnership-inquiries',
+    icon: FiHeart,
+    description: 'Partnership requests',
+  },
+  {
+    name: 'Newsletter Subscribers',
+    href: '/admin/newsletter-subscriptions',
+    icon: FiMail,
+    description: 'Email subscribers',
+  },
+  {
+    name: 'Contact Messages',
+    href: '/admin/contact-messages',
+    icon: FiInbox,
+    description: 'Contact form submissions',
   },
   {
     name: 'Users',
