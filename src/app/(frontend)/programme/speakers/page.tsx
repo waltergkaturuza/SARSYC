@@ -148,6 +148,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
     console.log(`✅ Fetched ${speakers.length} speakers`)
     speakers.forEach((speaker: any) => {
       const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+      console.log(`📸 Speaker ${speaker.name}:`, {
+        photoType: typeof speaker.photo,
+        photoValue: speaker.photo,
+        extractedUrl: photoUrl,
+        hasPhoto: !!speaker.photo,
+      })
       if (!photoUrl) {
         console.warn(`⚠️  Speaker ${speaker.id} (${speaker.name}) has no photo URL`, {
           photoType: typeof speaker.photo,
