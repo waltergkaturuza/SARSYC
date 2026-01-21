@@ -67,7 +67,8 @@ export async function PATCH(
           data: {
             alt: `Speaker photo: ${name}`,
             url: photoUrl, // Set the URL directly (for Vercel Blob)
-            filename: decodedFilename,
+            // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
+            // filename: decodedFilename,
             mimeType: mimeType,
             // Note: filesize, width, height will be set by Payload if it can process the image
             // For external URLs, these may remain null, which is fine
