@@ -126,9 +126,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
     const payload = await getPayloadClient()
     
     // Build where clause for filtering
-    const where: any = {}
-    // Note: Removed featured filter - show all speakers on public speakers page
-    // Homepage will still filter by featured
+    const where: any = {
+      // Only show active speakers on public pages
+      active: {
+        equals: true,
+      },
+    }
     if (filterType && filterType !== 'all') {
       // Type is a hasMany field (array), so use 'contains' to check if array includes the type
       where.type = { contains: filterType }

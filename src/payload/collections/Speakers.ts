@@ -99,6 +99,15 @@ const Speakers: CollectionConfig = {
       label: 'Speaking At',
     },
     {
+      name: 'active',
+      type: 'checkbox',
+      label: 'Active (Show on Public Pages)',
+      defaultValue: true,
+      admin: {
+        description: 'Uncheck to hide this speaker from public pages',
+      },
+    },
+    {
       name: 'featured',
       type: 'checkbox',
       label: 'Feature on Homepage',
