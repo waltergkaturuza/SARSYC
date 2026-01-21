@@ -271,6 +271,11 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     
                     {/* Info Section */}
                     <div className="p-6 bg-white space-y-4 relative z-10">
+                      {/* Speaker Name */}
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        {speaker.name}
+                      </h3>
+                      
                       {/* Position */}
                       {speaker.title && (
                         <div className="flex items-start gap-3">
@@ -299,6 +304,28 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                             <p className="text-sm font-semibold text-gray-900">
                               {getCountryLabel(speaker.country)}
                             </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Areas of Expertise */}
+                      {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
+                        <div className="pt-2 border-t border-gray-100">
+                          <p className="text-xs text-gray-500 mb-2">Areas of Expertise</p>
+                          <div className="flex flex-wrap gap-2">
+                            {speaker.expertise.slice(0, 4).map((exp: any, idx: number) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-full font-medium"
+                              >
+                                {exp.area}
+                              </span>
+                            ))}
+                            {speaker.expertise.length > 4 && (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                                +{speaker.expertise.length - 4} more
+                              </span>
+                            )}
                           </div>
                         </div>
                       )}
