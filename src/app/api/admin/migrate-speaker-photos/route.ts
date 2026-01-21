@@ -5,7 +5,7 @@ import { list } from '@vercel/blob'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function POST(request: NextRequest) {
+async function migratePhotos() {
   try {
     const payload = await getPayloadClient()
     
@@ -88,15 +88,39 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    return NextResponse.json({
+    return {
       success: true,
       message: `Migration complete: ${updatedCount} media records updated, ${skippedCount} skipped`,
       updatedCount,
       skippedCount,
       updates,
-    })
+    }
   } catch (error: any) {
     console.error('Migration error:', error)
+    throw error
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const result = await migratePhotos()
+    return NextResponse.json(result)
+  } catch (error: any) {
+    return NextResponse.json(
+      { 
+        error: error.message || 'Failed to migrate speaker photos',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const result = await migratePhotos()
+    return NextResponse.json(result)
+  } catch (error: any) {
     return NextResponse.json(
       { 
         error: error.message || 'Failed to migrate speaker photos',
