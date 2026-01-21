@@ -57,26 +57,64 @@ function getSpeakerPhotoUrl(photo: any): string | null {
     return url
   }
 
+  // Helper to check if URL is a Vercel Blob URL (preferred)
+  const isBlobUrl = (url: string): boolean => {
+    return url.includes('blob.vercel-storage.com') || url.includes('public.blob.vercel-storage.com')
+  }
+
+  // Helper to check if URL is Payload's generated file path (should be avoided)
+  const isPayloadFileUrl = (url: string): boolean => {
+    return url.includes('/api/media/file/')
+  }
+
   // ✅ Vercel Blob stored as string URL (most common case)
   if (typeof photo === 'string') {
     if (photo.startsWith('http')) {
+      // Skip Payload file URLs - they don't exist for Blob-stored files
+      if (isPayloadFileUrl(photo)) {
+        return null
+      }
       return fixDomain(photo)
     }
     return null
   }
 
-  // ✅ Blob or external storage object
+  // ✅ Blob or external storage object - prioritize Blob URLs
   if (photo.url && typeof photo.url === 'string') {
+    // If it's a Payload file URL, skip it (file doesn't exist in Payload storage)
+    if (isPayloadFileUrl(photo.url)) {
+      // Try to find a Blob URL in sizes instead
+      if (photo.sizes?.card?.url && isBlobUrl(photo.sizes.card.url)) {
+        return fixDomain(photo.sizes.card.url)
+      }
+      if (photo.sizes?.thumbnail?.url && isBlobUrl(photo.sizes.thumbnail.url)) {
+        return fixDomain(photo.sizes.thumbnail.url)
+      }
+      return null
+    }
+    // Prefer Blob URLs over other URLs
+    if (isBlobUrl(photo.url)) {
+      return fixDomain(photo.url)
+    }
+    // Use the URL if it's not a Payload file URL
     return fixDomain(photo.url)
   }
 
-  // Optional: Payload local storage fallback
+  // Optional: Payload local storage fallback (only if not Payload file URLs)
   if (photo.sizes?.card?.url) {
-    return fixDomain(photo.sizes.card.url)
+    if (isPayloadFileUrl(photo.sizes.card.url)) {
+      // Skip Payload file URLs
+    } else {
+      return fixDomain(photo.sizes.card.url)
+    }
   }
 
   if (photo.sizes?.thumbnail?.url) {
-    return fixDomain(photo.sizes.thumbnail.url)
+    if (isPayloadFileUrl(photo.sizes.thumbnail.url)) {
+      // Skip Payload file URLs
+    } else {
+      return fixDomain(photo.sizes.thumbnail.url)
+    }
   }
 
   return null
