@@ -6,115 +6,29 @@ import { getCountryLabel } from '@/lib/countries'
 import SocialLinks from '@/components/speakers/SocialLinks'
 import SpeakerFilters from '@/components/speakers/SpeakerFilters'
 
-// Helper function to get speaker photo URL
+// Helper function to get speaker photo URL (Blob-safe)
 function getSpeakerPhotoUrl(photo: any): string | null {
-  if (!photo) {
-    return null
-  }
-  
-  // If it's just an ID (string), it wasn't populated - return null
+  if (!photo) return null
+
+  // ✅ Vercel Blob stored as string URL (most common case)
   if (typeof photo === 'string') {
-    console.warn('Photo is just an ID, not populated:', photo)
-    return null
+    return photo.startsWith('http') ? photo : null
   }
-  
-  // If it's an object, try different URL locations
-  if (typeof photo === 'object') {
-    // Try direct URL first (for Vercel Blob or external storage)
-    if (photo.url && typeof photo.url === 'string') {
-      // Check if it's a valid HTTP(S) URL (including localhost for development)
-      if (photo.url.startsWith('http://') || photo.url.startsWith('https://')) {
-        return photo.url
-      }
-      // If it's a relative URL, construct full URL for localhost
-      if (photo.url.startsWith('/')) {
-        // For development, construct localhost URL
-        if (process.env.NODE_ENV === 'development') {
-          return `http://localhost:3000${photo.url}`
-        }
-        // For production, use the public server URL
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
-        if (serverUrl) {
-          return `${serverUrl}${photo.url}`
-        }
-        return photo.url
-      }
-    }
-    
-    // Try sizes (for local storage with image processing)
-    if (photo.sizes) {
-      if (photo.sizes.card?.url) {
-        if (photo.sizes.card.url.startsWith('http')) {
-          return photo.sizes.card.url
-        }
-        if (photo.sizes.card.url.startsWith('/')) {
-          // Construct full URL for relative paths
-          if (process.env.NODE_ENV === 'development') {
-            return `http://localhost:3000${photo.sizes.card.url}`
-          }
-          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
-          if (serverUrl) {
-            return `${serverUrl}${photo.sizes.card.url}`
-          }
-        }
-      }
-      if (photo.sizes.thumbnail?.url) {
-        if (photo.sizes.thumbnail.url.startsWith('http')) {
-          return photo.sizes.thumbnail.url
-        }
-        if (photo.sizes.thumbnail.url.startsWith('/')) {
-          if (process.env.NODE_ENV === 'development') {
-            return `http://localhost:3000${photo.sizes.thumbnail.url}`
-          }
-          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
-          if (serverUrl) {
-            return `${serverUrl}${photo.sizes.thumbnail.url}`
-          }
-        }
-      }
-      if (photo.sizes.hero?.url) {
-        if (photo.sizes.hero.url.startsWith('http')) {
-          return photo.sizes.hero.url
-        }
-        if (photo.sizes.hero.url.startsWith('/')) {
-          if (process.env.NODE_ENV === 'development') {
-            return `http://localhost:3000${photo.sizes.hero.url}`
-          }
-          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
-          if (serverUrl) {
-            return `${serverUrl}${photo.sizes.hero.url}`
-          }
-        }
-      }
-    }
-    
-    // Try thumbnailURL (legacy field)
-    if (photo.thumbnailURL) {
-      if (photo.thumbnailURL.startsWith('http')) {
-        return photo.thumbnailURL
-      }
-      if (photo.thumbnailURL.startsWith('/')) {
-        if (process.env.NODE_ENV === 'development') {
-          return `http://localhost:3000${photo.thumbnailURL}`
-        }
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
-        if (serverUrl) {
-          return `${serverUrl}${photo.thumbnailURL}`
-        }
-      }
-    }
-    
-    // Log warning if we have photo object but no valid URL
-    if (!photo.url && !photo.sizes) {
-      console.warn('Photo object exists but has no URL or sizes:', {
-        id: photo.id,
-        filename: photo.filename,
-        hasUrl: !!photo.url,
-        hasSizes: !!photo.sizes,
-      })
-    }
+
+  // ✅ Blob or external storage object
+  if (photo.url && typeof photo.url === 'string') {
+    return photo.url
   }
-  
+
+  // Optional: Payload local storage fallback
+  if (photo.sizes?.card?.url) {
+    return photo.sizes.card.url
+  }
+
+  if (photo.sizes?.thumbnail?.url) {
+    return photo.sizes.thumbnail.url
+  }
+
   return null
 }
 
@@ -174,7 +88,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
       where,
       limit: 1000, // Increased limit to fetch all speakers
       sort: '-createdAt',
-      depth: 2, // Populate photo relationship fully
+      depth: 1, // Minimal depth - Blob URLs don't need deep population
       overrideAccess: true, // Ensure all speakers are fetched regardless of access control
     })
     speakers = speakersResult.docs || []
