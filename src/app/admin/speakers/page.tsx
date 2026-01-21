@@ -147,13 +147,19 @@ export default async function SpeakersManagementPage({
                       }
                       
                       return photoUrl ? (
-                        <Image
-                          src={photoUrl}
-                          alt={speaker.name}
-                          fill
-                          className="object-cover"
-                          unoptimized={photoUrl.includes('blob.vercel-storage.com') || photoUrl.includes('public.blob.vercel-storage.com')}
-                        />
+                        // Skip Payload file URLs that don't exist
+                        photoUrl.includes('/api/media/file/') ? (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                            <FiUser className="w-16 h-16 text-gray-400" />
+                          </div>
+                        ) : (
+                          <img
+                            src={photoUrl}
+                            alt={speaker.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        )
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <FiUser className="w-16 h-16 text-gray-400" />
