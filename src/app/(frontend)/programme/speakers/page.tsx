@@ -63,6 +63,9 @@ function extractBioText(bio: any): string {
   return ''
 }
 
+// Always serve fresh data so changes to \"Feature on Homepage\" and photos show immediately
+export const revalidate = 0
+
 interface SpeakersPageProps {
   searchParams: { type?: string }
 }
@@ -76,7 +79,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
     const payload = await getPayloadClient()
     
     // Build where clause for filtering
-    const where: any = {}
+    const where: any = {
+      // Only show speakers that are marked as featured on the public page
+      featured: {
+        equals: true,
+      },
+    }
     if (filterType && filterType !== 'all') {
       // Type is a hasMany field (array), so use 'contains' to check if array includes the type
       where.type = { contains: filterType }
