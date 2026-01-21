@@ -38,7 +38,14 @@ function getSpeakerPhotoUrl(photo: any): string | null {
     return null
   }
 
-  // ✅ Blob or external storage object - prioritize Blob URLs
+  // ✅ PRIORITY 1: Check thumbnailURL first (migration stores Blob URLs here!)
+  if (photo.thumbnailURL && typeof photo.thumbnailURL === 'string') {
+    if (isBlobUrl(photo.thumbnailURL)) {
+      return fixDomain(photo.thumbnailURL)
+    }
+  }
+
+  // ✅ PRIORITY 2: Check main URL (only if it's a Blob URL)
   if (photo.url && typeof photo.url === 'string') {
     // Prefer Blob URLs - they're the most reliable
     if (isBlobUrl(photo.url)) {
