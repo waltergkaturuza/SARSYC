@@ -1,15 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader } from 'react-icons/fi'
+import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 
 const resourceTypes = [
   { value: 'all', label: 'All Types', icon: FiFile },
+  { value: 'concept-note', label: 'Concept Notes', icon: FiClipboard },
   { value: 'report', label: 'Conference Reports', icon: FiBook },
+  { value: 'symposium-report', label: 'Symposium Reports', icon: FiBook },
   { value: 'paper', label: 'Research Papers', icon: FiFileText },
   { value: 'brief', label: 'Policy Briefs', icon: FiFile },
-  { value: 'presentation', label: 'Presentations', icon: FiFile },
+  { value: 'communique', label: 'Communiqués', icon: FiAward },
+  { value: 'declaration', label: 'Declarations', icon: FiShield },
+  { value: 'presentation', label: 'Presentations', icon: FiLayers },
+  { value: 'template', label: 'Templates', icon: FiFileText },
+  { value: 'toolkit', label: 'Toolkits', icon: FiFile },
+  { value: 'infographic', label: 'Infographics', icon: FiFile },
   { value: 'video', label: 'Videos', icon: FiVideo },
 ]
 
@@ -108,6 +115,11 @@ export default function ResourcesPage() {
       ...prev,
       [resourceId]: !prev[resourceId],
     }))
+  }
+
+  const getResourceIcon = (type: string) => {
+    const typeIcon = resourceTypes.find(t => t.value === type)
+    return typeIcon ? typeIcon.icon : FiFile
   }
 
   return (
@@ -231,12 +243,13 @@ export default function ResourcesPage() {
                   const description = resource.description ?? ''
                   const isExpanded = expandedDescriptions[resource.id]
                   const hasLongDescription = description.length > 160
+                  const ResourceIcon = getResourceIcon(resource.type)
 
                   return (
                     <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FiFileText className="w-6 h-6 text-primary-600" />
+                        <ResourceIcon className="w-6 h-6 text-primary-600" />
                       </div>
                       <div className="text-right text-sm text-gray-500">
                         <div>{resource.year}</div>
