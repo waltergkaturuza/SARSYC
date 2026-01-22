@@ -1,3 +1,6 @@
+// Static page - revalidate every 24 hours
+export const revalidate = 86400
+
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">

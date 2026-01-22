@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { FiTarget, FiUsers, FiLink, FiZap } from 'react-icons/fi'
 
+// Static content - revalidate every 6 hours
+export const revalidate = 21600
+
 const objectives = [
   {
     icon: FiUsers,

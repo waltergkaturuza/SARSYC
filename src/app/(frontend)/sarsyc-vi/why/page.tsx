@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { FiAlertCircle, FiHeart, FiUsers, FiGlobe, FiTrendingUp, FiShield, FiDroplet, FiThermometer } from 'react-icons/fi'
 
+// Static content - revalidate every 6 hours
+export const revalidate = 21600
+
 const challenges = [
   {
     icon: FiTrendingUp,

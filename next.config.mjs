@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Standalone output for faster builds and smaller deployments
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -51,9 +53,17 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Enable experimental features
+  // Enable experimental features for faster builds
   experimental: {
-    optimizePackageImports: ['react-icons'],
+    optimizePackageImports: ['react-icons', 'framer-motion', 'date-fns'],
+    // Speed up builds by skipping type checking (TypeScript will still run separately)
+    typedRoutes: false,
+  },
+  // Reduce build output verbosity
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
   },
 }
 
