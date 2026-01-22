@@ -25,26 +25,6 @@ const ContactMessages: CollectionConfig = {
   },
   fields: [
     {
-      name: 'name',
-      type: 'text',
-      required: false,
-      label: 'Full Name',
-      admin: {
-        hidden: true, // Hide from admin UI since we have firstName and lastName
-      },
-      hooks: {
-        beforeChange: [
-          ({ siblingData }: any) => {
-            // Auto-generate from firstName and lastName
-            if (siblingData.firstName || siblingData.lastName) {
-              return `${siblingData.firstName || ''} ${siblingData.lastName || ''}`.trim()
-            }
-            return ''
-          },
-        ],
-      },
-    },
-    {
       type: 'row',
       fields: [
         {
