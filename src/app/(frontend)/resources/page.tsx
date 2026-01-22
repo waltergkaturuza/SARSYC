@@ -20,6 +20,7 @@ export default function ResourcesPage() {
   const [selectedType, setSelectedType] = useState('all')
   const [selectedYear, setSelectedYear] = useState('all')
   const [downloading, setDownloading] = useState<number | null>(null)
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetchResources()
@@ -102,6 +103,12 @@ export default function ResourcesPage() {
   }
 
   const availableYears = Array.from(new Set(resources.map(r => r.year).filter(Boolean))).sort((a, b) => b - a)
+  const toggleDescription = (resourceId: string) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [resourceId]: !prev[resourceId],
+    }))
+  }
 
   return (
     <>
@@ -135,7 +142,7 @@ export default function ResourcesPage() {
 
       {/* Filters */}
       <section className="bg-gray-50 py-8 border-b border-gray-200">
-        <div className="container-custom">
+        <div className="container-custom max-w-screen-2xl">
           <div className="flex items-center gap-4 mb-6">
             <FiFilter className="w-5 h-5 text-gray-600" />
             <h3 className="font-semibold text-gray-900">Filters</h3>
@@ -199,7 +206,7 @@ export default function ResourcesPage() {
 
       {/* Resources Grid */}
       <section className="section bg-white">
-        <div className="container-custom">
+        <div className="container-custom max-w-screen-2xl">
           {loading ? (
             <div className="text-center py-12">
               <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-600" />
@@ -219,9 +226,14 @@ export default function ResourcesPage() {
             />
           ) : (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {resources.map((resource) => (
-                  <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                {resources.map((resource) => {
+                  const description = resource.description ?? ''
+                  const isExpanded = expandedDescriptions[resource.id]
+                  const hasLongDescription = description.length > 160
+
+                  return (
+                    <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <FiFileText className="w-6 h-6 text-primary-600" />
@@ -237,10 +249,31 @@ export default function ResourcesPage() {
                     <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
                       {resource.title}
                     </h3>
-                    
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                      {resource.description}
-                    </p>
+
+                    {description ? (
+                      <>
+                        <p
+                          className={`text-sm text-gray-600 ${
+                            isExpanded ? '' : 'line-clamp-3'
+                          }`}
+                        >
+                          {description}
+                        </p>
+                        {hasLongDescription ? (
+                          <button
+                            type="button"
+                            onClick={() => toggleDescription(resource.id)}
+                            className="text-sm font-medium text-primary-600 hover:text-primary-700 mb-4"
+                          >
+                            {isExpanded ? 'Read less' : 'Read more'}
+                          </button>
+                        ) : (
+                          <div className="mb-4" />
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 mb-4">No description available.</p>
+                    )}
 
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -263,7 +296,8 @@ export default function ResourcesPage() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
