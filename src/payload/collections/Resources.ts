@@ -61,8 +61,10 @@ const Resources: CollectionConfig = {
       required: true,
       label: 'Resource Type',
       options: [
+        { label: 'Abstract', value: 'abstract' },
         { label: 'Concept Note', value: 'concept-note' },
         { label: 'Conference Report', value: 'report' },
+        { label: 'Research Report', value: 'research-report' },
         { label: 'Symposium Report', value: 'symposium-report' },
         { label: 'Research Paper', value: 'paper' },
         { label: 'Policy Brief', value: 'brief' },

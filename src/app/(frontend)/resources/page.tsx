@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield } from 'react-icons/fi'
+import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 
 const resourceTypes = [
   { value: 'all', label: 'All Types', icon: FiFile },
+  { value: 'abstract', label: 'Abstracts', icon: FiEdit },
   { value: 'concept-note', label: 'Concept Notes', icon: FiClipboard },
   { value: 'report', label: 'Conference Reports', icon: FiBook },
+  { value: 'research-report', label: 'Research Reports', icon: FiBook },
   { value: 'symposium-report', label: 'Symposium Reports', icon: FiBook },
   { value: 'paper', label: 'Research Papers', icon: FiFileText },
   { value: 'brief', label: 'Policy Briefs', icon: FiFile },
