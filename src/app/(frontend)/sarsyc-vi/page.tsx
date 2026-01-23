@@ -123,6 +123,65 @@ const importantDates = [
   { date: 'August 5-7, 2026', event: 'SARSYC VI Conference', status: 'conference' },
 ]
 
+function DownloadConceptNoteButton() {
+  const [conceptNoteUrl, setConceptNoteUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchLatestConceptNote()
+  }, [])
+
+  const fetchLatestConceptNote = async () => {
+    try {
+      const response = await fetch('/api/resources?type=concept-note&year=2026&limit=1&sort=-createdAt')
+      const data = await response.json()
+      
+      if (data.docs && data.docs.length > 0) {
+        const conceptNote = data.docs[0]
+        // Get the file URL (prioritize Blob URLs)
+        const fileUrl = conceptNote.file?.thumbnailURL || conceptNote.file?.url
+        if (fileUrl) {
+          setConceptNoteUrl(fileUrl)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch concept note:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <button disabled className="btn-outline border-white text-white opacity-50 text-lg px-8 py-4 w-full sm:w-auto cursor-not-allowed">
+        <FiLoader className="mr-2 animate-spin" />
+        Loading...
+      </button>
+    )
+  }
+
+  if (conceptNoteUrl) {
+    return (
+      <a
+        href={conceptNoteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto"
+      >
+        <FiDownload className="mr-2" />
+        Download Concept Note
+      </a>
+    )
+  }
+
+  return (
+    <Link href="/resources" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+      <FiDownload className="mr-2" />
+      View Resources
+    </Link>
+  )
+}
+
 const tracks = [
   {
     number: '01',
@@ -237,10 +296,7 @@ export default function SarsycVIPage() {
               <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
                 Submit Abstract
               </Link>
-              <Link href="#concept-note" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
-                <FiDownload className="mr-2" />
-                Download Concept Note
-              </Link>
+              <DownloadConceptNoteButton />
             </div>
           </div>
         </div>

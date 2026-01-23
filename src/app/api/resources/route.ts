@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year')
     const topic = searchParams.get('topic')
     const search = searchParams.get('search')
+    const sort = searchParams.get('sort') || '-year'
 
     const where: any = {}
     
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
       where,
       page,
       limit,
-      sort: '-year',
+      sort,
     })
 
     return NextResponse.json(resources)
