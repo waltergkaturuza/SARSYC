@@ -242,10 +242,15 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
   }
 
   const resourceTypes = [
+    { value: 'concept-note', label: 'Concept Note' },
     { value: 'report', label: 'Conference Report' },
+    { value: 'symposium-report', label: 'Symposium Report' },
     { value: 'paper', label: 'Research Paper' },
     { value: 'brief', label: 'Policy Brief' },
+    { value: 'communique', label: 'Communiqué' },
+    { value: 'declaration', label: 'Declaration' },
     { value: 'presentation', label: 'Presentation' },
+    { value: 'template', label: 'Template' },
     { value: 'toolkit', label: 'Toolkit' },
     { value: 'infographic', label: 'Infographic' },
     { value: 'video', label: 'Video' },
