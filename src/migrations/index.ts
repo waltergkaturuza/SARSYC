@@ -5,6 +5,7 @@ import * as migration_20251226_160419_add_passport_scan_nextofkin_enhancements f
 import * as migration_20251227_113630_create_sponsorship_tiers from './20251227_113630_create_sponsorship_tiers';
 import * as migration_20250101_000000_drop_document_locking_tables from './20250101_000000_drop_document_locking_tables';
 import * as migration_20250128_000000_add_user_account_fields from './20250128_000000_add_user_account_fields';
+import * as migration_20250122_000000_add_resource_types from './20250122_000000_add_resource_types';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20250128_000000_add_user_account_fields.up,
     down: migration_20250128_000000_add_user_account_fields.down,
     name: '20250128_000000_add_user_account_fields'
+  },
+  {
+    up: migration_20250122_000000_add_resource_types.up,
+    down: migration_20250122_000000_add_resource_types.down,
+    name: '20250122_000000_add_resource_types'
   },
 ];
