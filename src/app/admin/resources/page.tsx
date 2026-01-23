@@ -58,10 +58,17 @@ export default async function ResourcesManagementPage({
   const totalDocs = results.totalDocs
 
   const typeConfig: Record<string, { color: string, label: string, icon: any }> = {
-    'report': { color: 'bg-blue-100 text-blue-700', label: 'Report', icon: FiFileText },
-    'paper': { color: 'bg-green-100 text-green-700', label: 'Paper', icon: FiFileText },
+    'abstract': { color: 'bg-indigo-100 text-indigo-700', label: 'Abstract', icon: FiFileText },
+    'concept-note': { color: 'bg-cyan-100 text-cyan-700', label: 'Concept Note', icon: FiFileText },
+    'report': { color: 'bg-blue-100 text-blue-700', label: 'Conference Report', icon: FiFileText },
+    'research-report': { color: 'bg-teal-100 text-teal-700', label: 'Research Report', icon: FiFileText },
+    'symposium-report': { color: 'bg-sky-100 text-sky-700', label: 'Symposium Report', icon: FiFileText },
+    'paper': { color: 'bg-green-100 text-green-700', label: 'Research Paper', icon: FiFileText },
     'brief': { color: 'bg-purple-100 text-purple-700', label: 'Policy Brief', icon: FiFileText },
+    'communique': { color: 'bg-amber-100 text-amber-700', label: 'Communiqué', icon: FiFileText },
+    'declaration': { color: 'bg-rose-100 text-rose-700', label: 'Declaration', icon: FiFileText },
     'presentation': { color: 'bg-orange-100 text-orange-700', label: 'Presentation', icon: FiFileText },
+    'template': { color: 'bg-lime-100 text-lime-700', label: 'Template', icon: FiFileText },
     'toolkit': { color: 'bg-yellow-100 text-yellow-700', label: 'Toolkit', icon: FiFolder },
     'infographic': { color: 'bg-pink-100 text-pink-700', label: 'Infographic', icon: FiFileText },
     'video': { color: 'bg-red-100 text-red-700', label: 'Video', icon: FiFileText },
@@ -101,7 +108,7 @@ export default async function ResourcesManagementPage({
           <div className="text-sm text-gray-600">Storage Used</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">8</div>
+          <div className="text-2xl font-bold text-gray-900">15</div>
           <div className="text-sm text-gray-600">Resource Types</div>
         </div>
       </div>
@@ -119,10 +126,20 @@ export default async function ResourcesManagementPage({
             <form action="/admin/resources" method="get">
               <select name="type" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 <option value="all">All Types</option>
-                <option value="report">Reports</option>
+                <option value="abstract">Abstracts</option>
+                <option value="concept-note">Concept Notes</option>
+                <option value="report">Conference Reports</option>
+                <option value="research-report">Research Reports</option>
+                <option value="symposium-report">Symposium Reports</option>
                 <option value="paper">Research Papers</option>
                 <option value="brief">Policy Briefs</option>
+                <option value="communique">Communiqués</option>
+                <option value="declaration">Declarations</option>
+                <option value="presentation">Presentations</option>
+                <option value="template">Templates</option>
                 <option value="toolkit">Toolkits</option>
+                <option value="infographic">Infographics</option>
+                <option value="video">Videos</option>
               </select>
             </form>
           </div>
