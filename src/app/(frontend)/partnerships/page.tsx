@@ -50,7 +50,7 @@ const partners = [
   },
   {
     name: 'Stellenbosch University',
-    logo: '/partners/stellenbosch_university.png',
+    logo: '/partners/stellenbosch_university.jpg',
     alt: 'Stellenbosch University Logo',
   },
   {
