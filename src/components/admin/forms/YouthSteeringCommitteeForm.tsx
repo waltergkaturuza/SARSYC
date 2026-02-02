@@ -6,20 +6,34 @@ import FormField from './FormField'
 import { FiUpload, FiX, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { uploadFile } from '@/lib/chunkedUpload'
-import dynamic from 'next/dynamic'
 
-// Dynamically import Slate editor to avoid SSR issues
-const SlateEditor = dynamic(() => import('@/components/admin/SlateEditor'), {
-  ssr: false,
-  loading: () => <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />,
-})
+// Helper function to extract text from rich text format
+function extractBioText(bio: any): string {
+  if (!bio) return ''
+  if (typeof bio === 'string') return bio
+  
+  // If it's a rich text object (Slate editor format)
+  if (Array.isArray(bio)) {
+    return bio
+      .map((node: any) => {
+        if (node.children) {
+          return node.children.map((child: any) => child.text || '').join('')
+        }
+        return node.text || ''
+      })
+      .join(' ')
+      .trim()
+  }
+  
+  return ''
+}
 
 interface CommitteeMemberData {
   name: string
   role: string
   organization: string
   country: string
-  bio: any
+  bio: string
   email?: string
   photo?: string | File
   featured: boolean
@@ -46,7 +60,7 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
     role: initialData?.role || '',
     organization: initialData?.organization || '',
     country: initialData?.country || '',
-    bio: initialData?.bio || null,
+    bio: extractBioText(initialData?.bio),
     email: initialData?.email || '',
     photo: initialData?.photo?.url || '',
     featured: initialData?.featured || false,
@@ -99,7 +113,7 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
     if (!formData.role.trim()) newErrors.role = 'Role is required'
     if (!formData.organization.trim()) newErrors.organization = 'Organization is required'
     if (!formData.country) newErrors.country = 'Country is required'
-    if (!formData.bio) newErrors.bio = 'Biography is required'
+    if (!formData.bio || !formData.bio.trim()) newErrors.bio = 'Biography is required'
     if (!formData.photo && !initialData?.photo) newErrors.photo = 'Profile photo is required'
 
     setErrors(newErrors)
@@ -272,10 +286,12 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
           </div>
 
           <FormField label="Biography" required error={errors.bio} hint="Brief biography (2-3 paragraphs)">
-            <SlateEditor
-              value={formData.bio}
-              onChange={(value) => handleInputChange('bio', value)}
-              placeholder="Enter biography..."
+            <textarea
+              value={typeof formData.bio === 'string' ? formData.bio : ''}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
+              rows={8}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Enter biography here..."
             />
           </FormField>
         </div>
