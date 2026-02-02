@@ -49,4 +49,9 @@ export const migrations = [
     down: migration_20250122_000000_add_resource_types.down,
     name: '20250122_000000_add_resource_types'
   },
+  {
+    up: migration_20250202_000000_create_youth_steering_committee.up,
+    down: migration_20250202_000000_create_youth_steering_committee.down,
+    name: '20250202_000000_create_youth_steering_committee'
+  },
 ];
