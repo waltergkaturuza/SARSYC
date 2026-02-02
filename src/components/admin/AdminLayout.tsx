@@ -36,6 +36,12 @@ const navigation = [
     description: 'Manage speakers',
   },
   {
+    name: 'Youth Steering Committee',
+    href: '/admin/youth-steering-committee',
+    icon: FiUsers,
+    description: 'Manage committee members',
+  },
+  {
     name: 'Sessions',
     href: '/admin/sessions',
     icon: FiCalendar,
