@@ -21,7 +21,7 @@ const tracks = [
   },
   {
     number: '02',
-    title: 'HIV/AIDS, STIs and Vulnerable Groups',
+    title: 'HIV/AIDS, STIs, and Sexual Health',
     description: 'Sustaining gains in HIV/AIDS and STIs prevention and treatment, addressing resurgence among People Who Use and Inject Drugs, expanding harm reduction programs, and domestic health financing and resource mobilization.',
     color: 'from-purple-500 to-purple-600',
   },
@@ -201,7 +201,7 @@ export default async function HomePage() {
             {/* Conference Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
               <FiCalendar className="w-4 h-4" />
-              <span className="text-sm font-medium">August 5-7, 2026</span>
+              <span className="text-sm font-medium">August 5-8, 2026</span>
               <span className="w-1 h-1 bg-white/60 rounded-full"></span>
               <FiMapPin className="w-4 h-4" />
               <span className="text-sm font-medium">Windhoek, Namibia</span>
@@ -229,6 +229,15 @@ export default async function HomePage() {
                 className="text-white font-semibold underline hover:text-white/80 transition-colors"
               >
                 SAYWHAT
+              </a>
+              {' '}in partnership with{' '}
+              <a 
+                href="https://www.unam.edu.na" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white font-semibold underline hover:text-white/80 transition-colors"
+              >
+                University of Namibia (UNAM)
               </a>
               , bringing together students, youth leaders, 
               policymakers, civil society, development partners, and the private sector from across Southern Africa 

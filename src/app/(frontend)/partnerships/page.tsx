@@ -39,6 +39,26 @@ const partners = [
     alt: 'SAYWHAT Logo',
   },
   {
+    name: 'University of Namibia (UNAM)',
+    logo: '/partners/university_namibia.png',
+    alt: 'University of Namibia Logo',
+  },
+  {
+    name: 'National Youth Council of Namibia',
+    logo: '/partners/national_youth_council_of_namibia.jpeg',
+    alt: 'National Youth Council of Namibia Logo',
+  },
+  {
+    name: 'Stellenbosch University',
+    logo: '/partners/stellenbosch_university.png',
+    alt: 'Stellenbosch University Logo',
+  },
+  {
+    name: 'UNESCO',
+    logo: '/partners/UNESCO.png',
+    alt: 'UNESCO Logo',
+  },
+  {
     name: 'GEAR Alliance',
     logo: '/partners/GEARlogo.jpg',
     alt: 'GEAR Alliance Logo',

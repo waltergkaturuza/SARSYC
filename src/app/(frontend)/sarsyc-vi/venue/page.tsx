@@ -96,7 +96,7 @@ export default function VenuePage() {
           // Default fallback venue (Windhoek)
           setVenue({
             id: 'default',
-            venueName: 'Windhoek International Convention Centre',
+            venueName: 'The Life Science II Auditorium at the University of Namibia Hage Geingob Campus',
             city: 'Windhoek',
             country: 'Namibia',
             address: '123 Independence Avenue, Windhoek, Namibia',

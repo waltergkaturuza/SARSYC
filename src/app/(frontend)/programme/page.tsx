@@ -40,7 +40,7 @@ const tracks = [
   { value: 'all', label: 'All Tracks', color: 'gray' },
   { value: 'general', label: 'Plenary', color: 'blue' },
   { value: 'education-rights', label: 'Track 1: Education Rights and Equity', color: 'blue' },
-  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs and Vulnerable Groups', color: 'purple' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs, and Sexual Health', color: 'purple' },
   { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles', color: 'pink' },
   { value: 'digital-health', label: 'Track 4: Digital Health and Safety', color: 'orange' },
   { value: 'mental-health', label: 'Track 5: Mental Health and Substance Abuse', color: 'green' },

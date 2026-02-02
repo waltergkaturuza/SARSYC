@@ -35,7 +35,10 @@ export default function TeamPage() {
               Who We Are
             </h1>
             <p className="text-xl text-white/90">
-              Meet the team behind SAYWHAT and SARSYC
+              Meet the team behind SARSYC VI
+            </p>
+            <p className="text-lg text-white/80 mt-4">
+              Convened by SAYWHAT in partnership with University of Namibia (UNAM)
             </p>
           </div>
         </div>

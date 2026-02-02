@@ -114,13 +114,12 @@ const objectives = [
 ]
 
 const importantDates = [
-  { date: 'March 1, 2026', event: 'Call for Abstracts Opens', status: 'upcoming' },
-  { date: 'March 31, 2026', event: 'Registration Opens', status: 'upcoming' },
-  { date: 'April 30, 2026', event: 'Abstract Submission Deadline', status: 'critical' },
-  { date: 'May 31, 2026', event: 'Abstract Notification', status: 'critical' },
-  { date: 'May 31, 2026', event: 'Early Bird Deadline', status: 'upcoming' },
+  { date: 'February 1, 2026', event: 'Call for Abstracts Opens', status: 'upcoming' },
+  { date: 'March 31, 2026', event: 'Abstract Submission Deadline', status: 'critical' },
+  { date: 'April 15, 2026', event: 'Notification of Acceptance', status: 'critical' },
+  { date: 'May 1 - October 31, 2026', event: 'Mentorship – Publication Period', status: 'upcoming' },
   { date: 'July 31, 2026', event: 'Regular Registration Closes', status: 'critical' },
-  { date: 'August 5-7, 2026', event: 'SARSYC VI Conference', status: 'conference' },
+  { date: 'August 5-8, 2026', event: 'SARSYC VI Conference (Days 1-3) + Orathon (Day 4)', status: 'conference' },
 ]
 
 function DownloadConceptNoteButton() {
@@ -197,8 +196,8 @@ const tracks = [
   },
   {
     number: '02',
-    title: 'HIV/AIDS, STIs and Vulnerable Groups',
-    description: 'Addressing HIV/AIDS, STIs prevention and treatment, and support for vulnerable groups.',
+    title: 'HIV/AIDS, STIs, and Sexual Health',
+    description: 'Addressing HIV/AIDS, STIs prevention and treatment, and sexual health.',
     topics: [
       'Sustaining gains in HIV/AIDS and STIs prevention and treatment',
       'Addressing resurgence among People Who Use and Inject Drugs',
@@ -276,7 +275,7 @@ export default function SarsycVIPage() {
             <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
                 <FiCalendar className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">August 5-7, 2026</div>
+                <div className="font-semibold">August 5-8, 2026</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
                 <FiMapPin className="w-6 h-6 mx-auto mb-2" />
@@ -430,6 +429,118 @@ export default function SarsycVIPage() {
         </div>
       </section>
 
+      {/* Program Schedule */}
+      <section className="section bg-gray-50">
+        <div className="container-custom">
+          <h2 className="section-title">Program Schedule</h2>
+          <p className="section-subtitle">
+            A comprehensive program spanning four days of learning, engagement, and action.
+          </p>
+
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Day 1 */}
+            <div className="card p-6 lg:p-8">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                  1
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 1: Research Indaba</h3>
+                  <p className="text-gray-600">
+                    A full day dedicated to research presentations, discussions, and knowledge exchange. 
+                    Researchers and academics will share their findings and engage in critical dialogue.
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    <em>Detailed schedule will be published once speakers are confirmed.</em>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Day 2 */}
+            <div className="card p-6 lg:p-8">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-secondary-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                  2
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 2: Multiple Forums & Engagements</h3>
+                  <div className="space-y-3 text-gray-600">
+                    <div>
+                      <strong className="text-gray-900">Mugota/Ixhiba Young Men's Forum</strong>
+                      <p className="text-sm mt-1">A dedicated space for young men to discuss health, education, and empowerment.</p>
+                    </div>
+                    <div>
+                      <strong className="text-gray-900">Web for Life Network Symposium</strong>
+                      <p className="text-sm mt-1">Exploring digital health solutions and online safety for young people.</p>
+                    </div>
+                    <div>
+                      <strong className="text-gray-900">Alliance Building Labs</strong>
+                      <p className="text-sm mt-1">Collaborative sessions to build strategic partnerships and networks.</p>
+                    </div>
+                    <div>
+                      <strong className="text-gray-900">Student Talks and Engagement with Policymakers and Partners</strong>
+                      <p className="text-sm mt-1">Direct dialogue between students, policymakers, and development partners.</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4">
+                    <em>Detailed schedule will be published once speakers are confirmed.</em>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Day 3 */}
+            <div className="card p-6 lg:p-8">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-accent-500 rounded-xl flex items-center justify-center text-gray-900 text-2xl font-bold flex-shrink-0">
+                  3
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 3: Official Opening, Closing & Culture Night</h3>
+                  <div className="space-y-3 text-gray-600">
+                    <div>
+                      <strong className="text-gray-900">Official Opening and Closing Ceremony</strong>
+                      <p className="text-sm mt-1">Formal opening and closing ceremonies with keynote addresses and official statements.</p>
+                    </div>
+                    <div>
+                      <strong className="text-gray-900">Culture Night</strong>
+                      <p className="text-sm mt-1">A celebration of Southern African culture, music, and arts showcasing the rich diversity of the region.</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4">
+                    <em>Detailed schedule will be published once speakers are confirmed.</em>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Day 4 */}
+            <div className="card p-6 lg:p-8 border-2 border-primary-300">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-green-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                  4
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 4: Post-Conference Activity - Orathon</h3>
+                  <p className="text-gray-600 mb-4">
+                    Join us for a post-conference Orathon - a unique opportunity to continue the momentum and engagement 
+                    beyond the formal conference sessions.
+                  </p>
+                  <Link href="/participate/orathon" className="btn-primary inline-flex items-center gap-2">
+                    Register for Orathon
+                    <FiArrowRight />
+                  </Link>
+                  <p className="text-sm text-gray-500 mt-4">
+                    <em>Registration required. More details coming soon.</em>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Venue Information */}
       <section className="section bg-gradient-to-br from-gray-900 to-gray-800 text-white">
         <div className="container-custom">
@@ -447,7 +558,7 @@ export default function SarsycVIPage() {
                   <FiMapPin className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
                   <div>
                     <div className="font-semibold mb-1">Conference Venue</div>
-                    <div className="text-white/80">Windhoek International Convention Centre</div>
+                    <div className="text-white/80">The Life Science II Auditorium at the University of Namibia Hage Geingob Campus</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

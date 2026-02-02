@@ -35,7 +35,7 @@ type AbstractFormData = z.infer<typeof abstractSchema>
 
 const tracks = [
   { value: 'education-rights', label: 'Track 1: Education Rights and Equity', color: 'from-blue-500 to-blue-600' },
-  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs and Vulnerable Groups', color: 'from-purple-500 to-purple-600' },
+  { value: 'hiv-aids', label: 'Track 2: HIV/AIDS, STIs, and Sexual Health', color: 'from-purple-500 to-purple-600' },
   { value: 'ncd-prevention', label: 'Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles', color: 'from-pink-500 to-pink-600' },
   { value: 'digital-health', label: 'Track 4: Digital Health and Safety', color: 'from-orange-500 to-orange-600' },
   { value: 'mental-health', label: 'Track 5: Mental Health and Substance Abuse', color: 'from-green-500 to-green-600' },
@@ -238,7 +238,7 @@ export default function SubmitAbstractPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Notification by: May 31, 2026</span>
+                    <span>Notification by: April 15, 2026</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -271,14 +271,20 @@ export default function SubmitAbstractPage() {
               Submit Your Abstract
             </h1>
             <p className="text-lg text-gray-600 mb-2">
-              Share your research at SARSYC VI
+              Share your research at SARSYC VI Research Indaba
             </p>
-            <div className="inline-flex items-center gap-2 text-sm text-red-600 font-medium">
+            <div className="inline-flex items-center gap-2 text-sm text-red-600 font-medium mb-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
               </svg>
-              Deadline: April 30, 2026, 11:59 PM
+              Deadline: March 31, 2026, 11:59 PM
             </div>
+            <p className="text-sm text-gray-500">
+              Questions? Contact us at{' '}
+              <a href="mailto:researchunit@saywhat.org.zw" className="text-primary-600 hover:underline font-medium">
+                researchunit@saywhat.org.zw
+              </a>
+            </p>
           </div>
 
           {/* Progress Indicator */}

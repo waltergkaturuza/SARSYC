@@ -60,7 +60,11 @@ export default function AboutPage() {
               <p className="text-gray-600 leading-relaxed mb-4">
                 The <strong>Southern African Regional Students and Youth Conference (SARSYC)</strong> is a biennial
                 regional youth conference founded in <strong>2015</strong> by SAYWHAT (Student and Youth Working on 
-                Reproductive Health Action Team). It originated from SAYWHAT's National Students' Conference in Zimbabwe.
+                Reproductive Health Action Team). SARSYC VI is convened by SAYWHAT in partnership with{' '}
+                <a href="https://www.unam.edu.na" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-semibold">
+                  University of Namibia (UNAM)
+                </a>.
+                It originated from SAYWHAT's National Students' Conference in Zimbabwe.
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
                 SARSYC focuses on <strong>SRHR, HIV/AIDS, education rights, youth well-being, and integrated advocacy</strong>. 
