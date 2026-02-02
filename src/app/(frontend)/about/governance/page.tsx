@@ -1,4 +1,5 @@
-import { FiUsers, FiShield, FiTarget } from 'react-icons/fi'
+import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
+import Link from 'next/link'
 
 const committeeMembers = [
   {
@@ -108,10 +109,15 @@ export default function GovernancePage() {
               ))}
             </div>
 
-            <div className="mt-12 bg-blue-50 border border-blue-200 rounded-xl p-8 text-center">
-              <p className="text-gray-700">
-                <strong>Note:</strong> Full committee member profiles and photos will be updated as we approach the conference.
-              </p>
+            <div className="mt-12 text-center">
+              <Link
+                href="/about/youth-steering-committee"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <FiUsers className="w-5 h-5" />
+                View Full Committee Profiles
+                <FiArrowRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </div>

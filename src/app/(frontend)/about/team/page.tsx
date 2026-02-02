@@ -1,4 +1,5 @@
-import { FiMail, FiLinkedin } from 'react-icons/fi'
+import { FiMail, FiLinkedin, FiUsers, FiArrowRight } from 'react-icons/fi'
+import Link from 'next/link'
 
 const teamMembers = [
   {
@@ -115,10 +116,15 @@ export default function TeamPage() {
             ))}
           </div>
 
-          <div className="text-center mt-12 bg-blue-50 border border-blue-200 rounded-xl p-8">
-            <p className="text-gray-700 mb-4">
-              <strong>Note:</strong> Full team profiles and photos will be added soon. Check back regularly for updates.
-            </p>
+          <div className="text-center mt-12">
+            <Link
+              href="/about/youth-steering-committee"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              <FiUsers className="w-5 h-5" />
+              View Youth Steering Committee
+              <FiArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>

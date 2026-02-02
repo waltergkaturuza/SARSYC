@@ -27,6 +27,7 @@ import PartnershipInquiries from './collections/PartnershipInquiries'
 import VenueLocations from './collections/VenueLocations'
 import AuditLogs from './collections/AuditLogs'
 import Volunteers from './collections/Volunteers'
+import YouthSteeringCommittee from './collections/YouthSteeringCommittee'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -151,6 +152,7 @@ export default buildConfig({
     VenueLocations,
     AuditLogs,
     Volunteers,
+    YouthSteeringCommittee,
   ],
   globals: [
     SiteSettings,
