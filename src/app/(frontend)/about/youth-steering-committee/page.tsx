@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe, FiUsers } from 'react-icons/fi'
+import { FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
 import { getCountryLabel } from '@/lib/countries'
@@ -140,7 +140,7 @@ export default async function YouthSteeringCommitteePage() {
       <div className="container-custom py-16">
         {members.length === 0 ? (
           <EmptyState
-            icon={FiUsers}
+            icon="users"
             title="Committee Members Coming Soon"
             description="The Youth Steering Committee members will be announced soon. Check back later!"
           />
