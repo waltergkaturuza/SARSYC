@@ -8,6 +8,11 @@ const YouthSteeringCommittee: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'organization', 'country', 'role', 'featured'],
     group: 'Conference',
+    description: 'Manage Youth Steering Committee members',
+  },
+  labels: {
+    singular: 'Youth Steering Committee Member',
+    plural: 'Youth Steering Committee',
   },
   access: {
     read: () => true, // Public can read
