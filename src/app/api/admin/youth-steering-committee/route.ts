@@ -17,7 +17,9 @@ export async function POST(request: NextRequest) {
     console.log('📋 Request body parsed:', {
       hasName: !!body.name,
       hasPhotoUrl: !!body.photoUrl,
-      photoUrl: body.photoUrl?.substring(0, 50) + '...',
+      photoUrlType: typeof body.photoUrl,
+      photoUrl: body.photoUrl ? (body.photoUrl.substring(0, 100) + (body.photoUrl.length > 100 ? '...' : '')) : 'MISSING',
+      bodyKeys: Object.keys(body),
     })
     
     const {
@@ -41,10 +43,21 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Photo URL is required
-    if (!photoUrl || !photoUrl.startsWith('https://')) {
+    // Photo URL is required - validate it exists and is a valid URL
+    console.log('🔍 Photo URL validation:', {
+      photoUrl: photoUrl,
+      type: typeof photoUrl,
+      isString: typeof photoUrl === 'string',
+      startsWithHttps: typeof photoUrl === 'string' && photoUrl.startsWith('https://'),
+      length: typeof photoUrl === 'string' ? photoUrl.length : 0,
+    })
+    
+    if (!photoUrl || typeof photoUrl !== 'string' || !photoUrl.startsWith('https://')) {
       return NextResponse.json(
-        { error: 'Profile photo is required. Please upload a photo.' },
+        { 
+          error: 'Profile photo is required. Please upload a photo.',
+          details: photoUrl ? `Invalid photo URL format: ${photoUrl.substring(0, 50)}` : 'Photo URL is missing',
+        },
         { status: 400 }
       )
     }

@@ -157,6 +157,17 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
             }),
           })
 
+          console.log('📦 Blob upload response:', {
+            hasUrl: !!blob.url,
+            url: blob.url,
+            blobKeys: Object.keys(blob),
+            fullBlob: blob,
+          })
+
+          if (!blob.url) {
+            throw new Error('Blob upload succeeded but no URL returned in response')
+          }
+
           photoUrl = blob.url
           console.log('✅ Committee member photo uploaded directly to Vercel Blob:', photoUrl)
         } catch (uploadError: any) {
@@ -169,7 +180,26 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
         photoUrl = formData.photo
       }
 
+      // Validate photoUrl before submitting
+      if (!photoUrl || typeof photoUrl !== 'string' || !photoUrl.startsWith('https://')) {
+        console.error('❌ Invalid photoUrl before submission:', {
+          photoUrl,
+          type: typeof photoUrl,
+          isString: typeof photoUrl === 'string',
+          startsWithHttps: typeof photoUrl === 'string' && photoUrl.startsWith('https://'),
+        })
+        setErrors({ submit: 'Photo upload failed. Please try uploading the photo again.' })
+        setLoading(false)
+        return
+      }
+
       // Submit the member data
+      console.log('📤 Submitting member data with photoUrl:', {
+        hasPhotoUrl: !!photoUrl,
+        photoUrl: photoUrl.substring(0, 100),
+        photoUrlLength: photoUrl.length,
+      })
+
       const memberPayload = {
         name: formData.name.trim(),
         role: formData.role.trim(),
@@ -180,7 +210,7 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
         featured: formData.featured,
         order: formData.order || 0,
         socialMedia: formData.socialMedia,
-        photoUrl: photoUrl,
+        photoUrl: photoUrl, // Ensure this is a valid string URL
       }
 
       const url = mode === 'create' 
