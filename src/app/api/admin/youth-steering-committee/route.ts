@@ -51,18 +51,17 @@ export async function POST(request: NextRequest) {
 
     // Create media record with the blob URL
     let photoId: string | undefined
+    // Determine MIME type from URL (outside try block for error logging)
+    const urlPath = new URL(photoUrl).pathname
+    const filename = urlPath.split('/').pop() || `committee-member-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
+    const decodedFilename = decodeURIComponent(filename)
+    const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
+                    decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
+                    decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
+                    'image/jpeg'
+    
     try {
       console.log('Creating media record with blob URL...', photoUrl)
-      
-      const urlPath = new URL(photoUrl).pathname
-      const filename = urlPath.split('/').pop() || `committee-member-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
-      const decodedFilename = decodeURIComponent(filename)
-      
-      const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
-                      decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
-                      decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
-                      'image/jpeg'
-      
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
       const photoUpload = await payload.create({
