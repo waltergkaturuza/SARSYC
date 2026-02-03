@@ -36,17 +36,58 @@ export default async function AdminOrathonRegistrationsPage({ searchParams }: Or
     ]
   }
 
-  const results = await payload.find({
-    collection: 'orathon-registrations',
-    where,
-    limit,
-    page,
-    sort: '-createdAt',
-  })
+  let docs: any[] = []
+  let total = 0
+  let totalPages = 1
+  let dbError: string | null = null
 
-  const docs = results.docs || []
-  const total = results.totalDocs || 0
-  const totalPages = results.totalPages || 1
+  try {
+    const results = await payload.find({
+      collection: 'orathon-registrations',
+      where,
+      limit,
+      page,
+      sort: '-createdAt',
+    })
+    docs = results.docs || []
+    total = results.totalDocs || 0
+    totalPages = results.totalPages || 1
+  } catch (err: any) {
+    console.error('[admin/orathon-registrations] Query failed:', err)
+    dbError = err?.message || err?.cause?.message || 'Database query failed'
+  }
+
+  if (dbError) {
+    return (
+      <div className="w-full py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Orathon Registrations</h1>
+          <p className="text-gray-600 mt-2">Manage registrations for the Orathon Marathon Activity (Day 4)</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-amber-900 mb-2">Setup required</h2>
+          <p className="text-amber-800 mb-4">
+            The Orathon registrations table is missing or has the wrong schema. This usually means the database
+            migration has not been run yet.
+          </p>
+          <p className="text-sm text-amber-800 mb-2">Error: {dbError}</p>
+          <p className="text-sm text-amber-800 mb-4">
+            <strong>Fix:</strong> Run the SQL migration on your database (e.g. in Neon SQL Editor):
+          </p>
+          <ol className="list-decimal list-inside text-sm text-amber-800 space-y-1 mb-4">
+            <li>If the table does not exist yet: run <code className="bg-amber-100 px-1 rounded">scripts/create_orathon_registrations_table.sql</code></li>
+            <li>If the table exists but has camelCase columns: run <code className="bg-amber-100 px-1 rounded">scripts/fix_orathon_registrations_columns.sql</code></li>
+          </ol>
+          <Link
+            href="/admin/dashboard"
+            className="inline-flex items-center gap-2 text-amber-900 font-medium hover:underline"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full py-8">

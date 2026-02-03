@@ -91,21 +91,18 @@ const getEmailAdapter = () => {
     pool: false, // Disable connection pooling to avoid persistent connections
   } as any)
 
-  // Verify connection asynchronously (non-blocking)
-  // This prevents build-time timeouts
-  if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
-    // Only verify in development, not during Vercel builds
-    transport.verify().catch((err: any) => {
-      console.warn('SMTP connection verification failed (non-blocking):', err?.message || err)
-      // Don't throw - allow the adapter to be created even if verification fails
-      // Emails will still attempt to send, and will fail gracefully if SMTP is misconfigured
-    })
-  }
+  // Skip transport verification in production/Vercel to avoid ETIMEDOUT (serverless cold starts,
+  // firewalls, or slow SMTP can cause verify() to timeout). Emails are still sent; they fail at
+  // send time if SMTP is unreachable.
+  const skipVerify =
+    process.env.NODE_ENV === 'production' ||
+    process.env.VERCEL === '1'
 
   return nodemailerAdapter({
     defaultFromAddress: from,
     defaultFromName: 'SARSYC VI',
     transport,
+    skipVerify,
   })
 }
 
