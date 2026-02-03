@@ -142,16 +142,18 @@ export default async function AdminOrathonRegistrationsPage({ searchParams }: Or
                 name="status"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 defaultValue={statusFilter}
-                onChange={(e) => {
-                  const form = e.target.closest('form')
-                  if (form) form.submit()
-                }}
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+              <button
+                type="submit"
+                className="mt-2 inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Apply
+              </button>
             </form>
           </div>
 
@@ -167,6 +169,12 @@ export default async function AdminOrathonRegistrationsPage({ searchParams }: Or
                 defaultValue={searchQuery}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
+              <button
+                type="submit"
+                className="mt-2 inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Search
+              </button>
             </form>
           </div>
         </div>
