@@ -64,8 +64,8 @@ export default function GovernancePage() {
     <>
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="w-full text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Governance
             </h1>
@@ -78,8 +78,8 @@ export default function GovernancePage() {
 
       {/* Governance Structure */}
       <section className="section bg-white">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="w-full">
             <h2 className="section-title">Youth Steering Committee</h2>
             <p className="section-subtitle">
               10 youth leaders from SADC countries who co-plan and execute SARSYC VI, champion post-conference 
@@ -91,7 +91,21 @@ export default function GovernancePage() {
                 <div key={index} className="card p-6 hover:shadow-lg transition-shadow">
                   {/* Country Flag */}
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl">{countryFlags[member.country] || '🌍'}</span>
+                    <span 
+                      className="text-3xl" 
+                      style={{ 
+                        fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif',
+                        fontSize: '2rem',
+                        lineHeight: '1',
+                        display: 'inline-block',
+                        minWidth: '2rem',
+                        textAlign: 'center'
+                      }}
+                      role="img"
+                      aria-label={`${member.country} flag`}
+                    >
+                      {countryFlags[member.country] || '🌍'}
+                    </span>
                     <span className="text-sm font-semibold text-gray-700">{member.country}</span>
                   </div>
                   
@@ -138,7 +152,7 @@ export default function GovernancePage() {
 
       {/* Governance Principles */}
       <section className="section bg-gray-50">
-        <div className="container-custom">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <h2 className="section-title">Governance Principles</h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="card p-8 text-center">
