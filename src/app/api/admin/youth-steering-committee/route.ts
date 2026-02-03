@@ -83,28 +83,27 @@ export async function POST(request: NextRequest) {
       console.log('Creating media record with blob URL...', photoUrl)
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
-      // Use payload.db.collections.media.create() to bypass Payload's upload validation
-      // This is the same approach used by abstracts and partners routes
-      // It directly creates the database record without going through upload validation
-      const result = await payload.db.collections.media.create({
+      // Use payload.create() EXACTLY like speakers route - it works there
+      // The Media collection hooks should handle external URLs
+      const photoUpload = await payload.create({
+        collection: 'media',
         data: {
           alt: `Youth Steering Committee member photo: ${name}`,
           url: photoUrl, // Set the URL directly (for Vercel Blob)
+          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
           mimeType: mimeType,
-          filesize: 0, // External URLs don't have filesize
-          width: null, // Will be set if Payload can process the image
-          height: null, // Will be set if Payload can process the image
+          // Note: filesize, width, height will be set by Payload if it can process the image
+          // For external URLs, these may remain null, which is fine
         },
+        overrideAccess: true, // Allow admin uploads
       })
-      
-      // Extract ID from result (can be string or object)
-      const photoUpload = typeof result === 'string' ? result : result.id
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
       
       console.log('Media record created:', {
-        photoUploadId: photoUpload,
         type: typeof photoUpload,
+        id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
+        hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
       })
       
       photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
