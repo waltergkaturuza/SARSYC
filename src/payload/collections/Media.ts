@@ -64,6 +64,23 @@ const Media: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }: any) => {
+        // If URL is external (Vercel Blob), skip file upload processing
+        // This allows creating media records with external URLs without requiring file uploads
+        if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
+          // External URL - ensure filename doesn't cause Payload to generate file paths
+          // The URL should be used directly, not through /api/media/file/...
+          console.log('🌐 External URL detected in media record, using URL directly:', data.url)
+          
+          // For external URLs, we don't need file processing
+          // Clear any file-related data that might cause issues
+          if (req) {
+            req.file = undefined
+            req.files = undefined
+          }
+          
+          return data
+        }
+        
         // Intercept before Payload's internal validation
         // This runs before the upload field's beforeChange hook
         if (operation === 'create' && req?.file) {
@@ -85,14 +102,6 @@ const Media: CollectionConfig = {
               data.mimeType = 'application/pdf'
             }
           }
-        }
-        
-        // If URL is external (Vercel Blob), ensure it's used directly
-        // Don't let Payload generate file paths from filename
-        if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
-          // External URL - ensure filename doesn't cause Payload to generate file paths
-          // The URL should be used directly, not through /api/media/file/...
-          console.log('🌐 External URL detected in media record, using URL directly:', data.url)
         }
         
         return data
