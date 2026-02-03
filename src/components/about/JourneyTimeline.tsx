@@ -101,8 +101,18 @@ export default function JourneyTimeline() {
             >
               {/* Flagpole Container */}
               <div className="flex flex-col items-center mb-3">
-                {/* Flag - Ensure it renders properly */}
-                <div className="text-7xl mb-1 drop-shadow-lg" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                {/* Flag - Ensure it renders properly with emoji support */}
+                <div 
+                  className="text-7xl mb-1 drop-shadow-lg" 
+                  style={{ 
+                    fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif',
+                    fontSize: '4.5rem',
+                    lineHeight: '1',
+                    display: 'inline-block'
+                  }}
+                  role="img"
+                  aria-label={`${milestone.country} flag`}
+                >
                   {milestone.flag}
                 </div>
                 {/* Pole */}
