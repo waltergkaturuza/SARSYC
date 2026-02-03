@@ -73,16 +73,15 @@ export async function PATCH(
                         decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
                         'image/jpeg'
         
-        const photoUpload = await payload.create({
-          collection: 'media',
+        // Use database adapter directly to bypass Payload's upload handler
+        const photoUpload = await payload.db.collections.media.create({
           data: {
             alt: `Youth Steering Committee member photo: ${name}`,
             url: photoUrl,
             mimeType: mimeType,
           },
-          overrideAccess: true,
         })
-        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
+        photoId = photoUpload?.id
         
         console.log(`✅ New photo uploaded for committee member ${params.id}: ${photoId}`)
       } catch (uploadError: any) {
