@@ -65,7 +65,7 @@ export default function RegisterOrathonPage() {
         throw new Error(result.error || 'Registration failed. Please try again.')
       }
 
-      showToast('success', 'Registration successful! You will receive a confirmation email shortly.')
+      showToast.success('Registration successful! You will receive a confirmation email shortly.')
       reset()
       
       // Scroll to top
@@ -73,7 +73,7 @@ export default function RegisterOrathonPage() {
     } catch (error: any) {
       console.error('Registration error:', error)
       setSubmitError(error.message || 'Registration failed. Please try again.')
-      showToast('error', error.message || 'Registration failed. Please try again.')
+      showToast.error(error.message || 'Registration failed. Please try again.')
     } finally {
       setIsSubmitting(false)
     }

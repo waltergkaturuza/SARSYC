@@ -44,23 +44,31 @@ export default function OrathonRegistrationPage() {
     setIsSubmitting(true)
     
     try {
-      // TODO: Create API endpoint for Orathon registration
-      // For now, we'll use the partnerships API as a placeholder
-      const response = await fetch('/api/partnerships', {
+      // Use the new Orathon registration API endpoint
+      const response = await fetch('/api/orathon/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          organizationName: data.organization,
-          contactPerson: `${data.firstName} ${data.lastName}`,
+          firstName: data.firstName,
+          lastName: data.lastName,
           email: data.email,
           phone: data.phone,
-          tier: 'custom',
-          message: `Orathon Registration\n\nCountry: ${data.country}\nEmergency Contact: ${data.emergencyContact}\nEmergency Phone: ${data.emergencyPhone}\nMedical Conditions: ${data.medicalConditions || 'None'}\nDietary Requirements: ${data.dietaryRequirements || 'None'}\nT-Shirt Size: ${data.tshirtSize}`,
+          dateOfBirth: '', // Not in current form schema
+          gender: 'prefer-not-to-say', // Not in current form schema
+          country: data.country,
+          city: '', // Not in current form schema - could add later
+          emergencyContactName: data.emergencyContact,
+          emergencyContactPhone: data.emergencyPhone,
+          medicalConditions: data.medicalConditions,
+          fitnessLevel: 'beginner', // Not in current form schema - defaulting
+          tshirtSize: data.tshirtSize,
         }),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        throw new Error('Registration failed')
+        throw new Error(result.error || 'Registration failed')
       }
 
       showToast.success('Orathon registration submitted successfully!')

@@ -527,7 +527,7 @@ export default function SarsycVIPage() {
                     Join us for a post-conference Orathon - a unique opportunity to continue the momentum and engagement 
                     beyond the formal conference sessions.
                   </p>
-                  <Link href="/participate/orathon" className="btn-primary inline-flex items-center gap-2">
+                  <Link href="/participate/register-orathon" className="btn-primary inline-flex items-center gap-2">
                     Register for Orathon
                     <FiArrowRight />
                   </Link>
