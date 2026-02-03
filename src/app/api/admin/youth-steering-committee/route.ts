@@ -86,20 +86,25 @@ export async function POST(request: NextRequest) {
       // Use payload.db.collections.media.create() to bypass Payload's upload validation
       // This is the same approach used by abstracts and partners routes
       // It directly creates the database record without going through upload validation
-      const photoUpload = await payload.db.collections.media.create({
-        alt: `Youth Steering Committee member photo: ${name}`,
-        url: photoUrl, // Set the URL directly (for Vercel Blob)
-        mimeType: mimeType,
-        // Note: filesize, width, height will be set by Payload if it can process the image
-        // For external URLs, these may remain null, which is fine
+      const result = await payload.db.collections.media.create({
+        data: {
+          alt: `Youth Steering Committee member photo: ${name}`,
+          url: photoUrl, // Set the URL directly (for Vercel Blob)
+          mimeType: mimeType,
+          filesize: 0, // External URLs don't have filesize
+          width: null, // Will be set if Payload can process the image
+          height: null, // Will be set if Payload can process the image
+        },
       })
+      
+      // Extract ID from result (can be string or object)
+      const photoUpload = typeof result === 'string' ? result : result.id
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
       
       console.log('Media record created:', {
+        photoUploadId: photoUpload,
         type: typeof photoUpload,
-        id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
-        hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
       })
       
       photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
