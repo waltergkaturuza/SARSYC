@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       
       console.log(`✅ Media record created for committee member photo: ${photoId}`)
     } catch (uploadError: any) {
-      console.error('Media record creation error details:', {
+      console.error('❌ Media record creation error details:', {
         message: uploadError.message,
         stack: uploadError.stack,
         data: uploadError.data,
@@ -114,17 +114,40 @@ export async function POST(request: NextRequest) {
         statusCode: uploadError.statusCode,
         errors: uploadError.errors,
         name: uploadError.name,
+        photoUrl: photoUrl?.substring(0, 100),
+        mimeType,
       })
+      
+      // Return detailed error information
+      const errorResponse: any = {
+        error: 'Failed to create media record',
+        details: uploadError.message || 'Media record creation failed',
+        photoUrl: photoUrl?.substring(0, 100), // Include partial URL for debugging
+      }
+      
+      // Include validation errors if available
+      if (uploadError.data?.errors) {
+        errorResponse.validationErrors = uploadError.data.errors
+      }
+      
+      // Include field-specific errors
+      if (uploadError.errors) {
+        errorResponse.fieldErrors = uploadError.errors
+      }
+      
+      // Include stack trace in development
+      if (process.env.NODE_ENV === 'development') {
+        errorResponse.stack = uploadError.stack
+        errorResponse.data = uploadError.data
+      }
+      
+      // Include error code/status
+      if (uploadError.status || uploadError.statusCode) {
+        errorResponse.statusCode = uploadError.status || uploadError.statusCode
+      }
+      
       return NextResponse.json(
-        { 
-          error: 'Failed to create media record',
-          details: uploadError.message || 'Media record creation failed',
-          ...(process.env.NODE_ENV === 'development' && {
-            stack: uploadError.stack,
-            data: uploadError.data,
-            errors: uploadError.errors,
-          }),
-        },
+        errorResponse,
         { status: 500 }
       )
     }

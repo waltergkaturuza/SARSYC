@@ -199,13 +199,22 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
 
       if (!response.ok) {
         let errorMessage = 'Failed to save committee member'
+        let errorDetails: any = {}
         try {
           const errorData = await response.json()
           errorMessage = errorData.error || errorMessage
+          errorDetails = errorData
+          console.error('❌ API Error Response:', errorData)
         } catch (e) {
           errorMessage = response.statusText || errorMessage
         }
-        throw new Error(errorMessage)
+        
+        // Show more detailed error message
+        const detailedMessage = errorDetails.details 
+          ? `${errorMessage}: ${errorDetails.details}`
+          : errorMessage
+        
+        throw new Error(detailedMessage)
       }
 
       const result = await response.json()
