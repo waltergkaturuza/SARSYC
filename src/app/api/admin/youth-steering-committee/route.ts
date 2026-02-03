@@ -49,122 +49,102 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Photo URL is required - validate it exists and is a valid URL
-    console.log('🔍 Photo URL validation:', {
-      photoUrl: photoUrl,
-      type: typeof photoUrl,
-      isString: typeof photoUrl === 'string',
-      startsWithHttps: typeof photoUrl === 'string' && photoUrl.startsWith('https://'),
-      length: typeof photoUrl === 'string' ? photoUrl.length : 0,
-    })
-    
-    if (!photoUrl || typeof photoUrl !== 'string' || !photoUrl.startsWith('https://')) {
-      return NextResponse.json(
-        { 
-          error: 'Profile photo is required. Please upload a photo.',
-          details: photoUrl ? `Invalid photo URL format: ${photoUrl.substring(0, 50)}` : 'Photo URL is missing',
-        },
-        { status: 400 }
-      )
-    }
-
-    // Create media record with the blob URL
+    // Photo URL is optional temporarily - validate format if provided
     let photoId: string | undefined
-    // Determine MIME type from URL (outside try block for error logging)
-    const urlPath = new URL(photoUrl).pathname
-    const filename = urlPath.split('/').pop() || `committee-member-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
-    const decodedFilename = decodeURIComponent(filename)
-    const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
-                    decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
-                    decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
-                    'image/jpeg'
-    
-    try {
-      console.log('Creating media record with blob URL...', photoUrl)
-      console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
-      
-      // Use payload.create() EXACTLY like speakers route - it works there
-      // The Media collection hooks should handle external URLs
-      const photoUpload = await payload.create({
-        collection: 'media',
-        data: {
-          alt: `Youth Steering Committee member photo: ${name}`,
-          url: photoUrl, // Set the URL directly (for Vercel Blob)
-          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          mimeType: mimeType,
-          // Note: filesize, width, height will be set by Payload if it can process the image
-          // For external URLs, these may remain null, which is fine
-        },
-        overrideAccess: true, // Allow admin uploads
+    if (photoUrl) {
+      console.log('🔍 Photo URL validation:', {
+        photoUrl: photoUrl,
+        type: typeof photoUrl,
+        isString: typeof photoUrl === 'string',
+        startsWithHttps: typeof photoUrl === 'string' && photoUrl.startsWith('https://'),
+        length: typeof photoUrl === 'string' ? photoUrl.length : 0,
       })
       
-      console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
-      
-      console.log('Media record created:', {
-        type: typeof photoUpload,
-        id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
-        hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
-      })
-      
-      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
-      
-      if (!photoId) {
-        console.error('Media record creation returned no ID:', photoUpload)
+      if (typeof photoUrl !== 'string' || !photoUrl.startsWith('https://')) {
         return NextResponse.json(
           { 
-            error: 'Failed to create media record - no ID returned',
-            details: 'The media record was created but no file ID was returned',
+            error: 'Invalid photo URL format',
+            details: `Photo URL must be a valid HTTPS URL. Received: ${photoUrl?.substring(0, 50)}`,
+          },
+          { status: 400 }
+        )
+      }
+
+      // Create media record with the blob URL
+      // Determine MIME type from URL (outside try block for error logging)
+      const urlPath = new URL(photoUrl).pathname
+      const filename = urlPath.split('/').pop() || `committee-member-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
+      const decodedFilename = decodeURIComponent(filename)
+      const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
+                      decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
+                      decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
+                      'image/jpeg'
+      
+      try {
+        console.log('Creating media record with blob URL...', photoUrl)
+        console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
+        
+        // Use payload.create() EXACTLY like speakers route - it works there
+        // The Media collection hooks should handle external URLs
+        const photoUpload = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Youth Steering Committee member photo: ${name}`,
+            url: photoUrl, // Set the URL directly (for Vercel Blob)
+            // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
+            mimeType: mimeType,
+            // Note: filesize, width, height will be set by Payload if it can process the image
+            // For external URLs, these may remain null, which is fine
+          },
+          overrideAccess: true, // Allow admin uploads
+        })
+        
+        console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
+        
+        console.log('Media record created:', {
+          type: typeof photoUpload,
+          id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
+          hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
+        })
+        
+        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+        
+        if (!photoId) {
+          console.error('Media record creation returned no ID:', photoUpload)
+          return NextResponse.json(
+            { 
+              error: 'Failed to create media record - no ID returned',
+              details: 'The media record was created but no file ID was returned',
+            },
+            { status: 500 }
+          )
+        }
+        
+        console.log(`✅ Media record created for committee member photo: ${photoId}`)
+      } catch (uploadError: any) {
+        console.error('❌ Media record creation error details:', {
+          message: uploadError.message,
+          stack: uploadError.stack,
+          data: uploadError.data,
+          status: uploadError.status,
+          statusCode: uploadError.statusCode,
+          errors: uploadError.errors,
+          name: uploadError.name,
+          photoUrl: photoUrl?.substring(0, 100),
+          mimeType,
+        })
+        
+        return NextResponse.json(
+          { 
+            error: 'Failed to create media record',
+            details: uploadError.message || 'Media record creation failed',
+            photoUrl: photoUrl?.substring(0, 50),
           },
           { status: 500 }
         )
       }
-      
-      console.log(`✅ Media record created for committee member photo: ${photoId}`)
-    } catch (uploadError: any) {
-      console.error('❌ Media record creation error details:', {
-        message: uploadError.message,
-        stack: uploadError.stack,
-        data: uploadError.data,
-        status: uploadError.status,
-        statusCode: uploadError.statusCode,
-        errors: uploadError.errors,
-        name: uploadError.name,
-        photoUrl: photoUrl?.substring(0, 100),
-        mimeType,
-      })
-      
-      // Return detailed error information
-      const errorResponse: any = {
-        error: 'Failed to create media record',
-        details: uploadError.message || 'Media record creation failed',
-        photoUrl: photoUrl?.substring(0, 100), // Include partial URL for debugging
-      }
-      
-      // Include validation errors if available
-      if (uploadError.data?.errors) {
-        errorResponse.validationErrors = uploadError.data.errors
-      }
-      
-      // Include field-specific errors
-      if (uploadError.errors) {
-        errorResponse.fieldErrors = uploadError.errors
-      }
-      
-      // Include stack trace in development
-      if (process.env.NODE_ENV === 'development') {
-        errorResponse.stack = uploadError.stack
-        errorResponse.data = uploadError.data
-      }
-      
-      // Include error code/status
-      if (uploadError.status || uploadError.statusCode) {
-        errorResponse.statusCode = uploadError.status || uploadError.statusCode
-      }
-      
-      return NextResponse.json(
-        errorResponse,
-        { status: 500 }
-      )
+    } else {
+      console.log('⚠️  No photo URL provided - creating member without photo (temporarily allowed)')
     }
 
     // Create committee member
@@ -193,7 +173,7 @@ export async function POST(request: NextRequest) {
           country,
           bio: typeof bio === 'string' ? bio : (Array.isArray(bio) ? bio : JSON.stringify(bio)),
           email: email?.trim() || undefined,
-          photo: photoId,
+          photo: photoId || undefined, // Optional - only set if photo was uploaded
           featured: featured || false,
           order: order || 0,
           socialMedia: socialMedia || {},

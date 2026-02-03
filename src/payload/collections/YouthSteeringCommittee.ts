@@ -53,10 +53,10 @@ const YouthSteeringCommittee: CollectionConfig = {
       name: 'photo',
       type: 'upload',
       relationTo: 'media',
-      required: true,
+      required: false, // Temporarily optional
       label: 'Profile Photo',
       admin: {
-        description: 'Upload profile photo. Photos are stored in Vercel Blob storage.',
+        description: 'Upload profile photo. Photos are stored in Vercel Blob storage. (Optional)',
       },
     },
     {

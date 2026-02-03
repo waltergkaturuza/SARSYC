@@ -114,7 +114,7 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
     if (!formData.organization.trim()) newErrors.organization = 'Organization is required'
     if (!formData.country) newErrors.country = 'Country is required'
     if (!formData.bio || !formData.bio.trim()) newErrors.bio = 'Biography is required'
-    if (!formData.photo && !initialData?.photo) newErrors.photo = 'Profile photo is required'
+    // Photo is optional temporarily - no validation needed
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -180,15 +180,15 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
         photoUrl = formData.photo
       }
 
-      // Validate photoUrl before submitting
-      if (!photoUrl || typeof photoUrl !== 'string' || !photoUrl.startsWith('https://')) {
+      // Validate photoUrl format if provided (optional temporarily)
+      if (photoUrl && (typeof photoUrl !== 'string' || !photoUrl.startsWith('https://'))) {
         console.error('❌ Invalid photoUrl before submission:', {
           photoUrl,
           type: typeof photoUrl,
           isString: typeof photoUrl === 'string',
           startsWithHttps: typeof photoUrl === 'string' && photoUrl.startsWith('https://'),
         })
-        setErrors({ submit: 'Photo upload failed. Please try uploading the photo again.' })
+        setErrors({ submit: 'Invalid photo URL format. Please upload a photo again or skip it.' })
         setLoading(false)
         return
       }
@@ -363,7 +363,7 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
 
       {/* Photo Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <FormField label="Profile Photo" required error={errors.photo} hint="Upload profile photo (max 10MB). Photos are uploaded directly to blob storage.">
+        <FormField label="Profile Photo" error={errors.photo} hint="Upload profile photo (max 10MB). Photos are uploaded directly to blob storage. (Optional)">
           <div className="space-y-4">
             {formData.photo && typeof formData.photo === 'string' && (
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
