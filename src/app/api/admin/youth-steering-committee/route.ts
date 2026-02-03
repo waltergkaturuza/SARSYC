@@ -169,21 +169,6 @@ export async function POST(request: NextRequest) {
       ]) as any
       
       console.log(`⏱️  Committee member creation completed (${Date.now() - startTime}ms elapsed)`)
-        collection: 'youth-steering-committee',
-        data: {
-          name,
-          role,
-          organization,
-          country,
-          bio,
-          email: email?.trim() || undefined,
-          photo: photoId,
-          featured: featured || false,
-          order: order || 0,
-          socialMedia: socialMedia || {},
-        },
-        overrideAccess: true,
-      })
 
       console.log('✅ Committee member created successfully:', member.id)
       return NextResponse.json({ success: true, doc: member })
