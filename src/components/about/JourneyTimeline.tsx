@@ -101,8 +101,10 @@ export default function JourneyTimeline() {
             >
               {/* Flagpole Container */}
               <div className="flex flex-col items-center mb-3">
-                {/* Flag */}
-                <div className="text-7xl mb-1 drop-shadow-lg">{milestone.flag}</div>
+                {/* Flag - Ensure it renders properly */}
+                <div className="text-7xl mb-1 drop-shadow-lg" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                  {milestone.flag}
+                </div>
                 {/* Pole */}
                 <div className="w-1.5 h-20 bg-gray-500 rounded-full shadow-md"></div>
               </div>

@@ -123,42 +123,46 @@ export default function YouthSteeringCommitteePage() {
                 <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
               </div>
               
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-8">
                 {members.map((member, index) => (
                   <div
                     key={`${country}-${index}`}
-                    className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                    className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    {/* Photo */}
-                    <div className="relative w-full h-64 bg-gradient-to-br from-primary-400 to-secondary-400">
-                      {member.photo ? (
-                        <Image
-                          src={member.photo}
-                          alt={member.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
-                          {getInitials(member.name)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6">
-                      <div className="mb-3">
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
-                        <p className="text-primary-600 font-medium text-sm">{member.role}</p>
-                        <p className="text-sm text-gray-600 mt-1">{member.organization}</p>
+                    <div className="flex flex-col md:flex-row">
+                      {/* Photo - Left Side */}
+                      <div className="relative w-full md:w-80 h-80 md:h-auto bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0">
+                        {member.photo ? (
+                          <Image
+                            src={member.photo}
+                            alt={member.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 320px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
+                            {getInitials(member.name)}
+                          </div>
+                        )}
                       </div>
 
-                      {member.bio && (
-                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
-                          {member.bio}
-                        </p>
-                      )}
+                      {/* Bio Content - Right Side */}
+                      <div className="flex-1 p-8">
+                        <div className="mb-4">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                          <p className="text-primary-600 font-semibold text-lg mb-1">{member.role}</p>
+                          <p className="text-gray-600">{member.organization}</p>
+                        </div>
+
+                        {member.bio && (
+                          <div className="prose prose-gray max-w-none">
+                            <p className="text-gray-700 leading-relaxed text-base font-light">
+                              {member.bio}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
