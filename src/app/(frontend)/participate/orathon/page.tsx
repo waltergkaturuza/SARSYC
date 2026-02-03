@@ -13,12 +13,20 @@ const orathonSchema = z.object({
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().min(10, 'Phone number is required'),
+  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+  gender: z.enum(['male', 'female', 'other', 'prefer-not-to-say'], {
+    required_error: 'Please select your gender',
+  }),
   organization: z.string().min(2, 'Organization is required'),
   country: z.string().min(2, 'Please select your country'),
-  emergencyContact: z.string().min(10, 'Emergency contact is required'),
+  city: z.string().min(2, 'Please enter your city'),
+  emergencyContact: z.string().min(2, 'Emergency contact name is required'),
   emergencyPhone: z.string().min(10, 'Emergency phone is required'),
   medicalConditions: z.string().optional(),
   dietaryRequirements: z.string().optional(),
+  fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], {
+    required_error: 'Please select your fitness level',
+  }),
   tshirtSize: z.enum(['xs', 's', 'm', 'l', 'xl', 'xxl'], {
     required_error: 'Please select a t-shirt size',
   }),
@@ -53,14 +61,14 @@ export default function OrathonRegistrationPage() {
           lastName: data.lastName,
           email: data.email,
           phone: data.phone,
-          dateOfBirth: '', // Not in current form schema
-          gender: 'prefer-not-to-say', // Not in current form schema
+          dateOfBirth: data.dateOfBirth,
+          gender: data.gender,
           country: data.country,
-          city: '', // Not in current form schema - could add later
+          city: data.city,
           emergencyContactName: data.emergencyContact,
           emergencyContactPhone: data.emergencyPhone,
           medicalConditions: data.medicalConditions,
-          fitnessLevel: 'beginner', // Not in current form schema - defaulting
+          fitnessLevel: data.fitnessLevel,
           tshirtSize: data.tshirtSize,
         }),
       })
@@ -251,6 +259,47 @@ export default function OrathonRegistrationPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
+                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+                        Date of Birth *
+                      </label>
+                      <input
+                        {...register('dateOfBirth')}
+                        type="date"
+                        id="dateOfBirth"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                          errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.dateOfBirth && (
+                        <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
+                        Gender *
+                      </label>
+                      <select
+                        {...register('gender')}
+                        id="gender"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                          errors.gender ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                      </select>
+                      {errors.gender && (
+                        <p className="mt-1 text-sm text-red-600">{errors.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
                       <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
                         Organization *
                       </label>
@@ -289,6 +338,23 @@ export default function OrathonRegistrationPage() {
                         <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
                       )}
                     </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                      City *
+                    </label>
+                    <input
+                      {...register('city')}
+                      type="text"
+                      id="city"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                        errors.city ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -367,28 +433,51 @@ export default function OrathonRegistrationPage() {
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="tshirtSize" className="block text-sm font-medium text-gray-700 mb-2">
-                      T-Shirt Size *
-                    </label>
-                    <select
-                      {...register('tshirtSize')}
-                      id="tshirtSize"
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                        errors.tshirtSize ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    >
-                      <option value="">Select size</option>
-                      <option value="xs">XS - Extra Small</option>
-                      <option value="s">S - Small</option>
-                      <option value="m">M - Medium</option>
-                      <option value="l">L - Large</option>
-                      <option value="xl">XL - Extra Large</option>
-                      <option value="xxl">XXL - Extra Extra Large</option>
-                    </select>
-                    {errors.tshirtSize && (
-                      <p className="mt-1 text-sm text-red-600">{errors.tshirtSize.message}</p>
-                    )}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="fitnessLevel" className="block text-sm font-medium text-gray-700 mb-2">
+                        Fitness Level *
+                      </label>
+                      <select
+                        {...register('fitnessLevel')}
+                        id="fitnessLevel"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                          errors.fitnessLevel ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select fitness level</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                      {errors.fitnessLevel && (
+                        <p className="mt-1 text-sm text-red-600">{errors.fitnessLevel.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="tshirtSize" className="block text-sm font-medium text-gray-700 mb-2">
+                        T-Shirt Size *
+                      </label>
+                      <select
+                        {...register('tshirtSize')}
+                        id="tshirtSize"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                          errors.tshirtSize ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select size</option>
+                        <option value="xs">XS - Extra Small</option>
+                        <option value="s">S - Small</option>
+                        <option value="m">M - Medium</option>
+                        <option value="l">L - Large</option>
+                        <option value="xl">XL - Extra Large</option>
+                        <option value="xxl">XXL - Extra Extra Large</option>
+                      </select>
+                      {errors.tshirtSize && (
+                        <p className="mt-1 text-sm text-red-600">{errors.tshirtSize.message}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
