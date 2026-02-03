@@ -73,23 +73,18 @@ export async function PATCH(
                         decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
                         'image/jpeg'
         
-        // Use database adapter directly to bypass Payload's upload handler
-        if (!payload.db?.collections?.media) {
-          throw new Error('Payload database adapter or media collection not available')
-        }
-        
-        const photoUpload = await payload.db.collections.media.create({
+        // Use payload.create() like speakers route - Media collection hooks handle external URLs
+        const photoUpload = await payload.create({
+          collection: 'media',
           data: {
             alt: `Youth Steering Committee member photo: ${name}`,
-            filename: decodedFilename,
             url: photoUrl,
+            // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
             mimeType: mimeType,
-            filesize: 0,
-            width: null,
-            height: null,
           },
+          overrideAccess: true,
         })
-        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
         
         console.log(`✅ New photo uploaded for committee member ${params.id}: ${photoId}`)
       } catch (uploadError: any) {

@@ -63,39 +63,30 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Creating media record with blob URL...', photoUrl)
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
-      console.log('Payload DB check:', {
-        hasDb: !!payload.db,
-        hasCollections: !!payload.db?.collections,
-        hasMedia: !!payload.db?.collections?.media,
-      })
       
-      // Use database adapter directly to bypass Payload's upload handler
-      // This is necessary for external URLs (Vercel Blob) that don't require file uploads
-      if (!payload.db?.collections?.media) {
-        throw new Error('Payload database adapter or media collection not available')
-      }
-      
-      const photoUpload = await payload.db.collections.media.create({
+      // Use payload.create() like speakers route - Media collection hooks handle external URLs
+      const photoUpload = await payload.create({
+        collection: 'media',
         data: {
           alt: `Youth Steering Committee member photo: ${name}`,
-          filename: decodedFilename,
           url: photoUrl, // Set the URL directly (for Vercel Blob)
+          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
           mimeType: mimeType,
-          filesize: 0, // External URLs don't have filesize
-          width: null,
-          height: null,
+          // Note: filesize, width, height will be set by Payload if it can process the image
+          // For external URLs, these may remain null, which is fine
         },
+        overrideAccess: true,
       })
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
       
       console.log('Media record created:', {
         type: typeof photoUpload,
-        id: photoUpload?.id,
-        hasId: photoUpload && 'id' in photoUpload,
+        id: typeof photoUpload === 'string' ? photoUpload : photoUpload?.id,
+        hasId: typeof photoUpload === 'object' && photoUpload !== null && 'id' in photoUpload,
       })
       
-      photoId = photoUpload?.id
+      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
       
       if (!photoId) {
         console.error('Media record creation returned no ID:', photoUpload)
