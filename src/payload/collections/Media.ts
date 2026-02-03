@@ -115,28 +115,44 @@ const Media: CollectionConfig = {
           url: data?.url?.substring(0, 50),
           hasFile: !!req?.file,
           hasFiles: !!req?.files,
+          reqKeys: req ? Object.keys(req) : [],
           dataKeys: data ? Object.keys(data) : [],
+          contentType: req?.headers?.['content-type'],
         })
         
         // If URL is external (Vercel Blob), skip file upload validation
         // This must happen in beforeValidate to prevent Payload's upload handler from expecting files
-        if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
-          console.log('🌐 External URL detected in beforeValidate, skipping file validation:', data.url)
+        const isExternalUrl = data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))
+        const isJsonRequest = req?.headers?.['content-type']?.includes('application/json')
+        const hasNoFiles = !req?.file && !req?.files
+        
+        if (isExternalUrl || (isJsonRequest && hasNoFiles && data?.url)) {
+          console.log('🌐 External URL detected in beforeValidate, skipping file validation:', {
+            url: data.url,
+            isExternalUrl,
+            isJsonRequest,
+            hasNoFiles,
+          })
           
-          // Mark this as an external URL to skip upload processing
-          // Set a flag that Payload's upload handler can check
-          if (data) {
-            data._skipUpload = true
-            data._externalUrl = true
-          }
-          
-          // Clear file-related data to prevent upload handler from expecting files
+          // CRITICAL: Clear ALL file-related properties to prevent Payload upload validation
           if (req) {
             req.file = undefined
             req.files = undefined
-            // Also clear any file-related properties
             delete req.body?.file
             delete req.body?.files
+            // Also clear any multer-related properties
+            delete (req as any).files
+            delete (req as any).file
+          }
+          
+          // Mark this as an external URL to skip upload processing
+          if (data) {
+            data._skipUpload = true
+            data._externalUrl = true
+            // Ensure URL is set
+            if (!data.url && req?.body?.url) {
+              data.url = req.body.url
+            }
           }
           
           // Ensure we have required fields for external URLs
@@ -154,10 +170,12 @@ const Media: CollectionConfig = {
             }
           }
           
-          console.log('✅ External URL processed in beforeValidate, returning data:', {
+          console.log('✅ External URL processed in beforeValidate:', {
             hasUrl: !!data.url,
             mimeType: data.mimeType,
             _skipUpload: data._skipUpload,
+            reqFileCleared: !req?.file,
+            reqFilesCleared: !req?.files,
           })
           
           return data

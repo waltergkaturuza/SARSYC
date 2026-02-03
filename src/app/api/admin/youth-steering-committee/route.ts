@@ -83,10 +83,10 @@ export async function POST(request: NextRequest) {
       console.log('Creating media record with blob URL...', photoUrl)
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
-      // Create a mock request context that tells Payload this is an external URL
-      // This helps Payload's hooks identify and handle external URLs correctly
-      const mockReq = {
-        ...request,
+      // CRITICAL: Payload's upload validation runs BEFORE hooks, so we need to bypass it
+      // by using a request context that explicitly indicates no file upload
+      // Create a minimal request object that Payload's hooks can use to detect external URL
+      const externalUrlReq = {
         file: undefined,
         files: undefined,
         body: {
@@ -95,25 +95,26 @@ export async function POST(request: NextRequest) {
           mimeType: mimeType,
         },
         headers: {
-          ...Object.fromEntries(request.headers.entries()),
-          'content-type': 'application/json', // Tell Payload this is JSON data, not file upload
+          'content-type': 'application/json',
         },
+        // Add a flag that hooks can check
+        _externalUrl: true,
       } as any
       
-      // Use payload.create() with request context to help hooks identify external URL
+      // Use payload.create() - hooks should detect external URL from req.body.url
+      // The beforeValidate hook in Media.ts should clear req.file/files and handle this
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Youth Steering Committee member photo: ${name}`,
           url: photoUrl, // Set the URL directly (for Vercel Blob)
           // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          // filename: decodedFilename,
           mimeType: mimeType,
           // Note: filesize, width, height will be set by Payload if it can process the image
           // For external URLs, these may remain null, which is fine
         },
         overrideAccess: true, // Allow admin uploads
-        req: mockReq, // Pass request context to help hooks
+        req: externalUrlReq, // Pass request context so hooks can detect external URL
       })
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
