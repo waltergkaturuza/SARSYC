@@ -132,9 +132,8 @@ export default buildConfig({
         rejectUnauthorized: false,
       },
     },
-    migrations: {
-      snapshot: false, // Disable snapshot generation (we use manual migrations)
-    },
+    // Note: Payload's postgresAdapter doesn't support migrations config
+    // We use manual migrations via SQL scripts
   }),
   collections: [
     Users,
