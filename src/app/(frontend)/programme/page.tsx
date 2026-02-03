@@ -78,6 +78,9 @@ export default function ProgrammePage() {
               <Link href="/programme/speakers" className="btn-outline border-white text-white hover:bg-white/10">
                 View All Speakers
               </Link>
+              <Link href="/participate/register-orathon" className="btn-outline border-white text-white hover:bg-white/10">
+                Register for Orathon (Day 4)
+              </Link>
             </div>
           </div>
         </div>
