@@ -65,23 +65,18 @@ export async function POST(request: NextRequest) {
       
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
-      const photoUpload = await Promise.race([
-        payload.create({
-          collection: 'media',
-          data: {
-            alt: `Youth Steering Committee member photo: ${name}`,
-            url: photoUrl, // Set the URL directly (for Vercel Blob)
-            // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-            mimeType: mimeType,
-            // Note: filesize, width, height will be set by Payload if it can process the image
-            // For external URLs, these may remain null, which is fine
-          },
-          overrideAccess: true,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Media creation timeout after 15 seconds')), 15000)
-        ),
-      ]) as any
+      const photoUpload = await payload.create({
+        collection: 'media',
+        data: {
+          alt: `Youth Steering Committee member photo: ${name}`,
+          url: photoUrl, // Set the URL directly (for Vercel Blob)
+          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
+          mimeType: mimeType,
+          // Note: filesize, width, height will be set by Payload if it can process the image
+          // For external URLs, these may remain null, which is fine
+        },
+        overrideAccess: true,
+      })
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
       
@@ -169,27 +164,22 @@ export async function POST(request: NextRequest) {
         order,
       })
 
-      const member = await Promise.race([
-        payload.create({
-          collection: 'youth-steering-committee',
-          data: {
-            name,
-            role,
-            organization,
-            country,
-            bio: typeof bio === 'string' ? bio : (Array.isArray(bio) ? bio : JSON.stringify(bio)),
-            email: email?.trim() || undefined,
-            photo: photoId,
-            featured: featured || false,
-            order: order || 0,
-            socialMedia: socialMedia || {},
-          },
-          overrideAccess: true,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Committee member creation timeout after 10 seconds')), 10000)
-        ),
-      ]) as any
+      const member = await payload.create({
+        collection: 'youth-steering-committee',
+        data: {
+          name,
+          role,
+          organization,
+          country,
+          bio: typeof bio === 'string' ? bio : (Array.isArray(bio) ? bio : JSON.stringify(bio)),
+          email: email?.trim() || undefined,
+          photo: photoId,
+          featured: featured || false,
+          order: order || 0,
+          socialMedia: socialMedia || {},
+        },
+        overrideAccess: true,
+      })
       
       console.log(`⏱️  Committee member creation completed (${Date.now() - startTime}ms elapsed)`)
 
