@@ -255,8 +255,8 @@ export default function RegisterOrathonPage() {
                       >
                         <option value="">Select country</option>
                         {countries.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country.name}
+                          <option key={country.value} value={country.value}>
+                            {country.label}
                           </option>
                         ))}
                       </select>
