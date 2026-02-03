@@ -83,7 +83,24 @@ export async function POST(request: NextRequest) {
       console.log('Creating media record with blob URL...', photoUrl)
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
-      // Use payload.create() like speakers route - EXACTLY match speakers pattern
+      // Create a mock request context that tells Payload this is an external URL
+      // This helps Payload's hooks identify and handle external URLs correctly
+      const mockReq = {
+        ...request,
+        file: undefined,
+        files: undefined,
+        body: {
+          url: photoUrl,
+          alt: `Youth Steering Committee member photo: ${name}`,
+          mimeType: mimeType,
+        },
+        headers: {
+          ...Object.fromEntries(request.headers.entries()),
+          'content-type': 'application/json', // Tell Payload this is JSON data, not file upload
+        },
+      } as any
+      
+      // Use payload.create() with request context to help hooks identify external URL
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
@@ -96,6 +113,7 @@ export async function POST(request: NextRequest) {
           // For external URLs, these may remain null, which is fine
         },
         overrideAccess: true, // Allow admin uploads
+        req: mockReq, // Pass request context to help hooks
       })
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
