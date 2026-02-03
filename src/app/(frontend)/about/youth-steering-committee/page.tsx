@@ -1,69 +1,77 @@
 import Link from 'next/link'
 import { FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe } from 'react-icons/fi'
-import EmptyState from '@/components/ui/EmptyState'
-import { getPayloadClient } from '@/lib/payload'
-import { getCountryLabel } from '@/lib/countries'
 import Image from 'next/image'
 
-// Helper function to get photo URL (same pattern as speakers)
-function getPhotoUrl(photo: any): string | null {
-  if (!photo) return null
-
-  const fixDomain = (url: string): string => {
-    if (url.includes('sarsyc.org') && !url.includes('www.sarsyc.org')) {
-      return url.replace('https://sarsyc.org', 'https://www.sarsyc.org')
-    }
-    return url
-  }
-
-  const isBlobUrl = (url: string): boolean => {
-    return url.includes('blob.vercel-storage.com') || url.includes('public.blob.vercel-storage.com')
-  }
-
-  const isPayloadFileUrl = (url: string): boolean => {
-    return url.includes('/api/media/file/')
-  }
-
-  if (typeof photo === 'string') {
-    if (photo.startsWith('http')) {
-      if (isPayloadFileUrl(photo)) return null
-      return fixDomain(photo)
-    }
-    return null
-  }
-
-  if (photo.thumbnailURL && typeof photo.thumbnailURL === 'string') {
-    if (isBlobUrl(photo.thumbnailURL)) {
-      return fixDomain(photo.thumbnailURL)
-    }
-  }
-
-  if (photo.url && typeof photo.url === 'string') {
-    if (isBlobUrl(photo.url)) {
-      return fixDomain(photo.url)
-    }
-    if (isPayloadFileUrl(photo.url)) {
-      if (photo.sizes?.card?.url && isBlobUrl(photo.sizes.card.url)) {
-        return fixDomain(photo.sizes.card.url)
-      }
-      if (photo.sizes?.thumbnail?.url && isBlobUrl(photo.sizes.thumbnail.url)) {
-        return fixDomain(photo.sizes.thumbnail.url)
-      }
-      return null
-    }
-    return fixDomain(photo.url)
-  }
-
-  if (photo.sizes?.card?.url && !isPayloadFileUrl(photo.sizes.card.url)) {
-    return fixDomain(photo.sizes.card.url)
-  }
-
-  if (photo.sizes?.thumbnail?.url && !isPayloadFileUrl(photo.sizes.thumbnail.url)) {
-    return fixDomain(photo.sizes.thumbnail.url)
-  }
-
-  return null
+// Country flag emojis mapping
+const countryFlags: Record<string, string> = {
+  'Botswana': '🇧🇼',
+  'Malawi': '🇲🇼',
+  'Namibia': '🇳🇦',
+  'Zambia': '🇿🇲',
+  'Angola': '🇦🇴',
+  'Mozambique': '🇲🇿',
+  'South Africa': '🇿🇦',
+  'Zimbabwe': '🇿🇼',
+  'Eswatini': '🇸🇿',
+  'Lesotho': '🇱🇸',
+  'Regional': '🌍',
 }
+
+// Hardcoded Youth Steering Committee members
+const committeeMembers = [
+  {
+    name: 'Trevor Oahile',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Botswana',
+    country: 'Botswana',
+    bio: 'Trevor Oahile is a data scientist, human rights advocate, and youth leader with extensive experience in SRHR, youth development, and governance in Botswana. He currently serves as the Country Coordinator for SAYWHAT Botswana, where he leads youth focused programmes, national engagement, and initiatives that strengthen young people\'s access to information and participation in policy processes. Trevor also chairs the Commonwealth Youth Peace Ambassadors Network (CYPAN) and serves as a Youth Delegate for the Commonwealth Youth Council. His experience includes work with UNFPA, UNICEF, AMREF Health Africa, and SRHR Africa Trust. He is a former co host of the SRHR radio show Don\'t Get It Twisted and a Board Member of the Botswana National Youth Council.',
+    photo: '/youth-steering-committee/trevor-oahile-botswana.jpg',
+  },
+  {
+    name: 'Sylvester G Chiweza',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Malawi',
+    country: 'Malawi',
+    bio: 'Sylvester G. Chiweza is a dedicated youth leadership and SRHR advocate with over 11 years of experience advancing health access, community development, and meaningful youth participation in Malawi. He currently serves as the Country Coordinator for SAYWHAT Malawi, leading strategic coordination, stakeholder engagement, and youth focused policy initiatives that strengthen access to quality health information and services. Sylvester has professional training from Kasungu Teachers Training College and the Malawi College of Health Sciences, and also studied Business Management at Mubarack Complex College. He is pursuing a Bachelor\'s degree in Human Resource Management at the University of Malawi and applies strong skills in climate resilience and community based adaptation.',
+    photo: '/youth-steering-committee/sylvester-chiweza-malawi.jpg',
+  },
+  {
+    name: 'Fadzai Nyamarebvu',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Namibia',
+    country: 'Namibia',
+    bio: 'Fadzai Nyamarebvu is a lawyer and seasoned project manager with strong expertise in business and human rights, regional integration, and youth empowerment. She has coordinated international and regional initiatives, contributing legal insight, strategic support, and high level reporting as a facilitator and professional rapporteur in global policy processes. She currently serves as the SAYWHAT Country Coordinator for Namibia, where she leads national level planning, stakeholder engagement, and youth focused programmes that advance meaningful participation and access to opportunities. Fadzai is recognised for her ability to bridge legal analysis, project leadership, and rights based advocacy across diverse regional platforms.',
+    photo: '/youth-steering-committee/fadzai-nyamarebvu-namibia.jpg',
+  },
+  {
+    name: 'Wankumbu Simukonda',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Zambia',
+    country: 'Zambia',
+    bio: 'Wankumbu Simukonda is a Zambian advocacy and health promotion specialist with over eight years\' experience advancing adolescent sexual and reproductive health, HIV prevention, and social and behaviour change. He serves as Country Coordinator for SAYWHAT Zambia and Field Technical Advisor for PATA, leading youth focused policy engagement, quality improvement in health services, and community-driven SRHR initiatives. Wankumbu also mentors young advocates through PATA\'s Youth Advisory Panel and lectures communication skills at Greenfield College. He holds a BA in Mass Communication and an MA in Development Studies from the University of Zambia and is currently pursuing a Master of Mass Communication.',
+    photo: null, // No photo provided
+  },
+]
+
+// All SADC countries (for countries without members)
+const allSADCCountries = [
+  'Angola',
+  'Botswana',
+  'Eswatini',
+  'Lesotho',
+  'Malawi',
+  'Mozambique',
+  'Namibia',
+  'South Africa',
+  'Zambia',
+  'Zimbabwe',
+]
+
+// Get countries that have members
+const countriesWithMembers = new Set(committeeMembers.map(m => m.country))
+
+// Get countries without members
+const countriesWithoutMembers = allSADCCountries.filter(country => !countriesWithMembers.has(country))
 
 // Helper function to get initials
 function getInitials(name: string): string {
@@ -75,47 +83,15 @@ function getInitials(name: string): string {
     .slice(0, 3)
 }
 
-// Helper function to extract bio text from rich text
-function extractBioText(bio: any): string {
-  if (!bio) return ''
-  if (typeof bio === 'string') return bio
-  
-  if (Array.isArray(bio)) {
-    return bio
-      .map((node: any) => {
-        if (node.children) {
-          return node.children.map((child: any) => child.text || '').join('')
-        }
-        return node.text || ''
-      })
-      .join(' ')
-      .trim()
-  }
-  
-  return ''
-}
-
-export const revalidate = 3600 // Revalidate every hour
-
-export default async function YouthSteeringCommitteePage() {
-  let members: any[] = []
-  
-  try {
-    const payload = await getPayloadClient()
-    
-    const result = await payload.find({
-      collection: 'youth-steering-committee',
-      where: {},
-      limit: 100,
-      sort: 'order',
-      depth: 2,
-    })
-    
-    members = result.docs
-  } catch (error: any) {
-    console.error('Error fetching Youth Steering Committee members:', error)
-    members = []
-  }
+export default function YouthSteeringCommitteePage() {
+  // Group members by country
+  const membersByCountry = committeeMembers.reduce((acc, member) => {
+    if (!acc[member.country]) {
+      acc[member.country] = []
+    }
+    acc[member.country].push(member)
+    return acc
+  }, {} as Record<string, typeof committeeMembers>)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -136,111 +112,76 @@ export default async function YouthSteeringCommitteePage() {
         </div>
       </div>
 
-      {/* Committee Members */}
+      {/* Committee Members by Country */}
       <div className="container-custom py-16">
-        {members.length === 0 ? (
-          <EmptyState
-            icon="users"
-            title="Committee Members Coming Soon"
-            description="The Youth Steering Committee members will be announced soon. Check back later!"
-          />
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {members.map((member: any) => {
-              const photoUrl = getPhotoUrl(member.photo)
-              const bioText = extractBioText(member.bio)
+        {/* Countries with Members */}
+        <div className="space-y-12">
+          {Object.entries(membersByCountry).map(([country, members]) => (
+            <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-4xl">{countryFlags[country] || '🌍'}</span>
+                <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
+              </div>
               
-              return (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {members.map((member, index) => (
+                  <div
+                    key={`${country}-${index}`}
+                    className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {/* Photo */}
+                    <div className="relative w-full h-64 bg-gradient-to-br from-primary-400 to-secondary-400">
+                      {member.photo ? (
+                        <Image
+                          src={member.photo}
+                          alt={member.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
+                          {getInitials(member.name)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6">
+                      <div className="mb-3">
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
+                        <p className="text-primary-600 font-medium text-sm">{member.role}</p>
+                        <p className="text-sm text-gray-600 mt-1">{member.organization}</p>
+                      </div>
+
+                      {member.bio && (
+                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Countries without Members */}
+        {countriesWithoutMembers.length > 0 && (
+          <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Other SADC Countries</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {countriesWithoutMembers.map((country) => (
                 <div
-                  key={member.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  key={country}
+                  className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 text-center"
                 >
-                  {/* Photo */}
-                  <div className="relative w-full h-64 bg-gradient-to-br from-primary-400 to-secondary-400">
-                    {photoUrl ? (
-                      <Image
-                        src={photoUrl}
-                        alt={member.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
-                        {getInitials(member.name)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-6">
-                    <div className="mb-3">
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
-                      <p className="text-primary-600 font-medium">{member.role}</p>
-                      <p className="text-sm text-gray-600 mt-1">{member.organization}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <span>{getCountryLabel(member.country)}</span>
-                    </div>
-
-                    {bioText && (
-                      <p className="text-gray-700 text-sm mb-4 line-clamp-3">
-                        {bioText}
-                      </p>
-                    )}
-
-                    {/* Social Links */}
-                    {(member.email || member.socialMedia?.twitter || member.socialMedia?.linkedin || member.socialMedia?.website) && (
-                      <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                        {member.email && (
-                          <a
-                            href={`mailto:${member.email}`}
-                            className="text-gray-600 hover:text-primary-600 transition-colors"
-                            aria-label="Email"
-                          >
-                            <FiMail className="w-5 h-5" />
-                          </a>
-                        )}
-                        {member.socialMedia?.twitter && (
-                          <a
-                            href={`https://twitter.com/${member.socialMedia.twitter.replace('@', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-primary-600 transition-colors"
-                            aria-label="Twitter"
-                          >
-                            <FiTwitter className="w-5 h-5" />
-                          </a>
-                        )}
-                        {member.socialMedia?.linkedin && (
-                          <a
-                            href={member.socialMedia.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-primary-600 transition-colors"
-                            aria-label="LinkedIn"
-                          >
-                            <FiLinkedin className="w-5 h-5" />
-                          </a>
-                        )}
-                        {member.socialMedia?.website && (
-                          <a
-                            href={member.socialMedia.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-primary-600 transition-colors"
-                            aria-label="Website"
-                          >
-                            <FiGlobe className="w-5 h-5" />
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <span className="text-3xl mb-2">{countryFlags[country] || '🌍'}</span>
+                  <span className="text-sm font-medium text-gray-700">{country}</span>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         )}
       </div>
