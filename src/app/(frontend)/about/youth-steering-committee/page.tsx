@@ -49,7 +49,7 @@ const committeeMembers = [
     organization: 'SAYWHAT Zambia',
     country: 'Zambia',
     bio: 'Wankumbu Simukonda is a Zambian advocacy and health promotion specialist with over eight years\' experience advancing adolescent sexual and reproductive health, HIV prevention, and social and behaviour change. He serves as Country Coordinator for SAYWHAT Zambia and Field Technical Advisor for PATA, leading youth focused policy engagement, quality improvement in health services, and community-driven SRHR initiatives. Wankumbu also mentors young advocates through PATA\'s Youth Advisory Panel and lectures communication skills at Greenfield College. He holds a BA in Mass Communication and an MA in Development Studies from the University of Zambia and is currently pursuing a Master of Mass Communication.',
-    photo: null, // No photo provided
+    photo: '/youth-steering-committee/wankumbu-simukonda-zambia.jpg',
   },
 ]
 

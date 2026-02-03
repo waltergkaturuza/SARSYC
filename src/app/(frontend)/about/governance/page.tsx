@@ -45,7 +45,7 @@ const committeeMembers = [
     role: 'Country Coordinator',
     organization: 'SAYWHAT Zambia',
     country: 'Zambia',
-    photo: null,
+    photo: '/youth-steering-committee/wankumbu-simukonda-zambia.jpg',
   },
 ]
 
