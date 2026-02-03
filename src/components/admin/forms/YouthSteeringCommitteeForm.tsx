@@ -219,12 +219,29 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
       
       const method = mode === 'create' ? 'POST' : 'PATCH'
 
+      // Use FormData like speakers route - this matches the API expectation
+      const submitData = new FormData()
+      submitData.append('name', formData.name.trim())
+      submitData.append('role', formData.role.trim())
+      submitData.append('organization', formData.organization.trim())
+      submitData.append('country', formData.country)
+      submitData.append('bio', formData.bio)
+      submitData.append('featured', formData.featured.toString())
+      submitData.append('order', (formData.order || 0).toString())
+      submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
+      
+      if (formData.email) {
+        submitData.append('email', formData.email.trim())
+      }
+      
+      // Send photo URL instead of file
+      if (photoUrl) {
+        submitData.append('photoUrl', photoUrl)
+      }
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(memberPayload),
+        body: submitData, // FormData - no Content-Type header needed
       })
 
       if (!response.ok) {

@@ -13,27 +13,27 @@ export async function POST(request: NextRequest) {
     const payload = await getPayloadClient()
     console.log(`✅ Payload client obtained (${Date.now() - startTime}ms)`)
     
-    const body = await request.json()
-    console.log('📋 Request body parsed:', {
-      hasName: !!body.name,
-      hasPhotoUrl: !!body.photoUrl,
-      photoUrlType: typeof body.photoUrl,
-      photoUrl: body.photoUrl ? (body.photoUrl.substring(0, 100) + (body.photoUrl.length > 100 ? '...' : '')) : 'MISSING',
-      bodyKeys: Object.keys(body),
-    })
+    // Use FormData like speakers route - this is the key difference!
+    const formData = await request.formData()
     
-    const {
-      name,
-      role,
-      organization,
-      country,
-      bio,
-      email,
-      photoUrl,
-      featured,
-      order,
-      socialMedia,
-    } = body
+    // Extract form fields
+    const name = formData.get('name') as string
+    const role = formData.get('role') as string
+    const organization = formData.get('organization') as string
+    const country = formData.get('country') as string
+    const bio = formData.get('bio') as string
+    const email = formData.get('email') as string | null
+    const photoUrl = formData.get('photoUrl') as string | null // Photo URL from client-side upload
+    const featured = formData.get('featured') === 'true'
+    const order = formData.get('order') ? parseInt(formData.get('order') as string) : 0
+    const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
+    
+    // Debug: Log all form data keys
+    console.log('Form data keys:', Array.from(formData.keys()))
+    console.log('Photo URL received:', {
+      exists: !!photoUrl,
+      url: photoUrl,
+    })
     
     // Validate required fields
     if (!name || !role || !organization || !country || !bio) {
