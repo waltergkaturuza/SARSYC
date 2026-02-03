@@ -74,14 +74,22 @@ export async function PATCH(
                         'image/jpeg'
         
         // Use database adapter directly to bypass Payload's upload handler
+        if (!payload.db?.collections?.media) {
+          throw new Error('Payload database adapter or media collection not available')
+        }
+        
         const photoUpload = await payload.db.collections.media.create({
           data: {
             alt: `Youth Steering Committee member photo: ${name}`,
+            filename: decodedFilename,
             url: photoUrl,
             mimeType: mimeType,
+            filesize: 0,
+            width: null,
+            height: null,
           },
         })
-        photoId = photoUpload?.id
+        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
         
         console.log(`✅ New photo uploaded for committee member ${params.id}: ${photoId}`)
       } catch (uploadError: any) {
