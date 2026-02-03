@@ -83,38 +83,15 @@ export async function POST(request: NextRequest) {
       console.log('Creating media record with blob URL...', photoUrl)
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
-      // CRITICAL: Payload's upload validation runs BEFORE hooks, so we need to bypass it
-      // by using a request context that explicitly indicates no file upload
-      // Create a minimal request object that Payload's hooks can use to detect external URL
-      const externalUrlReq = {
-        file: undefined,
-        files: undefined,
-        body: {
-          url: photoUrl,
-          alt: `Youth Steering Committee member photo: ${name}`,
-          mimeType: mimeType,
-        },
-        headers: {
-          'content-type': 'application/json',
-        },
-        // Add a flag that hooks can check
-        _externalUrl: true,
-      } as any
-      
-      // Use payload.create() - hooks should detect external URL from req.body.url
-      // The beforeValidate hook in Media.ts should clear req.file/files and handle this
-      const photoUpload = await payload.create({
-        collection: 'media',
-        data: {
-          alt: `Youth Steering Committee member photo: ${name}`,
-          url: photoUrl, // Set the URL directly (for Vercel Blob)
-          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          mimeType: mimeType,
-          // Note: filesize, width, height will be set by Payload if it can process the image
-          // For external URLs, these may remain null, which is fine
-        },
-        overrideAccess: true, // Allow admin uploads
-        req: externalUrlReq, // Pass request context so hooks can detect external URL
+      // Use payload.db.collections.media.create() to bypass Payload's upload validation
+      // This is the same approach used by abstracts and partners routes
+      // It directly creates the database record without going through upload validation
+      const photoUpload = await payload.db.collections.media.create({
+        alt: `Youth Steering Committee member photo: ${name}`,
+        url: photoUrl, // Set the URL directly (for Vercel Blob)
+        mimeType: mimeType,
+        // Note: filesize, width, height will be set by Payload if it can process the image
+        // For external URLs, these may remain null, which is fine
       })
       
       console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
