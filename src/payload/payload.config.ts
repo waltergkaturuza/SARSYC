@@ -132,6 +132,9 @@ export default buildConfig({
         rejectUnauthorized: false,
       },
     },
+    migrations: {
+      snapshot: false, // Disable snapshot generation (we use manual migrations)
+    },
   }),
   collections: [
     Users,
