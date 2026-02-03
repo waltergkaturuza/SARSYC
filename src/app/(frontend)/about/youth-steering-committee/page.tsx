@@ -119,7 +119,21 @@ export default function YouthSteeringCommitteePage() {
           {Object.entries(membersByCountry).map(([country, members]) => (
             <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-4xl">{countryFlags[country] || '🌍'}</span>
+                <span 
+                  className="text-4xl" 
+                  style={{ 
+                    fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif',
+                    fontSize: '2.5rem',
+                    lineHeight: '1',
+                    display: 'inline-block',
+                    minWidth: '2.5rem',
+                    textAlign: 'center'
+                  }}
+                  role="img"
+                  aria-label={`${country} flag`}
+                >
+                  {countryFlags[country] || '🌍'}
+                </span>
                 <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
               </div>
               
