@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { del } from '@vercel/blob'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -25,18 +26,34 @@ export async function PATCH(
       socialMedia,
     } = body
     
-    // Get current member to find old photo ID
+    // Get current member to find old photo ID and URL
     let oldPhotoId: string | null = null
+    let oldPhotoUrl: string | null = null
     try {
       const currentMember = await payload.findByID({
         collection: 'youth-steering-committee',
         id: params.id,
-        depth: 0,
+        depth: 1, // Need depth 1 to get photo URL
         overrideAccess: true,
       })
       oldPhotoId = typeof currentMember.photo === 'string' 
         ? currentMember.photo 
         : (currentMember.photo as any)?.id || null
+      
+      // Get the photo URL from the media record
+      if (oldPhotoId) {
+        try {
+          const oldPhotoDoc = await payload.findByID({
+            collection: 'media',
+            id: oldPhotoId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          oldPhotoUrl = oldPhotoDoc?.url || null
+        } catch (photoErr: any) {
+          console.warn('Could not fetch old photo URL:', photoErr?.message || photoErr)
+        }
+      }
     } catch (err: any) {
       console.warn('Could not fetch current member for photo cleanup:', err?.message || err)
     }
@@ -102,15 +119,27 @@ export async function PATCH(
       overrideAccess: true,
     })
 
-    // Delete old photo if a new one was uploaded and it's different
-    if (photoId && oldPhotoId && oldPhotoId !== photoId) {
+    // Delete old photo blob file and media record if a new one was uploaded
+    if (photoId && oldPhotoId && oldPhotoId !== photoId && oldPhotoUrl) {
       try {
+        // First, delete the blob file from Vercel Blob storage
+        if (oldPhotoUrl.startsWith('https://')) {
+          try {
+            await del(oldPhotoUrl)
+            console.log(`🗑️  Deleted old blob file: ${oldPhotoUrl}`)
+          } catch (blobDeleteError: any) {
+            console.warn(`⚠️  Could not delete old blob file ${oldPhotoUrl}:`, blobDeleteError.message)
+            // Continue to delete media record even if blob deletion fails
+          }
+        }
+        
+        // Then delete the Payload media record
         await payload.delete({
           collection: 'media',
           id: oldPhotoId,
           overrideAccess: true,
         })
-        console.log(`🗑️  Deleted old photo ${oldPhotoId} for committee member ${params.id}`)
+        console.log(`🗑️  Deleted old photo media record ${oldPhotoId} for committee member ${params.id}`)
       } catch (deleteError: any) {
         console.warn(`⚠️  Could not delete old photo ${oldPhotoId}:`, deleteError.message)
       }
@@ -133,11 +162,64 @@ export async function DELETE(
   try {
     const payload = await getPayloadClient()
     
+    // Get member data to find photo before deletion
+    let photoId: string | null = null
+    let photoUrl: string | null = null
+    try {
+      const member = await payload.findByID({
+        collection: 'youth-steering-committee',
+        id: params.id,
+        depth: 1, // Need depth 1 to get photo URL
+        overrideAccess: true,
+      })
+      photoId = typeof member.photo === 'string' 
+        ? member.photo 
+        : (member.photo as any)?.id || null
+      
+      // Get the photo URL from the media record
+      if (photoId) {
+        try {
+          const photoDoc = await payload.findByID({
+            collection: 'media',
+            id: photoId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          photoUrl = photoDoc?.url || null
+        } catch (photoErr: any) {
+          console.warn('Could not fetch photo URL for deletion:', photoErr?.message || photoErr)
+        }
+      }
+    } catch (err: any) {
+      console.warn('Could not fetch member for photo cleanup:', err?.message || err)
+    }
+    
+    // Delete the member
     await payload.delete({
       collection: 'youth-steering-committee',
       id: params.id,
       overrideAccess: true,
     })
+    
+    // Delete the photo blob file and media record
+    if (photoId && photoUrl && photoUrl.startsWith('https://')) {
+      try {
+        // Delete blob file from Vercel Blob storage
+        await del(photoUrl)
+        console.log(`🗑️  Deleted blob file: ${photoUrl}`)
+        
+        // Delete Payload media record
+        await payload.delete({
+          collection: 'media',
+          id: photoId,
+          overrideAccess: true,
+        })
+        console.log(`🗑️  Deleted photo media record ${photoId}`)
+      } catch (deleteError: any) {
+        console.warn(`⚠️  Could not delete photo for deleted member:`, deleteError.message)
+        // Don't fail the deletion if photo cleanup fails
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
