@@ -40,7 +40,22 @@ const Sessions: CollectionConfig = {
         { label: 'Poster Session', value: 'poster' },
         { label: 'Networking', value: 'networking' },
         { label: 'Side Event', value: 'side-event' },
+        { label: 'Post-Conference Activity', value: 'post-conference' },
+        { label: 'Orathon', value: 'orathon' },
       ],
+    },
+    {
+      name: 'day',
+      type: 'select',
+      required: true,
+      label: 'Day',
+      options: [
+        { label: 'Day 1', value: 'day-1' },
+        { label: 'Day 2', value: 'day-2' },
+        { label: 'Day 3', value: 'day-3' },
+        { label: 'Day 4', value: 'day-4' },
+      ],
+      defaultValue: 'day-1',
     },
     {
       name: 'track',

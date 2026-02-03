@@ -28,6 +28,7 @@ import VenueLocations from './collections/VenueLocations'
 import AuditLogs from './collections/AuditLogs'
 import Volunteers from './collections/Volunteers'
 import YouthSteeringCommittee from './collections/YouthSteeringCommittee'
+import OrathonRegistrations from './collections/OrathonRegistrations'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -155,6 +156,7 @@ export default buildConfig({
     AuditLogs,
     Volunteers,
     YouthSteeringCommittee,
+    OrathonRegistrations,
   ],
   globals: [
     SiteSettings,

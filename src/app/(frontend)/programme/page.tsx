@@ -35,7 +35,7 @@ const sessions = [
   // Add more sessions...
 ]
 
-const days = ['All Days', 'Day 1', 'Day 2', 'Day 3']
+const days = ['All Days', 'Day 1', 'Day 2', 'Day 3', 'Day 4']
 const tracks = [
   { value: 'all', label: 'All Tracks', color: 'gray' },
   { value: 'general', label: 'Plenary', color: 'blue' },

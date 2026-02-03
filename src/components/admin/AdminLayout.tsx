@@ -48,6 +48,12 @@ const navigation = [
     description: 'Programme schedule',
   },
   {
+    name: 'Orathon Registrations',
+    href: '/admin/orathon-registrations',
+    icon: FiActivity,
+    description: 'Marathon registrations',
+  },
+  {
     name: 'Resources',
     href: '/admin/resources',
     icon: FiFolder,
