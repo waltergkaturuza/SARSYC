@@ -108,16 +108,35 @@ const Media: CollectionConfig = {
       },
     ],
     beforeValidate: [
-      async ({ data, req }: any) => {
+      async ({ data, req, operation }: any) => {
+        console.log('🔍 Media beforeValidate hook called:', {
+          operation,
+          hasUrl: !!data?.url,
+          url: data?.url?.substring(0, 50),
+          hasFile: !!req?.file,
+          hasFiles: !!req?.files,
+          dataKeys: data ? Object.keys(data) : [],
+        })
+        
         // If URL is external (Vercel Blob), skip file upload validation
         // This must happen in beforeValidate to prevent Payload's upload handler from expecting files
         if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
           console.log('🌐 External URL detected in beforeValidate, skipping file validation:', data.url)
           
+          // Mark this as an external URL to skip upload processing
+          // Set a flag that Payload's upload handler can check
+          if (data) {
+            data._skipUpload = true
+            data._externalUrl = true
+          }
+          
           // Clear file-related data to prevent upload handler from expecting files
           if (req) {
             req.file = undefined
             req.files = undefined
+            // Also clear any file-related properties
+            delete req.body?.file
+            delete req.body?.files
           }
           
           // Ensure we have required fields for external URLs
@@ -134,6 +153,12 @@ const Media: CollectionConfig = {
               data.mimeType = 'image/jpeg' // Default
             }
           }
+          
+          console.log('✅ External URL processed in beforeValidate, returning data:', {
+            hasUrl: !!data.url,
+            mimeType: data.mimeType,
+            _skipUpload: data._skipUpload,
+          })
           
           return data
         }

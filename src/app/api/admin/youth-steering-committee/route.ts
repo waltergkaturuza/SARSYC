@@ -78,16 +78,29 @@ export async function POST(request: NextRequest) {
       console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
       
       // Use payload.create() like speakers route - Media collection hooks handle external URLs
+      // Add explicit flags to help hooks identify this as external URL
+      const mediaData: any = {
+        alt: `Youth Steering Committee member photo: ${name}`,
+        url: photoUrl, // Set the URL directly (for Vercel Blob)
+        // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
+        mimeType: mimeType,
+        // Note: filesize, width, height will be set by Payload if it can process the image
+        // For external URLs, these may remain null, which is fine
+        _skipUpload: true, // Flag to help hooks skip upload validation
+        _externalUrl: true, // Flag to identify as external URL
+      }
+      
+      console.log('📤 Creating media record with data:', {
+        hasUrl: !!mediaData.url,
+        url: mediaData.url?.substring(0, 50),
+        mimeType: mediaData.mimeType,
+        _skipUpload: mediaData._skipUpload,
+        dataKeys: Object.keys(mediaData),
+      })
+      
       const photoUpload = await payload.create({
         collection: 'media',
-        data: {
-          alt: `Youth Steering Committee member photo: ${name}`,
-          url: photoUrl, // Set the URL directly (for Vercel Blob)
-          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          mimeType: mimeType,
-          // Note: filesize, width, height will be set by Payload if it can process the image
-          // For external URLs, these may remain null, which is fine
-        },
+        data: mediaData,
         overrideAccess: true,
       })
       
