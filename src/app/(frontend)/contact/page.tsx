@@ -219,9 +219,21 @@ export default function ContactPage() {
                       <FiMail className="w-6 h-6 text-primary-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 mb-1">Email</p>
-                      <a href="mailto:info@sarsyc.org" className="text-primary-600 hover:underline">
-                        info@sarsyc.org
+                      <p className="font-medium text-gray-900 mb-1">Registration Enquiries</p>
+                      <a href="mailto:sarsyc@saywhat.org.zw" className="text-primary-600 hover:underline">
+                        sarsyc@saywhat.org.zw
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FiMail className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 mb-1">Research Inquiries</p>
+                      <a href="mailto:researchunit@saywhat.org.zw" className="text-primary-600 hover:underline">
+                        researchunit@saywhat.org.zw
                       </a>
                     </div>
                   </div>
@@ -232,9 +244,14 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 mb-1">Phone</p>
-                      <a href="tel:+263782702887" className="text-primary-600 hover:underline">
-                        +263 78 270 2887
-                      </a>
+                      <div className="space-y-1">
+                        <a href="tel:+263782702887" className="block text-primary-600 hover:underline">
+                          +263 78 270 2887 (Zimbabwe)
+                        </a>
+                        <a href="tel:+264816279224" className="block text-primary-600 hover:underline">
+                          +264 81 627 9224 (Namibia)
+                        </a>
+                      </div>
                     </div>
                   </div>
 

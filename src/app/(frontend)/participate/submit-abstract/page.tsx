@@ -10,7 +10,7 @@ import { showToast } from '@/lib/toast'
 
 const abstractSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
-  abstract: z.string().min(100, 'Abstract must be at least 100 words').max(2000, 'Abstract must not exceed 300 words'),
+  abstract: z.string().min(350, 'Abstract must be at least 350 words').max(2000, 'Abstract must not exceed 500 words'),
   keywords: z.string().min(1, 'Please provide at least 3 keywords'),
   track: z.enum(['education-rights', 'hiv-aids', 'ncd-prevention', 'digital-health', 'mental-health'], {
     required_error: 'Please select a conference track',
@@ -321,7 +321,7 @@ export default function SubmitAbstractPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h3 className="font-semibold text-blue-900 mb-3">Submission Guidelines</h3>
             <ul className="space-y-2 text-sm text-blue-800">
-              <li>• Abstract should be <strong>200-300 words</strong></li>
+              <li>• Abstract should be <strong>350-500 words</strong></li>
               <li>• Select the most appropriate conference track</li>
               <li>• Provide 3-5 keywords</li>
               <li>• Include all co-authors (optional)</li>
@@ -357,7 +357,7 @@ export default function SubmitAbstractPage() {
 
                   <div>
                     <label htmlFor="abstract" className="block text-sm font-medium text-gray-700 mb-2">
-                      Abstract (200-300 words) *
+                      Abstract (350-500 words) *
                     </label>
                     <textarea
                       {...register('abstract')}
@@ -374,8 +374,8 @@ export default function SubmitAbstractPage() {
                           <p className="text-sm text-red-600">{errors.abstract.message}</p>
                         )}
                       </div>
-                      <p className={`text-sm ${wordCount > 300 ? 'text-red-600' : wordCount < 200 ? 'text-yellow-600' : 'text-gray-600'}`}>
-                        {wordCount} words {wordCount < 200 && '(minimum 200)'}
+                      <p className={`text-sm ${wordCount > 500 ? 'text-red-600' : wordCount < 350 ? 'text-yellow-600' : 'text-gray-600'}`}>
+                        {wordCount} words {wordCount < 350 && '(minimum 350)'} {wordCount > 500 && '(maximum 500)'}
                       </p>
                     </div>
                   </div>
