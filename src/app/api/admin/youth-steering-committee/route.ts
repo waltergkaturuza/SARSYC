@@ -3,11 +3,22 @@ import { getPayloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+export const maxDuration = 30 // 30 seconds max for Vercel serverless
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    console.log('🚀 Youth Steering Committee API called')
     const payload = await getPayloadClient()
+    console.log(`✅ Payload client obtained (${Date.now() - startTime}ms)`)
+    
     const body = await request.json()
+    console.log('📋 Request body parsed:', {
+      hasName: !!body.name,
+      hasPhotoUrl: !!body.photoUrl,
+      photoUrl: body.photoUrl?.substring(0, 50) + '...',
+    })
     
     const {
       name,
@@ -52,18 +63,27 @@ export async function POST(request: NextRequest) {
                       decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
                       'image/jpeg'
       
-      const photoUpload = await payload.create({
-        collection: 'media',
-        data: {
-          alt: `Youth Steering Committee member photo: ${name}`,
-          url: photoUrl, // Set the URL directly (for Vercel Blob)
-          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          mimeType: mimeType,
-          // Note: filesize, width, height will be set by Payload if it can process the image
-          // For external URLs, these may remain null, which is fine
-        },
-        overrideAccess: true,
-      })
+      console.log(`⏱️  Starting media creation (${Date.now() - startTime}ms elapsed)`)
+      
+      const photoUpload = await Promise.race([
+        payload.create({
+          collection: 'media',
+          data: {
+            alt: `Youth Steering Committee member photo: ${name}`,
+            url: photoUrl, // Set the URL directly (for Vercel Blob)
+            // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
+            mimeType: mimeType,
+            // Note: filesize, width, height will be set by Payload if it can process the image
+            // For external URLs, these may remain null, which is fine
+          },
+          overrideAccess: true,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Media creation timeout after 15 seconds')), 15000)
+        ),
+      ]) as any
+      
+      console.log(`⏱️  Media creation completed (${Date.now() - startTime}ms elapsed)`)
       
       console.log('Media record created:', {
         type: typeof photoUpload,
@@ -111,19 +131,44 @@ export async function POST(request: NextRequest) {
 
     // Create committee member
     try {
+      console.log(`⏱️  Starting committee member creation (${Date.now() - startTime}ms elapsed)`)
       console.log('Creating committee member with data:', {
         name,
         role,
         organization,
         country,
         hasBio: !!bio,
+        bioType: typeof bio,
+        bioIsArray: Array.isArray(bio),
         hasEmail: !!email,
         photoId,
         featured,
         order,
       })
 
-      const member = await payload.create({
+      const member = await Promise.race([
+        payload.create({
+          collection: 'youth-steering-committee',
+          data: {
+            name,
+            role,
+            organization,
+            country,
+            bio: typeof bio === 'string' ? bio : (Array.isArray(bio) ? bio : JSON.stringify(bio)),
+            email: email?.trim() || undefined,
+            photo: photoId,
+            featured: featured || false,
+            order: order || 0,
+            socialMedia: socialMedia || {},
+          },
+          overrideAccess: true,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Committee member creation timeout after 10 seconds')), 10000)
+        ),
+      ]) as any
+      
+      console.log(`⏱️  Committee member creation completed (${Date.now() - startTime}ms elapsed)`)
         collection: 'youth-steering-committee',
         data: {
           name,
