@@ -196,8 +196,8 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
       // Submit the member data
       console.log('📤 Submitting member data with photoUrl:', {
         hasPhotoUrl: !!photoUrl,
-        photoUrl: photoUrl.substring(0, 100),
-        photoUrlLength: photoUrl.length,
+        photoUrl: photoUrl ? photoUrl.substring(0, 100) : null,
+        photoUrlLength: photoUrl ? photoUrl.length : 0,
       })
 
       const memberPayload = {
