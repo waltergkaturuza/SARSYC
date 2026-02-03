@@ -239,9 +239,17 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
         submitData.append('photoUrl', photoUrl)
       }
 
+      // Ensure we're using FormData correctly - browser will set Content-Type automatically
+      // DO NOT set Content-Type header manually - browser sets it with boundary
+      console.log('📤 Submitting FormData:', {
+        hasPhotoUrl: !!photoUrl,
+        formDataKeys: Array.from(submitData.keys()),
+      })
+      
       const response = await fetch(url, {
         method,
-        body: submitData, // FormData - no Content-Type header needed
+        body: submitData, // FormData - browser sets Content-Type: multipart/form-data automatically
+        // Explicitly DO NOT set headers - let browser handle Content-Type
       })
 
       if (!response.ok) {

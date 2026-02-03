@@ -10,6 +10,12 @@ export async function POST(request: NextRequest) {
   
   try {
     console.log('🚀 Youth Steering Committee API called')
+    
+    // Log Content-Type header to debug the issue
+    const contentType = request.headers.get('content-type') || ''
+    console.log('📋 Content-Type header:', contentType)
+    console.log('📋 Is multipart?', contentType.includes('multipart/form-data'))
+    
     const payload = await getPayloadClient()
     console.log(`✅ Payload client obtained (${Date.now() - startTime}ms)`)
     
