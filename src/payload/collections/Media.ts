@@ -109,7 +109,36 @@ const Media: CollectionConfig = {
     ],
     beforeValidate: [
       async ({ data, req }: any) => {
-        // Additional validation hook
+        // If URL is external (Vercel Blob), skip file upload validation
+        // This must happen in beforeValidate to prevent Payload's upload handler from expecting files
+        if (data?.url && (data.url.startsWith('https://') || data.url.startsWith('http://'))) {
+          console.log('🌐 External URL detected in beforeValidate, skipping file validation:', data.url)
+          
+          // Clear file-related data to prevent upload handler from expecting files
+          if (req) {
+            req.file = undefined
+            req.files = undefined
+          }
+          
+          // Ensure we have required fields for external URLs
+          if (!data.mimeType && data.url) {
+            // Try to infer MIME type from URL
+            const urlLower = data.url.toLowerCase()
+            if (urlLower.includes('.png')) {
+              data.mimeType = 'image/png'
+            } else if (urlLower.includes('.gif')) {
+              data.mimeType = 'image/gif'
+            } else if (urlLower.includes('.webp')) {
+              data.mimeType = 'image/webp'
+            } else {
+              data.mimeType = 'image/jpeg' // Default
+            }
+          }
+          
+          return data
+        }
+        
+        // Additional validation hook for actual file uploads
         if (req?.file && data) {
           const file = req.file
           // If the file is a PDF, ensure the MIME type is set correctly
