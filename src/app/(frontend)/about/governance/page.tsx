@@ -1,68 +1,63 @@
 import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
+import Image from 'next/image'
 
+// Country flag emojis mapping
+const countryFlags: Record<string, string> = {
+  'Botswana': '🇧🇼',
+  'Malawi': '🇲🇼',
+  'Namibia': '🇳🇦',
+  'Zambia': '🇿🇲',
+  'Angola': '🇦🇴',
+  'Mozambique': '🇲🇿',
+  'South Africa': '🇿🇦',
+  'Zimbabwe': '🇿🇼',
+  'Eswatini': '🇸🇿',
+  'Lesotho': '🇱🇸',
+  'Regional': '🌍',
+}
+
+// Hardcoded Youth Steering Committee members (matching the dedicated page)
 const committeeMembers = [
   {
-    name: 'Youth Leader 1',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'Angola',
-  },
-  {
-    name: 'Youth Leader 2',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
+    name: 'Trevor Oahile',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Botswana',
     country: 'Botswana',
+    photo: '/youth-steering-committee/trevor-oahile-botswana.jpg',
   },
   {
-    name: 'Youth Leader 3',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
+    name: 'Sylvester G Chiweza',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Malawi',
     country: 'Malawi',
+    photo: '/youth-steering-committee/sylvester-chiweza-malawi.jpg',
   },
   {
-    name: 'Youth Leader 4',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'Mozambique',
-  },
-  {
-    name: 'Youth Leader 5',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
+    name: 'Fadzai Nyamarebvu',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Namibia',
     country: 'Namibia',
+    photo: '/youth-steering-committee/fadzai-nyamarebvu-namibia.jpg',
   },
   {
-    name: 'Youth Leader 6',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'South Africa',
-  },
-  {
-    name: 'Youth Leader 7',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
+    name: 'Wankumbu Simukonda',
+    role: 'Country Coordinator',
+    organization: 'SAYWHAT Zambia',
     country: 'Zambia',
-  },
-  {
-    name: 'Youth Leader 8',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'Zimbabwe',
-  },
-  {
-    name: 'Youth Leader 9',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'Regional',
-  },
-  {
-    name: 'Youth Leader 10',
-    organization: 'Youth Network',
-    role: 'Youth Steering Committee Member',
-    country: 'Regional',
+    photo: null,
   },
 ]
+
+// Helper function to get initials
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3)
+}
 
 export default function GovernancePage() {
   return (
@@ -91,19 +86,37 @@ export default function GovernancePage() {
               implementation, and ensure continuity & accountability.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {committeeMembers.map((member, index) => (
-                <div key={index} className="card p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-                      {member.name.split(' ')[0][0]}{member.name.split(' ').slice(-1)[0]?.[0]}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-primary-600 mb-1">{member.role}</div>
-                      <h3 className="font-bold text-gray-900 mb-1">{member.name}</h3>
-                      <p className="text-sm text-gray-600 mb-1">{member.organization}</p>
-                      <p className="text-xs text-gray-500">{member.country}</p>
-                    </div>
+                <div key={index} className="card p-6 hover:shadow-lg transition-shadow">
+                  {/* Country Flag */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-2xl">{countryFlags[member.country] || '🌍'}</span>
+                    <span className="text-sm font-semibold text-gray-700">{member.country}</span>
+                  </div>
+                  
+                  {/* Photo */}
+                  <div className="relative w-full h-48 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-lg mb-4 overflow-hidden">
+                    {member.photo ? (
+                      <Image
+                        src={member.photo}
+                        alt={member.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white text-4xl font-bold">
+                        {getInitials(member.name)}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Member Info */}
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1 text-lg">{member.name}</h3>
+                    <p className="text-sm font-semibold text-primary-600 mb-1">{member.role}</p>
+                    <p className="text-xs text-gray-600">{member.organization}</p>
                   </div>
                 </div>
               ))}
