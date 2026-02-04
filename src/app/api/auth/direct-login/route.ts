@@ -15,15 +15,37 @@ import { getProcessedSecret } from '@/lib/getSecret'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+// Helper to add CORS headers
+function addCorsHeaders(response: NextResponse): NextResponse {
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+  return response
+}
+
+// Handle CORS preflight
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
 
     if (!email || !password) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
       )
+      return addCorsHeaders(response)
     }
 
     console.log('[Direct Login] Starting direct database authentication for:', email)
@@ -49,10 +71,11 @@ export async function POST(request: NextRequest) {
 
     if (!users.docs || users.docs.length === 0) {
       console.log('[Direct Login] ❌ User not found:', email)
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       )
+      return addCorsHeaders(response)
     }
 
     const userBasic = users.docs[0] as any
@@ -95,7 +118,7 @@ export async function POST(request: NextRequest) {
       const lockUntil = new Date(user.lockUntil)
       if (lockUntil > new Date()) {
         console.log('[Direct Login] ❌ Account locked until:', lockUntil)
-        return NextResponse.json(
+        const response = NextResponse.json(
           { 
             error: `Account is locked. Try again after ${lockUntil.toLocaleString()}`,
             locked: true,
@@ -103,6 +126,7 @@ export async function POST(request: NextRequest) {
           },
           { status: 423 }
         )
+        return addCorsHeaders(response)
       }
     }
 
@@ -115,7 +139,7 @@ export async function POST(request: NextRequest) {
     
     if (!user.hash) {
       console.log('[Direct Login] ❌ User has no password hash!')
-      return NextResponse.json(
+      const response = NextResponse.json(
         { 
           error: 'User account has no password set',
           debug: {
@@ -126,6 +150,7 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       )
+      return addCorsHeaders(response)
     }
 
     console.log('[Direct Login] Comparing password...')
@@ -152,7 +177,7 @@ export async function POST(request: NextRequest) {
       } catch (updateError) {
         console.error('[Direct Login] Failed to update login attempts:', updateError)
       }
-      return NextResponse.json(
+      const response = NextResponse.json(
         { 
           error: 'Invalid email or password',
           debug: {
@@ -168,6 +193,7 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       )
+      return addCorsHeaders(response)
     }
 
     console.log('[Direct Login] ✅ Password verified successfully')
@@ -256,12 +282,12 @@ export async function POST(request: NextRequest) {
 
     console.log('[Direct Login] ✅ Direct authentication successful for:', user.email)
     
-    return response
+    return addCorsHeaders(response)
 
   } catch (error: any) {
     console.error('[Direct Login] ❌ Error:', error)
     console.error('[Direct Login] Error stack:', error.stack)
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { 
         error: 'Authentication failed',
         details: error.message,
@@ -269,5 +295,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
+    return addCorsHeaders(errorResponse)
   }
 }
