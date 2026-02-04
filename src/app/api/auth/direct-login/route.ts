@@ -16,21 +16,26 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 // Helper to add CORS headers
-function addCorsHeaders(response: NextResponse): NextResponse {
-  response.headers.set('Access-Control-Allow-Origin', '*')
+function addCorsHeaders(response: NextResponse, request?: NextRequest): NextResponse {
+  // When credentials are used, we must echo the Origin header, not use '*'
+  const origin = request?.headers.get('origin') || '*'
+  response.headers.set('Access-Control-Allow-Origin', origin)
   response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+  response.headers.set('Access-Control-Allow-Credentials', 'true')
   return response
 }
 
 // Handle CORS preflight
 export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin') || '*'
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Max-Age': '86400',
     },
   })
@@ -45,7 +50,7 @@ export async function POST(request: NextRequest) {
         { error: 'Email and password are required' },
         { status: 400 }
       )
-      return addCorsHeaders(response)
+      return addCorsHeaders(response, request)
     }
 
     console.log('[Direct Login] Starting direct database authentication for:', email)
@@ -75,7 +80,7 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid email or password' },
         { status: 401 }
       )
-      return addCorsHeaders(response)
+      return addCorsHeaders(response, request)
     }
 
     const userBasic = users.docs[0] as any
@@ -126,7 +131,7 @@ export async function POST(request: NextRequest) {
           },
           { status: 423 }
         )
-        return addCorsHeaders(response)
+        return addCorsHeaders(response, request)
       }
     }
 
@@ -150,7 +155,7 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       )
-      return addCorsHeaders(response)
+      return addCorsHeaders(response, request)
     }
 
     console.log('[Direct Login] Comparing password...')
@@ -193,7 +198,7 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       )
-      return addCorsHeaders(response)
+      return addCorsHeaders(response, request)
     }
 
     console.log('[Direct Login] ✅ Password verified successfully')
@@ -219,10 +224,11 @@ export async function POST(request: NextRequest) {
     const processedSecret = await getProcessedSecret()
     if (!processedSecret) {
       console.error('[Direct Login] ❌ PAYLOAD_SECRET not found')
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       )
+      return addCorsHeaders(response, request)
     }
 
     // Create JWT payload (matching Payload's format)
@@ -282,7 +288,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[Direct Login] ✅ Direct authentication successful for:', user.email)
     
-    return addCorsHeaders(response)
+    return addCorsHeaders(response, request)
 
   } catch (error: any) {
     console.error('[Direct Login] ❌ Error:', error)
@@ -295,6 +301,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
-    return addCorsHeaders(errorResponse)
+    return addCorsHeaders(errorResponse, request)
   }
 }
