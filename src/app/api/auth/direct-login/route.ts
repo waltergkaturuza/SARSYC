@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import postgres from 'postgres'
 import { getProcessedSecret } from '@/lib/getSecret'
 
 /**
@@ -85,38 +86,42 @@ export async function POST(request: NextRequest) {
 
     const userBasic = users.docs[0] as any
     console.log('[Direct Login] ✅ User found via find():', userBasic.id, userBasic.email, 'Role:', userBasic.role)
-    console.log('[Direct Login] User from find() has hash?', !!userBasic.hash)
     
-    // Try findByID to get hash (might include more fields)
-    let user = userBasic
-    try {
-      const userById = await payload.findByID({
-        collection: 'users',
-        id: userBasic.id,
-        overrideAccess: true,
-        depth: 0,
-      }) as any
-      
-      console.log('[Direct Login] ✅ User found via findByID():', userById.id)
-      console.log('[Direct Login] User from findByID() has hash?', !!userById.hash)
-      console.log('[Direct Login] User from findByID() keys:', Object.keys(userById))
-      
-      // Use findByID result if it has hash, otherwise use find result
-      if (userById.hash) {
-        user = userById
-        console.log('[Direct Login] Using findByID() result (has hash)')
-      } else {
-        console.log('[Direct Login] findByID() also missing hash, using find() result')
+    // Payload never returns the hash field for security. Fetch it directly from the database.
+    let hash: string | null = null
+    let lockUntil: string | Date | null = null
+    let loginAttempts: number = 0
+    const dbUrl = process.env.DATABASE_URL
+    if (dbUrl) {
+      try {
+        const sql = postgres(dbUrl, { max: 1 })
+        const rows = await sql`
+          SELECT hash, login_attempts, lock_until
+          FROM users
+          WHERE LOWER(email) = LOWER(${email.trim().toLowerCase()})
+          LIMIT 1
+        `
+        await sql.end()
+        if (rows?.[0]) {
+          hash = (rows[0] as { hash: string | null }).hash ?? null
+          loginAttempts = Number((rows[0] as { login_attempts: number }).login_attempts) || 0
+          lockUntil = (rows[0] as { lock_until: Date | null }).lock_until ?? null
+          console.log('[Direct Login] ✅ Fetched hash from DB, length:', hash?.length ?? 0)
+        }
+      } catch (dbErr: any) {
+        console.error('[Direct Login] ❌ DB query for hash failed:', dbErr?.message)
       }
-    } catch (findByIdError: any) {
-      console.log('[Direct Login] ⚠️  findByID failed (non-critical):', findByIdError.message)
-      // Continue with find() result
+    } else {
+      console.log('[Direct Login] ⚠️  DATABASE_URL not set, cannot fetch hash')
     }
     
-    console.log('[Direct Login] Final user object keys:', Object.keys(user))
-    console.log('[Direct Login] Final user hash field:', user.hash)
-    console.log('[Direct Login] Final user hash type:', typeof user.hash)
-    console.log('[Direct Login] Final user hash value (first 30 chars):', user.hash?.substring(0, 30))
+    const user = {
+      ...userBasic,
+      hash,
+      lockUntil,
+      loginAttempts,
+    } as any
+    console.log('[Direct Login] Final user has hash?', !!user.hash)
 
     // Step 3: Check if account is locked
     if (user.lockUntil) {
