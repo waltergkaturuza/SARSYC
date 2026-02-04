@@ -10,12 +10,20 @@ export const runtime = 'nodejs'
 // Body: { email: "admin@sarsyc.org", password: "newpassword" }
 export async function POST(request: NextRequest) {
   try {
-    // Optional: Add token check for production
-    // const authToken = request.headers.get('x-reset-token')
-    // const expectedToken = process.env.PASSWORD_RESET_TOKEN
-    // if (authToken !== expectedToken) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    // }
+    // Require a reset token (prevents anonymous password resets)
+    const expectedToken = process.env.PASSWORD_RESET_TOKEN
+    const providedToken = request.headers.get('x-reset-token')
+
+    if (!expectedToken) {
+      return NextResponse.json(
+        { error: 'PASSWORD_RESET_TOKEN is not configured.' },
+        { status: 500 }
+      )
+    }
+
+    if (!providedToken || providedToken !== expectedToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
 
     const { email, password } = await request.json()
 
