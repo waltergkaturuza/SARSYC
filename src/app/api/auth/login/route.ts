@@ -85,10 +85,12 @@ export async function POST(request: NextRequest) {
       const userRole = (result.user as any).role || (result.user as any).roles?.[0]
       
       if (type === 'admin') {
-        // Only allow admin role for admin login
-        if (userRole !== 'admin') {
+        // Allow admin-panel login for privileged roles
+        // (some deployments use 'editor' accounts to access the admin UI)
+        const allowedAdminPanelRoles = new Set(['admin', 'editor'])
+        if (!allowedAdminPanelRoles.has(String(userRole))) {
           return NextResponse.json(
-            { error: 'Access denied. Admin role required.' },
+            { error: 'Access denied. Admin or Editor role required.' },
             { status: 403 }
           )
         }
