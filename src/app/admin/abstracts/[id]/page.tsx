@@ -2,8 +2,18 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { FiEdit, FiArrowLeft, FiFileText, FiCalendar, FiUser, FiMail, FiPhone } from 'react-icons/fi'
+import {
+  FiEdit,
+  FiArrowLeft,
+  FiFileText,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiUsers,
+} from 'react-icons/fi'
 import { format } from 'date-fns'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import AbstractReviewForm from '@/components/admin/AbstractReviewForm'
 
 export const revalidate = 0
 
@@ -23,6 +33,13 @@ const statusColors: Record<string, string> = {
 
 export default async function AbstractDetailPage({ params }: AbstractDetailPageProps) {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const reviewerIdValue =
+    currentUser?.id && typeof currentUser.id === 'object'
+      ? currentUser.id.toString()
+      : currentUser?.id
+  const reviewerId = reviewerIdValue ? reviewerIdValue.toString() : undefined
+  const isReviewer = currentUser?.role === 'reviewer' && Boolean(reviewerId)
   
   try {
     const abstract = await payload.findByID({
@@ -30,6 +47,50 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
       id: params.id,
       depth: 2,
     })
+
+    const assignedReviewers = Array.isArray(abstract.assignedReviewers)
+      ? abstract.assignedReviewers
+      : []
+    const assignedReviewerIds = assignedReviewers.map((reviewer: any) =>
+      typeof reviewer === 'object' ? reviewer.id?.toString() : reviewer?.toString()
+    )
+
+    if (isReviewer && reviewerId && !assignedReviewerIds.includes(reviewerId)) {
+      return (
+        <div className="container-custom py-8">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-yellow-900 mb-2">Access Restricted</h2>
+            <p className="text-yellow-800 mb-4">
+              This abstract has not been assigned to you for review. Please contact the conference administrators if you believe this is an error.
+            </p>
+            <Link href="/admin/abstracts" className="btn-primary">
+              Back to Assigned Abstracts
+            </Link>
+          </div>
+        </div>
+      )
+    }
+
+    const reviewsResult = await payload.find({
+      collection: 'abstract-reviews',
+      where: {
+        abstract: { equals: params.id },
+      },
+      depth: 2,
+      sort: '-updatedAt',
+      limit: 100,
+    })
+
+    const reviews = reviewsResult.docs || []
+    const reviewerReview = isReviewer && reviewerId
+      ? reviews.find((review: any) => {
+          const reviewReviewerId =
+            typeof review.reviewer === 'object'
+              ? review.reviewer.id?.toString()
+              : review.reviewer?.toString()
+          return reviewReviewerId === reviewerId
+        })
+      : null
 
     return (
       <div className="container-custom py-8">
@@ -257,6 +318,110 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
                 </div>
               </div>
             </div>
+
+            {/* Assigned Reviewers */}
+            {assignedReviewers.length > 0 && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <FiUsers className="w-5 h-5 text-gray-500" />
+                  Assigned Reviewers
+                </div>
+                <ul className="list-disc list-inside text-sm text-gray-700">
+                  {assignedReviewers.map((reviewer: any) => {
+                    const name =
+                      typeof reviewer === 'object'
+                        ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim() ||
+                          reviewer.email ||
+                          reviewer.id
+                        : reviewer
+                    const email =
+                      typeof reviewer === 'object' ? reviewer.email : null
+                    return (
+                      <li key={typeof reviewer === 'object' ? reviewer.id : reviewer}>
+                        {name}
+                        {email && <span className="text-gray-500"> ({email})</span>}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {/* Reviews Summary */}
+            {reviews.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Reviewer Feedback</h3>
+                <div className="space-y-4">
+                  {reviews.map((review: any) => {
+                    const reviewer =
+                      typeof review.reviewer === 'object'
+                        ? review.reviewer
+                        : null
+                    return (
+                      <div
+                        key={review.id}
+                        className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {reviewer
+                                ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim() ||
+                                  reviewer.email ||
+                                  reviewer.id
+                                : 'Reviewer'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(review.updatedAt || review.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm">
+                            <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold">
+                              Score: {review.score}
+                            </span>
+                            <span className="px-2 py-1 rounded-full bg-gray-200 text-gray-700 capitalize">
+                              {String(review.recommendation || '').replace('-', ' ')}
+                            </span>
+                            {review.confidence && (
+                              <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-700 capitalize">
+                                {review.confidence} confidence
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {review.comments && (
+                          <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                            {review.comments}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Reviewer Form */}
+            {isReviewer && reviewerId && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Your Review</h3>
+                <AbstractReviewForm
+                  abstractId={abstract.id.toString()}
+                  existingReview={reviewerReview}
+                  allowEdit
+                />
+              </div>
+            )}
+
+            {/* Admin view: show review form read-only? */}
+            {!isReviewer && reviews.length === 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">No reviews submitted yet</h3>
+                <p className="text-blue-800">
+                  Assign reviewers to this abstract and they will submit their evaluations here.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

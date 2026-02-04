@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { 
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
@@ -117,8 +117,42 @@ const navigation = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false) // Mobile only
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true) // Desktop: closed by default
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [loadingUser, setLoadingUser] = useState(true)
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const response = await fetch('/api/user/profile', {
+          credentials: 'include',
+        })
+        if (response.status === 401) {
+          setCurrentUser(null)
+          return
+        }
+        if (!response.ok) {
+          throw new Error('Failed to load user profile')
+        }
+        const data = await response.json()
+        if (data?.user) {
+          setCurrentUser(data.user)
+        }
+      } catch (error) {
+        console.error('Failed to load admin user profile:', error)
+        setCurrentUser(null)
+      } finally {
+        setLoadingUser(false)
+      }
+    }
+
+    loadUser().catch((err) => {
+      console.error('User fetch error:', err)
+      setLoadingUser(false)
+    })
+  }, [])
 
   // Load sidebar state from localStorage
   useEffect(() => {
@@ -128,12 +162,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [])
 
+  useEffect(() => {
+    if (!loadingUser && currentUser?.role === 'reviewer') {
+      const allowedPrefixes = ['/admin/abstracts']
+      if (!allowedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+        router.replace('/admin/abstracts')
+      }
+    }
+  }, [loadingUser, currentUser, pathname, router])
+
   // Save sidebar state to localStorage
   const toggleSidebar = () => {
     const newState = !sidebarCollapsed
     setSidebarCollapsed(newState)
     localStorage.setItem('admin-sidebar-collapsed', String(newState))
   }
+
+  const filteredNavigation = useMemo(() => {
+    if (!currentUser) {
+      return navigation
+    }
+    if (currentUser.role === 'reviewer') {
+      return navigation.filter((item) => item.href === '/admin/abstracts')
+    }
+    return navigation
+  }, [currentUser])
+
+  const displayName = currentUser
+    ? `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.email
+    : 'Admin User'
+  const displayEmail = currentUser?.email || 'admin@sarsyc.org'
+  const displayInitial =
+    (currentUser?.firstName?.[0] ||
+      currentUser?.lastName?.[0] ||
+      currentUser?.email?.[0] ||
+      'A').toUpperCase()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -186,7 +249,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Navigation - Scrollable */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 min-h-0">
           <div className="space-y-1">
-            {navigation.map((item) => {
+            {filteredNavigation.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               
@@ -276,11 +339,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-gray-900">Admin User</div>
-              <div className="text-xs text-gray-500">admin@sarsyc.org</div>
+              <div className="text-sm font-medium text-gray-900">
+                {displayName}
+              </div>
+              <div className="text-xs text-gray-500">
+                {displayEmail}
+              </div>
             </div>
             <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
-              A
+              {displayInitial}
             </div>
           </div>
         </header>

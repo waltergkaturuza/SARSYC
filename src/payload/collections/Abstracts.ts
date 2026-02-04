@@ -172,6 +172,21 @@ const Abstracts: CollectionConfig = {
       ],
     },
     {
+      name: 'assignedReviewers',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Assigned Reviewers',
+      admin: {
+        description: 'Select the reviewers who should evaluate this abstract',
+      },
+      access: {
+        read: (args: any) => Boolean(args.req?.user),
+        create: (args: any) => args.req?.user?.role === 'admin',
+        update: (args: any) => args.req?.user?.role === 'admin',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       required: true,

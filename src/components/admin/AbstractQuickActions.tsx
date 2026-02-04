@@ -9,13 +9,18 @@ interface AbstractQuickActionsProps {
   abstractId: string
   currentStatus: string
   onStatusUpdate?: () => void
+  readOnly?: boolean
 }
 
 export default function AbstractQuickActions({
   abstractId,
   currentStatus,
   onStatusUpdate,
+  readOnly = false,
 }: AbstractQuickActionsProps) {
+  if (readOnly) {
+    return null
+  }
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)

@@ -1,5 +1,6 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import Link from 'next/link'
 import AbstractsFilters from '@/components/admin/AbstractsFilters'
 import AbstractQuickActions from '@/components/admin/AbstractQuickActions'
@@ -22,6 +23,13 @@ export default async function AbstractsManagementPage({
   searchParams: SearchParams
 }) {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const reviewerIdValue =
+    currentUser?.id && typeof currentUser.id === 'object'
+      ? currentUser.id.toString()
+      : currentUser?.id
+  const reviewerId = reviewerIdValue ? reviewerIdValue.toString() : undefined
+  const isReviewer = currentUser?.role === 'reviewer' && Boolean(reviewerId)
   
   const page = Number(searchParams.page || 1)
   const perPage = 25
@@ -49,6 +57,10 @@ export default async function AbstractsManagementPage({
     ]
   }
 
+  if (isReviewer && reviewerId) {
+    where.assignedReviewers = { equals: reviewerId }
+  }
+
   const results = await payload.find({
     collection: 'abstracts',
     where,
@@ -62,11 +74,16 @@ export default async function AbstractsManagementPage({
   const totalDocs = results.totalDocs
 
   // Get counts by status
+  const buildStatusWhere = (statusValue: string) => ({
+    status: { equals: statusValue },
+    ...(isReviewer && reviewerId ? { assignedReviewers: { equals: reviewerId } } : {}),
+  })
+
   const statusCounts = await Promise.all([
-    payload.find({ collection: 'abstracts', where: { status: { equals: 'received' } }, limit: 0 }),
-    payload.find({ collection: 'abstracts', where: { status: { equals: 'under-review' } }, limit: 0 }),
-    payload.find({ collection: 'abstracts', where: { status: { equals: 'accepted' } }, limit: 0 }),
-    payload.find({ collection: 'abstracts', where: { status: { equals: 'rejected' } }, limit: 0 }),
+    payload.find({ collection: 'abstracts', where: buildStatusWhere('received'), limit: 0 }),
+    payload.find({ collection: 'abstracts', where: buildStatusWhere('under-review'), limit: 0 }),
+    payload.find({ collection: 'abstracts', where: buildStatusWhere('accepted'), limit: 0 }),
+    payload.find({ collection: 'abstracts', where: buildStatusWhere('rejected'), limit: 0 }),
   ])
 
   const statusConfig: Record<string, any> = {
@@ -82,13 +99,21 @@ export default async function AbstractsManagementPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Abstract Management</h1>
-          <p className="text-gray-600 mt-1">Review and manage conference abstract submissions</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isReviewer ? 'My Assigned Abstracts' : 'Abstract Management'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {isReviewer
+              ? 'Review the abstracts that have been assigned to you.'
+              : 'Review and manage conference abstract submissions'}
+          </p>
         </div>
-        <button className="btn-primary flex items-center gap-2">
-          <FiDownload className="w-5 h-5" />
-          Export All
-        </button>
+        {!isReviewer && (
+          <button className="btn-primary flex items-center gap-2">
+            <FiDownload className="w-5 h-5" />
+            Export All
+          </button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -112,7 +137,7 @@ export default async function AbstractsManagementPage({
       </div>
 
       {/* Filters */}
-      <AbstractsFilters />
+      {!isReviewer && <AbstractsFilters />}
 
       {/* Abstracts Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -192,10 +217,12 @@ export default async function AbstractsManagementPage({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <AbstractQuickActions
-                            abstractId={abstract.id.toString()}
-                            currentStatus={abstract.status}
-                          />
+                          {!isReviewer && (
+                            <AbstractQuickActions
+                              abstractId={abstract.id.toString()}
+                              currentStatus={abstract.status}
+                            />
+                          )}
                           <Link
                             href={`/admin/abstracts/${abstract.id}`}
                             className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"

@@ -60,6 +60,10 @@ const Users: CollectionConfig = {
           value: 'presenter',
         },
         {
+          label: 'Reviewer',
+          value: 'reviewer',
+        },
+        {
           label: 'Volunteer',
           value: 'volunteer',
         },
@@ -105,6 +109,14 @@ const Users: CollectionConfig = {
       name: 'phone',
       type: 'text',
       label: 'Phone Number',
+    },
+    {
+      name: 'university',
+      type: 'text',
+      label: 'University',
+      admin: {
+        description: 'For reviewers: their university/affiliation',
+      },
     },
   ],
   timestamps: true,

@@ -34,6 +34,7 @@ interface AbstractData {
   reviewerComments?: string
   adminNotes?: string
   assignedSession?: string
+  assignedReviewers: string[]
 }
 
 interface AbstractFormProps {
@@ -45,6 +46,9 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [reviewerOptions, setReviewerOptions] = useState<any[]>([])
+  const [loadingReviewers, setLoadingReviewers] = useState(false)
+  const [reviewerFetchError, setReviewerFetchError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<AbstractData>({
     title: initialData?.title || '',
@@ -68,7 +72,36 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     reviewerComments: initialData?.reviewerComments || '',
     adminNotes: initialData?.adminNotes || '',
     assignedSession: initialData?.assignedSession?.id || initialData?.assignedSession || '',
+    assignedReviewers:
+      initialData?.assignedReviewers?.map((reviewer: any) =>
+        typeof reviewer === 'object' ? reviewer.id || reviewer : reviewer
+      ) || [],
   })
+
+  useEffect(() => {
+    const fetchReviewers = async () => {
+      setLoadingReviewers(true)
+      try {
+        const response = await fetch('/api/admin/users?role=reviewer&limit=200', {
+          credentials: 'include',
+        })
+        if (!response.ok) {
+          throw new Error('Failed to load reviewers')
+        }
+        const data = await response.json()
+        setReviewerOptions(data.docs || [])
+      } catch (error: any) {
+        console.error('Reviewer fetch error:', error)
+        setReviewerFetchError(error.message || 'Unable to load reviewers')
+      } finally {
+        setLoadingReviewers(false)
+      }
+    }
+
+    fetchReviewers().catch((err) => {
+      console.error('Failed to fetch reviewers:', err)
+    })
+  }, [])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -179,6 +212,7 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       if (formData.assignedSession) {
         submitData.append('assignedSession', formData.assignedSession)
       }
+      submitData.append('assignedReviewers', JSON.stringify(formData.assignedReviewers || []))
       
       // CLIENT-SIDE DIRECT UPLOAD: Upload abstract file directly to blob storage
       let abstractFileUrl: string | null = null
@@ -499,6 +533,36 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Status</h2>
             
             <div className="space-y-6">
+              <FormField label="Assigned Reviewers" hint="Select the lecturers/professors who should evaluate this abstract. Hold Ctrl/Cmd to select multiple reviewers.">
+                {loadingReviewers ? (
+                  <div className="text-sm text-gray-500">Loading reviewers...</div>
+                ) : reviewerFetchError ? (
+                  <div className="text-sm text-red-600">{reviewerFetchError}</div>
+                ) : (
+                  <select
+                    multiple
+                    value={formData.assignedReviewers}
+                    onChange={(e) => {
+                      const values = Array.from(e.target.selectedOptions).map((option) => option.value)
+                      handleInputChange('assignedReviewers', values)
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[160px]"
+                  >
+                    {reviewerOptions.length === 0 ? (
+                      <option value="" disabled>
+                        No reviewers available. Create reviewer accounts first.
+                      </option>
+                    ) : (
+                      reviewerOptions.map((reviewer: any) => (
+                        <option key={reviewer.id} value={reviewer.id}>
+                          {reviewer.firstName} {reviewer.lastName} ({reviewer.email})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                )}
+              </FormField>
+
               <FormField label="Status" required>
                 <select
                   value={formData.status}

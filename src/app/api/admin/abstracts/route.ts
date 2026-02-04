@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const coAuthors = JSON.parse(formData.get('coAuthors') as string || '[]')
     const presentationType = formData.get('presentationType') as string
     const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
+    const assignedReviewers = JSON.parse(formData.get('assignedReviewers') as string || '[]')
     
     // Create media record with the blob URL if provided
     let abstractFileId: string | undefined
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
         coAuthors: coAuthors.map((ca: any) => ({ name: ca.name, organization: ca.organization })),
         presentationType,
         status: 'received',
+        assignedReviewers: Array.isArray(assignedReviewers) ? assignedReviewers : [],
         ...(abstractFileId && { abstractFile: abstractFileId }),
       },
     })

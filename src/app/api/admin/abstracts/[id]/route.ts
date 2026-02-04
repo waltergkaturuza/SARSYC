@@ -25,6 +25,7 @@ export async function PATCH(
     const adminNotes = formData.get('adminNotes') as string | null
     const assignedSession = formData.get('assignedSession') as string | null
     const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
+    const assignedReviewers = JSON.parse(formData.get('assignedReviewers') as string || '[]')
     
     // Create media record with the blob URL if provided
     let abstractFileId: string | undefined
@@ -80,9 +81,8 @@ export async function PATCH(
     if (abstractFileId) {
       updateData.abstractFile = abstractFileId
     }
-    if (assignedSession) {
-      updateData.assignedSession = assignedSession
-    }
+    updateData.assignedSession = assignedSession || null
+    updateData.assignedReviewers = Array.isArray(assignedReviewers) ? assignedReviewers : []
 
     // Update abstract
     const abstractDoc = await payload.update({
