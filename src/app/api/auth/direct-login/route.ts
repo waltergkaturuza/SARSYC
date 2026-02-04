@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
     const payload = await getPayloadClient()
 
     // Step 2: Query user directly from database
+    // Use findByID after finding user ID to get all fields including hash
     console.log('[Direct Login] Step 1: Querying user from database...')
+    
     const users = await payload.find({
       collection: 'users',
       where: {
@@ -42,6 +44,7 @@ export async function POST(request: NextRequest) {
       },
       limit: 1,
       overrideAccess: true,
+      depth: 0,
     })
 
     if (!users.docs || users.docs.length === 0) {
@@ -52,8 +55,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = users.docs[0] as any
-    console.log('[Direct Login] ✅ User found:', user.id, user.email, 'Role:', user.role)
+    const userBasic = users.docs[0] as any
+    console.log('[Direct Login] ✅ User found via find():', userBasic.id, userBasic.email, 'Role:', userBasic.role)
+    console.log('[Direct Login] User from find() has hash?', !!userBasic.hash)
+    
+    // Try findByID to get hash (might include more fields)
+    let user = userBasic
+    try {
+      const userById = await payload.findByID({
+        collection: 'users',
+        id: userBasic.id,
+        overrideAccess: true,
+        depth: 0,
+      }) as any
+      
+      console.log('[Direct Login] ✅ User found via findByID():', userById.id)
+      console.log('[Direct Login] User from findByID() has hash?', !!userById.hash)
+      console.log('[Direct Login] User from findByID() keys:', Object.keys(userById))
+      
+      // Use findByID result if it has hash, otherwise use find result
+      if (userById.hash) {
+        user = userById
+        console.log('[Direct Login] Using findByID() result (has hash)')
+      } else {
+        console.log('[Direct Login] findByID() also missing hash, using find() result')
+      }
+    } catch (findByIdError: any) {
+      console.log('[Direct Login] ⚠️  findByID failed (non-critical):', findByIdError.message)
+      // Continue with find() result
+    }
+    
+    console.log('[Direct Login] Final user object keys:', Object.keys(user))
+    console.log('[Direct Login] Final user hash field:', user.hash)
+    console.log('[Direct Login] Final user hash type:', typeof user.hash)
+    console.log('[Direct Login] Final user hash value (first 30 chars):', user.hash?.substring(0, 30))
 
     // Step 3: Check if account is locked
     if (user.lockUntil) {
@@ -73,17 +108,35 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Verify password directly using bcrypt
     console.log('[Direct Login] Step 2: Verifying password hash...')
+    console.log('[Direct Login] Hash exists:', !!user.hash)
+    console.log('[Direct Login] Hash length:', user.hash?.length)
+    console.log('[Direct Login] Hash preview:', user.hash?.substring(0, 20))
+    console.log('[Direct Login] Hash format:', user.hash?.substring(0, 7))
+    
     if (!user.hash) {
       console.log('[Direct Login] ❌ User has no password hash!')
       return NextResponse.json(
-        { error: 'User account has no password set' },
+        { 
+          error: 'User account has no password set',
+          debug: {
+            userId: user.id,
+            email: user.email,
+            hasHash: false
+          }
+        },
         { status: 401 }
       )
     }
 
+    console.log('[Direct Login] Comparing password...')
+    console.log('[Direct Login] Password provided length:', password.length)
     const passwordMatch = await bcrypt.compare(password, user.hash)
+    console.log('[Direct Login] Password match result:', passwordMatch)
+    
     if (!passwordMatch) {
       console.log('[Direct Login] ❌ Password mismatch')
+      console.log('[Direct Login] Expected hash:', user.hash)
+      console.log('[Direct Login] Password provided:', password.substring(0, 3) + '***')
       // Increment login attempts
       try {
         const currentAttempts = (user.loginAttempts || 0) + 1
@@ -100,7 +153,19 @@ export async function POST(request: NextRequest) {
         console.error('[Direct Login] Failed to update login attempts:', updateError)
       }
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { 
+          error: 'Invalid email or password',
+          debug: {
+            userId: user.id,
+            email: user.email,
+            hasHash: !!user.hash,
+            hashLength: user.hash?.length,
+            hashFormat: user.hash?.substring(0, 7),
+            hashPreview: user.hash?.substring(0, 30),
+            passwordLength: password.length,
+            passwordMatch: false
+          }
+        },
         { status: 401 }
       )
     }
