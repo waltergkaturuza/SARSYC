@@ -2,6 +2,7 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
 import { FiArrowLeft, FiEdit, FiActivity } from 'react-icons/fi'
+import OrathonRegistrationActionButtons from '@/components/admin/OrathonRegistrationActionButtons'
 
 export const revalidate = 0
 
@@ -51,13 +52,19 @@ export default async function AdminOrathonRegistrationDetailPage({
             </h1>
             <p className="text-gray-600 mt-1">Orathon Registration Details</p>
           </div>
-          <Link
-            href={`/admin/orathon-registrations/${params.id}/edit`}
-            className="btn-primary flex items-center gap-2"
-          >
-            <FiEdit className="w-4 h-4" />
-            Edit
-          </Link>
+          <div className="flex items-center gap-3">
+            <OrathonRegistrationActionButtons
+              registrationId={registration.id}
+              status={registration.status}
+            />
+            <Link
+              href={`/admin/orathon-registrations/${params.id}/edit`}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FiEdit className="w-4 h-4" />
+              Edit
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -157,6 +164,12 @@ export default async function AdminOrathonRegistrationDetailPage({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:col-span-2">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Status & Admin</h2>
           <dl className="grid md:grid-cols-3 gap-4">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Registration ID</dt>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">
+                {registration.registrationId || '-'}
+              </dd>
+            </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Status</dt>
               <dd className="mt-1">

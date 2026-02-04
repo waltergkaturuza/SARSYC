@@ -36,6 +36,7 @@ type OrathonRegistrationFormData = z.infer<typeof orathonRegistrationSchema>
 export default function RegisterOrathonPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submittedId, setSubmittedId] = useState<string | null>(null)
 
   const {
     register,
@@ -62,9 +63,16 @@ export default function RegisterOrathonPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Registration failed. Please try again.')
+        const message = result?.error || 'Registration failed. Please try again.'
+        // If duplicate registration, surface existing ID for tracking
+        if (response.status === 409 && result?.registration?.registrationId) {
+          setSubmittedId(result.registration.registrationId)
+          throw new Error(`${message} Your Orathon ID is ${result.registration.registrationId}.`)
+        }
+        throw new Error(message)
       }
 
+      setSubmittedId(result?.registration?.registrationId || null)
       showToast.success('Registration successful! You will receive a confirmation email shortly.')
       reset()
       
@@ -116,6 +124,16 @@ export default function RegisterOrathonPage() {
               {submitError && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 text-sm">{submitError}</p>
+                </div>
+              )}
+              {submittedId && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-sm">
+                    Your Orathon Registration ID: <span className="font-mono font-semibold">{submittedId}</span>
+                  </p>
+                  <p className="text-green-700 text-xs mt-1">
+                    Use this ID on the Track page to check your registration status.
+                  </p>
                 </div>
               )}
 

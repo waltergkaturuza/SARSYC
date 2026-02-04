@@ -27,6 +27,7 @@ export default function TrackPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [registration, setRegistration] = useState<any>(null)
+  const [orathonRegistration, setOrathonRegistration] = useState<any>(null)
   const [abstracts, setAbstracts] = useState<any[]>([])
   const [partnership, setPartnership] = useState<any>(null)
   const [volunteer, setVolunteer] = useState<any>(null)
@@ -41,6 +42,7 @@ export default function TrackPage() {
     setLoading(true)
     setError('')
     setRegistration(null)
+    setOrathonRegistration(null)
     setAbstracts([])
     setPartnership(null)
     setVolunteer(null)
@@ -56,6 +58,9 @@ export default function TrackPage() {
       if (data.registration) {
         setRegistration(data.registration)
       }
+      if (data.orathonRegistration) {
+        setOrathonRegistration(data.orathonRegistration)
+      }
       if (data.abstracts) {
         setAbstracts(data.abstracts)
       }
@@ -66,8 +71,8 @@ export default function TrackPage() {
         setVolunteer(data.volunteer)
       }
 
-      if (!data.registration && !data.abstracts?.length && !data.partnership && !data.volunteer) {
-        setError('No registration, abstract, partnership inquiry, or volunteer application found with this ID. Please check your ID and try again.')
+      if (!data.registration && !data.orathonRegistration && !data.abstracts?.length && !data.partnership && !data.volunteer) {
+        setError('No registration, orathon registration, abstract, partnership inquiry, or volunteer application found with this ID. Please check your ID and try again.')
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching your status')
@@ -98,7 +103,7 @@ export default function TrackPage() {
                     type="text"
                     value={registrationId}
                     onChange={(e) => setRegistrationId(e.target.value.toUpperCase())}
-                    placeholder="Enter ID (e.g., SARSYC-261224-ABC123, ABS-2025-XFYT, PART-123, VOL-456)"
+                    placeholder="Enter ID (e.g., SARSYC-261224-ABC123, ORA-260203-ABC123, ABS-2025-XFYT, PART-123, VOL-456)"
                     className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-white"
                   />
                 </div>
@@ -128,7 +133,7 @@ export default function TrackPage() {
       </section>
 
       {/* Results Section */}
-      {(registration || abstracts.length > 0 || partnership || volunteer) && (
+      {(registration || orathonRegistration || abstracts.length > 0 || partnership || volunteer) && (
         <section className="section bg-gray-50">
           <div className="container-custom">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -226,6 +231,78 @@ export default function TrackPage() {
                       <p className="font-semibold text-gray-900">{registration.organization}</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Orathon Registration Status */}
+              {orathonRegistration && (
+                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Orathon Registration Status</h2>
+                    {(() => {
+                      const status = statusConfig[orathonRegistration.status] || statusConfig.pending
+                      const Icon = status.icon
+                      return (
+                        <span className={`flex items-center gap-2 px-4 py-2 bg-${status.color}-100 text-${status.color}-700 rounded-full font-medium`}>
+                          <Icon className="w-5 h-5" />
+                          {status.label}
+                        </span>
+                      )
+                    })()}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiUser className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Full Name</p>
+                          <p className="font-semibold text-gray-900">
+                            {orathonRegistration.firstName} {orathonRegistration.lastName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMail className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Email</p>
+                          <p className="font-semibold text-gray-900">{orathonRegistration.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiPhone className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Phone</p>
+                          <p className="font-semibold text-gray-900">{orathonRegistration.phone || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <FiFileText className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Orathon ID</p>
+                          <p className="font-semibold text-gray-900 font-mono">{orathonRegistration.registrationId}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiCalendar className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">Submitted</p>
+                          <p className="font-semibold text-gray-900">
+                            {orathonRegistration.createdAt ? format(new Date(orathonRegistration.createdAt), 'PPP') : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <FiMapPin className="w-5 h-5 text-primary-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-600">City</p>
+                          <p className="font-semibold text-gray-900">{orathonRegistration.city || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

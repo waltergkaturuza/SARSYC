@@ -5,7 +5,7 @@ const OrathonRegistrations: CollectionConfig = {
   slug: 'orathon-registrations',
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['firstName', 'lastName', 'email', 'status', 'createdAt'],
+    defaultColumns: ['registrationId', 'firstName', 'lastName', 'email', 'status', 'createdAt'],
     group: 'Conference',
   },
   access: {
@@ -139,6 +139,32 @@ const OrathonRegistrations: CollectionConfig = {
         { label: 'XL', value: 'xl' },
         { label: 'XXL', value: 'xxl' },
       ],
+    },
+    {
+      name: 'registrationId',
+      type: 'text',
+      label: 'Orathon Registration ID',
+      unique: true,
+      admin: {
+        readOnly: true,
+      },
+      hooks: {
+        beforeChange: [
+          (args: any) => {
+            const { value, operation } = args
+            if (operation === 'create' && !value) {
+              // Format: ORA-YYMMDD-XXXXXX (e.g., ORA-260203-A3B7C9)
+              const now = new Date()
+              const year = now.getFullYear().toString().slice(-2)
+              const month = String(now.getMonth() + 1).padStart(2, '0')
+              const day = String(now.getDate()).padStart(2, '0')
+              const random = Math.random().toString(36).substring(2, 8).toUpperCase()
+              return `ORA-${year}${month}${day}-${random}`
+            }
+            return value
+          },
+        ],
+      },
     },
     {
       name: 'status',

@@ -38,6 +38,8 @@ type OrathonFormData = z.infer<typeof orathonSchema>
 export default function OrathonRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submittedId, setSubmittedId] = useState<string | null>(null)
 
   const {
     register,
@@ -50,6 +52,7 @@ export default function OrathonRegistrationPage() {
 
   const onSubmit = async (data: OrathonFormData) => {
     setIsSubmitting(true)
+    setSubmitError(null)
     
     try {
       // Use the new Orathon registration API endpoint
@@ -76,14 +79,22 @@ export default function OrathonRegistrationPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
+        const message = result?.error || 'Registration failed'
+        if (response.status === 409 && result?.registration?.registrationId) {
+          setSubmittedId(result.registration.registrationId)
+          setSubmitError(`You already registered. Your Orathon ID is ${result.registration.registrationId}.`)
+          throw new Error(message)
+        }
+        throw new Error(message)
       }
 
+      setSubmittedId(result?.registration?.registrationId || null)
       showToast.success('Orathon registration submitted successfully!')
       setIsSuccess(true)
       reset()
     } catch (error: any) {
-      showToast.error('Failed to submit registration. Please try again.')
+      setSubmitError(error.message || 'Failed to submit registration. Please try again.')
+      showToast.error(error.message || 'Failed to submit registration. Please try again.')
       console.error('Orathon registration error:', error)
     } finally {
       setIsSubmitting(false)
@@ -105,6 +116,16 @@ export default function OrathonRegistrationPage() {
               <p className="text-lg text-gray-600 mb-8">
                 Thank you for registering for the SARSYC VI Orathon. You'll receive a confirmation email shortly with further details.
               </p>
+              {submittedId && (
+                <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-sm">
+                    Your Orathon Registration ID: <span className="font-mono font-semibold">{submittedId}</span>
+                  </p>
+                  <p className="text-green-700 text-xs mt-1">
+                    Use this ID on the Track page to check your registration status.
+                  </p>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="/" className="btn-outline">
                   Back to Homepage
@@ -177,6 +198,12 @@ export default function OrathonRegistrationPage() {
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
                 Register for Orathon
               </h2>
+
+              {submitError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">{submitError}</p>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Personal Information */}

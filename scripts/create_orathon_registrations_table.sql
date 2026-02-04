@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS orathon_registrations (
   medical_conditions TEXT,
   fitness_level VARCHAR(50) NOT NULL CHECK (fitness_level IN ('beginner', 'intermediate', 'advanced')),
   tshirt_size VARCHAR(10) NOT NULL CHECK (tshirt_size IN ('xs', 's', 'm', 'l', 'xl', 'xxl')),
+  registration_id VARCHAR(50) UNIQUE,
   status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled')),
   notes TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS orathon_registrations (
 CREATE INDEX IF NOT EXISTS idx_orathon_registrations_email ON orathon_registrations(email);
 CREATE INDEX IF NOT EXISTS idx_orathon_registrations_status ON orathon_registrations(status);
 CREATE INDEX IF NOT EXISTS idx_orathon_registrations_created_at ON orathon_registrations(created_at);
+CREATE INDEX IF NOT EXISTS idx_orathon_registrations_registration_id ON orathon_registrations(registration_id);
 
 -- Trigger to keep updated_at in sync
 CREATE OR REPLACE FUNCTION update_orathon_registrations_updated_at()

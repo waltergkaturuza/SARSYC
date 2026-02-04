@@ -29,13 +29,45 @@ export async function GET(request: NextRequest) {
     const trimmedId = inputId.trim().toUpperCase()
 
     let registration = null
+    let orathonRegistration = null
     let abstracts: any[] = []
     let partnership = null
     let volunteer = null
     let foundEmail: string | null = null
 
-    // Check if it's a partnership inquiry ID (starts with PART-)
-    if (trimmedId.startsWith('PART-')) {
+    // Check if it's an Orathon registration ID (starts with ORA-)
+    if (trimmedId.startsWith('ORA-')) {
+      console.log('🔍 Searching for Orathon registration with ID:', trimmedId)
+      const orathonResult = await payload.find({
+        collection: 'orathon-registrations',
+        where: {
+          registrationId: { equals: trimmedId },
+        },
+        limit: 1,
+        depth: 0,
+      })
+
+      if (orathonResult.docs.length > 0) {
+        const reg = orathonResult.docs[0]
+        foundEmail = reg.email
+        orathonRegistration = {
+          id: reg.id,
+          registrationId: reg.registrationId || `ORA-${reg.id}`,
+          firstName: reg.firstName,
+          lastName: reg.lastName,
+          email: reg.email,
+          phone: reg.phone,
+          status: reg.status || 'pending',
+          country: reg.country,
+          city: reg.city,
+          createdAt: reg.createdAt,
+          updatedAt: reg.updatedAt,
+        }
+        console.log('✅ Found Orathon registration, email:', foundEmail)
+      } else {
+        console.log('❌ No Orathon registration found with ID:', trimmedId)
+      }
+    } else if (trimmedId.startsWith('PART-')) {
       console.log('🔍 Searching for partnership inquiry with ID:', trimmedId)
       
       // Try to find by numeric ID from PART-XXX format
@@ -232,6 +264,37 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // If we found via ID but no orathon registration yet, try by email
+      if (!orathonRegistration) {
+        console.log('🔍 Searching for Orathon registration by email:', foundEmail)
+        const orathonByEmail = await payload.find({
+          collection: 'orathon-registrations',
+          where: {
+            email: { equals: foundEmail },
+          },
+          limit: 1,
+          sort: '-createdAt',
+          depth: 0,
+        })
+        if (orathonByEmail.docs.length > 0) {
+          const reg = orathonByEmail.docs[0]
+          orathonRegistration = {
+            id: reg.id,
+            registrationId: reg.registrationId || `ORA-${reg.id}`,
+            firstName: reg.firstName,
+            lastName: reg.lastName,
+            email: reg.email,
+            phone: reg.phone,
+            status: reg.status || 'pending',
+            country: reg.country,
+            city: reg.city,
+            createdAt: reg.createdAt,
+            updatedAt: reg.updatedAt,
+          }
+          console.log('✅ Found Orathon registration by email')
+        }
+      }
+
       // Find all abstracts by email (if we haven't already found them)
       if (abstracts.length === 0 || registration || partnership || volunteer) {
         console.log('🔍 Searching for all abstracts by email:', foundEmail)
@@ -332,6 +395,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       registration,
+      orathonRegistration,
       abstracts,
       partnership,
       volunteer,

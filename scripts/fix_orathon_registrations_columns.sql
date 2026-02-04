@@ -29,11 +29,20 @@ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orathon_registrations' AND column_name = 'tshirtSize') THEN
     ALTER TABLE orathon_registrations RENAME COLUMN "tshirtSize" TO tshirt_size;
   END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orathon_registrations' AND column_name = 'registrationId') THEN
+    ALTER TABLE orathon_registrations RENAME COLUMN "registrationId" TO registration_id;
+  END IF;
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orathon_registrations' AND column_name = 'createdAt') THEN
     ALTER TABLE orathon_registrations RENAME COLUMN "createdAt" TO created_at;
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orathon_registrations' AND column_name = 'updatedAt') THEN
     ALTER TABLE orathon_registrations RENAME COLUMN "updatedAt" TO updated_at;
+  END IF;
+
+  -- Ensure registration_id exists for tracking
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orathon_registrations' AND column_name = 'registration_id') THEN
+    ALTER TABLE orathon_registrations ADD COLUMN registration_id VARCHAR(50) UNIQUE;
+    CREATE INDEX IF NOT EXISTS idx_orathon_registrations_registration_id ON orathon_registrations(registration_id);
   END IF;
 END $$;
 
