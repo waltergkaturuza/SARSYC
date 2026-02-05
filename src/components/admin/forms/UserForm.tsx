@@ -221,17 +221,22 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                   errors.role ? 'border-red-500' : 'border-gray-300'
                 } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
               >
-                <option value="contributor">Contributor</option>
-                <option value="editor">Editor</option>
                 <option value="admin">Admin</option>
+                <option value="editor">Editor</option>
+                <option value="contributor">Contributor</option>
+                <option value="reviewer">Reviewer</option>
+                <option value="speaker">Speaker</option>
+                <option value="presenter">Presenter</option>
+                <option value="volunteer">Volunteer</option>
               </select>
               {errors.role && (
                 <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                <strong>Admin:</strong> Full access to all features<br />
-                <strong>Editor:</strong> Can create and edit content<br />
-                <strong>Contributor:</strong> Limited editing permissions
+                <strong>Admin:</strong> Full access<br />
+                <strong>Editor:</strong> Create and edit content<br />
+                <strong>Contributor:</strong> Limited editing<br />
+                <strong>Reviewer:</strong> Abstract evaluation only
               </p>
             </div>
 
