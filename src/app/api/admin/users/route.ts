@@ -96,9 +96,9 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const currentUser = await getCurrentUserFromRequest(request)
     
-    if (!currentUser || currentUser.role !== 'admin') {
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'editor')) {
       return NextResponse.json(
-        { error: 'Unauthorized. Admin access required.' },
+        { error: 'Unauthorized. Admin or Editor access required.' },
         { status: 403 }
       )
     }

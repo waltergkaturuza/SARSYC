@@ -182,8 +182,8 @@ const Abstracts: CollectionConfig = {
       },
       access: {
         read: (args: any) => Boolean(args.req?.user),
-        create: (args: any) => args.req?.user?.role === 'admin',
-        update: (args: any) => args.req?.user?.role === 'admin',
+        create: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
+        update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
       },
     },
     {

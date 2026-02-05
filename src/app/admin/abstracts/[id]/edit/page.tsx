@@ -1,6 +1,7 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import AbstractForm from '@/components/admin/forms/AbstractForm'
 
 export const revalidate = 0
@@ -12,6 +13,12 @@ interface EditAbstractPageProps {
 }
 
 export default async function EditAbstractPage({ params }: EditAbstractPageProps) {
+  const currentUser = await getCurrentUserFromCookies()
+  if (!currentUser) redirect('/login?type=admin&redirect=/admin/abstracts')
+  if (currentUser.role !== 'admin' && currentUser.role !== 'editor') {
+    redirect(`/admin/abstracts/${params.id}`)
+  }
+
   const payload = await getPayloadClient()
   
   try {

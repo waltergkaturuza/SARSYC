@@ -1,4 +1,5 @@
 import React from 'react'
+import { redirect } from 'next/navigation'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import Link from 'next/link'
@@ -15,6 +16,7 @@ interface SearchParams {
   status?: string
   track?: string
   search?: string
+  tab?: string
 }
 
 export default async function AbstractsManagementPage({
@@ -22,15 +24,26 @@ export default async function AbstractsManagementPage({
 }: {
   searchParams: SearchParams
 }) {
-  const payload = await getPayloadClient()
   const currentUser = await getCurrentUserFromCookies()
+  if (!currentUser) {
+    redirect('/login?type=reviewer&redirect=/admin/abstracts')
+  }
+  const isAdmin = currentUser.role === 'admin'
+  const isReviewerRole = currentUser.role === 'reviewer'
+  if (!isAdmin && !isReviewerRole) {
+    redirect('/login?type=reviewer&redirect=/admin/abstracts')
+  }
+
+  const payload = await getPayloadClient()
   const reviewerIdValue =
     currentUser?.id && typeof currentUser.id === 'object'
       ? currentUser.id.toString()
       : currentUser?.id
   const reviewerId = reviewerIdValue ? reviewerIdValue.toString() : undefined
   const isReviewer = currentUser?.role === 'reviewer' && Boolean(reviewerId)
-  
+  const isAdminOrEditor = currentUser.role === 'admin' || currentUser.role === 'editor'
+
+  const activeTab = searchParams.tab || 'abstracts'
   const page = Number(searchParams.page || 1)
   const perPage = 25
   const status = searchParams.status
@@ -86,6 +99,18 @@ export default async function AbstractsManagementPage({
     payload.find({ collection: 'abstracts', where: buildStatusWhere('rejected'), limit: 0 }),
   ])
 
+  // Load reviewers list for admin/editor tabs
+  const reviewersResult = isAdminOrEditor
+    ? await payload.find({
+        collection: 'users',
+        where: { role: { equals: 'reviewer' } },
+        limit: 200,
+        sort: 'lastName',
+      })
+    : null
+
+  const reviewers = reviewersResult?.docs || []
+
   const statusConfig: Record<string, any> = {
     'received': { color: 'bg-blue-100 text-blue-700', icon: FiClock, label: 'Received' },
     'under-review': { color: 'bg-yellow-100 text-yellow-700', icon: FiClock, label: 'Under Review' },
@@ -116,95 +141,293 @@ export default async function AbstractsManagementPage({
         )}
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">{statusCounts[0].totalDocs}</div>
-          <div className="text-sm text-gray-600">Received</div>
+      {/* Tabs (admin/editor only see extra tabs) */}
+      {!isReviewer && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-2">
+          <div className="flex flex-wrap gap-2 border-b border-gray-200">
+            <Link
+              href="/admin/abstracts"
+              className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+                activeTab === 'abstracts'
+                  ? 'border-primary-600 text-primary-700'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              All Abstracts
+            </Link>
+            {isAdminOrEditor && (
+              <>
+                <Link
+                  href="/admin/abstracts?tab=reviewers"
+                  className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+                    activeTab === 'reviewers'
+                      ? 'border-primary-600 text-primary-700'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                  }`}
+                >
+                  Reviewers
+                </Link>
+                <Link
+                  href="/admin/abstracts?tab=assign"
+                  className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
+                    activeTab === 'assign'
+                      ? 'border-primary-600 text-primary-700'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                  }`}
+                >
+                  Assign Abstracts
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">{statusCounts[1].totalDocs}</div>
-          <div className="text-sm text-gray-600">Under Review</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{statusCounts[2].totalDocs}</div>
-          <div className="text-sm text-gray-600">Accepted</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-red-600">{statusCounts[3].totalDocs}</div>
-          <div className="text-sm text-gray-600">Rejected</div>
-        </div>
-      </div>
+      )}
 
-      {/* Filters */}
-      {!isReviewer && <AbstractsFilters />}
-
-      {/* Abstracts Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Abstracts ({totalDocs})
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Showing {abstracts.length} of {totalDocs} abstracts
-              </p>
+      {/* Stats + Filters only on All Abstracts tab */}
+      {activeTab === 'abstracts' && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-gray-900">{statusCounts[0].totalDocs}</div>
+              <div className="text-sm text-gray-600">Received</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-gray-900">{statusCounts[1].totalDocs}</div>
+              <div className="text-sm text-gray-600">Under Review</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-green-600">{statusCounts[2].totalDocs}</div>
+              <div className="text-sm text-gray-600">Accepted</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-red-600">{statusCounts[3].totalDocs}</div>
+              <div className="text-sm text-gray-600">Rejected</div>
             </div>
           </div>
-        </div>
 
-        {abstracts.length === 0 ? (
-          <div className="p-12 text-center">
-            <FiFileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">No abstracts found matching your criteria</p>
+          {/* Filters */}
+          {!isReviewer && <AbstractsFilters />}
+        </>
+      )}
+
+      {/* Tab Content */}
+      {activeTab === 'abstracts' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Abstracts ({totalDocs})
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Showing {abstracts.length} of {totalDocs} abstracts
+                </p>
+              </div>
+            </div>
           </div>
-        ) : (
+
+          {abstracts.length === 0 ? (
+            <div className="p-12 text-center">
+              <FiFileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No abstracts found matching your criteria</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Submission
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Track
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Submitted
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {abstracts.map((abstract: any) => {
+                    const statusInfo = statusConfig[abstract.status] || statusConfig['received']
+                    const StatusIcon = statusInfo.icon
+                    
+                    return (
+                      <tr key={abstract.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-gray-900">{abstract.title}</div>
+                          <div className="text-sm text-gray-500">{abstract.submissionId}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {abstract.primaryAuthor?.firstName} {abstract.primaryAuthor?.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500">{abstract.primaryAuthor?.email}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                            {abstract.track?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.color}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {new Date(abstract.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {!isReviewer && (
+                              <AbstractQuickActions
+                                abstractId={abstract.id.toString()}
+                                currentStatus={abstract.status}
+                              />
+                            )}
+                            <Link
+                              href={`/admin/abstracts/${abstract.id}`}
+                              className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                              title="View Details"
+                            >
+                              <FiEye className="w-4 h-4" />
+                            </Link>
+                            {isAdminOrEditor && (
+                              <Link
+                                href={`/admin/abstracts/${abstract.id}/edit`}
+                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Edit Full Details"
+                              >
+                                <FiEdit className="w-4 h-4" />
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Page {page} of {totalPages}
+              </div>
+              <div className="flex gap-2">
+                {page > 1 && (
+                  <Link
+                    href={`/admin/abstracts?page=${page - 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Previous
+                  </Link>
+                )}
+                {page < totalPages && (
+                  <Link
+                    href={`/admin/abstracts?page=${page + 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Next
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Reviewers Tab */}
+      {activeTab === 'reviewers' && isAdminOrEditor && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Reviewers</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              List of all users with the Reviewer role. Create and manage reviewer accounts in the User Management section.
+            </p>
+          </div>
+          {reviewers.length === 0 ? (
+            <div className="p-8 text-center text-sm text-gray-600">
+              No reviewers found. Go to <Link href="/admin/users" className="text-primary-600 font-medium hover:underline">User Management</Link> to create reviewer accounts.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Organization</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {reviewers.map((reviewer: any) => (
+                    <tr key={reviewer.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {(reviewer.firstName || reviewer.lastName)
+                          ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim()
+                          : reviewer.email}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{reviewer.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{reviewer.organization || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Assign Tab */}
+      {activeTab === 'assign' && isAdminOrEditor && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200 space-y-2">
+            <h2 className="text-lg font-semibold text-gray-900">Assign Abstracts to Reviewers</h2>
+            <p className="text-sm text-gray-600">
+              Use this view to quickly see which abstracts are unassigned and jump into the edit screen to assign one or more reviewers.
+            </p>
+            <p className="text-sm text-gray-600">
+              To assign reviewers, click <span className="font-semibold">Edit</span> on any abstract and use the <span className="font-semibold">Assigned Reviewers</span> field.
+            </p>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Submission
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Author
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Track
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Submitted
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Submission</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Assigned Reviewers</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {abstracts.map((abstract: any) => {
+                  const assignedCount = Array.isArray(abstract.assignedReviewers)
+                    ? abstract.assignedReviewers.length
+                    : 0
                   const statusInfo = statusConfig[abstract.status] || statusConfig['received']
                   const StatusIcon = statusInfo.icon
-                  
+
                   return (
                     <tr key={abstract.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">{abstract.title}</div>
-                        <div className="text-sm text-gray-500">{abstract.submissionId}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {abstract.primaryAuthor?.firstName} {abstract.primaryAuthor?.lastName}
-                        </div>
-                        <div className="text-xs text-gray-500">{abstract.primaryAuthor?.email}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                          {abstract.track?.toUpperCase()}
-                        </span>
+                        <div className="text-xs text-gray-500">{abstract.submissionId}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.color}`}>
@@ -212,32 +435,22 @@ export default async function AbstractsManagementPage({
                           {statusInfo.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(abstract.createdAt).toLocaleDateString()}
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        {assignedCount === 0 ? (
+                          <span className="text-red-600 font-medium">Unassigned</span>
+                        ) : (
+                          <span className="text-gray-800">
+                            {assignedCount} reviewer{assignedCount === 1 ? '' : 's'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {!isReviewer && (
-                            <AbstractQuickActions
-                              abstractId={abstract.id.toString()}
-                              currentStatus={abstract.status}
-                            />
-                          )}
-                          <Link
-                            href={`/admin/abstracts/${abstract.id}`}
-                            className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                            title="View Details"
-                          >
-                            <FiEye className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={`/admin/abstracts/${abstract.id}/edit`}
-                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Edit Full Details"
-                          >
-                            <FiEdit className="w-4 h-4" />
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/admin/abstracts/${abstract.id}/edit`}
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+                        >
+                          Assign / Edit
+                        </Link>
                       </td>
                     </tr>
                   )
@@ -245,35 +458,8 @@ export default async function AbstractsManagementPage({
               </tbody>
             </table>
           </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Page {page} of {totalPages}
-            </div>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/abstracts?page=${page - 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/abstracts?page=${page + 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

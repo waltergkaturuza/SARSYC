@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight, FiFileText } from 'react-icons/fi'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,7 +13,7 @@ export default function LoginPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [userType, setUserType] = useState<'participant' | 'speaker' | 'admin'>('participant')
+  const [userType, setUserType] = useState<'participant' | 'speaker' | 'reviewer' | 'admin'>('participant')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,6 +27,7 @@ export default function LoginPage() {
       const loginBody = isAdmin
         ? { email: formData.email, password: formData.password }
         : { email: formData.email, password: formData.password, type: userType }
+      // Reviewer uses same login API as participant/speaker; server accepts any role
 
       const response = await fetch(loginUrl, {
         method: 'POST',
@@ -53,6 +54,8 @@ export default function LoginPage() {
       // Redirect based on user type
       if (userType === 'admin') {
         window.location.href = '/admin'
+      } else if (userType === 'reviewer') {
+        window.location.href = '/admin/abstracts'
       } else if (userType === 'participant') {
         router.push('/dashboard')
       } else if (userType === 'speaker') {
@@ -82,35 +85,47 @@ export default function LoginPage() {
           <div className="max-w-lg mx-auto">
             <div className="card p-10 md:p-12 shadow-2xl">
               {/* User Type Selector */}
-              <div className="flex gap-3 mb-10 p-1.5 bg-gray-100 rounded-xl">
+              <div className="flex flex-wrap gap-2 mb-10 p-1.5 bg-gray-100 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setUserType('participant')}
-                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
+                  className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-sm font-bold transition-all duration-200 ${
                     userType === 'participant'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
                   }`}
                 >
-                  <FiUser className="inline mr-2 w-5 h-5" />
+                  <FiUser className="inline mr-1.5 w-4 h-4" />
                   Participant
                 </button>
                 <button
                   type="button"
                   onClick={() => setUserType('speaker')}
-                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
+                  className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-sm font-bold transition-all duration-200 ${
                     userType === 'speaker'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
                   }`}
                 >
-                  <FiUser className="inline mr-2 w-5 h-5" />
+                  <FiUser className="inline mr-1.5 w-4 h-4" />
                   Speaker
                 </button>
                 <button
                   type="button"
+                  onClick={() => setUserType('reviewer')}
+                  className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-sm font-bold transition-all duration-200 ${
+                    userType === 'reviewer'
+                      ? 'bg-primary-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
+                  }`}
+                >
+                  <FiFileText className="inline mr-1.5 w-4 h-4" />
+                  Reviewer
+                </button>
+                <button
+                  type="button"
                   onClick={() => setUserType('admin')}
-                  className={`flex-1 py-3 px-5 rounded-lg text-base font-bold transition-all duration-200 ${
+                  className={`flex-1 min-w-0 py-3 px-3 rounded-lg text-sm font-bold transition-all duration-200 ${
                     userType === 'admin'
                       ? 'bg-primary-600 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 hover:bg-gray-200 hover:scale-[1.02]'
@@ -124,6 +139,13 @@ export default function LoginPage() {
                 <div className="mb-8 p-5 bg-gradient-to-r from-blue-50 to-primary-50 border-2 border-primary-200 rounded-xl shadow-sm">
                   <p className="text-base text-blue-900 font-semibold">
                     <strong>Admin Login:</strong> Clicking "Login" will redirect you to the Payload CMS admin panel.
+                  </p>
+                </div>
+              )}
+              {userType === 'reviewer' && (
+                <div className="mb-8 p-5 bg-gradient-to-r from-amber-50 to-primary-50 border-2 border-amber-200 rounded-xl shadow-sm">
+                  <p className="text-base text-amber-900 font-semibold">
+                    <strong>Reviewer Login:</strong> You will be taken to your assigned abstracts to review.
                   </p>
                 </div>
               )}

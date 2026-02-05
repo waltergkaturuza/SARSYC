@@ -1,6 +1,6 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   FiEdit,
@@ -32,14 +32,18 @@ const statusColors: Record<string, string> = {
 }
 
 export default async function AbstractDetailPage({ params }: AbstractDetailPageProps) {
-  const payload = await getPayloadClient()
   const currentUser = await getCurrentUserFromCookies()
+  if (!currentUser) redirect('/login?type=reviewer&redirect=/admin/abstracts')
+  if (currentUser.role !== 'admin' && currentUser.role !== 'reviewer') redirect('/login?type=reviewer&redirect=/admin/abstracts')
+
+  const payload = await getPayloadClient()
   const reviewerIdValue =
     currentUser?.id && typeof currentUser.id === 'object'
       ? currentUser.id.toString()
       : currentUser?.id
   const reviewerId = reviewerIdValue ? reviewerIdValue.toString() : undefined
   const isReviewer = currentUser?.role === 'reviewer' && Boolean(reviewerId)
+  const isAdminOrEditor = currentUser?.role === 'admin' || currentUser?.role === 'editor'
   
   try {
     const abstract = await payload.findByID({
@@ -100,10 +104,12 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
             <FiArrowLeft className="w-5 h-5" />
             <span>Back to Abstracts</span>
           </Link>
-          <Link href={`/admin/abstracts/${params.id}/edit`} className="btn-primary flex items-center gap-2">
-            <FiEdit className="w-5 h-5" />
-            Edit Abstract
-          </Link>
+          {isAdminOrEditor && (
+            <Link href={`/admin/abstracts/${params.id}/edit`} className="btn-primary flex items-center gap-2">
+              <FiEdit className="w-5 h-5" />
+              Edit Abstract
+            </Link>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -320,7 +326,43 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
             </div>
 
             {/* Assigned Reviewers */}
-            {assignedReviewers.length > 0 && (
+            {isAdminOrEditor && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <FiUsers className="w-5 h-5 text-gray-500" />
+                  Assigned Reviewers
+                </div>
+                {assignedReviewers.length > 0 ? (
+                  <ul className="list-disc list-inside text-sm text-gray-700">
+                    {assignedReviewers.map((reviewer: any) => {
+                      const name =
+                        typeof reviewer === 'object'
+                          ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim() ||
+                            reviewer.email ||
+                            reviewer.id
+                          : reviewer
+                      const email =
+                        typeof reviewer === 'object' ? reviewer.email : null
+                      return (
+                        <li key={typeof reviewer === 'object' ? reviewer.id : reviewer}>
+                          {name}
+                          {email && <span className="text-gray-500"> ({email})</span>}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    No reviewers assigned.{' '}
+                    <Link href={`/admin/abstracts/${params.id}/edit`} className="text-primary-600 font-medium hover:underline">
+                      Edit abstract
+                    </Link>
+                    {' '}to assign reviewers.
+                  </p>
+                )}
+              </div>
+            )}
+            {!isAdminOrEditor && assignedReviewers.length > 0 && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                   <FiUsers className="w-5 h-5 text-gray-500" />

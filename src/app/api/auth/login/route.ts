@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Try to authenticate with Payload
+    // NOTE: This is where Payload tries to INSERT into users_sessions table
+    console.log('[Login API] Step 4: Calling payload.login() - this will attempt to create session in users_sessions table')
     try {
       const result = await payloadClient.login({
         collection: 'users',
@@ -74,6 +76,7 @@ export async function POST(request: NextRequest) {
           password,
         },
       })
+      console.log('[Login API] ✅ Step 4: payload.login() succeeded - session created successfully')
       
       // Log token info for debugging
       if (process.env.NODE_ENV === 'development') {
@@ -172,12 +175,32 @@ export async function POST(request: NextRequest) {
     } catch (authError: any) {
       // Provide more detailed error messages
       const errorMessage = authError?.message || 'Invalid email or password'
+      console.error('[Login API] ❌ Step 4: payload.login() FAILED')
       console.error('[Login API] Authentication failed:')
       console.error('[Login API] Error message:', errorMessage)
       console.error('[Login API] Error type:', authError?.name)
+      console.error('[Login API] Error code:', authError?.code)
+      console.error('[Login API] Error detail:', authError?.detail)
+      console.error('[Login API] Error hint:', authError?.hint)
       console.error('[Login API] Error stack:', authError?.stack)
       console.error('[Login API] Attempted email:', email)
       console.error('[Login API] User type:', type)
+      
+      // Check if it's a database/session error
+      const isSessionError = errorMessage?.includes('users_sessions') ||
+                            errorMessage?.includes('session') ||
+                            errorMessage?.includes('relation') ||
+                            errorMessage?.includes('column') ||
+                            authError?.code === '42P01' || // Table doesn't exist
+                            authError?.code === '42703' || // Column doesn't exist
+                            authError?.code === '23505' || // Unique violation
+                            authError?.code === '23503'    // Foreign key violation
+      
+      if (isSessionError) {
+        console.error('[Login API] 🔍 DIAGNOSIS: This appears to be a users_sessions table issue!')
+        console.error('[Login API] 🔍 The error occurred when Payload tried to INSERT into users_sessions')
+        console.error('[Login API] 🔍 Check: Table structure, column names, data types, constraints')
+      }
       
       // Check if it's a locked account error
       if (errorMessage.includes('locked') || errorMessage.includes('Locked')) {

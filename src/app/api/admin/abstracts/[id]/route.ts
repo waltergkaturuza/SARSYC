@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -9,6 +10,14 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const currentUser = await getCurrentUserFromRequest(request)
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'editor')) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Admin or Editor access required to update abstracts.' },
+        { status: 403 }
+      )
+    }
+
     const payload = await getPayloadClient()
     const formData = await request.formData()
     
@@ -84,11 +93,12 @@ export async function PATCH(
     updateData.assignedSession = assignedSession || null
     updateData.assignedReviewers = Array.isArray(assignedReviewers) ? assignedReviewers : []
 
-    // Update abstract
+    // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
     const abstractDoc = await payload.update({
       collection: 'abstracts',
       id: params.id,
       data: updateData,
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true, doc: abstractDoc })
