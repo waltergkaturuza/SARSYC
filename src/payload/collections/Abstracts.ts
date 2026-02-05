@@ -85,8 +85,8 @@ const Abstracts: CollectionConfig = {
       ],
       hooks: {
         beforeValidate: [
-          (args: any) => {
-            const { value, operation, data } = args
+          async (args: any) => {
+            const { value, operation, data, req } = args
             const validTracks = [
               'education-rights',
               'hiv-aids',
@@ -95,24 +95,40 @@ const Abstracts: CollectionConfig = {
               'mental-health',
             ]
             
-            // If invalid value provided, keep existing value on update, or use default on create
-            if (value && validTracks.includes(value)) {
-              return value
+            // If valid value provided, use it
+            if (value && typeof value === 'string' && validTracks.includes(value.trim())) {
+              return value.trim()
             }
             
-            // On update, if invalid value, keep existing
+            // On update, if invalid/empty value, fetch and keep existing
             if (operation === 'update' && data?.id) {
-              console.warn('[Abstracts beforeValidate] Invalid track value:', value, '- keeping existing')
-              // Return undefined to keep existing value
-              return undefined
+              try {
+                const payload = req.payload
+                const existing = await payload.findByID({
+                  collection: 'abstracts',
+                  id: data.id,
+                  overrideAccess: true,
+                })
+                const existingTrack = existing?.track
+                if (existingTrack && validTracks.includes(existingTrack)) {
+                  console.warn('[Abstracts beforeValidate] Invalid/empty track value:', value, '- keeping existing:', existingTrack)
+                  return existingTrack
+                }
+              } catch (fetchError: any) {
+                console.error('[Abstracts beforeValidate] Error fetching existing abstract:', fetchError)
+              }
+              // Fallback to default if can't fetch existing
+              console.warn('[Abstracts beforeValidate] Using default track')
+              return 'education-rights'
             }
             
-            // On create, use default
+            // On create, use default if invalid/empty
             if (operation === 'create') {
               return 'education-rights' // Default track
             }
             
-            return value
+            // Fallback
+            return 'education-rights'
           },
         ],
       },

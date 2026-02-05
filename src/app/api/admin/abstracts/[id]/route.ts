@@ -123,19 +123,21 @@ export async function PATCH(
       'mental-health',
     ]
     
-    // Validate and normalize track field
+    // Validate and normalize track field - MUST have a valid track
     const normalizedTrack = track?.trim()
-    let finalTrack: string | undefined = undefined
+    let finalTrack: string
     
     if (normalizedTrack && validTracks.includes(normalizedTrack)) {
       finalTrack = normalizedTrack
-    } else if (normalizedTrack) {
-      console.error('[Abstract Update] Invalid track value received:', track, '- keeping existing value')
-      // Keep existing track if invalid value provided
-      finalTrack = existingAbstract?.track
     } else {
-      // If no track provided, keep existing
-      finalTrack = existingAbstract?.track
+      // If empty or invalid, use existing track or default
+      if (existingAbstract?.track && validTracks.includes(existingAbstract.track)) {
+        finalTrack = existingAbstract.track
+        console.warn('[Abstract Update] Empty/invalid track received, using existing:', finalTrack)
+      } else {
+        finalTrack = 'education-rights' // Default fallback
+        console.warn('[Abstract Update] No valid track found, using default:', finalTrack)
+      }
     }
     
     // Normalize and validate assignedReviewers: ensure IDs exist and are reviewers

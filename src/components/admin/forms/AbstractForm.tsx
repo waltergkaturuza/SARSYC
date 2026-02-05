@@ -234,7 +234,7 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
             .filter(Boolean),
         ),
       )
-      // Validate track before sending
+      // Validate track before sending - MUST have a valid track
       const validTracks = [
         'education-rights',
         'hiv-aids',
@@ -242,11 +242,13 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
         'digital-health',
         'mental-health',
       ]
-      const trackToSend = validTracks.includes(formData.track) ? formData.track : ''
-      if (!trackToSend) {
-        console.warn('[AbstractForm] Invalid track value:', formData.track)
+      const trackToSend = validTracks.includes(formData.track) ? formData.track : (initialData?.track || 'education-rights')
+      if (!trackToSend || !validTracks.includes(trackToSend)) {
+        console.error('[AbstractForm] Invalid or missing track value:', formData.track, '- using default')
+        submitData.append('track', 'education-rights') // Default fallback
+      } else {
+        submitData.append('track', trackToSend)
       }
-      submitData.append('track', trackToSend)
       submitData.append('primaryAuthor', JSON.stringify(formData.primaryAuthor))
       submitData.append('coAuthors', JSON.stringify(formData.coAuthors.filter(ca => ca.name.trim())))
       submitData.append('presentationType', formData.presentationType)
