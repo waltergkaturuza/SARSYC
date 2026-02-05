@@ -35,8 +35,10 @@ export default async function UserDetailPage({
       'admin': { color: 'bg-red-100 text-red-700', label: 'Admin' },
       'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor' },
       'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor' },
+      'reviewer': { color: 'bg-amber-100 text-amber-700', label: 'Reviewer' },
       'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker' },
       'presenter': { color: 'bg-indigo-100 text-indigo-700', label: 'Presenter' },
+      'volunteer': { color: 'bg-teal-100 text-teal-700', label: 'Volunteer' },
     }
 
     const roleInfo = roleConfig[user.role as string] || roleConfig['contributor']

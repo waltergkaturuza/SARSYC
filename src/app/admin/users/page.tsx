@@ -70,8 +70,10 @@ export default async function UsersManagementPage({
     'admin': { color: 'bg-red-100 text-red-700', label: 'Admin', icon: FiShield },
     'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor', icon: FiEdit },
     'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor', icon: FiUser },
+    'reviewer': { color: 'bg-yellow-100 text-yellow-700', label: 'Reviewer', icon: FiUser },
     'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker', icon: FiUser },
     'presenter': { color: 'bg-indigo-100 text-indigo-700', label: 'Presenter', icon: FiUser },
+    'volunteer': { color: 'bg-pink-100 text-pink-700', label: 'Volunteer', icon: FiUser },
   }
 
   // Helper function to check if account is locked
@@ -123,6 +125,14 @@ export default async function UsersManagementPage({
               <option value="admin">Admin</option>
               <option value="editor">Editor</option>
               <option value="contributor">Contributor</option>
+              <option value="reviewer">Reviewer</option>
+              <option value="speaker">Speaker</option>
+              <option value="presenter">Presenter</option>
+              <option value="volunteer">Volunteer</option>
+              <option value="reviewer">Reviewer</option>
+              <option value="speaker">Speaker</option>
+              <option value="presenter">Presenter</option>
+              <option value="volunteer">Volunteer</option>
             </select>
           </div>
 
