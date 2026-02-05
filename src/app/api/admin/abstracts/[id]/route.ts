@@ -156,7 +156,44 @@ export async function PATCH(
       }
     }
     
-    // Normalize and validate assignedReviewers: ensure IDs exist and are reviewers
+    // STEP 1: Fetch ALL valid reviewer IDs from database FIRST (database-driven approach)
+    let allValidReviewerIds: string[] = []
+    try {
+      const allReviewers = await payload.find({
+        collection: 'users',
+        where: {
+          role: { in: ['reviewer', 'admin', 'editor'] },
+        },
+        limit: 1000,
+        overrideAccess: true,
+      })
+      
+      allValidReviewerIds = allReviewers.docs.map((user: any) => {
+        const id = user.id
+        const idStr = typeof id === 'object' ? id.toString() : String(id)
+        return idStr.trim()
+      })
+      
+      console.log('[Abstract Update] ✅ Fetched all valid reviewer IDs from DB:', {
+        count: allValidReviewerIds.length,
+        ids: allValidReviewerIds,
+        users: allReviewers.docs.map((u: any) => ({
+          id: typeof u.id === 'object' ? u.id.toString() : String(u.id),
+          name: `${u.firstName} ${u.lastName}`,
+          email: u.email,
+          role: u.role,
+        })),
+      })
+    } catch (dbError: any) {
+      console.error('[Abstract Update] ❌ Error fetching reviewers from DB:', dbError)
+      // If we can't fetch from DB, reject the update to prevent invalid data
+      return NextResponse.json(
+        { error: 'Failed to validate reviewers. Please try again.' },
+        { status: 500 }
+      )
+    }
+    
+    // STEP 2: Normalize and validate assignedReviewers against database IDs
     let finalAssignedReviewers: string[] = []
     
     console.log('[Abstract Update] Raw assignedReviewers from form:', assignedReviewers)
@@ -188,57 +225,21 @@ export async function PATCH(
       
       console.log('[Abstract Update] Normalized reviewer IDs after filtering:', normalizedIds)
       
-      // Validate that these IDs exist and are reviewers
-      if (normalizedIds.length > 0) {
-        try {
-          // Fetch all reviewers/admins/editors first to get their IDs
-          // BROADENED: Allow admin and editor roles to be reviewers too
-          const allReviewers = await payload.find({
-            collection: 'users',
-            where: {
-              role: { in: ['reviewer', 'admin', 'editor'] },
-            },
-            limit: 1000,
-            overrideAccess: true,
-          })
-          
-          const validReviewerIdStrings = allReviewers.docs.map((user: any) => {
-            const id = user.id
-            const idStr = typeof id === 'object' ? id.toString() : String(id)
-            return idStr.trim()
-          })
-          
-          console.log('[Abstract Update] All valid reviewer IDs from DB:', validReviewerIdStrings)
-          
-          // Filter to only include IDs that exist and are reviewers
-          finalAssignedReviewers = normalizedIds.filter((id: string) => {
-            const isValid = validReviewerIdStrings.includes(id)
-            if (!isValid) {
-              console.warn('[Abstract Update] Removing invalid reviewer ID:', id)
-            }
-            return isValid
-          })
-          
-          console.log('[Abstract Update] Final validated reviewers:', {
-            requested: normalizedIds,
-            valid: finalAssignedReviewers,
-            removed: normalizedIds.filter(id => !finalAssignedReviewers.includes(id)),
-          })
-          
-          // If no valid reviewers found, ensure we send empty array (not undefined)
-          if (finalAssignedReviewers.length === 0) {
-            console.warn('[Abstract Update] No valid reviewers found, will send empty array')
-            finalAssignedReviewers = []
-          }
-        } catch (validationError: any) {
-          console.error('[Abstract Update] Reviewer validation error:', validationError)
-          // If validation fails, set to empty array to avoid invalid IDs
-          finalAssignedReviewers = []
+      // STEP 3: Only keep IDs that exist in the database
+      finalAssignedReviewers = normalizedIds.filter((id: string) => {
+        const existsInDb = allValidReviewerIds.includes(id)
+        if (!existsInDb) {
+          console.warn('[Abstract Update] ❌ Removing reviewer ID not found in DB:', id)
         }
-      } else {
-        console.log('[Abstract Update] No IDs after normalization, using empty array')
-        finalAssignedReviewers = []
-      }
+        return existsInDb
+      })
+      
+      console.log('[Abstract Update] ✅ Final validated reviewers (database-checked):', {
+        requested: normalizedIds,
+        valid: finalAssignedReviewers,
+        removed: normalizedIds.filter(id => !finalAssignedReviewers.includes(id)),
+        dbTotal: allValidReviewerIds.length,
+      })
     } else {
       console.log('[Abstract Update] assignedReviewers is empty or not array, using empty array')
       finalAssignedReviewers = []
@@ -270,11 +271,12 @@ export async function PATCH(
     }
 
     // Log update data for debugging
-    console.log('[Abstract Update] Final update data:', {
+    console.log('[Abstract Update] 📋 Final update data being sent to Payload:', {
       track: updateData.track,
       assignedReviewers: updateData.assignedReviewers,
       assignedReviewersCount: updateData.assignedReviewers?.length || 0,
       status: updateData.status,
+      allValidReviewerIdsInDb: allValidReviewerIds, // Show what's available in DB
     })
 
     // Log the exact data being sent to Payload
