@@ -34,7 +34,18 @@ export async function PATCH(
     const adminNotes = formData.get('adminNotes') as string | null
     const assignedSession = formData.get('assignedSession') as string | null
     const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
-    const assignedReviewers = JSON.parse(formData.get('assignedReviewers') as string || '[]')
+    const assignedReviewersRaw = formData.get('assignedReviewers')
+    let assignedReviewers: any[] = []
+    try {
+      const parsed = JSON.parse((assignedReviewersRaw as string) || '[]')
+      if (Array.isArray(parsed)) {
+        assignedReviewers = parsed
+      } else if (parsed) {
+        assignedReviewers = [parsed]
+      }
+    } catch {
+      assignedReviewers = []
+    }
     
     // Create media record with the blob URL if provided
     let abstractFileId: string | undefined
@@ -91,7 +102,13 @@ export async function PATCH(
       updateData.abstractFile = abstractFileId
     }
     updateData.assignedSession = assignedSession || null
-    updateData.assignedReviewers = Array.isArray(assignedReviewers) ? assignedReviewers : []
+    updateData.assignedReviewers = Array.isArray(assignedReviewers)
+      ? assignedReviewers.map((value: any) =>
+          typeof value === 'object' && value !== null
+            ? (value.id || value.value || '').toString()
+            : value?.toString(),
+        ).filter(Boolean)
+      : []
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
     const abstractDoc = await payload.update({
