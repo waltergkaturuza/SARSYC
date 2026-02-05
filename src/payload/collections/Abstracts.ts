@@ -296,36 +296,57 @@ const Abstracts: CollectionConfig = {
                 return []
               }
               
-              // Validate IDs exist and are reviewers (or admins/editors who can review)
+              // STEP 1: Fetch ALL valid reviewer IDs from database FIRST (database-driven approach)
               try {
                 const payload = req.payload
                 
-                // 2. BROADENED QUERY: Allow 'admin' and 'editor' to be reviewers too
-                const reviewerUsers = await payload.find({
+                // Fetch ALL reviewers/admins/editors from database first
+                const allReviewers = await payload.find({
                   collection: 'users',
                   where: {
-                    id: { in: normalizedIds },
                     role: { in: ['reviewer', 'admin', 'editor'] }, // Allow admins/editors to review
                   },
-                  limit: normalizedIds.length,
+                  limit: 1000,
                   overrideAccess: true, // Ensure we find them even if current user has restricted view
                 })
                 
-                const validIds = reviewerUsers.docs.map((user: any) => {
+                // Map all valid reviewer IDs from database
+                const allValidReviewerIds = allReviewers.docs.map((user: any) => {
                   const id = user.id
-                  return typeof id === 'object' ? id.toString() : String(id)
+                  return typeof id === 'object' ? id.toString().trim() : String(id).trim()
                 })
                 
-                console.log('[Abstracts beforeChange] Validated reviewers:', {
+                console.log('[Abstracts beforeChange] ✅ Fetched all valid reviewer IDs from DB:', {
+                  count: allValidReviewerIds.length,
+                  ids: allValidReviewerIds,
+                  users: allReviewers.docs.map((u: any) => ({
+                    id: typeof u.id === 'object' ? u.id.toString() : String(u.id),
+                    name: `${u.firstName} ${u.lastName}`,
+                    email: u.email,
+                    role: u.role,
+                  })),
+                })
+                
+                // STEP 2: Filter normalized IDs to only include those that exist in database
+                const validIds = normalizedIds.filter((id: string) => {
+                  const normalizedId = String(id).trim()
+                  const existsInDb = allValidReviewerIds.includes(normalizedId)
+                  if (!existsInDb) {
+                    console.warn('[Abstracts beforeChange] ❌ Removing reviewer ID not found in DB:', normalizedId)
+                  }
+                  return existsInDb
+                })
+                
+                console.log('[Abstracts beforeChange] ✅ Final validated reviewers (database-checked):', {
                   requested: normalizedIds,
-                  found: reviewerUsers.docs.length,
                   valid: validIds,
-                  removed: normalizedIds.filter(id => !validIds.includes(String(id))),
+                  removed: normalizedIds.filter(id => !validIds.includes(String(id).trim())),
+                  dbTotal: allValidReviewerIds.length,
                 })
                 
-                // If no users matched the ID + Role criteria, return empty to prevent error
+                // If no valid IDs found, return empty array to prevent error
                 if (validIds.length === 0) {
-                  console.warn(`[Abstracts beforeChange] IDs provided ${normalizedIds} did not match any valid reviewer/admin/editor users.`)
+                  console.warn(`[Abstracts beforeChange] ❌ No valid reviewer IDs found. Requested: ${normalizedIds.join(', ')}, Available in DB: ${allValidReviewerIds.length} reviewers`)
                   return []
                 }
                 
