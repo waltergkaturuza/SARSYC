@@ -56,25 +56,39 @@ export async function PATCH(
     const adminNotes = formData.get('adminNotes') as string | null
     const assignedSession = formData.get('assignedSession') as string | null
     const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
-    const assignedReviewersRaw = formData.get('assignedReviewers')
+    // Payload expects relationship fields as multiple form-data entries with the same name
+    // OR as a JSON string. Handle both formats.
+    const assignedReviewersRaw = formData.getAll('assignedReviewers')
     
     console.log('[Abstract Update] Raw form data:', {
       track,
       assignedReviewersRaw,
+      assignedReviewersRawType: typeof assignedReviewersRaw,
+      assignedReviewersRawLength: Array.isArray(assignedReviewersRaw) ? assignedReviewersRaw.length : 'not array',
       status,
     })
     
     let assignedReviewers: any[] = []
-    try {
-      const parsed = JSON.parse((assignedReviewersRaw as string) || '[]')
-      if (Array.isArray(parsed)) {
-        assignedReviewers = parsed
-      } else if (parsed) {
-        assignedReviewers = [parsed]
+    
+    // Handle multiple form-data fields (Payload's preferred format)
+    if (Array.isArray(assignedReviewersRaw) && assignedReviewersRaw.length > 0) {
+      // Check if first item is a JSON string (legacy format)
+      const firstItem = assignedReviewersRaw[0]
+      if (typeof firstItem === 'string' && firstItem.startsWith('[') && firstItem.endsWith(']')) {
+        // Legacy JSON string format
+        try {
+          const parsed = JSON.parse(firstItem)
+          assignedReviewers = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : [])
+        } catch (parseError) {
+          console.error('[Abstract Update] Error parsing JSON assignedReviewers:', parseError)
+          assignedReviewers = []
+        }
+      } else {
+        // Multiple form-data fields format (Payload's preferred)
+        assignedReviewers = assignedReviewersRaw
+          .map((value: any) => String(value).trim())
+          .filter((id: string) => id && id !== '[]' && id !== 'null' && id !== 'undefined')
       }
-    } catch (parseError) {
-      console.error('[Abstract Update] Error parsing assignedReviewers:', parseError)
-      assignedReviewers = []
     }
     
     console.log('[Abstract Update] Parsed assignedReviewers:', assignedReviewers)
