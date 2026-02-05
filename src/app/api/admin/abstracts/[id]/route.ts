@@ -344,10 +344,28 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    // CRITICAL: Ensure assignedReviewers field is explicitly set (even if empty) to force complete replacement
-    // This prevents Payload from merging with existing invalid data
+    // CRITICAL: If existing abstract has invalid data, clear it first to prevent Payload from merging
     try {
-      // Log what we're about to send
+      // STEP 1: If existing abstract has invalid reviewer IDs, clear them first
+      if (hasInvalidExistingIds) {
+        console.log('[Abstract Update] 🧹 Cleaning up existing invalid reviewer IDs first...')
+        try {
+          await payload.update({
+            collection: 'abstracts',
+            id: params.id,
+            data: {
+              assignedReviewers: [], // Explicitly clear invalid data
+            },
+            overrideAccess: true,
+          })
+          console.log('[Abstract Update] ✅ Cleared existing invalid reviewer IDs')
+        } catch (clearError: any) {
+          console.warn('[Abstract Update] ⚠️ Could not clear existing invalid IDs (may not exist):', clearError.message)
+          // Continue anyway - the main update should handle it
+        }
+      }
+      
+      // STEP 2: Log what we're about to send
       console.log('[Abstract Update] 🚀 Calling Payload.update with:', {
         id: params.id,
         assignedReviewers: updateData.assignedReviewers,
@@ -357,6 +375,7 @@ export async function PATCH(
         containsZero: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.includes('0') : false,
       })
       
+      // STEP 3: Update with clean data
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,

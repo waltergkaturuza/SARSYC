@@ -246,6 +246,29 @@ const Abstracts: CollectionConfig = {
               isArray: Array.isArray(value),
             })
             
+            // 0. IMMEDIATE FILTER: Remove "0" and other invalid values BEFORE any processing
+            // This handles cases where Payload might merge existing invalid data
+            if (Array.isArray(value)) {
+              const initialFiltered = value.filter((id: any) => {
+                const idStr = String(id).trim()
+                return idStr !== '0' && idStr !== '' && idStr !== 'null' && idStr !== 'undefined'
+              })
+              if (initialFiltered.length !== value.length) {
+                console.warn('[Abstracts beforeChange] 🚨 Removed invalid values in initial filter:', {
+                  original: value,
+                  filtered: initialFiltered,
+                  removed: value.filter((id: any) => {
+                    const idStr = String(id).trim()
+                    return idStr === '0' || idStr === '' || idStr === 'null' || idStr === 'undefined'
+                  }),
+                })
+                value = initialFiltered
+              }
+            } else if (value === '0' || value === 0 || value === '' || value === null || value === undefined) {
+              console.warn('[Abstracts beforeChange] 🚨 Invalid single value detected, returning empty array:', value)
+              return []
+            }
+            
             // 1. Safe Parsing for Form-Data
             // If value is a string looking like an array (e.g., "['3']" or '["3"]'), parse it.
             if (typeof value === 'string' && (value.startsWith('[') && value.endsWith(']'))) {
