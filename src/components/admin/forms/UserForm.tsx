@@ -13,7 +13,7 @@ const createUserSchema = (isEditMode: boolean) => z.object({
   email: z.string().email('Please enter a valid email address'),
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  role: z.enum(['admin', 'editor', 'contributor'], {
+  role: z.enum(['admin', 'editor', 'contributor', 'reviewer', 'speaker', 'presenter', 'volunteer'], {
     required_error: 'Please select a role',
   }),
   organization: z.string().optional(),

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         email,
         firstName,
         lastName,
-        role: role as 'admin' | 'editor' | 'contributor',
+        role: role as 'admin' | 'editor' | 'contributor' | 'reviewer' | 'speaker' | 'presenter' | 'volunteer',
         password, // Payload will hash this automatically
         organization: organization || undefined,
         phone: phone || undefined,
