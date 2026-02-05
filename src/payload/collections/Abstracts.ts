@@ -235,12 +235,21 @@ const Abstracts: CollectionConfig = {
         update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
       },
       hooks: {
-        beforeValidate: [
+        beforeChange: [
           async (args: any) => {
-            const { value, operation, req } = args
+            const { value, operation, req, data } = args
+            console.log('[Abstracts beforeChange] assignedReviewers hook called:', {
+              operation,
+              value,
+              valueType: typeof value,
+              isArray: Array.isArray(value),
+            })
+            
             // Only validate on update/create operations
             if (operation === 'create' || operation === 'update') {
+              // Handle null/undefined/empty
               if (!value || (Array.isArray(value) && value.length === 0)) {
+                console.log('[Abstracts beforeChange] Empty value, returning []')
                 return []
               }
               
@@ -251,11 +260,26 @@ const Abstracts: CollectionConfig = {
                   if (typeof id === 'object' && id !== null) {
                     return id.id || id.value || null
                   }
-                  return id
+                  if (id === null || id === undefined) {
+                    return null
+                  }
+                  return String(id).trim()
                 })
-                .filter((id: any) => id && id !== '0' && id !== 0 && id !== 'null' && id !== 'undefined')
+                .filter((id: any) => {
+                  // Filter out invalid values
+                  return id && 
+                         id !== '0' && 
+                         id !== 0 && 
+                         id !== 'null' && 
+                         id !== 'undefined' &&
+                         id !== '' &&
+                         id !== 'NaN'
+                })
+              
+              console.log('[Abstracts beforeChange] Normalized IDs:', normalizedIds)
               
               if (normalizedIds.length === 0) {
+                console.log('[Abstracts beforeChange] No valid IDs after normalization, returning []')
                 return []
               }
               
@@ -277,19 +301,27 @@ const Abstracts: CollectionConfig = {
                   return typeof id === 'object' ? id.toString() : String(id)
                 })
                 
-                console.log('[Abstracts beforeValidate] Cleaned assignedReviewers:', {
-                  input: ids,
-                  normalized: normalizedIds,
+                console.log('[Abstracts beforeChange] Validated reviewers:', {
+                  requested: normalizedIds,
+                  found: reviewerUsers.docs.length,
                   valid: validIds,
+                  removed: normalizedIds.filter(id => !validIds.includes(String(id))),
                 })
+                
+                // Return empty array if no valid reviewers found
+                if (validIds.length === 0) {
+                  console.warn('[Abstracts beforeChange] No valid reviewers found, returning []')
+                  return []
+                }
                 
                 return validIds
               } catch (error: any) {
-                console.error('[Abstracts beforeValidate] Error validating reviewers:', error)
+                console.error('[Abstracts beforeChange] Error validating reviewers:', error)
                 // Return empty array if validation fails
                 return []
               }
             }
+            
             return value
           },
         ],

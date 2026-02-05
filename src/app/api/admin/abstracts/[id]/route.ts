@@ -143,18 +143,34 @@ export async function PATCH(
     // Normalize and validate assignedReviewers: ensure IDs exist and are reviewers
     let finalAssignedReviewers: string[] = []
     
+    console.log('[Abstract Update] Raw assignedReviewers from form:', assignedReviewers)
+    
     if (Array.isArray(assignedReviewers) && assignedReviewers.length > 0) {
-      // Normalize to string IDs
+      // Normalize to string IDs and filter out invalid values
       const normalizedIds = assignedReviewers
         .map((value: any) => {
           if (typeof value === 'object' && value !== null) {
-            return (value.id || value.value || '').toString()
+            const id = (value.id || value.value || '').toString().trim()
+            return id || null
           }
-          return value?.toString()
+          if (value === null || value === undefined) {
+            return null
+          }
+          return String(value).trim()
         })
-        .filter((id: string) => id && id.trim().length > 0 && id !== '0' && id !== 'null' && id !== 'undefined')
+        .filter((id: string | null) => {
+          // Strict filtering - only allow valid non-empty strings that aren't invalid values
+          return id && 
+                 id.length > 0 &&
+                 id !== '0' && 
+                 id !== 'null' && 
+                 id !== 'undefined' &&
+                 id !== 'NaN' &&
+                 id !== 'false' &&
+                 id !== 'true'
+        })
       
-      console.log('[Abstract Update] Normalized reviewer IDs:', normalizedIds)
+      console.log('[Abstract Update] Normalized reviewer IDs after filtering:', normalizedIds)
       
       // Validate that these IDs exist and are reviewers
       if (normalizedIds.length > 0) {
@@ -166,31 +182,49 @@ export async function PATCH(
               role: { equals: 'reviewer' },
             },
             limit: 1000,
+            overrideAccess: true,
           })
           
           const validReviewerIdStrings = allReviewers.docs.map((user: any) => {
             const id = user.id
-            return typeof id === 'object' ? id.toString() : String(id)
+            const idStr = typeof id === 'object' ? id.toString() : String(id)
+            return idStr.trim()
           })
           
-          console.log('[Abstract Update] All valid reviewer IDs:', validReviewerIdStrings)
+          console.log('[Abstract Update] All valid reviewer IDs from DB:', validReviewerIdStrings)
           
           // Filter to only include IDs that exist and are reviewers
-          finalAssignedReviewers = normalizedIds.filter((id: string) => 
-            validReviewerIdStrings.includes(id)
-          )
+          finalAssignedReviewers = normalizedIds.filter((id: string) => {
+            const isValid = validReviewerIdStrings.includes(id)
+            if (!isValid) {
+              console.warn('[Abstract Update] Removing invalid reviewer ID:', id)
+            }
+            return isValid
+          })
           
           console.log('[Abstract Update] Final validated reviewers:', {
             requested: normalizedIds,
             valid: finalAssignedReviewers,
             removed: normalizedIds.filter(id => !finalAssignedReviewers.includes(id)),
           })
+          
+          // If no valid reviewers found, ensure we send empty array (not undefined)
+          if (finalAssignedReviewers.length === 0) {
+            console.warn('[Abstract Update] No valid reviewers found, will send empty array')
+            finalAssignedReviewers = []
+          }
         } catch (validationError: any) {
           console.error('[Abstract Update] Reviewer validation error:', validationError)
           // If validation fails, set to empty array to avoid invalid IDs
           finalAssignedReviewers = []
         }
+      } else {
+        console.log('[Abstract Update] No IDs after normalization, using empty array')
+        finalAssignedReviewers = []
       }
+    } else {
+      console.log('[Abstract Update] assignedReviewers is empty or not array, using empty array')
+      finalAssignedReviewers = []
     }
     
     // Build update data object
