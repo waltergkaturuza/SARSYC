@@ -224,23 +224,62 @@ export async function PATCH(
       status: updateData.status,
     })
 
-    // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    const abstractDoc = await payload.update({
-      collection: 'abstracts',
-      id: params.id,
-      data: updateData,
-      overrideAccess: true,
-    })
+    // Log the exact data being sent to Payload
+    console.log('[Abstract Update] Sending to Payload:', JSON.stringify({
+      track: updateData.track,
+      assignedReviewers: updateData.assignedReviewers,
+      status: updateData.status,
+    }, null, 2))
 
-    return NextResponse.json({ success: true, doc: abstractDoc })
+    // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
+    try {
+      const abstractDoc = await payload.update({
+        collection: 'abstracts',
+        id: params.id,
+        data: updateData,
+        overrideAccess: true,
+      })
+
+      console.log('[Abstract Update] ✅ Success:', abstractDoc.id)
+      return NextResponse.json({ success: true, doc: abstractDoc })
+    } catch (updateError: any) {
+      console.error('[Abstract Update] ❌ Payload update error:', {
+        message: updateError.message,
+        data: updateError.data,
+        errors: updateError.data?.errors,
+        stack: updateError.stack,
+      })
+      throw updateError
+    }
   } catch (error: any) {
-    console.error('Update abstract error:', error)
+    console.error('[Abstract Update] ❌ Top-level error:', {
+      message: error.message,
+      data: error.data,
+      errors: error.data?.errors,
+      name: error.name,
+    })
+    
     // Payload validation errors often have a 'data' property with field-specific errors
-    const errorMessage = error.data?.errors
-      ? Object.entries(error.data.errors)
-          .map(([field, err]: [string, any]) => `${field}: ${err.message || err}`)
+    let errorMessage = error.message || 'Failed to update abstract'
+    
+    if (error.data?.errors) {
+      // Handle array of errors (Payload format: [{ message: '...' }, ...])
+      if (Array.isArray(error.data.errors)) {
+        errorMessage = error.data.errors
+          .map((err: any, index: number) => `${index}: ${err.message || err}`)
           .join(', ')
-      : error.message || 'Failed to update abstract'
+      } else if (typeof error.data.errors === 'object') {
+        // Handle object format: { field: { message: '...' } }
+        errorMessage = Object.entries(error.data.errors)
+          .map(([field, err]: [string, any]) => {
+            if (typeof err === 'object' && err.message) {
+              return `${field}: ${err.message}`
+            }
+            return `${field}: ${err}`
+          })
+          .join(', ')
+      }
+    }
     
     return NextResponse.json(
       { error: errorMessage },

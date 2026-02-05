@@ -83,6 +83,39 @@ const Abstracts: CollectionConfig = {
         { label: 'Track 4: Digital Health and Safety', value: 'digital-health' },
         { label: 'Track 5: Mental Health and Substance Abuse', value: 'mental-health' },
       ],
+      hooks: {
+        beforeValidate: [
+          (args: any) => {
+            const { value, operation, data } = args
+            const validTracks = [
+              'education-rights',
+              'hiv-aids',
+              'ncd-prevention',
+              'digital-health',
+              'mental-health',
+            ]
+            
+            // If invalid value provided, keep existing value on update, or use default on create
+            if (value && validTracks.includes(value)) {
+              return value
+            }
+            
+            // On update, if invalid value, keep existing
+            if (operation === 'update' && data?.id) {
+              console.warn('[Abstracts beforeValidate] Invalid track value:', value, '- keeping existing')
+              // Return undefined to keep existing value
+              return undefined
+            }
+            
+            // On create, use default
+            if (operation === 'create') {
+              return 'education-rights' // Default track
+            }
+            
+            return value
+          },
+        ],
+      },
     },
     {
       type: 'group',
@@ -184,6 +217,66 @@ const Abstracts: CollectionConfig = {
         read: (args: any) => Boolean(args.req?.user),
         create: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
         update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
+      },
+      hooks: {
+        beforeValidate: [
+          async (args: any) => {
+            const { value, operation, req } = args
+            // Only validate on update/create operations
+            if (operation === 'create' || operation === 'update') {
+              if (!value || (Array.isArray(value) && value.length === 0)) {
+                return []
+              }
+              
+              // Normalize to array of IDs
+              const ids = Array.isArray(value) ? value : [value]
+              const normalizedIds = ids
+                .map((id: any) => {
+                  if (typeof id === 'object' && id !== null) {
+                    return id.id || id.value || null
+                  }
+                  return id
+                })
+                .filter((id: any) => id && id !== '0' && id !== 0 && id !== 'null' && id !== 'undefined')
+              
+              if (normalizedIds.length === 0) {
+                return []
+              }
+              
+              // Validate IDs exist and are reviewers
+              try {
+                const payload = req.payload
+                const reviewerUsers = await payload.find({
+                  collection: 'users',
+                  where: {
+                    id: { in: normalizedIds },
+                    role: { equals: 'reviewer' },
+                  },
+                  limit: normalizedIds.length,
+                  overrideAccess: true,
+                })
+                
+                const validIds = reviewerUsers.docs.map((user: any) => {
+                  const id = user.id
+                  return typeof id === 'object' ? id.toString() : String(id)
+                })
+                
+                console.log('[Abstracts beforeValidate] Cleaned assignedReviewers:', {
+                  input: ids,
+                  normalized: normalizedIds,
+                  valid: validIds,
+                })
+                
+                return validIds
+              } catch (error: any) {
+                console.error('[Abstracts beforeValidate] Error validating reviewers:', error)
+                // Return empty array if validation fails
+                return []
+              }
+            }
+            return value
+          },
+        ],
       },
     },
     {
