@@ -82,16 +82,36 @@ export async function PATCH(
       }
     }
 
+    // Valid track values from Abstracts collection
+    const validTracks = [
+      'education-rights',
+      'hiv-aids',
+      'ncd-prevention',
+      'digital-health',
+      'mental-health',
+    ]
+    
+    // Validate track field
+    const normalizedTrack = track?.trim()
+    if (!normalizedTrack || !validTracks.includes(normalizedTrack)) {
+      console.error('[Abstract Update] Invalid track value:', track)
+      // Don't update track if invalid (keep existing value)
+    }
+    
     // Update data
     const updateData: any = {
       title,
       abstract,
       keywords: keywords.map((k: string) => ({ keyword: k })),
-      track,
       primaryAuthor,
       coAuthors: coAuthors.map((ca: any) => ({ name: ca.name, organization: ca.organization })),
       presentationType,
       status,
+    }
+    
+    // Only include track if it's valid
+    if (normalizedTrack && validTracks.includes(normalizedTrack)) {
+      updateData.track = normalizedTrack
     }
     
     // Always include these fields, even if empty (to allow clearing)
@@ -103,9 +123,10 @@ export async function PATCH(
     }
     updateData.assignedSession = assignedSession || null
     
-    // Normalize assignedReviewers: ensure it's an array of valid string IDs
+    // Normalize and validate assignedReviewers: ensure IDs exist and are reviewers
     if (Array.isArray(assignedReviewers) && assignedReviewers.length > 0) {
-      updateData.assignedReviewers = assignedReviewers
+      // Normalize to string IDs
+      const normalizedIds = assignedReviewers
         .map((value: any) => {
           if (typeof value === 'object' && value !== null) {
             return (value.id || value.value || '').toString()
@@ -113,6 +134,37 @@ export async function PATCH(
           return value?.toString()
         })
         .filter((id: string) => id && id.trim().length > 0)
+      
+      // Validate that these IDs exist and are reviewers
+      if (normalizedIds.length > 0) {
+        try {
+          const reviewerUsers = await payload.find({
+            collection: 'users',
+            where: {
+              id: { in: normalizedIds },
+              role: { equals: 'reviewer' },
+            },
+            limit: normalizedIds.length,
+          })
+          
+          // Only use IDs that exist and are reviewers
+          const validReviewerIds = reviewerUsers.docs.map((user: any) => 
+            typeof user.id === 'object' ? user.id.toString() : user.id?.toString()
+          ).filter(Boolean)
+          
+          updateData.assignedReviewers = validReviewerIds
+          console.log('[Abstract Update] Validated reviewers:', {
+            requested: normalizedIds,
+            valid: validReviewerIds,
+          })
+        } catch (validationError: any) {
+          console.error('[Abstract Update] Reviewer validation error:', validationError)
+          // If validation fails, set to empty array to avoid invalid IDs
+          updateData.assignedReviewers = []
+        }
+      } else {
+        updateData.assignedReviewers = []
+      }
     } else {
       // If empty array or invalid, set to empty array (not null/undefined)
       updateData.assignedReviewers = []
