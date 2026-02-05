@@ -28,10 +28,21 @@ export async function PATCH(
         id: params.id,
         overrideAccess: true,
       })
+      // Check existing assignedReviewers for invalid data
+      const existingReviewers = existingAbstract?.assignedReviewers || []
+      const existingReviewerIds = Array.isArray(existingReviewers) 
+        ? existingReviewers.map((r: any) => {
+            const id = typeof r === 'object' && r !== null ? r.id : r
+            return String(id).trim()
+          })
+        : []
+      
       console.log('[Abstract Update] Existing abstract:', {
         id: params.id,
         track: existingAbstract?.track,
         assignedReviewers: existingAbstract?.assignedReviewers,
+        existingReviewerIds,
+        hasInvalidIds: existingReviewerIds.some((id: string) => id === '0' || id === '' || id === 'null'),
       })
     } catch (fetchError: any) {
       console.error('[Abstract Update] Error fetching existing abstract:', fetchError)
@@ -88,7 +99,19 @@ export async function PATCH(
         // Multiple form-data fields format (Payload's preferred)
         assignedReviewers = assignedReviewersRaw
           .map((value: any) => String(value).trim())
-          .filter((id: string) => id && id !== '[]' && id !== 'null' && id !== 'undefined' && id !== '')
+          .filter((id: string) => {
+            // Aggressively filter out invalid values including "0"
+            return id && 
+                   id.length > 0 &&
+                   id !== '[]' && 
+                   id !== 'null' && 
+                   id !== 'undefined' && 
+                   id !== '' &&
+                   id !== '0' &&
+                   id !== 'NaN' &&
+                   id !== 'false' &&
+                   id !== 'true'
+          })
         console.log('[Abstract Update] Using multiple form-data fields format:', assignedReviewers)
       }
     }
@@ -270,13 +293,42 @@ export async function PATCH(
       updateData.assignedSession = null
     }
 
+    // CRITICAL: Ensure assignedReviewers is ALWAYS an array and NEVER contains "0" or invalid values
+    // Double-check before sending to Payload
+    const sanitizedAssignedReviewers = Array.isArray(finalAssignedReviewers)
+      ? finalAssignedReviewers
+          .map((id: any) => String(id).trim())
+          .filter((id: string) => {
+            // Final safety check - absolutely no invalid values
+            return id && 
+                   id.length > 0 &&
+                   id !== '0' &&
+                   id !== 'null' &&
+                   id !== 'undefined' &&
+                   id !== '' &&
+                   id !== 'NaN' &&
+                   id !== 'false' &&
+                   id !== 'true' &&
+                   allValidReviewerIds.includes(id) // Must exist in DB
+          })
+      : []
+    
+    // Update the data with sanitized reviewers
+    updateData.assignedReviewers = sanitizedAssignedReviewers
+    
     // Log update data for debugging
     console.log('[Abstract Update] 📋 Final update data being sent to Payload:', {
       track: updateData.track,
       assignedReviewers: updateData.assignedReviewers,
+      assignedReviewersType: typeof updateData.assignedReviewers,
+      assignedReviewersIsArray: Array.isArray(updateData.assignedReviewers),
       assignedReviewersCount: updateData.assignedReviewers?.length || 0,
       status: updateData.status,
       allValidReviewerIdsInDb: allValidReviewerIds, // Show what's available in DB
+      containsZero: updateData.assignedReviewers.includes('0'),
+      containsInvalid: updateData.assignedReviewers.some((id: string) => 
+        !allValidReviewerIds.includes(String(id).trim())
+      ),
     })
 
     // Log the exact data being sent to Payload

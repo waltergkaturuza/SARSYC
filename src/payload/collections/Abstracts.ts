@@ -350,7 +350,29 @@ const Abstracts: CollectionConfig = {
                   return []
                 }
                 
-                return validIds
+                // FINAL SAFETY CHECK: Ensure we never return "0" or any invalid values
+                const finalValidIds = validIds.filter((id: string) => {
+                  const normalizedId = String(id).trim()
+                  const isValid = normalizedId && 
+                                 normalizedId !== '0' &&
+                                 normalizedId !== '' &&
+                                 normalizedId !== 'null' &&
+                                 normalizedId !== 'undefined' &&
+                                 normalizedId !== 'NaN' &&
+                                 allValidReviewerIds.includes(normalizedId)
+                  if (!isValid) {
+                    console.warn('[Abstracts beforeChange] 🚨 FINAL CHECK: Removing invalid ID:', normalizedId)
+                  }
+                  return isValid
+                })
+                
+                console.log('[Abstracts beforeChange] 🎯 FINAL RETURN VALUE:', {
+                  beforeFinalCheck: validIds,
+                  afterFinalCheck: finalValidIds,
+                  removed: validIds.filter(id => !finalValidIds.includes(String(id).trim())),
+                })
+                
+                return finalValidIds
               } catch (error: any) {
                 console.error('[Abstracts beforeChange] Error validating reviewers:', error)
                 // Return empty array if validation fails
