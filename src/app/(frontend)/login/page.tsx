@@ -21,15 +21,18 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Authenticate all user types via API (including admin)
-      const response = await fetch('/api/auth/login', {
+      // Admin: use direct-login (fetches hash from DB; Payload login can fail due to sessions)
+      const isAdmin = userType === 'admin'
+      const loginUrl = isAdmin ? '/api/auth/direct-login' : '/api/auth/login'
+      const loginBody = isAdmin
+        ? { email: formData.email, password: formData.password }
+        : { email: formData.email, password: formData.password, type: userType }
+
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          type: userType,
-        }),
+        credentials: 'include',
+        body: JSON.stringify(loginBody),
       })
 
       const data = await response.json()
@@ -45,12 +48,10 @@ export default function LoginPage() {
       }
 
       // Cookie is set by the API route server-side for better cross-browser compatibility
-      // Wait a moment for cookie to be set, then redirect
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // Redirect based on user type
       if (userType === 'admin') {
-        // Use window.location.href for admin to ensure full page reload with cookies
         window.location.href = '/admin'
       } else if (userType === 'participant') {
         router.push('/dashboard')
