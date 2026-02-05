@@ -37,12 +37,17 @@ export async function PATCH(
           })
         : []
       
+      const hasInvalidExistingIds = existingReviewerIds.some((id: string) => 
+        id === '0' || id === '' || id === 'null' || id === 'undefined' || id === 'NaN'
+      )
+      
       console.log('[Abstract Update] Existing abstract:', {
         id: params.id,
         track: existingAbstract?.track,
         assignedReviewers: existingAbstract?.assignedReviewers,
         existingReviewerIds,
-        hasInvalidIds: existingReviewerIds.some((id: string) => id === '0' || id === '' || id === 'null'),
+        hasInvalidIds: hasInvalidExistingIds,
+        warning: hasInvalidExistingIds ? '⚠️ Existing abstract contains invalid reviewer IDs - will be cleared' : '✅ Existing data looks clean',
       })
     } catch (fetchError: any) {
       console.error('[Abstract Update] Error fetching existing abstract:', fetchError)
@@ -339,7 +344,19 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
+    // CRITICAL: Ensure assignedReviewers field is explicitly set (even if empty) to force complete replacement
+    // This prevents Payload from merging with existing invalid data
     try {
+      // Log what we're about to send
+      console.log('[Abstract Update] 🚀 Calling Payload.update with:', {
+        id: params.id,
+        assignedReviewers: updateData.assignedReviewers,
+        assignedReviewersType: typeof updateData.assignedReviewers,
+        assignedReviewersIsArray: Array.isArray(updateData.assignedReviewers),
+        assignedReviewersLength: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.length : 'not array',
+        containsZero: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.includes('0') : false,
+      })
+      
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,
