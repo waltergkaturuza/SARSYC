@@ -202,6 +202,7 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     e.preventDefault()
     
     if (!validate()) {
+      showToast.error('Please fix the highlighted fields before saving.')
       return
     }
 
