@@ -102,13 +102,34 @@ export async function PATCH(
       updateData.abstractFile = abstractFileId
     }
     updateData.assignedSession = assignedSession || null
-    updateData.assignedReviewers = Array.isArray(assignedReviewers)
-      ? assignedReviewers.map((value: any) =>
-          typeof value === 'object' && value !== null
-            ? (value.id || value.value || '').toString()
-            : value?.toString(),
-        ).filter(Boolean)
-      : []
+    
+    // Normalize assignedReviewers: ensure it's an array of valid string IDs
+    if (Array.isArray(assignedReviewers) && assignedReviewers.length > 0) {
+      updateData.assignedReviewers = assignedReviewers
+        .map((value: any) => {
+          if (typeof value === 'object' && value !== null) {
+            return (value.id || value.value || '').toString()
+          }
+          return value?.toString()
+        })
+        .filter((id: string) => id && id.trim().length > 0)
+    } else {
+      // If empty array or invalid, set to empty array (not null/undefined)
+      updateData.assignedReviewers = []
+    }
+    
+    // Ensure track is a valid value or don't include it if empty
+    if (!track || !track.trim()) {
+      // Don't update track if it's empty (keep existing value)
+      delete updateData.track
+    }
+
+    // Log update data for debugging (without sensitive info)
+    console.log('[Abstract Update] Updating abstract:', params.id, {
+      track: updateData.track,
+      assignedReviewersCount: updateData.assignedReviewers?.length || 0,
+      status: updateData.status,
+    })
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
     const abstractDoc = await payload.update({
@@ -121,8 +142,15 @@ export async function PATCH(
     return NextResponse.json({ success: true, doc: abstractDoc })
   } catch (error: any) {
     console.error('Update abstract error:', error)
+    // Payload validation errors often have a 'data' property with field-specific errors
+    const errorMessage = error.data?.errors
+      ? Object.entries(error.data.errors)
+          .map(([field, err]: [string, any]) => `${field}: ${err.message || err}`)
+          .join(', ')
+      : error.message || 'Failed to update abstract'
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to update abstract' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

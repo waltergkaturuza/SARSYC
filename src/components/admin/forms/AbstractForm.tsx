@@ -344,17 +344,18 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
           </FormField>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <FormField label="Conference Track" required error={errors.track}>
-              <select
-                value={formData.track}
-                onChange={(e) => handleInputChange('track', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Select a track</option>
-                <option value="srhr">Track 1: Youth Sexual & Reproductive Health</option>
-                <option value="education">Track 2: Education & Skills Development</option>
-                <option value="advocacy">Track 3: Advocacy & Policy Influence</option>
-                <option value="innovation">Track 4: Innovation & Technology for Youth</option>
+              <FormField label="Conference Track" required error={errors.track}>
+                <select
+                  value={formData.track}
+                  onChange={(e) => handleInputChange('track', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="">Select a track</option>
+                  <option value="education-rights">Track 1: Education Rights and Equity</option>
+                  <option value="hiv-aids">Track 2: HIV/AIDS, STIs and Vulnerable Groups</option>
+                  <option value="ncd-prevention">Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles</option>
+                  <option value="digital-health">Track 4: Digital Health and Safety</option>
+                  <option value="mental-health">Track 5: Mental Health and Substance Abuse</option>
               </select>
             </FormField>
 
