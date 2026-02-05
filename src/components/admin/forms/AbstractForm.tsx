@@ -99,7 +99,22 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
           throw new Error('Failed to load reviewers')
         }
         const data = await response.json()
-        setReviewerOptions(data.docs || [])
+        const reviewers = data.docs || []
+        setReviewerOptions(reviewers)
+        
+        // Clean up assignedReviewers: remove any IDs that don't exist in the reviewer list
+        setFormData(prev => {
+          if (reviewers.length > 0 && prev.assignedReviewers.length > 0) {
+            const validReviewerIds = reviewers.map((r: any) => String(r.id))
+            const cleanedReviewers = prev.assignedReviewers.filter((id: string) =>
+              validReviewerIds.includes(id)
+            )
+            if (cleanedReviewers.length !== prev.assignedReviewers.length) {
+              return { ...prev, assignedReviewers: cleanedReviewers }
+            }
+          }
+          return prev
+        })
       } catch (error: any) {
         console.error('Reviewer fetch error:', error)
         setReviewerFetchError(error.message || 'Unable to load reviewers')
@@ -232,7 +247,13 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       if (formData.assignedSession) {
         submitData.append('assignedSession', formData.assignedSession)
       }
-      submitData.append('assignedReviewers', JSON.stringify(formData.assignedReviewers || []))
+      
+      // Filter assignedReviewers to only include IDs that exist in reviewerOptions
+      const validReviewerIds = reviewerOptions
+        .map((r: any) => String(r.id))
+        .filter((id: string) => formData.assignedReviewers.includes(id))
+      
+      submitData.append('assignedReviewers', JSON.stringify(validReviewerIds))
       
       // CLIENT-SIDE DIRECT UPLOAD: Upload abstract file directly to blob storage
       let abstractFileUrl: string | null = null
