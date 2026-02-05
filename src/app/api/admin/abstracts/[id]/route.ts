@@ -75,10 +75,11 @@ export async function PATCH(
       // Check if first item is a JSON string (legacy format)
       const firstItem = assignedReviewersRaw[0]
       if (typeof firstItem === 'string' && firstItem.startsWith('[') && firstItem.endsWith(']')) {
-        // Legacy JSON string format
+        // Legacy JSON string format - parse it
         try {
           const parsed = JSON.parse(firstItem)
           assignedReviewers = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : [])
+          console.log('[Abstract Update] Parsed JSON string format:', assignedReviewers)
         } catch (parseError) {
           console.error('[Abstract Update] Error parsing JSON assignedReviewers:', parseError)
           assignedReviewers = []
@@ -87,7 +88,8 @@ export async function PATCH(
         // Multiple form-data fields format (Payload's preferred)
         assignedReviewers = assignedReviewersRaw
           .map((value: any) => String(value).trim())
-          .filter((id: string) => id && id !== '[]' && id !== 'null' && id !== 'undefined')
+          .filter((id: string) => id && id !== '[]' && id !== 'null' && id !== 'undefined' && id !== '')
+        console.log('[Abstract Update] Using multiple form-data fields format:', assignedReviewers)
       }
     }
     
@@ -189,11 +191,12 @@ export async function PATCH(
       // Validate that these IDs exist and are reviewers
       if (normalizedIds.length > 0) {
         try {
-          // Fetch all reviewers first to get their IDs
+          // Fetch all reviewers/admins/editors first to get their IDs
+          // BROADENED: Allow admin and editor roles to be reviewers too
           const allReviewers = await payload.find({
             collection: 'users',
             where: {
-              role: { equals: 'reviewer' },
+              role: { in: ['reviewer', 'admin', 'editor'] },
             },
             limit: 1000,
             overrideAccess: true,

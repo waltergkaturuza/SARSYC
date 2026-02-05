@@ -237,13 +237,26 @@ const Abstracts: CollectionConfig = {
       hooks: {
         beforeChange: [
           async (args: any) => {
-            const { value, operation, req, data } = args
+            let { value, operation, req } = args
+            
             console.log('[Abstracts beforeChange] assignedReviewers hook called:', {
               operation,
               value,
               valueType: typeof value,
               isArray: Array.isArray(value),
             })
+            
+            // 1. Safe Parsing for Form-Data
+            // If value is a string looking like an array (e.g., "['3']" or '["3"]'), parse it.
+            if (typeof value === 'string' && (value.startsWith('[') && value.endsWith(']'))) {
+              try {
+                value = JSON.parse(value)
+                console.log('[Abstracts beforeChange] Parsed string to array:', value)
+              } catch (e) {
+                console.warn('[Abstracts beforeChange] Failed to parse assignedReviewers string:', value, e)
+                return []
+              }
+            }
             
             // Only validate on update/create operations
             if (operation === 'create' || operation === 'update') {
@@ -255,6 +268,7 @@ const Abstracts: CollectionConfig = {
               
               // Normalize to array of IDs
               const ids = Array.isArray(value) ? value : [value]
+              
               const normalizedIds = ids
                 .map((id: any) => {
                   if (typeof id === 'object' && id !== null) {
@@ -265,11 +279,10 @@ const Abstracts: CollectionConfig = {
                   }
                   return String(id).trim()
                 })
-                .filter((id: any) => {
+                .filter((id: string | null) => {
                   // Filter out invalid values
                   return id && 
                          id !== '0' && 
-                         id !== 0 && 
                          id !== 'null' && 
                          id !== 'undefined' &&
                          id !== '' &&
@@ -283,17 +296,19 @@ const Abstracts: CollectionConfig = {
                 return []
               }
               
-              // Validate IDs exist and are reviewers
+              // Validate IDs exist and are reviewers (or admins/editors who can review)
               try {
                 const payload = req.payload
+                
+                // 2. BROADENED QUERY: Allow 'admin' and 'editor' to be reviewers too
                 const reviewerUsers = await payload.find({
                   collection: 'users',
                   where: {
                     id: { in: normalizedIds },
-                    role: { equals: 'reviewer' },
+                    role: { in: ['reviewer', 'admin', 'editor'] }, // Allow admins/editors to review
                   },
                   limit: normalizedIds.length,
-                  overrideAccess: true,
+                  overrideAccess: true, // Ensure we find them even if current user has restricted view
                 })
                 
                 const validIds = reviewerUsers.docs.map((user: any) => {
@@ -308,9 +323,9 @@ const Abstracts: CollectionConfig = {
                   removed: normalizedIds.filter(id => !validIds.includes(String(id))),
                 })
                 
-                // Return empty array if no valid reviewers found
+                // If no users matched the ID + Role criteria, return empty to prevent error
                 if (validIds.length === 0) {
-                  console.warn('[Abstracts beforeChange] No valid reviewers found, returning []')
+                  console.warn(`[Abstracts beforeChange] IDs provided ${normalizedIds} did not match any valid reviewer/admin/editor users.`)
                   return []
                 }
                 
