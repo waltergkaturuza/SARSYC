@@ -170,7 +170,9 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     
     if (!formData.title.trim()) newErrors.title = 'Title is required'
     if (!formData.abstract.trim()) newErrors.abstract = 'Abstract text is required'
-    if (formData.abstract.length > 2000) newErrors.abstract = 'Abstract must be 2000 characters or less'
+    const abstractWords = formData.abstract.trim().split(/\s+/).filter(Boolean).length
+    if (abstractWords > 500) newErrors.abstract = 'Abstract must be 500 words or less'
+    if (formData.abstract.length > 4000) newErrors.abstract = 'Abstract text is too long'
     if (formData.keywords.length < 3) newErrors.keywords = 'At least 3 keywords are required'
     if (formData.keywords.length > 5) newErrors.keywords = 'Maximum 5 keywords allowed'
     if (formData.keywords.some(k => !k.trim())) newErrors.keywords = 'Keywords cannot be empty'
@@ -312,12 +314,12 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
             />
           </FormField>
 
-          <FormField label="Abstract Text" required error={errors.abstract} hint={`${formData.abstract.length}/2000 characters (300 words max)`}>
+          <FormField label="Abstract Text" required error={errors.abstract} hint={`${formData.abstract.trim().split(/\s+/).filter(Boolean).length} words (350-500 required), ${formData.abstract.length}/4000 characters`}>
             <textarea
               value={formData.abstract}
               onChange={(e) => handleInputChange('abstract', e.target.value)}
               rows={12}
-              maxLength={2000}
+              maxLength={4000}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Enter your abstract text here..."
             />

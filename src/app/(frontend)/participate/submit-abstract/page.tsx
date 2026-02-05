@@ -8,9 +8,23 @@ import { FiFileText, FiUser, FiCheck, FiUpload, FiArrowRight, FiArrowLeft, FiX, 
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 
+// Word count helper for abstract (350-500 words required)
+const countWords = (text: string) =>
+  text.trim().split(/\s+/).filter((w) => w.length > 0).length
+
 const abstractSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
-  abstract: z.string().min(350, 'Abstract must be at least 350 words').max(2000, 'Abstract must not exceed 500 words'),
+  abstract: z
+    .string()
+    .min(1, 'Abstract is required')
+    .max(4000, 'Abstract text is too long')
+    .refine(
+      (val) => {
+        const words = countWords(val)
+        return words >= 350 && words <= 500
+      },
+      { message: 'Abstract must be between 350 and 500 words' }
+    ),
   keywords: z.string().min(1, 'Please provide at least 3 keywords'),
   track: z.enum(['education-rights', 'hiv-aids', 'ncd-prevention', 'digital-health', 'mental-health'], {
     required_error: 'Please select a conference track',
@@ -362,11 +376,12 @@ export default function SubmitAbstractPage() {
                     <textarea
                       {...register('abstract')}
                       id="abstract"
-                      rows={10}
+                      rows={12}
+                      maxLength={4000}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.abstract ? 'border-red-500' : 'border-gray-300'
                       } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                      placeholder="Enter your abstract text here..."
+                      placeholder="Enter your abstract text here (350-500 words)..."
                     />
                     <div className="flex justify-between mt-2">
                       <div>
