@@ -234,7 +234,19 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
             .filter(Boolean),
         ),
       )
-      submitData.append('track', formData.track)
+      // Validate track before sending
+      const validTracks = [
+        'education-rights',
+        'hiv-aids',
+        'ncd-prevention',
+        'digital-health',
+        'mental-health',
+      ]
+      const trackToSend = validTracks.includes(formData.track) ? formData.track : ''
+      if (!trackToSend) {
+        console.warn('[AbstractForm] Invalid track value:', formData.track)
+      }
+      submitData.append('track', trackToSend)
       submitData.append('primaryAuthor', JSON.stringify(formData.primaryAuthor))
       submitData.append('coAuthors', JSON.stringify(formData.coAuthors.filter(ca => ca.name.trim())))
       submitData.append('presentationType', formData.presentationType)
@@ -249,9 +261,31 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       }
       
       // Filter assignedReviewers to only include IDs that exist in reviewerOptions
-      const validReviewerIds = reviewerOptions
-        .map((r: any) => String(r.id))
-        .filter((id: string) => formData.assignedReviewers.includes(id))
+      // Also filter out any invalid values like "0", "null", "undefined", empty strings
+      const validReviewerIdStrings = reviewerOptions.map((r: any) => {
+        const id = r.id
+        return typeof id === 'object' ? String(id) : String(id)
+      })
+      
+      const validReviewerIds = formData.assignedReviewers
+        .map((id: string) => String(id).trim())
+        .filter((id: string) => {
+          // Must be in reviewerOptions and not an invalid value
+          return (
+            id &&
+            id !== '0' &&
+            id !== 'null' &&
+            id !== 'undefined' &&
+            id !== '' &&
+            validReviewerIdStrings.includes(id)
+          )
+        })
+      
+      console.log('[AbstractForm] Sending reviewers:', {
+        formDataReviewers: formData.assignedReviewers,
+        validReviewerIds,
+        reviewerOptionsCount: reviewerOptions.length,
+      })
       
       submitData.append('assignedReviewers', JSON.stringify(validReviewerIds))
       
