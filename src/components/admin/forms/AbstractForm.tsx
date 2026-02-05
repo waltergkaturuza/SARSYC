@@ -535,33 +535,54 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Status</h2>
             
             <div className="space-y-6">
-              <FormField label="Assigned Reviewers" hint="Select the lecturers/professors who should evaluate this abstract. Hold Ctrl/Cmd to select multiple reviewers.">
+              <FormField
+                label="Assigned Reviewers"
+                hint="Tick the reviewers who should evaluate this abstract. You can select multiple reviewers."
+              >
                 {loadingReviewers ? (
                   <div className="text-sm text-gray-500">Loading reviewers...</div>
                 ) : reviewerFetchError ? (
                   <div className="text-sm text-red-600">{reviewerFetchError}</div>
+                ) : reviewerOptions.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    No reviewers available. Go to the User Management page and create users with the
+                    <span className="font-semibold"> Reviewer</span> role.
+                  </p>
                 ) : (
-                  <select
-                    multiple
-                    value={formData.assignedReviewers}
-                    onChange={(e) => {
-                      const values = Array.from(e.target.selectedOptions).map((option) => option.value)
-                      handleInputChange('assignedReviewers', values)
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[160px]"
-                  >
-                    {reviewerOptions.length === 0 ? (
-                      <option value="" disabled>
-                        No reviewers available. Create reviewer accounts first.
-                      </option>
-                    ) : (
-                      reviewerOptions.map((reviewer: any) => (
-                        <option key={reviewer.id} value={reviewer.id}>
-                          {reviewer.firstName} {reviewer.lastName} ({reviewer.email})
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div className="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
+                    {reviewerOptions.map((reviewer: any) => {
+                      const id = String(reviewer.id)
+                      const checked = formData.assignedReviewers.includes(id)
+                      const name =
+                        (reviewer.firstName || reviewer.lastName)
+                          ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim()
+                          : reviewer.email
+                      return (
+                        <label
+                          key={id}
+                          className="flex items-center gap-3 text-sm text-gray-800 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                            checked={checked}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...formData.assignedReviewers, id]
+                                : formData.assignedReviewers.filter((value) => value !== id)
+                              handleInputChange('assignedReviewers', next)
+                            }}
+                          />
+                          <span>
+                            {name}
+                            {reviewer.email && (
+                              <span className="text-gray-500"> ({reviewer.email})</span>
+                            )}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
                 )}
               </FormField>
 
