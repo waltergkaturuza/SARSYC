@@ -53,7 +53,17 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
   const [formData, setFormData] = useState<AbstractData>({
     title: initialData?.title || '',
     abstract: initialData?.abstract || '',
-    keywords: initialData?.keywords?.map((k: any) => k.keyword || k).filter(Boolean) || [],
+    // Always normalise keywords to plain strings
+    keywords:
+      initialData?.keywords
+        ?.map((k: any) =>
+          typeof k === 'string'
+            ? k
+            : (k && typeof k.keyword === 'string')
+              ? k.keyword
+              : '',
+        )
+        .filter((k: string) => k && k.trim().length > 0) || [],
     track: initialData?.track || '',
     primaryAuthor: initialData?.primaryAuthor || {
       firstName: '',
@@ -175,7 +185,7 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     if (formData.abstract.length > 4000) newErrors.abstract = 'Abstract text is too long'
     if (formData.keywords.length < 3) newErrors.keywords = 'At least 3 keywords are required'
     if (formData.keywords.length > 5) newErrors.keywords = 'Maximum 5 keywords allowed'
-    if (formData.keywords.some(k => !k.trim())) newErrors.keywords = 'Keywords cannot be empty'
+    if (formData.keywords.some(k => !String(k || '').trim())) newErrors.keywords = 'Keywords cannot be empty'
     if (!formData.track) newErrors.track = 'Track selection is required'
     if (!formData.primaryAuthor.firstName.trim()) newErrors['primaryAuthor.firstName'] = 'First name is required'
     if (!formData.primaryAuthor.lastName.trim()) newErrors['primaryAuthor.lastName'] = 'Last name is required'
@@ -200,7 +210,14 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       const submitData = new FormData()
       submitData.append('title', formData.title)
       submitData.append('abstract', formData.abstract)
-      submitData.append('keywords', JSON.stringify(formData.keywords.filter(k => k.trim())))
+      submitData.append(
+        'keywords',
+        JSON.stringify(
+          formData.keywords
+            .map(k => String(k || '').trim())
+            .filter(Boolean),
+        ),
+      )
       submitData.append('track', formData.track)
       submitData.append('primaryAuthor', JSON.stringify(formData.primaryAuthor))
       submitData.append('coAuthors', JSON.stringify(formData.coAuthors.filter(ca => ca.name.trim())))
