@@ -22,6 +22,8 @@ export async function PATCH(
     
     // First, fetch the existing abstract to see what's currently stored
     let existingAbstract: any = null
+    // Track whether currently stored reviewers contain obviously invalid values (e.g. "0")
+    let hasInvalidExistingIds = false
     try {
       existingAbstract = await payload.findByID({
         collection: 'abstracts',
@@ -37,7 +39,7 @@ export async function PATCH(
           })
         : []
       
-      const hasInvalidExistingIds = existingReviewerIds.some((id: string) => 
+      hasInvalidExistingIds = existingReviewerIds.some((id: string) => 
         id === '0' || id === '' || id === 'null' || id === 'undefined' || id === 'NaN'
       )
       
