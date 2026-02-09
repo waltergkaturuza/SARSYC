@@ -35,9 +35,13 @@ const getTransporter = (() => {
 export async function sendMail({ to, subject, text, html }: { to: string; subject: string; text?: string; html?: string }) {
   const transporter = getTransporter()
   const from = process.env.SMTP_FROM || `noreply@${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'localhost'}`
+  // Use SMTP_REPLY_TO if set, otherwise fall back to SMTP_USER (the authenticated email account)
+  // This allows replies to go to a monitored inbox rather than the noreply address
+  const replyTo = process.env.SMTP_REPLY_TO || process.env.SMTP_USER || from
 
   const message = {
     from,
+    replyTo,
     to,
     subject,
     text,
