@@ -386,29 +386,25 @@ export async function PATCH(
       }
       
       // STEP 2: Final verification - ensure assignedReviewers is clean array with no "0"
+      // CRITICAL: Keep as strings, don't convert to numbers (to avoid "0" becoming 0)
       const finalCheck = Array.isArray(finalAssignedReviewers) 
         ? finalAssignedReviewers
             .map((id: any) => {
-              // Convert to string and trim
+              // Convert to string and trim - keep as string
               const idStr = String(id).trim()
-              // Convert numeric strings to numbers (Payload might expect numbers)
-              if (idStr && idStr !== '0' && !isNaN(Number(idStr)) && allValidReviewerIds.includes(idStr)) {
-                return Number(idStr) // Return as number for Payload
-              }
+              // NEVER convert "0" to number - keep as string to avoid issues
               return idStr
             })
-            .filter((id: any) => {
-              const idStr = String(id).trim()
+            .filter((id: string) => {
               // ABSOLUTE FILTER: No "0", no empty, must exist in DB
               return id && 
-                     id !== 0 &&
-                     idStr.length > 0 &&
-                     idStr !== '0' && 
-                     idStr !== '' && 
-                     idStr !== 'null' && 
-                     idStr !== 'undefined' &&
-                     idStr !== 'NaN' &&
-                     allValidReviewerIds.includes(String(id).trim())
+                     id.length > 0 &&
+                     id !== '0' && 
+                     id !== '' && 
+                     id !== 'null' && 
+                     id !== 'undefined' &&
+                     id !== 'NaN' &&
+                     allValidReviewerIds.includes(id)
             })
         : []
       
@@ -425,21 +421,53 @@ export async function PATCH(
         rawValue: JSON.stringify(updateData.assignedReviewers),
       })
       
-      // Log what we're about to send
-      console.log('[Abstract Update] 🚀 Calling Payload.update with:', {
-        id: params.id,
-        assignedReviewers: updateData.assignedReviewers,
-        assignedReviewersType: typeof updateData.assignedReviewers,
-        assignedReviewersIsArray: Array.isArray(updateData.assignedReviewers),
-        assignedReviewersLength: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.length : 'not array',
-        containsZero: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.includes('0') : false,
+      // STEP 3: Update assignedReviewers SEPARATELY to avoid Payload merging with existing invalid data
+      // This ensures Payload only sees the clean values we want
+      console.log('[Abstract Update] 🔄 Updating assignedReviewers separately first...')
+      console.log('[Abstract Update] 📤 Sending ONLY these reviewer IDs:', {
+        ids: finalCheck,
+        count: finalCheck.length,
+        type: typeof finalCheck[0],
+        containsZero: finalCheck.includes('0') || finalCheck.includes(0),
+        allAreStrings: finalCheck.every((id: any) => typeof id === 'string'),
       })
       
-      // Update with clean data - Payload hook will further validate
+      try {
+        const reviewerUpdateResult = await payload.update({
+          collection: 'abstracts',
+          id: params.id,
+          data: {
+            assignedReviewers: finalCheck, // ONLY the clean reviewer IDs as strings
+          },
+          overrideAccess: true,
+        })
+        console.log('[Abstract Update] ✅ Updated assignedReviewers separately with clean data:', finalCheck)
+      } catch (reviewerError: any) {
+        console.error('[Abstract Update] ❌ Error updating assignedReviewers separately:', {
+          message: reviewerError.message,
+          data: reviewerError.data,
+          errors: reviewerError.data?.errors,
+          stack: reviewerError.stack,
+        })
+        // If reviewer update fails, throw the error - don't continue with other fields
+        // This ensures the user knows reviewer assignment failed
+        throw reviewerError
+      }
+      
+      // STEP 4: Update all other fields (excluding assignedReviewers since we already updated it)
+      const { assignedReviewers: _, ...otherFields } = updateData
+      
+      console.log('[Abstract Update] 🚀 Calling Payload.update for other fields:', {
+        id: params.id,
+        fields: Object.keys(otherFields),
+        assignedReviewersAlreadySet: finalCheck,
+      })
+      
+      // Update with clean data - assignedReviewers already set separately
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,
-        data: updateData,
+        data: otherFields,
         overrideAccess: true,
       })
 
