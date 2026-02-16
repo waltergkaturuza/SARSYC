@@ -235,59 +235,6 @@ const Abstracts: CollectionConfig = {
         update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
       },
       hooks: {
-        beforeValidate: [
-          async (args: any) => {
-            // Run BEFORE validation to catch invalid data early
-            const { data, operation } = args
-            
-            if (data?.assignedReviewers !== undefined) {
-              console.log('[Abstracts beforeValidate] assignedReviewers hook called:', {
-                operation,
-                value: data.assignedReviewers,
-                valueType: typeof data.assignedReviewers,
-                isArray: Array.isArray(data.assignedReviewers),
-              })
-              
-              // Aggressively filter out "0" and invalid values
-              if (Array.isArray(data.assignedReviewers)) {
-                const filtered = data.assignedReviewers
-                  .map((id: any) => {
-                    if (typeof id === 'object' && id !== null) {
-                      return id.id || id.value || null
-                    }
-                    return String(id).trim()
-                  })
-                  .filter((id: any) => {
-                    const idStr = String(id).trim()
-                    return idStr && 
-                           idStr !== '0' && 
-                           idStr !== '' && 
-                           idStr !== 'null' && 
-                           idStr !== 'undefined' &&
-                           idStr !== 'NaN'
-                  })
-                
-                if (filtered.length !== data.assignedReviewers.length) {
-                  console.warn('[Abstracts beforeValidate] 🚨 Filtered out invalid values:', {
-                    original: data.assignedReviewers,
-                    filtered,
-                    removed: data.assignedReviewers.filter((id: any) => {
-                      const idStr = String(id).trim()
-                      return idStr === '0' || idStr === '' || idStr === 'null' || idStr === 'undefined'
-                    }),
-                  })
-                }
-                
-                data.assignedReviewers = filtered
-              } else if (data.assignedReviewers === '0' || data.assignedReviewers === 0) {
-                console.warn('[Abstracts beforeValidate] 🚨 Invalid single value "0" detected, setting to empty array')
-                data.assignedReviewers = []
-              }
-            }
-            
-            return data
-          },
-        ],
         beforeChange: [
           async (args: any) => {
             let { value, operation, req } = args
