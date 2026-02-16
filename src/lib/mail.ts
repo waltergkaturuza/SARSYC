@@ -5,13 +5,14 @@ const getTransporter = (() => {
   return () => {
     if (transporter) return transporter
 
-    const host = process.env.SMTP_HOST
-    const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined
-    const user = process.env.SMTP_USER
+    // Default to Gmail SMTP if not configured
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com'
+    const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587
+    const user = process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
     const pass = process.env.SMTP_PASS
 
-    if (!host || !port) {
-      console.warn('SMTP not configured (SMTP_HOST/SMTP_PORT missing). Emails will be logged, not sent.')
+    if (!pass) {
+      console.warn('SMTP_PASS not configured. Emails will be logged, not sent.')
       transporter = null
       return null
     }
@@ -20,7 +21,7 @@ const getTransporter = (() => {
       host,
       port,
       secure: port === 465, // true for 465, false for other ports
-      auth: user && pass ? { user, pass } : undefined,
+      auth: { user, pass },
     })
 
     // Optional: verify once
@@ -34,10 +35,11 @@ const getTransporter = (() => {
 
 export async function sendMail({ to, subject, text, html }: { to: string; subject: string; text?: string; html?: string }) {
   const transporter = getTransporter()
-  const from = process.env.SMTP_FROM || `noreply@${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'localhost'}`
+  // Default to Gmail address if SMTP_FROM not set
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
   // Use SMTP_REPLY_TO if set, otherwise fall back to SMTP_USER (the authenticated email account)
   // This allows replies to go to a monitored inbox rather than the noreply address
-  const replyTo = process.env.SMTP_REPLY_TO || process.env.SMTP_USER || from
+  const replyTo = process.env.SMTP_REPLY_TO || process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
 
   const message = {
     from,
