@@ -346,26 +346,39 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    // CRITICAL: Always clear assignedReviewers first, then set new value to prevent Payload from merging invalid data
+    // CRITICAL: Ensure assignedReviewers is ALWAYS a clean array with NO "0" before sending
     try {
-      // STEP 1: ALWAYS clear assignedReviewers first to prevent any merge issues
-      console.log('[Abstract Update] 🧹 Clearing assignedReviewers field first to prevent merge issues...')
-      try {
-        await payload.update({
-          collection: 'abstracts',
-          id: params.id,
-          data: {
-            assignedReviewers: [], // Explicitly clear field first
-          },
-          overrideAccess: true,
-        })
-        console.log('[Abstract Update] ✅ Cleared assignedReviewers field')
-      } catch (clearError: any) {
-        console.warn('[Abstract Update] ⚠️ Could not clear assignedReviewers (may not exist):', clearError.message)
-        // Continue anyway - the main update should handle it
-      }
+      // Final verification - ensure assignedReviewers is clean array with no "0"
+      const finalCheck = Array.isArray(finalAssignedReviewers) 
+        ? finalAssignedReviewers
+            .map((id: any) => String(id).trim())
+            .filter((id: string) => {
+              // ABSOLUTE FILTER: No "0", no empty, must exist in DB
+              return id && 
+                     id.length > 0 &&
+                     id !== '0' && 
+                     id !== '' && 
+                     id !== 'null' && 
+                     id !== 'undefined' &&
+                     id !== 'NaN' &&
+                     allValidReviewerIds.includes(id)
+            })
+        : []
       
-      // STEP 2: Log what we're about to send
+      // CRITICAL: Always set assignedReviewers explicitly as clean array
+      // Never send undefined, null, or any value that could be interpreted as "0"
+      updateData.assignedReviewers = finalCheck
+      
+      console.log('[Abstract Update] 🔍 Final pre-send verification:', {
+        assignedReviewers: updateData.assignedReviewers,
+        isArray: Array.isArray(updateData.assignedReviewers),
+        length: updateData.assignedReviewers.length,
+        containsZero: updateData.assignedReviewers.includes('0'),
+        allValid: updateData.assignedReviewers.every((id: string) => allValidReviewerIds.includes(String(id).trim())),
+        rawValue: JSON.stringify(updateData.assignedReviewers),
+      })
+      
+      // Log what we're about to send
       console.log('[Abstract Update] 🚀 Calling Payload.update with:', {
         id: params.id,
         assignedReviewers: updateData.assignedReviewers,
@@ -375,25 +388,7 @@ export async function PATCH(
         containsZero: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.includes('0') : false,
       })
       
-      // STEP 3: Final verification - ensure assignedReviewers is clean array with no "0"
-      const finalCheck = Array.isArray(updateData.assignedReviewers) 
-        ? updateData.assignedReviewers.filter((id: any) => {
-            const idStr = String(id).trim()
-            return idStr !== '0' && idStr !== '' && allValidReviewerIds.includes(idStr)
-          })
-        : []
-      
-      updateData.assignedReviewers = finalCheck
-      
-      console.log('[Abstract Update] 🔍 Final pre-send verification:', {
-        assignedReviewers: updateData.assignedReviewers,
-        isArray: Array.isArray(updateData.assignedReviewers),
-        length: updateData.assignedReviewers.length,
-        containsZero: updateData.assignedReviewers.includes('0'),
-        allValid: updateData.assignedReviewers.every((id: string) => allValidReviewerIds.includes(String(id).trim())),
-      })
-      
-      // STEP 4: Update with clean data
+      // Update with clean data - Payload hook will further validate
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,
