@@ -291,14 +291,17 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       
       // Payload expects relationship IDs as multiple form-data fields with the same name
       // NOT as a JSON string! Each ID should be a separate field: assignedReviewers=3, assignedReviewers=5
+      // CRITICAL: Never send "0" or empty values - only send valid reviewer IDs
       if (validReviewerIds.length > 0) {
         validReviewerIds.forEach((id: string) => {
-          submitData.append('assignedReviewers', id)
+          // Double-check before appending - never send "0"
+          const cleanId = String(id).trim()
+          if (cleanId && cleanId !== '0' && cleanId !== '' && validReviewerIdStrings.includes(cleanId)) {
+            submitData.append('assignedReviewers', cleanId)
+          }
         })
-      } else {
-        // If no reviewers, send empty array as JSON (Payload will parse this correctly)
-        submitData.append('assignedReviewers', JSON.stringify([]))
       }
+      // If no reviewers, don't send the field at all (Payload will treat as empty array)
       
       // CLIENT-SIDE DIRECT UPLOAD: Upload abstract file directly to blob storage
       let abstractFileUrl: string | null = null

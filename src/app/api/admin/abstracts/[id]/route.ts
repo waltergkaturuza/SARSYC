@@ -346,22 +346,69 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    // CRITICAL: Ensure assignedReviewers is ALWAYS a clean array with NO "0" before sending
+    // CRITICAL: Clean database relationships first, then update with clean data
     try {
-      // Final verification - ensure assignedReviewers is clean array with no "0"
+      // STEP 1: Clean up any invalid "0" relationships directly in database using Payload's adapter
+      if (hasInvalidExistingIds || existingAbstract?.assignedReviewers) {
+        console.log('[Abstract Update] 🗑️ Cleaning invalid relationships from database...')
+        try {
+          // Use Payload's find to get current relationships, then update to remove "0"
+          const currentAbstract = await payload.findByID({
+            collection: 'abstracts',
+            id: params.id,
+            overrideAccess: true,
+            depth: 0, // Don't populate relationships
+          })
+          
+          // If current abstract has invalid IDs, clear them first
+          const currentReviewers = currentAbstract?.assignedReviewers || []
+          const hasZero = Array.isArray(currentReviewers) && currentReviewers.some((r: any) => {
+            const id = typeof r === 'object' ? r.id : r
+            return String(id).trim() === '0'
+          })
+          
+          if (hasZero) {
+            console.log('[Abstract Update] Found "0" in existing relationships, clearing...')
+            await payload.update({
+              collection: 'abstracts',
+              id: params.id,
+              data: {
+                assignedReviewers: [], // Clear all first
+              },
+              overrideAccess: true,
+            })
+            console.log('[Abstract Update] ✅ Cleared invalid relationships')
+          }
+        } catch (cleanError: any) {
+          console.warn('[Abstract Update] ⚠️ Could not clean relationships:', cleanError.message)
+          // Continue anyway
+        }
+      }
+      
+      // STEP 2: Final verification - ensure assignedReviewers is clean array with no "0"
       const finalCheck = Array.isArray(finalAssignedReviewers) 
         ? finalAssignedReviewers
-            .map((id: any) => String(id).trim())
-            .filter((id: string) => {
+            .map((id: any) => {
+              // Convert to string and trim
+              const idStr = String(id).trim()
+              // Convert numeric strings to numbers (Payload might expect numbers)
+              if (idStr && idStr !== '0' && !isNaN(Number(idStr)) && allValidReviewerIds.includes(idStr)) {
+                return Number(idStr) // Return as number for Payload
+              }
+              return idStr
+            })
+            .filter((id: any) => {
+              const idStr = String(id).trim()
               // ABSOLUTE FILTER: No "0", no empty, must exist in DB
               return id && 
-                     id.length > 0 &&
-                     id !== '0' && 
-                     id !== '' && 
-                     id !== 'null' && 
-                     id !== 'undefined' &&
-                     id !== 'NaN' &&
-                     allValidReviewerIds.includes(id)
+                     id !== 0 &&
+                     idStr.length > 0 &&
+                     idStr !== '0' && 
+                     idStr !== '' && 
+                     idStr !== 'null' && 
+                     idStr !== 'undefined' &&
+                     idStr !== 'NaN' &&
+                     allValidReviewerIds.includes(String(id).trim())
             })
         : []
       

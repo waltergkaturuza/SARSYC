@@ -248,25 +248,55 @@ const Abstracts: CollectionConfig = {
             
             // 0. IMMEDIATE FILTER: Remove "0" and other invalid values BEFORE any processing
             // This handles cases where Payload might merge existing invalid data
+            // CRITICAL: Return early if we see "0" in any form to prevent validation errors
+            if (value === '0' || value === 0 || value === '' || value === null || value === undefined) {
+              console.warn('[Abstracts beforeChange] 🚨 Invalid single value detected, returning empty array:', value)
+              return []
+            }
+            
             if (Array.isArray(value)) {
+              // Check if array contains "0" - if so, filter it out immediately
+              const hasZero = value.some((id: any) => {
+                const idStr = String(id).trim()
+                return idStr === '0' || id === 0
+              })
+              
+              if (hasZero) {
+                console.warn('[Abstracts beforeChange] 🚨 Array contains "0", filtering out:', value)
+              }
+              
               const initialFiltered = value.filter((id: any) => {
                 const idStr = String(id).trim()
-                return idStr !== '0' && idStr !== '' && idStr !== 'null' && idStr !== 'undefined'
+                const idNum = Number(id)
+                // Filter out "0", 0, empty strings, and invalid values
+                return idStr !== '0' && 
+                       idNum !== 0 &&
+                       idStr !== '' && 
+                       idStr !== 'null' && 
+                       idStr !== 'undefined' &&
+                       id !== null &&
+                       id !== undefined
               })
+              
               if (initialFiltered.length !== value.length) {
                 console.warn('[Abstracts beforeChange] 🚨 Removed invalid values in initial filter:', {
                   original: value,
                   filtered: initialFiltered,
                   removed: value.filter((id: any) => {
                     const idStr = String(id).trim()
-                    return idStr === '0' || idStr === '' || idStr === 'null' || idStr === 'undefined'
+                    const idNum = Number(id)
+                    return idStr === '0' || idNum === 0 || idStr === '' || idStr === 'null' || idStr === 'undefined'
                   }),
                 })
-                value = initialFiltered
               }
-            } else if (value === '0' || value === 0 || value === '' || value === null || value === undefined) {
-              console.warn('[Abstracts beforeChange] 🚨 Invalid single value detected, returning empty array:', value)
-              return []
+              
+              // If after filtering we have nothing valid, return empty array
+              if (initialFiltered.length === 0) {
+                console.log('[Abstracts beforeChange] No valid IDs after initial filter, returning []')
+                return []
+              }
+              
+              value = initialFiltered
             }
             
             // 1. Safe Parsing for Form-Data
