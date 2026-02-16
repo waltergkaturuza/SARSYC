@@ -346,25 +346,23 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    // CRITICAL: If existing abstract has invalid data, clear it first to prevent Payload from merging
+    // CRITICAL: Always clear assignedReviewers first, then set new value to prevent Payload from merging invalid data
     try {
-      // STEP 1: If existing abstract has invalid reviewer IDs, clear them first
-      if (hasInvalidExistingIds) {
-        console.log('[Abstract Update] 🧹 Cleaning up existing invalid reviewer IDs first...')
-        try {
-          await payload.update({
-            collection: 'abstracts',
-            id: params.id,
-            data: {
-              assignedReviewers: [], // Explicitly clear invalid data
-            },
-            overrideAccess: true,
-          })
-          console.log('[Abstract Update] ✅ Cleared existing invalid reviewer IDs')
-        } catch (clearError: any) {
-          console.warn('[Abstract Update] ⚠️ Could not clear existing invalid IDs (may not exist):', clearError.message)
-          // Continue anyway - the main update should handle it
-        }
+      // STEP 1: ALWAYS clear assignedReviewers first to prevent any merge issues
+      console.log('[Abstract Update] 🧹 Clearing assignedReviewers field first to prevent merge issues...')
+      try {
+        await payload.update({
+          collection: 'abstracts',
+          id: params.id,
+          data: {
+            assignedReviewers: [], // Explicitly clear field first
+          },
+          overrideAccess: true,
+        })
+        console.log('[Abstract Update] ✅ Cleared assignedReviewers field')
+      } catch (clearError: any) {
+        console.warn('[Abstract Update] ⚠️ Could not clear assignedReviewers (may not exist):', clearError.message)
+        // Continue anyway - the main update should handle it
       }
       
       // STEP 2: Log what we're about to send
@@ -377,7 +375,25 @@ export async function PATCH(
         containsZero: Array.isArray(updateData.assignedReviewers) ? updateData.assignedReviewers.includes('0') : false,
       })
       
-      // STEP 3: Update with clean data
+      // STEP 3: Final verification - ensure assignedReviewers is clean array with no "0"
+      const finalCheck = Array.isArray(updateData.assignedReviewers) 
+        ? updateData.assignedReviewers.filter((id: any) => {
+            const idStr = String(id).trim()
+            return idStr !== '0' && idStr !== '' && allValidReviewerIds.includes(idStr)
+          })
+        : []
+      
+      updateData.assignedReviewers = finalCheck
+      
+      console.log('[Abstract Update] 🔍 Final pre-send verification:', {
+        assignedReviewers: updateData.assignedReviewers,
+        isArray: Array.isArray(updateData.assignedReviewers),
+        length: updateData.assignedReviewers.length,
+        containsZero: updateData.assignedReviewers.includes('0'),
+        allValid: updateData.assignedReviewers.every((id: string) => allValidReviewerIds.includes(String(id).trim())),
+      })
+      
+      // STEP 4: Update with clean data
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,
