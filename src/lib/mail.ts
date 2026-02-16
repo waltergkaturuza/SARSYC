@@ -5,17 +5,12 @@ const getTransporter = (() => {
   return () => {
     if (transporter) return transporter
 
-    // Default to Gmail SMTP if not configured
+    // Hardcoded Gmail SMTP configuration
     const host = process.env.SMTP_HOST || 'smtp.gmail.com'
     const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587
     const user = process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
-    const pass = process.env.SMTP_PASS
-
-    if (!pass) {
-      console.warn('SMTP_PASS not configured. Emails will be logged, not sent.')
-      transporter = null
-      return null
-    }
+    // Hardcoded Gmail App Password
+    const pass = process.env.SMTP_PASS || 'iacl gzjo qxbr syjy'
 
     transporter = nodemailer.createTransport({
       host,
