@@ -162,7 +162,7 @@ export default function VolunteerPage() {
 
   const totalSteps = 6
 
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue } = useForm<VolunteerFormData>({
+  const { register, handleSubmit, formState: { errors }, control, watch, setValue, getValues } = useForm<VolunteerFormData>({
     resolver: zodResolver(volunteerSchema),
     defaultValues: {
       education: [{ level: '', field: '', institution: '', year: new Date().getFullYear(), currentlyStudying: false }],
@@ -201,7 +201,7 @@ export default function VolunteerPage() {
     name: 'references',
   })
 
-  const handleFileUpload = async (file: File, type: 'cv' | 'coverLetter') => {
+  const handleFileUpload = async (file: File, type: 'cv' | 'coverLetter'): Promise<string | null> => {
     try {
       showToast.loading(`Uploading ${type === 'cv' ? 'CV' : 'cover letter'}...`)
       const email = watch('email')
@@ -231,27 +231,46 @@ export default function VolunteerPage() {
       setValue(type, blob.url)
       console.log('✅ Volunteer document uploaded directly to Vercel Blob:', blob.url)
       showToast.success(`${type === 'cv' ? 'CV' : 'Cover letter'} uploaded successfully`)
+      return blob.url as string
     } catch (error: any) {
       console.error('❌ Volunteer upload error:', error)
       showToast.error(`Failed to upload ${type === 'cv' ? 'CV' : 'cover letter'}: ${error.message || 'Unknown error'}`)
+      return null
     }
   }
 
   const onSubmit = async (data: VolunteerFormData) => {
     setIsSubmitting(true)
     try {
-      // Upload files first if they exist
+      // Upload files first if they exist and capture final URLs
+      let cvUrl = data.cv || ''
+      let coverLetterUrl = data.coverLetter || ''
+
       if (cvFile) {
-        await handleFileUpload(cvFile, 'cv')
+        const uploaded = await handleFileUpload(cvFile, 'cv')
+        if (uploaded) {
+          cvUrl = uploaded
+        }
       }
       if (coverLetterFile) {
-        await handleFileUpload(coverLetterFile, 'coverLetter')
+        const uploaded = await handleFileUpload(coverLetterFile, 'coverLetter')
+        if (uploaded) {
+          coverLetterUrl = uploaded
+        }
+      }
+
+      // Use the latest form values plus the uploaded URLs
+      const currentValues = getValues()
+      const payloadData: VolunteerFormData = {
+        ...currentValues,
+        cv: cvUrl || undefined,
+        coverLetter: coverLetterUrl || undefined,
       }
 
       const response = await fetch('/api/volunteers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payloadData),
       })
 
       if (!response.ok) {
