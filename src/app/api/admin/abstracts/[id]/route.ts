@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -419,7 +420,31 @@ export async function PATCH(
         rawValue: JSON.stringify(updateData.assignedReviewers),
       })
       
-      // STEP 3: Always clear assignedReviewers first, then set new list (prevents Payload from merging with existing "0" rows)
+      // STEP 3: CRITICAL - Delete "0" rows DIRECTLY from database BEFORE Payload validates
+      // Payload reads abstracts_rels during validation, so we must clean it first
+      console.log('[Abstract Update] 🗑️ Deleting invalid "0" rows directly from abstracts_rels...')
+      try {
+        const dbUrl = process.env.DATABASE_URL
+        if (dbUrl) {
+          const sql = postgres(dbUrl, { max: 1 })
+          // Delete ALL rows with users_id = 0 for this abstract BEFORE Payload reads them
+          // Use parameterized query to prevent SQL injection
+          const abstractId = parseInt(params.id, 10)
+          const deleted = await sql`
+            DELETE FROM abstracts_rels
+            WHERE parent_id = ${abstractId}
+              AND path = 'assignedReviewers'
+              AND (users_id = 0 OR users_id IS NULL)
+          `
+          console.log('[Abstract Update] ✅ Deleted invalid rows directly from DB:', deleted.count || 0)
+          await sql.end()
+        }
+      } catch (dbCleanError: any) {
+        console.warn('[Abstract Update] ⚠️ Could not clean abstracts_rels directly:', dbCleanError.message)
+        // Continue - Payload update might still work
+      }
+      
+      // STEP 4: Always clear assignedReviewers first, then set new list (prevents Payload from merging with existing "0" rows)
       console.log('[Abstract Update] 🔄 Clearing then setting assignedReviewers...')
       console.log('[Abstract Update] 📤 Sending ONLY these reviewer IDs:', {
         ids: finalCheck,
