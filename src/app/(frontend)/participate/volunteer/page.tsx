@@ -349,6 +349,22 @@ export default function VolunteerPage() {
       <section className="section bg-gray-50">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
+            {/* Important note about registration */}
+            <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <p className="font-semibold mb-1">Important:</p>
+              <p>
+                Volunteering at SARSYC VI does <span className="font-semibold">not automatically register you as a conference participant.</span>{' '}
+                To attend sessions and be counted as a delegate, please also complete the{' '}
+                <a
+                  href="/participate/register"
+                  className="font-semibold underline hover:text-red-900"
+                >
+                  main conference registration form
+                </a>
+                .
+              </p>
+            </div>
+
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Volunteer Application
