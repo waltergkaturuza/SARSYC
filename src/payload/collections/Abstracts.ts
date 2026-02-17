@@ -55,7 +55,7 @@ const Abstracts: CollectionConfig = {
       type: 'textarea',
       required: true,
       label: 'Abstract Text (350-500 words)',
-      maxLength: 4000,
+      maxLength: 6000,
     },
     {
       name: 'keywords',
