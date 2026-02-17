@@ -426,7 +426,7 @@ export async function PATCH(
         ids: finalCheck,
         count: finalCheck.length,
         type: typeof finalCheck[0],
-        containsZero: finalCheck.includes('0') || finalCheck.includes(0),
+        containsZero: finalCheck.includes('0'),
         allAreStrings: finalCheck.every((id: any) => typeof id === 'string'),
       })
       
