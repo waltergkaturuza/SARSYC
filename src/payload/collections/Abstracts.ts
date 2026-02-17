@@ -230,21 +230,33 @@ const Abstracts: CollectionConfig = {
       admin: {
         description: 'Select the reviewers who should evaluate this abstract',
       },
+      validate: (value: any) => {
+        if (value == null) return true
+        const arr = Array.isArray(value) ? value : [value]
+        // allow empty
+        if (arr.length === 0) return true
+        // ensure every entry is a positive integer (or an object containing one)
+        const allValid = arr.every((v: any) => {
+          const raw = typeof v === 'object' && v != null ? (v.id ?? v.value ?? v) : v
+          const n = typeof raw === 'number' ? raw : Number(String(raw).trim())
+          return Number.isInteger(n) && n > 0
+        })
+        return allValid || 'Invalid reviewer detected'
+      },
       access: {
         read: (args: any) => Boolean(args.req?.user),
         create: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
         update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
       },
       hooks: {
-        // Field-level guard (runs before field validation): strip "0"/empty/invalid IDs
-        // This covers Payload Admin UI updates that bypass custom Next.js routes.
+        // Normalize reviewer IDs early and KEEP THEM NUMERIC (Postgres user IDs are integers).
+        // This runs for Payload Admin UI + REST, before relationship integrity validation.
         beforeValidate: [
           (args: any) => {
             let { value } = args
+            if (value == null || value === '') return []
 
-            if (!value) return []
-
-            // Handle stringified arrays defensively
+            // Handle stringified arrays defensively (e.g. "[0,3]" or "[\"3\"]")
             if (typeof value === 'string') {
               const s = value.trim()
               if (s.startsWith('[') && s.endsWith(']')) {
@@ -256,224 +268,14 @@ const Abstracts: CollectionConfig = {
               }
             }
 
-            const asArray = Array.isArray(value) ? value : [value]
-
-            const cleaned = asArray
-              .map((v: any) => {
-                if (typeof v === 'object' && v != null) return v.id ?? v.value ?? v
-                return v
-              })
-              .map((v: any) => String(v).trim())
-              .filter((v: string) => {
-                if (!v) return false
-                if (v === '0' || v === '' || v === 'null' || v === 'undefined' || v === 'NaN') return false
-                const n = Number(v)
-                return Number.isFinite(n) && n > 0
-              })
+            const arr = Array.isArray(value) ? value : [value]
+            const cleanedNums = arr
+              .map((v: any) => (typeof v === 'object' && v != null ? (v.id ?? v.value ?? v) : v))
+              .map((v: any) => (typeof v === 'number' ? v : Number(String(v).trim())))
+              .filter((n: any) => Number.isInteger(n) && n > 0) as number[]
 
             // De-dupe while preserving order
-            return Array.from(new Set(cleaned))
-          },
-        ],
-        beforeChange: [
-          async (args: any) => {
-            let { value, operation, req } = args
-            
-            console.log('[Abstracts beforeChange] assignedReviewers hook called:', {
-              operation,
-              value,
-              valueType: typeof value,
-              isArray: Array.isArray(value),
-            })
-            
-            // 0. IMMEDIATE FILTER: Remove "0" and other invalid values BEFORE any processing
-            // This handles cases where Payload might merge existing invalid data
-            // CRITICAL: Return early if we see "0" in any form to prevent validation errors
-            if (value === '0' || value === 0 || value === '' || value === null || value === undefined) {
-              console.warn('[Abstracts beforeChange] 🚨 Invalid single value detected, returning empty array:', value)
-              return []
-            }
-            
-            if (Array.isArray(value)) {
-              // Check if array contains "0" - if so, filter it out immediately
-              const hasZero = value.some((id: any) => {
-                const idStr = String(id).trim()
-                return idStr === '0' || id === 0
-              })
-              
-              if (hasZero) {
-                console.warn('[Abstracts beforeChange] 🚨 Array contains "0", filtering out:', value)
-              }
-              
-              const initialFiltered = value.filter((id: any) => {
-                const idStr = String(id).trim()
-                const idNum = Number(id)
-                // Filter out "0", 0, empty strings, and invalid values
-                return idStr !== '0' && 
-                       idNum !== 0 &&
-                       idStr !== '' && 
-                       idStr !== 'null' && 
-                       idStr !== 'undefined' &&
-                       id !== null &&
-                       id !== undefined
-              })
-              
-              if (initialFiltered.length !== value.length) {
-                console.warn('[Abstracts beforeChange] 🚨 Removed invalid values in initial filter:', {
-                  original: value,
-                  filtered: initialFiltered,
-                  removed: value.filter((id: any) => {
-                    const idStr = String(id).trim()
-                    const idNum = Number(id)
-                    return idStr === '0' || idNum === 0 || idStr === '' || idStr === 'null' || idStr === 'undefined'
-                  }),
-                })
-              }
-              
-              // If after filtering we have nothing valid, return empty array
-              if (initialFiltered.length === 0) {
-                console.log('[Abstracts beforeChange] No valid IDs after initial filter, returning []')
-                return []
-              }
-              
-              value = initialFiltered
-            }
-            
-            // 1. Safe Parsing for Form-Data
-            // If value is a string looking like an array (e.g., "['3']" or '["3"]'), parse it.
-            if (typeof value === 'string' && (value.startsWith('[') && value.endsWith(']'))) {
-              try {
-                value = JSON.parse(value)
-                console.log('[Abstracts beforeChange] Parsed string to array:', value)
-              } catch (e) {
-                console.warn('[Abstracts beforeChange] Failed to parse assignedReviewers string:', value, e)
-                return []
-              }
-            }
-            
-            // Only validate on update/create operations
-            if (operation === 'create' || operation === 'update') {
-              // Handle null/undefined/empty
-              if (!value || (Array.isArray(value) && value.length === 0)) {
-                console.log('[Abstracts beforeChange] Empty value, returning []')
-                return []
-              }
-              
-              // Normalize to array of IDs
-              const ids = Array.isArray(value) ? value : [value]
-              
-              const normalizedIds = ids
-                .map((id: any) => {
-                  if (typeof id === 'object' && id !== null) {
-                    return id.id || id.value || null
-                  }
-                  if (id === null || id === undefined) {
-                    return null
-                  }
-                  return String(id).trim()
-                })
-                .filter((id: string | null) => {
-                  // Filter out invalid values
-                  return id && 
-                         id !== '0' && 
-                         id !== 'null' && 
-                         id !== 'undefined' &&
-                         id !== '' &&
-                         id !== 'NaN'
-                })
-              
-              console.log('[Abstracts beforeChange] Normalized IDs:', normalizedIds)
-              
-              if (normalizedIds.length === 0) {
-                console.log('[Abstracts beforeChange] No valid IDs after normalization, returning []')
-                return []
-              }
-              
-              // STEP 1: Fetch ALL valid reviewer IDs from database FIRST (database-driven approach)
-              try {
-                const payload = req.payload
-                
-                // Fetch ALL reviewers/admins/editors from database first
-                const allReviewers = await payload.find({
-                  collection: 'users',
-                  where: {
-                    role: { in: ['reviewer', 'admin', 'editor'] }, // Allow admins/editors to review
-                  },
-                  limit: 1000,
-                  overrideAccess: true, // Ensure we find them even if current user has restricted view
-                })
-                
-                // Map all valid reviewer IDs from database
-                const allValidReviewerIds = allReviewers.docs.map((user: any) => {
-                  const id = user.id
-                  return typeof id === 'object' ? id.toString().trim() : String(id).trim()
-                })
-                
-                console.log('[Abstracts beforeChange] ✅ Fetched all valid reviewer IDs from DB:', {
-                  count: allValidReviewerIds.length,
-                  ids: allValidReviewerIds,
-                  users: allReviewers.docs.map((u: any) => ({
-                    id: typeof u.id === 'object' ? u.id.toString() : String(u.id),
-                    name: `${u.firstName} ${u.lastName}`,
-                    email: u.email,
-                    role: u.role,
-                  })),
-                })
-                
-                // STEP 2: Filter normalized IDs to only include those that exist in database
-                const validIds = normalizedIds.filter((id: string) => {
-                  const normalizedId = String(id).trim()
-                  const existsInDb = allValidReviewerIds.includes(normalizedId)
-                  if (!existsInDb) {
-                    console.warn('[Abstracts beforeChange] ❌ Removing reviewer ID not found in DB:', normalizedId)
-                  }
-                  return existsInDb
-                })
-                
-                console.log('[Abstracts beforeChange] ✅ Final validated reviewers (database-checked):', {
-                  requested: normalizedIds,
-                  valid: validIds,
-                  removed: normalizedIds.filter(id => !validIds.includes(String(id).trim())),
-                  dbTotal: allValidReviewerIds.length,
-                })
-                
-                // If no valid IDs found, return empty array to prevent error
-                if (validIds.length === 0) {
-                  console.warn(`[Abstracts beforeChange] ❌ No valid reviewer IDs found. Requested: ${normalizedIds.join(', ')}, Available in DB: ${allValidReviewerIds.length} reviewers`)
-                  return []
-                }
-                
-                // FINAL SAFETY CHECK: Ensure we never return "0" or any invalid values
-                const finalValidIds = validIds.filter((id: string) => {
-                  const normalizedId = String(id).trim()
-                  const isValid = normalizedId && 
-                                 normalizedId !== '0' &&
-                                 normalizedId !== '' &&
-                                 normalizedId !== 'null' &&
-                                 normalizedId !== 'undefined' &&
-                                 normalizedId !== 'NaN' &&
-                                 allValidReviewerIds.includes(normalizedId)
-                  if (!isValid) {
-                    console.warn('[Abstracts beforeChange] 🚨 FINAL CHECK: Removing invalid ID:', normalizedId)
-                  }
-                  return isValid
-                })
-                
-                console.log('[Abstracts beforeChange] 🎯 FINAL RETURN VALUE:', {
-                  beforeFinalCheck: validIds,
-                  afterFinalCheck: finalValidIds,
-                  removed: validIds.filter(id => !finalValidIds.includes(String(id).trim())),
-                })
-                
-                return finalValidIds
-              } catch (error: any) {
-                console.error('[Abstracts beforeChange] Error validating reviewers:', error)
-                // Return empty array if validation fails
-                return []
-              }
-            }
-            
-            return value
+            return Array.from(new Set(cleanedNums))
           },
         ],
       },
@@ -548,44 +350,6 @@ const Abstracts: CollectionConfig = {
   ],
   timestamps: true,
   hooks: {
-    // Global guard: ensures assignedReviewers never contains "0" (or other invalid placeholders)
-    // regardless of whether the update comes from Payload Admin UI, REST, or custom Next.js routes.
-    beforeValidate: [
-      async (args: any) => {
-        const { data } = args || {}
-        if (!data || !('assignedReviewers' in data)) return data
-
-        let value: any = (data as any).assignedReviewers
-
-        // Handle stringified arrays (defensive)
-        if (typeof value === 'string' && value.trim().startsWith('[') && value.trim().endsWith(']')) {
-          try {
-            value = JSON.parse(value)
-          } catch {
-            // If it can't be parsed, drop it rather than allowing placeholders through
-            value = []
-          }
-        }
-
-        const cleaned = Array.isArray(value)
-          ? value
-              .map((v: any) => {
-                if (typeof v === 'object' && v != null) return v.id ?? v.value ?? v
-                return v
-              })
-              .map((v: any) => String(v).trim())
-              .filter((v: string) => {
-                if (!v) return false
-                if (v === '0' || v === 'null' || v === 'undefined' || v === 'NaN') return false
-                const n = Number(v)
-                return Number.isFinite(n) && n > 0
-              })
-          : []
-
-        ;(data as any).assignedReviewers = cleaned
-        return data
-      },
-    ],
     afterChange: [
       async (args: any) => {
         // Wrap entire hook in try-catch to prevent hook errors from failing the update
