@@ -225,6 +225,7 @@ const Abstracts: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: true,
+      defaultValue: [],
       label: 'Assigned Reviewers',
       admin: {
         description: 'Select the reviewers who should evaluate this abstract',
@@ -235,6 +236,45 @@ const Abstracts: CollectionConfig = {
         update: (args: any) => args.req?.user?.role === 'admin' || args.req?.user?.role === 'editor',
       },
       hooks: {
+        // Field-level guard (runs before field validation): strip "0"/empty/invalid IDs
+        // This covers Payload Admin UI updates that bypass custom Next.js routes.
+        beforeValidate: [
+          (args: any) => {
+            let { value } = args
+
+            if (!value) return []
+
+            // Handle stringified arrays defensively
+            if (typeof value === 'string') {
+              const s = value.trim()
+              if (s.startsWith('[') && s.endsWith(']')) {
+                try {
+                  value = JSON.parse(s)
+                } catch {
+                  return []
+                }
+              }
+            }
+
+            const asArray = Array.isArray(value) ? value : [value]
+
+            const cleaned = asArray
+              .map((v: any) => {
+                if (typeof v === 'object' && v != null) return v.id ?? v.value ?? v
+                return v
+              })
+              .map((v: any) => String(v).trim())
+              .filter((v: string) => {
+                if (!v) return false
+                if (v === '0' || v === '' || v === 'null' || v === 'undefined' || v === 'NaN') return false
+                const n = Number(v)
+                return Number.isFinite(n) && n > 0
+              })
+
+            // De-dupe while preserving order
+            return Array.from(new Set(cleaned))
+          },
+        ],
         beforeChange: [
           async (args: any) => {
             let { value, operation, req } = args
