@@ -508,6 +508,44 @@ const Abstracts: CollectionConfig = {
   ],
   timestamps: true,
   hooks: {
+    // Global guard: ensures assignedReviewers never contains "0" (or other invalid placeholders)
+    // regardless of whether the update comes from Payload Admin UI, REST, or custom Next.js routes.
+    beforeValidate: [
+      async (args: any) => {
+        const { data } = args || {}
+        if (!data || !('assignedReviewers' in data)) return data
+
+        let value: any = (data as any).assignedReviewers
+
+        // Handle stringified arrays (defensive)
+        if (typeof value === 'string' && value.trim().startsWith('[') && value.trim().endsWith(']')) {
+          try {
+            value = JSON.parse(value)
+          } catch {
+            // If it can't be parsed, drop it rather than allowing placeholders through
+            value = []
+          }
+        }
+
+        const cleaned = Array.isArray(value)
+          ? value
+              .map((v: any) => {
+                if (typeof v === 'object' && v != null) return v.id ?? v.value ?? v
+                return v
+              })
+              .map((v: any) => String(v).trim())
+              .filter((v: string) => {
+                if (!v) return false
+                if (v === '0' || v === 'null' || v === 'undefined' || v === 'NaN') return false
+                const n = Number(v)
+                return Number.isFinite(n) && n > 0
+              })
+          : []
+
+        ;(data as any).assignedReviewers = cleaned
+        return data
+      },
+    ],
     afterChange: [
       async (args: any) => {
         // Wrap entire hook in try-catch to prevent hook errors from failing the update
