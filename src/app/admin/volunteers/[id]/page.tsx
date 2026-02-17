@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiUser } from 'react-icons/fi'
+import { VolunteerAdminActions } from '@/components/admin/volunteers/VolunteerAdminActions'
 
 export const revalidate = 0
 
@@ -233,6 +234,13 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                   </dd>
                 </div>
               </dl>
+
+              <VolunteerAdminActions
+                id={String(volunteer.id)}
+                initialStatus={volunteer.status || 'pending'}
+                initialAdminNotes={volunteer.adminNotes}
+                initialReviewerComments={volunteer.reviewerComments}
+              />
             </section>
           </div>
 
@@ -519,6 +527,14 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                       >
                         {volunteer.cv.filename || 'View CV'}
                       </Link>
+                    ) : typeof volunteer.cv === 'string' && volunteer.cv ? (
+                      <Link
+                        href={volunteer.cv}
+                        className="text-primary-600 hover:underline"
+                        target="_blank"
+                      >
+                        View CV
+                      </Link>
                     ) : (
                       'Not uploaded'
                     )}
@@ -535,6 +551,14 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                         target="_blank"
                       >
                         {volunteer.coverLetter.filename || 'View Cover Letter'}
+                      </Link>
+                    ) : typeof volunteer.coverLetter === 'string' && volunteer.coverLetter ? (
+                      <Link
+                        href={volunteer.coverLetter}
+                        className="text-primary-600 hover:underline"
+                        target="_blank"
+                      >
+                        View Cover Letter
                       </Link>
                     ) : (
                       'Not uploaded'
