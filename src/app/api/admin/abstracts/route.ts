@@ -19,6 +19,32 @@ export async function POST(request: NextRequest) {
     const presentationType = formData.get('presentationType') as string
     const abstractFileUrl = formData.get('abstractFileUrl') as string | null // URL from blob storage
     const assignedReviewers = JSON.parse(formData.get('assignedReviewers') as string || '[]')
+
+    // CRITICAL: Never allow "0" / empty / invalid reviewer IDs to reach Payload
+    // (prevents: "This relationship field has the following invalid relationships: X 0")
+    const cleanAssignedReviewers = Array.isArray(assignedReviewers)
+      ? assignedReviewers
+          .map((id: any) => String(id).trim())
+          .filter((id: string) => {
+            if (!id) return false
+            if (
+              id === '0' ||
+              id === '' ||
+              id === 'null' ||
+              id === 'undefined' ||
+              id === 'NaN'
+            ) {
+              return false
+            }
+            const n = Number(id)
+            return Number.isFinite(n) && n > 0
+          })
+      : []
+
+    console.log('[Create Abstract] assignedReviewers incoming vs cleaned:', {
+      incoming: assignedReviewers,
+      cleaned: cleanAssignedReviewers,
+    })
     
     // Create media record with the blob URL if provided
     let abstractFileId: string | undefined
@@ -67,7 +93,7 @@ export async function POST(request: NextRequest) {
         coAuthors: coAuthors.map((ca: any) => ({ name: ca.name, organization: ca.organization })),
         presentationType,
         status: 'received',
-        assignedReviewers: Array.isArray(assignedReviewers) ? assignedReviewers : [],
+        assignedReviewers: cleanAssignedReviewers,
         ...(abstractFileId && { abstractFile: abstractFileId }),
       },
     })
