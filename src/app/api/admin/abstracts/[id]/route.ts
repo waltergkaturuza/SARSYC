@@ -419,9 +419,8 @@ export async function PATCH(
         rawValue: JSON.stringify(updateData.assignedReviewers),
       })
       
-      // STEP 3: Update assignedReviewers SEPARATELY to avoid Payload merging with existing invalid data
-      // This ensures Payload only sees the clean values we want
-      console.log('[Abstract Update] 🔄 Updating assignedReviewers separately first...')
+      // STEP 3: Always clear assignedReviewers first, then set new list (prevents Payload from merging with existing "0" rows)
+      console.log('[Abstract Update] 🔄 Clearing then setting assignedReviewers...')
       console.log('[Abstract Update] 📤 Sending ONLY these reviewer IDs:', {
         ids: finalCheck,
         count: finalCheck.length,
@@ -431,6 +430,14 @@ export async function PATCH(
       })
       
       try {
+        // Clear first so Payload never merges with existing invalid relationships (e.g. users_id = 0)
+        await payload.update({
+          collection: 'abstracts',
+          id: params.id,
+          data: { assignedReviewers: [] },
+          overrideAccess: true,
+        })
+        // Now set the clean list
         const reviewerUpdateResult = await payload.update({
           collection: 'abstracts',
           id: params.id,
@@ -439,7 +446,7 @@ export async function PATCH(
           },
           overrideAccess: true,
         })
-        console.log('[Abstract Update] ✅ Updated assignedReviewers separately with clean data:', finalCheck)
+        console.log('[Abstract Update] ✅ Updated assignedReviewers with clean data:', finalCheck)
       } catch (reviewerError: any) {
         console.error('[Abstract Update] ❌ Error updating assignedReviewers separately:', {
           message: reviewerError.message,

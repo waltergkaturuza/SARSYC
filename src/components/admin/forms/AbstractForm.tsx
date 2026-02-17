@@ -82,10 +82,15 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     reviewerComments: initialData?.reviewerComments || '',
     adminNotes: initialData?.adminNotes || '',
     assignedSession: initialData?.assignedSession?.id || initialData?.assignedSession || '',
-    assignedReviewers:
-      initialData?.assignedReviewers?.map((reviewer: any) =>
-        typeof reviewer === 'object' ? reviewer.id || reviewer : reviewer
-      ) || [],
+    assignedReviewers: (() => {
+      const raw = initialData?.assignedReviewers?.map((reviewer: any) =>
+        typeof reviewer === 'object' ? reviewer.id ?? reviewer : reviewer
+      ) || []
+      // Never allow "0" or invalid IDs into state (prevents "invalid relationships: 0 and 3" on save)
+      return raw
+        .map((id: any) => String(id).trim())
+        .filter((id: string) => id && id !== '0' && id !== '' && id !== 'null' && id !== 'undefined')
+    })(),
   })
 
   useEffect(() => {

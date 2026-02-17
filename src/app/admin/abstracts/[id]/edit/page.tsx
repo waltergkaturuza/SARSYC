@@ -28,13 +28,28 @@ export default async function EditAbstractPage({ params }: EditAbstractPageProps
       depth: 2,
     })
 
+    // Sanitize assignedReviewers so the form never sees invalid "0" (avoids Payload validation error when saving)
+    const rawReviewers = abstract?.assignedReviewers ?? []
+    const sanitizedReviewers = Array.isArray(rawReviewers)
+      ? rawReviewers
+          .map((r: any) => (typeof r === 'object' && r != null ? r.id : r))
+          .filter((id: any) => {
+            const s = String(id).trim()
+            return s && s !== '0' && s !== '' && s !== 'null' && s !== 'undefined'
+          })
+      : []
+    const initialData = {
+      ...abstract,
+      assignedReviewers: sanitizedReviewers,
+    }
+
     return (
       <div className="container-custom py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Edit Abstract</h1>
           <p className="text-gray-600 mt-2">Update abstract information and review status</p>
         </div>
-        <AbstractForm mode="edit" initialData={abstract} />
+        <AbstractForm mode="edit" initialData={initialData} />
       </div>
     )
   } catch (error) {
