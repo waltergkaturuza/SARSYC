@@ -31,6 +31,15 @@ const colorMap: Record<string, string> = {
   red: 'from-red-400 to-red-500',
 }
 
+// Sponsorship prospectus images (place PNGs in `public/docs`)
+// Files should be named Sponsorship_1.png, Sponsorship_2.png, ...
+const sponsorshipImages: string[] = [
+  '/docs/Sponsorship_1.png',
+  '/docs/Sponsorship_2.png',
+  '/docs/Sponsorship_3.png',
+  '/docs/Sponsorship_4.png',
+]
+
 // Partner organizations with their logos
 const partners = [
   {
@@ -181,7 +190,7 @@ export default function PartnershipsPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
         <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="mx-auto max-w-5xl md:max-w-6xl text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Partner With Us
             </h1>
@@ -303,6 +312,45 @@ export default function PartnershipsPage() {
               <FiDownload />
               Download Full Sponsorship Prospectus (PDF)
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Sponsorship Prospectus Images */}
+      <section className="section bg-white">
+        <div className="container-custom">
+          <h2 className="section-title">Sponsorship Prospectus</h2>
+          <p className="section-subtitle">
+            Preview pages from the sponsorship information pack. Images are wide and optimized for on-screen reading.
+          </p>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {sponsorshipImages.map((src, index) => (
+              <button
+                key={src}
+                type="button"
+                onClick={() => window.open(src, '_blank')}
+                className="group relative block w-full overflow-hidden rounded-xl shadow-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <div className="relative w-full h-0 pb-[70%]">
+                  <Image
+                    src={src}
+                    alt={`Sponsorship document page ${index + 1}`}
+                    fill
+                    sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="px-4 py-3 text-left">
+                  <p className="text-sm font-medium text-gray-800">
+                    {`Sponsorship_${index + 1}.png`}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    High-resolution preview of the sponsorship prospectus.
+                  </p>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </section>
