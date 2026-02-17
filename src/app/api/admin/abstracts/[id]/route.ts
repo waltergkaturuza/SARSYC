@@ -390,7 +390,7 @@ export async function PATCH(
       const finalCheck = Array.isArray(finalAssignedReviewers) 
         ? finalAssignedReviewers
             .map((id: any) => {
-              // Convert to string and trim - keep as string
+              // Convert to string and trim - keep as string (never convert "0" to number)
               return String(id).trim()
             })
             .filter((id: string) => {
