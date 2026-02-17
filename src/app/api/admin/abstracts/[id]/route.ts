@@ -391,9 +391,7 @@ export async function PATCH(
         ? finalAssignedReviewers
             .map((id: any) => {
               // Convert to string and trim - keep as string
-              const idStr = String(id).trim()
-              // NEVER convert "0" to number - keep as string to avoid issues
-              return idStr
+              return String(id).trim()
             })
             .filter((id: string) => {
               // ABSOLUTE FILTER: No "0", no empty, must exist in DB
