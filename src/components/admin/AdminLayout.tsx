@@ -54,6 +54,12 @@ const navigation = [
     description: 'Marathon registrations',
   },
   {
+    name: 'Volunteers',
+    href: '/admin/volunteers',
+    icon: FiUsers,
+    description: 'Manage volunteers',
+  },
+  {
     name: 'Resources',
     href: '/admin/resources',
     icon: FiFolder,
