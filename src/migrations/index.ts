@@ -7,6 +7,7 @@ import * as migration_20250101_000000_drop_document_locking_tables from './20250
 import * as migration_20250128_000000_add_user_account_fields from './20250128_000000_add_user_account_fields';
 import * as migration_20250122_000000_add_resource_types from './20250122_000000_add_resource_types';
 import * as migration_20250202_000000_create_youth_steering_committee from './20250202_000000_create_youth_steering_committee';
+import * as migration_20250216_000000_create_analytics_tables from './20250216_000000_create_analytics_tables';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20250202_000000_create_youth_steering_committee.up,
     down: migration_20250202_000000_create_youth_steering_committee.down,
     name: '20250202_000000_create_youth_steering_committee'
+  },
+  {
+    up: migration_20250216_000000_create_analytics_tables.up,
+    down: migration_20250216_000000_create_analytics_tables.down,
+    name: '20250216_000000_create_analytics_tables'
   },
 ];

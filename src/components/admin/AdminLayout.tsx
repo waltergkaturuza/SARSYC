@@ -7,7 +7,7 @@ import {
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
-  FiAward, FiActivity, FiMail, FiInbox
+  FiAward, FiActivity, FiMail, FiInbox, FiTrendingUp
 } from 'react-icons/fi'
 
 const navigation = [
@@ -16,6 +16,12 @@ const navigation = [
     href: '/admin/dashboard',
     icon: FiHome,
     description: 'Overview and stats',
+  },
+  {
+    name: 'Analytics',
+    href: '/admin/analytics',
+    icon: FiTrendingUp,
+    description: 'Visitors and interactions',
   },
   {
     name: 'Registrations',

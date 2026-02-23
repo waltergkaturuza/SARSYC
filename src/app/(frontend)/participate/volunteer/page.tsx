@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FiCheck, FiUsers, FiAward, FiHeart, FiCalendar, FiChevronRight, FiChevronLeft, FiUpload, FiX, FiFileText } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
+import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 
 // Comprehensive validation schema
 const volunteerSchema = z.object({
@@ -279,6 +280,7 @@ export default function VolunteerPage() {
       }
 
       setIsSuccess(true)
+      trackEvent('form_submit', { form: 'volunteer_application' })
       showToast.success('Volunteer application submitted successfully!')
     } catch (error: any) {
       showToast.error(error.message || 'Failed to submit application')

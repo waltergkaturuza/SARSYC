@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker'
 
 export default function FrontendLayout({
   children,
@@ -8,6 +9,7 @@ export default function FrontendLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
+      <AnalyticsTracker />
       <Header />
       <main className="flex-grow pt-24 md:pt-28">
         {children}

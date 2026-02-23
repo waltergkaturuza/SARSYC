@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit } from 'react-icons/fi'
+import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import EmptyState from '@/components/ui/EmptyState'
 
 const resourceTypes = [
@@ -86,12 +87,15 @@ export default function ResourcesPage() {
     setDownloading(resource.id)
     
     try {
-      // Track download
+      // Track download (legacy API)
       await fetch('/api/resources', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: resource.id }),
       })
+
+      // Track in analytics
+      trackEvent('download', { fileName: resource.file?.filename || resource.title, resourceId: resource.id })
 
       // Open/download file
       window.open(fileUrl, '_blank')
