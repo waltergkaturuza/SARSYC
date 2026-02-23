@@ -14,15 +14,15 @@ import {
 } from 'recharts'
 
 const CHART_COLORS = {
-  views: '#0284c7', // primary-600
+  views: '#0284c7', // primary-600 - page views from page_views table
   download: '#16a34a', // green
   form_submit: '#1d4ed8', // dark blue
-  page_view: '#0ea5e9', // primary-500
+  page_view: '#0ea5e9', // primary-500 - custom page_view events (rare)
   other: '#64748b', // slate
 }
 
 type ViewsByDay = { date: string; count: number }
-type EventsByDay = { date: string; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }
+type EventsByDay = { date: string; views?: number; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }
 
 export function PageViewsChart({ data }: { data: ViewsByDay[] }) {
   const chartData = data.map((d) => ({
@@ -93,7 +93,7 @@ export function EventsChart({ data }: { data: EventsByDay[] }) {
     dateLabel: new Date(d.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
   }))
 
-  const hasData = chartData.some((d) => (d.total ?? 0) > 0)
+  const hasData = chartData.some((d) => (d.total ?? 0) > 0 || (d.views ?? 0) > 0)
 
   return (
     <div className="h-[220px] w-full">
@@ -134,6 +134,15 @@ export function EventsChart({ data }: { data: EventsByDay[] }) {
           <Legend wrapperStyle={{ paddingTop: 8 }} iconType="square" iconSize={10} />
           {hasData && (
             <>
+              <Area
+                type="monotone"
+                dataKey="views"
+                name="Page views"
+                stackId="1"
+                fill={CHART_COLORS.views}
+                stroke={CHART_COLORS.views}
+                strokeWidth={1}
+              />
               <Area
                 type="monotone"
                 dataKey="download"

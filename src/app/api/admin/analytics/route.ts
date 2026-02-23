@@ -35,22 +35,28 @@ async function getUniqueVisitors(days: number): Promise<number> {
   }
 }
 
-async function getTopPages(days: number): Promise<{ path: string; count: number }[]> {
+async function getTopPages(days: number): Promise<{ path: string; count: number; displayPath: string }[]> {
   try {
     const dbUrl = process.env.DATABASE_URL
     if (!dbUrl) return []
     const postgres = (await import('postgres')).default
     const sql = postgres(dbUrl, { max: 1 })
     const rows = await sql`
-      SELECT path, COUNT(*)::int as count
+      SELECT 
+        COALESCE(NULLIF(TRIM(TRAILING '/' FROM COALESCE(path, '')), ''), '/') as path,
+        COUNT(*)::int as count
       FROM page_views
       WHERE created_at >= NOW() - (${String(days)} || ' days')::interval
-      GROUP BY path
+      GROUP BY COALESCE(NULLIF(TRIM(TRAILING '/' FROM COALESCE(path, '')), ''), '/')
       ORDER BY count DESC
-      LIMIT 10
+      LIMIT 20
     `
     await sql.end()
-    return rows as unknown as { path: string; count: number }[]
+    const result = (rows as unknown as { path: string; count: number }[]).map((r) => ({
+      ...r,
+      displayPath: r.path === '/' || !r.path ? 'Home' : r.path,
+    }))
+    return result
   } catch {
     return []
   }
@@ -242,15 +248,25 @@ export async function GET(request: NextRequest) {
       newsletterInRange = 0
     }
 
+    // Merge page views into events data so Events chart populates (page views are in page_views, not site_events)
+    const viewsByDate = new Map(viewsByDayResult.map((v) => [v.date.slice(0, 10), v.count]))
+    const eventsByDayWithViews = eventsByDayResult.map((r) => {
+      const dateKey = r.date.slice(0, 10)
+      const views = viewsByDate.get(dateKey) ?? 0
+      const customTotal = (r.download ?? 0) + (r.form_submit ?? 0) + (r.page_view ?? 0) + (r.other ?? 0)
+      return {
+        ...r,
+        views,
+        total: views + customTotal,
+      }
+    })
+
     return NextResponse.json({
       totalPageViews: pageViewsResult.totalDocs,
       uniqueVisitors: uniqueVisitorsResult,
       topPages: topPagesResult,
       viewsByDay: viewsByDayResult,
-      eventsByDay: eventsByDayResult.map((r) => ({
-        ...r,
-        total: (r.download ?? 0) + (r.form_submit ?? 0) + (r.page_view ?? 0) + (r.other ?? 0),
-      })),
+      eventsByDay: eventsByDayWithViews,
       recentEvents: recentEvents.docs,
       interactionCounts: {
         registrations: registrations.totalDocs,

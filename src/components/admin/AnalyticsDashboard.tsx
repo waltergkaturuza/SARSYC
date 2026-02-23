@@ -20,7 +20,7 @@ type TimeRange = '7d' | '14d' | '30d' | '3m' | '1y'
 type AnalyticsData = {
   totalPageViews: number
   uniqueVisitors: number
-  topPages: { path: string; count: number }[]
+  topPages: { path: string; count: number; displayPath?: string }[]
   viewsByDay: { date: string; count: number }[]
   eventsByDay: { date: string; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }[]
   recentEvents: { id: string; eventType: string; path?: string; createdAt: string }[]
@@ -208,8 +208,8 @@ export default function AnalyticsDashboard() {
                     className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0"
                   >
                     <span className="text-slate-400 text-xs w-4">{i + 1}</span>
-                    <code className="text-xs text-slate-700 truncate flex-1 mx-1">
-                      {p.path || '/'}
+                    <code className="text-xs text-slate-700 truncate flex-1 mx-1" title={p.path || '/'}>
+                      {p.displayPath ?? (p.path || 'Home')}
                     </code>
                     <span className="font-medium text-slate-900 text-sm">{p.count}</span>
                   </div>
