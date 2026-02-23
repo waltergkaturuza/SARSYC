@@ -263,7 +263,7 @@ export default function Footer() {
               })}
             </div>
 
-            {/* Legal Links */}
+            {/* Legal Links + Admin (low-key, like TNF site) */}
             <div className="flex items-center gap-4 text-sm">
               {footerLinks.legal.slice(0, 2).map((link) => (
                 <Link
@@ -274,6 +274,13 @@ export default function Footer() {
                   {link.name}
                 </Link>
               ))}
+              <Link
+                href="/login"
+                className="text-gray-500 hover:text-gray-400 transition-colors duration-200"
+                aria-label="Admin login"
+              >
+                Admin
+              </Link>
             </div>
           </div>
           

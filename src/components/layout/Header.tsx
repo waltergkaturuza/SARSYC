@@ -150,11 +150,8 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Buttons - Right side */}
+          {/* CTA Buttons - Right side (Login moved to footer for reduced visibility) */}
           <div className="hidden lg:flex lg:items-center lg:gap-3 lg:flex-shrink-0">
-            <Link href="/login" className="text-sm xl:text-base font-bold text-gray-700 hover:text-primary-600 transition-colors whitespace-nowrap">
-              Login
-            </Link>
             <Link href="/participate/register" className="btn-primary font-bold text-sm xl:text-base px-4 xl:px-6 py-2 xl:py-3 whitespace-nowrap">
               Register Now
             </Link>
@@ -209,13 +206,6 @@ export default function Header() {
                 ))}
               </div>
               <div className="mt-4 px-4 space-y-3 pb-8">
-                <Link
-                  href="/login"
-                  className="block text-center text-base font-bold text-gray-700 hover:text-primary-600 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
                 <Link
                   href="/participate/register"
                   className="btn-primary w-full justify-center font-bold text-base"
