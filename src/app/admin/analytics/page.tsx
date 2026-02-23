@@ -8,10 +8,11 @@ import {
   FiFileText,
   FiActivity,
   FiEye,
-  FiCalendar,
   FiDownload,
   FiInbox,
+  FiSettings,
 } from 'react-icons/fi'
+import { PageViewsChart, EventsChart } from '@/components/admin/AnalyticsCharts'
 
 export const revalidate = 0
 
@@ -23,6 +24,7 @@ async function getAnalyticsData() {
     uniqueVisitorsResult,
     topPagesResult,
     viewsByDayResult,
+    eventsByDayResult,
     recentEvents,
     registrations,
     abstracts,
@@ -33,6 +35,7 @@ async function getAnalyticsData() {
     getUniqueVisitors(),
     getTopPages(),
     getViewsByDay(),
+    getEventsByDay(),
     payload
       .find({
         collection: 'site-events',
@@ -51,6 +54,7 @@ async function getAnalyticsData() {
     uniqueVisitors: uniqueVisitorsResult,
     topPages: topPagesResult,
     viewsByDay: viewsByDayResult,
+    eventsByDay: eventsByDayResult,
     recentEvents: recentEvents.docs,
     interactionCounts: {
       registrations: registrations.totalDocs,
@@ -114,7 +118,77 @@ async function getViewsByDay(): Promise<{ date: string; count: number }[]> {
       ORDER BY date ASC
     `
     await sql.end()
-    return rows as unknown as { date: string; count: number }[]
+    const byDate = new Map<string, number>()
+    const start = new Date()
+    start.setDate(start.getDate() - 13)
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(start)
+      d.setDate(d.getDate() + i)
+      byDate.set(d.toISOString().slice(0, 10), 0)
+    }
+    for (const r of rows as unknown as { date: string; count: number }[]) {
+      byDate.set(r.date, r.count)
+    }
+    return Array.from(byDate.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, count]) => ({ date, count }))
+  } catch {
+    return []
+  }
+}
+
+type EventsByDay = { date: string; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }
+
+async function getEventsByDay(): Promise<EventsByDay[]> {
+  try {
+    const dbUrl = process.env.DATABASE_URL
+    if (!dbUrl) return []
+    const postgres = (await import('postgres')).default
+    const sql = postgres(dbUrl, { max: 1 })
+    const rows = await sql`
+      SELECT 
+        DATE(created_at)::text as date,
+        COALESCE(SUM(CASE WHEN event_type = 'download' THEN 1 ELSE 0 END), 0)::int as download,
+        COALESCE(SUM(CASE WHEN event_type = 'form_submit' THEN 1 ELSE 0 END), 0)::int as form_submit,
+        COALESCE(SUM(CASE WHEN event_type = 'page_view' THEN 1 ELSE 0 END), 0)::int as page_view,
+        COALESCE(SUM(CASE WHEN event_type NOT IN ('download','form_submit','page_view') THEN 1 ELSE 0 END), 0)::int as other
+      FROM site_events
+      WHERE created_at >= NOW() - INTERVAL '14 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `
+    await sql.end()
+    const byDate = new Map<string, EventsByDay>()
+    const start = new Date()
+    start.setDate(start.getDate() - 13)
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(start)
+      d.setDate(d.getDate() + i)
+      const dateStr = d.toISOString().slice(0, 10)
+      byDate.set(dateStr, {
+        date: dateStr,
+        download: 0,
+        form_submit: 0,
+        page_view: 0,
+        other: 0,
+        total: 0,
+      })
+    }
+    for (const r of rows as unknown as EventsByDay[]) {
+      const existing = byDate.get(r.date)
+      if (existing) {
+        existing.download = r.download ?? 0
+        existing.form_submit = r.form_submit ?? 0
+        existing.page_view = r.page_view ?? 0
+        existing.other = r.other ?? 0
+        existing.total =
+          (existing.download ?? 0) +
+          (existing.form_submit ?? 0) +
+          (existing.page_view ?? 0) +
+          (existing.other ?? 0)
+      }
+    }
+    return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date))
   } catch {
     return []
   }
@@ -135,6 +209,7 @@ export default async function AdminAnalyticsPage() {
       uniqueVisitors: 0,
       topPages: [],
       viewsByDay: [],
+      eventsByDay: [],
       recentEvents: [],
       interactionCounts: {
         registrations: 0,
@@ -145,203 +220,195 @@ export default async function AdminAnalyticsPage() {
     }
   }
 
-  const maxViews = Math.max(...data.viewsByDay.map((d) => d.count), 1)
+  const viewsToday =
+    data.viewsByDay.length > 0 ? data.viewsByDay[data.viewsByDay.length - 1]?.count ?? 0 : 0
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-        <p className="text-gray-600 mt-1">
-          Site visitors and interactions
-        </p>
+    <div className="min-h-screen bg-slate-50/80">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-slate-900">Analytics</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Site visitors and interactions</p>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <FiEye className="w-8 h-8 text-primary-600" />
+      {/* Neon-style grid: 3 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Settings card - informational */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-3 flex items-center gap-2">
+            <FiSettings className="w-4 h-4 text-slate-500" />
+            Tracking settings
+          </h3>
+          <div className="space-y-2 text-sm text-slate-600">
+            <p>Window: Last 14 days</p>
+            <p>Unique visitors: 30 days</p>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{data.totalPageViews.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">Total page views</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <FiUsers className="w-8 h-8 text-green-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{data.uniqueVisitors.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">Unique visitors (30 days)</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <FiActivity className="w-8 h-8 text-purple-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{data.recentEvents.length}</div>
-          <div className="text-sm text-gray-600">Recent events</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <FiTrendingUp className="w-8 h-8 text-blue-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">
-            {data.viewsByDay.length > 0
-              ? data.viewsByDay[data.viewsByDay.length - 1]?.count ?? 0
-              : 0}
-          </div>
-          <div className="text-sm text-gray-600">Views today</div>
-        </div>
-      </div>
 
-      {/* Interaction counts */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Key interactions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link
-            href="/admin/registrations"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200"
-          >
-            <FiUsers className="w-6 h-6 text-blue-600" />
-            <div>
-              <div className="font-bold text-gray-900">{data.interactionCounts.registrations}</div>
-              <div className="text-xs text-gray-500">Registrations</div>
-            </div>
-          </Link>
-          <Link
-            href="/admin/abstracts"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200"
-          >
-            <FiFileText className="w-6 h-6 text-green-600" />
-            <div>
-              <div className="font-bold text-gray-900">{data.interactionCounts.abstracts}</div>
-              <div className="text-xs text-gray-500">Abstracts</div>
-            </div>
-          </Link>
-          <Link
-            href="/admin/volunteers"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200"
-          >
-            <FiActivity className="w-6 h-6 text-purple-600" />
-            <div>
-              <div className="font-bold text-gray-900">{data.interactionCounts.volunteers}</div>
-              <div className="text-xs text-gray-500">Volunteers</div>
-            </div>
-          </Link>
-          <Link
-            href="/admin/contact-messages"
-            className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200"
-          >
-            <FiInbox className="w-6 h-6 text-orange-600" />
-            <div>
-              <div className="font-bold text-gray-900">{data.interactionCounts.contactMessages}</div>
-              <div className="text-xs text-gray-500">Contact form</div>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Page views over time */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Page views (last 14 days)</h2>
+        {/* Page views - line chart */}
+        <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-1">Page views</h3>
+          <p className="text-xs text-slate-500 mb-4 uppercase tracking-wide">Count</p>
           {data.viewsByDay.length > 0 ? (
-            <div className="space-y-2">
-              {data.viewsByDay.map((d) => (
-                <div key={d.date} className="flex items-center gap-3">
-                  <div className="w-24 text-sm text-gray-600 shrink-0">
-                    {new Date(d.date).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </div>
-                  <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
-                    <div
-                      className="h-full bg-primary-600 rounded min-w-[2px]"
-                      style={{
-                        width: `${Math.max((d.count / maxViews) * 100, 2)}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 w-10">{d.count}</span>
-                </div>
-              ))}
-            </div>
+            <PageViewsChart data={data.viewsByDay} />
           ) : (
-            <p className="text-gray-500 text-sm py-8 text-center">
-              No page view data yet. Data will appear as visitors browse the site.
-            </p>
+            <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+              No data yet. Visitors will appear as they browse.
+            </div>
+          )}
+        </div>
+
+        {/* Unique visitors - metric card */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-1">Unique visitors</h3>
+          <p className="text-xs text-slate-500 mb-2 uppercase tracking-wide">30 days</p>
+          <div className="text-3xl font-semibold text-slate-900">
+            {data.uniqueVisitors.toLocaleString()}
+          </div>
+        </div>
+
+        {/* Total page views */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-1">Total page views</h3>
+          <p className="text-xs text-slate-500 mb-2 uppercase tracking-wide">All time</p>
+          <div className="text-3xl font-semibold text-slate-900">
+            {data.totalPageViews.toLocaleString()}
+          </div>
+        </div>
+
+        {/* Views today */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-1">Views today</h3>
+          <p className="text-xs text-slate-500 mb-2 uppercase tracking-wide">Count</p>
+          <div className="text-3xl font-semibold text-slate-900">{viewsToday}</div>
+        </div>
+
+        {/* Events by type - stacked area */}
+        <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-1">Events</h3>
+          <p className="text-xs text-slate-500 mb-4 uppercase tracking-wide">By type (last 14 days)</p>
+          {data.eventsByDay.length > 0 ? (
+            <EventsChart data={data.eventsByDay} />
+          ) : (
+            <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+              No events yet. Downloads and form submissions will appear here.
+            </div>
           )}
         </div>
 
         {/* Top pages */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Top pages (30 days)</h2>
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-4">Top pages</h3>
+          <p className="text-xs text-slate-500 mb-3 uppercase tracking-wide">30 days</p>
           {data.topPages.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[220px] overflow-y-auto">
               {data.topPages.map((p, i) => (
                 <div
                   key={p.path}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                  className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400 text-sm w-5">{i + 1}</span>
-                    <code className="text-sm text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
-                      {p.path || '/'}
-                    </code>
-                  </div>
-                  <span className="font-medium text-gray-900">{p.count}</span>
+                  <span className="text-slate-400 text-xs w-4">{i + 1}</span>
+                  <code className="text-xs text-slate-700 truncate flex-1 mx-1">
+                    {p.path || '/'}
+                  </code>
+                  <span className="font-medium text-slate-900 text-sm">{p.count}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm py-8 text-center">
-              No top pages data yet.
+            <p className="text-slate-400 text-sm py-8">No data yet.</p>
+          )}
+        </div>
+
+        {/* Key interactions - links */}
+        <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-4">Key interactions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link
+              href="/admin/registrations"
+              className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <FiUsers className="w-5 h-5 text-blue-600" />
+              <div>
+                <div className="font-semibold text-slate-900">{data.interactionCounts.registrations}</div>
+                <div className="text-xs text-slate-500">Registrations</div>
+              </div>
+            </Link>
+            <Link
+              href="/admin/abstracts"
+              className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <FiFileText className="w-5 h-5 text-green-600" />
+              <div>
+                <div className="font-semibold text-slate-900">{data.interactionCounts.abstracts}</div>
+                <div className="text-xs text-slate-500">Abstracts</div>
+              </div>
+            </Link>
+            <Link
+              href="/admin/volunteers"
+              className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <FiActivity className="w-5 h-5 text-purple-600" />
+              <div>
+                <div className="font-semibold text-slate-900">{data.interactionCounts.volunteers}</div>
+                <div className="text-xs text-slate-500">Volunteers</div>
+              </div>
+            </Link>
+            <Link
+              href="/admin/contact-messages"
+              className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <FiInbox className="w-5 h-5 text-orange-600" />
+              <div>
+                <div className="font-semibold text-slate-900">{data.interactionCounts.contactMessages}</div>
+                <div className="text-xs text-slate-500">Contact form</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent events table */}
+        <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+          <h3 className="text-sm font-medium text-slate-900 mb-4">Recent events</h3>
+          {data.recentEvents.length > 0 ? (
+            <div className="overflow-x-auto -mx-5 px-5">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead>
+                  <tr>
+                    <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Event
+                    </th>
+                    <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Path
+                    </th>
+                    <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Time
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.recentEvents.map((ev: any) => (
+                    <tr key={ev.id}>
+                      <td className="py-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                          {ev.eventType}
+                        </span>
+                      </td>
+                      <td className="py-2 text-sm text-slate-600">{ev.path || '—'}</td>
+                      <td className="py-2 text-sm text-slate-500">
+                        {new Date(ev.createdAt).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-slate-400 text-sm py-8 text-center">
+              No custom events yet. Use <code className="bg-slate-100 px-1 rounded">trackEvent()</code>{' '}
+              in forms and downloads to record interactions.
             </p>
           )}
         </div>
-      </div>
-
-      {/* Recent events */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Recent events</h2>
-        {data.recentEvents.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                    Event
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                    Path
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                    Time
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {data.recentEvents.map((ev: any) => (
-                  <tr key={ev.id}>
-                    <td className="px-4 py-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        {ev.eventType}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">{ev.path || '—'}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">
-                      {new Date(ev.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500 text-sm py-8 text-center">
-            No custom events yet. Use <code className="bg-gray-100 px-1 rounded">trackEvent()</code> in
-            forms and downloads to record interactions.
-          </p>
-        )}
       </div>
     </div>
   )
