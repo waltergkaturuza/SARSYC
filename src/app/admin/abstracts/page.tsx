@@ -15,6 +15,7 @@ interface SearchParams {
   page?: string
   status?: string
   track?: string
+  country?: string
   search?: string
   tab?: string
 }
@@ -48,6 +49,7 @@ export default async function AbstractsManagementPage({
   const perPage = 25
   const status = searchParams.status
   const track = searchParams.track
+  const country = searchParams.country
   const search = searchParams.search
 
   // Build where clause
@@ -59,6 +61,10 @@ export default async function AbstractsManagementPage({
   
   if (track && track !== 'all') {
     where.track = { equals: track }
+  }
+  
+  if (country && country !== 'all') {
+    where['primaryAuthor.country'] = { equals: country }
   }
   
   if (search) {
@@ -331,7 +337,7 @@ export default async function AbstractsManagementPage({
               <div className="flex gap-2">
                 {page > 1 && (
                   <Link
-                    href={`/admin/abstracts?page=${page - 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
+                    href={`/admin/abstracts?page=${page - 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}${country ? `&country=${country}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
                     className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Previous
@@ -339,7 +345,7 @@ export default async function AbstractsManagementPage({
                 )}
                 {page < totalPages && (
                   <Link
-                    href={`/admin/abstracts?page=${page + 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}`}
+                    href={`/admin/abstracts?page=${page + 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}${country ? `&country=${country}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
                     className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Next
