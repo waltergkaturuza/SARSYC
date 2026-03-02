@@ -143,50 +143,8 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
 
     setLoading(true)
     try {
-      // CLIENT-SIDE DIRECT UPLOAD: Upload photo directly to blob storage
-      let photoBlobUrl: string | null = null
-      if (formData.photo instanceof File) {
-        try {
-          console.log('📤 Uploading speaker photo directly to blob storage...', {
-            name: formData.photo.name,
-            size: formData.photo.size,
-            type: formData.photo.type,
-          })
-
-          // Build pathname for organized storage
-          const nameHash = formData.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, '-')
-            .replace(/-+/g, '-')
-            .substring(0, 50)
-          const fileExt = formData.photo.name.split('.').pop()?.toLowerCase() || 'jpg'
-          const pathname = `Speakers/photos/${nameHash}.${fileExt}`
-
-          // Use Vercel Blob client-side upload with presigned URL
-          const { upload } = await import('@vercel/blob/client')
-          
-          const blob = await upload(pathname, formData.photo, {
-            access: 'public',
-            handleUploadUrl: '/api/upload/speaker-photo/presigned-url',
-            clientPayload: JSON.stringify({
-              addRandomSuffix: true,
-            }),
-          })
-
-          photoBlobUrl = blob.url
-          console.log('✅ Speaker photo uploaded directly to Vercel Blob:', photoBlobUrl)
-        } catch (uploadError: any) {
-          console.error('❌ Photo upload error:', uploadError)
-          setErrors({ photo: uploadError.message || 'Failed to upload photo. Please try again.' })
-          setLoading(false)
-          return
-        }
-      } else if (typeof formData.photo === 'string' && formData.photo) {
-        // If it's already a URL (from edit mode), use it directly
-        photoBlobUrl = formData.photo
-      }
-
-      // Now submit the form data with the photo URL instead of the file
+      // Submit speaker data and let server persist media properly.
+      // This avoids creating URL-only media records that Payload can reject.
       const submitData = new FormData()
       submitData.append('name', formData.name)
       submitData.append('email', formData.email)
@@ -199,9 +157,12 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
-      // Send photo URL instead of file
-      if (photoBlobUrl) {
-        submitData.append('photoUrl', photoBlobUrl)
+      // Prefer file upload for create/update when a new file is selected
+      if (formData.photo instanceof File) {
+        submitData.append('photoFile', formData.photo)
+      } else if (typeof formData.photo === 'string' && formData.photo) {
+        // Keep existing photo URL on edit when no new file selected
+        submitData.append('photoUrl', formData.photo)
       }
       
       if (formData.sessions && formData.sessions.length > 0) {

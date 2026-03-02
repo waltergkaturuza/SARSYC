@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
-    const photoUrl = formData.get('photoUrl') as string | null // Photo URL from client-side upload
+    const photoUrl = formData.get('photoUrl') as string | null // Existing URL fallback
+    const photoFile = formData.get('photoFile') as File | null
     
     // Debug: Log all form data keys
     console.log('Form data keys:', Array.from(formData.keys()))
@@ -52,44 +53,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Photo URL is required - validate it's provided
-    if (!photoUrl || !photoUrl.startsWith('https://')) {
+    // A photo is required on create (either direct file or URL fallback)
+    if ((!photoFile || photoFile.size === 0) && (!photoUrl || !photoUrl.startsWith('https://'))) {
       return NextResponse.json(
         { error: 'Professional photo is required. Please upload a photo.' },
         { status: 400 }
       )
     }
 
-    // Create media record with the blob URL
+    // Create media record with a real file (preferred), with URL fallback.
     let photoId: string | undefined
     try {
-      console.log('Creating media record with blob URL...', photoUrl)
-      
-      // Extract filename from URL for better metadata
-      const urlPath = new URL(photoUrl).pathname
-      const filename = urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`
-      
-      // Decode URL-encoded filename
-      const decodedFilename = decodeURIComponent(filename)
-      
-      // Determine MIME type from filename
-      const mimeType = decodedFilename.toLowerCase().endsWith('.png') ? 'image/png' :
-                      decodedFilename.toLowerCase().endsWith('.gif') ? 'image/gif' :
-                      decodedFilename.toLowerCase().endsWith('.webp') ? 'image/webp' :
-                      'image/jpeg' // Default to JPEG
-      
+      let fileForUpload: File | null = photoFile && photoFile.size > 0 ? photoFile : null
+      if (!fileForUpload && photoUrl?.startsWith('https://')) {
+        // Fallback for edit mode when only URL is sent.
+        const fetched = await fetch(photoUrl)
+        if (!fetched.ok) {
+          throw new Error(`Could not fetch existing photo URL (${fetched.status})`)
+        }
+        const blob = await fetched.blob()
+        const urlPath = new URL(photoUrl).pathname
+        const filename = decodeURIComponent(urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`)
+        fileForUpload = new File([blob], filename, { type: blob.type || 'image/jpeg' })
+      }
+
+      if (!fileForUpload) {
+        throw new Error('No photo file available for media upload')
+      }
+
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
-          url: photoUrl, // Set the URL directly (for Vercel Blob)
-          // DON'T set filename for external URLs - it causes Payload to generate /api/media/file/ paths
-          // filename: decodedFilename,
-          mimeType: mimeType,
-          // Note: filesize, width, height will be set by Payload if it can process the image
-          // For external URLs, these may remain null, which is fine
         },
-        overrideAccess: true, // Allow admin uploads
+        file: fileForUpload,
+        overrideAccess: true,
       })
       
       console.log('Media record created:', {
