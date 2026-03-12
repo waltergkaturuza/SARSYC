@@ -269,15 +269,6 @@ export default async function AbstractsManagementPage({
                       Author
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Age
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Gender
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Institution
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Track
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -303,37 +294,33 @@ export default async function AbstractsManagementPage({
                           <div className="text-sm text-gray-500">{abstract.submissionId}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm font-medium text-gray-900">
                             {abstract.primaryAuthor?.firstName} {abstract.primaryAuthor?.lastName}
                           </div>
                           <div className="text-xs text-gray-500">{abstract.primaryAuthor?.email}</div>
                           <div className="text-xs text-gray-400">{abstract.primaryAuthor?.country}</div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
-                          {abstract.primaryAuthor?.age ?? '—'}
-                        </td>
-                        <td className="px-6 py-4">
-                          {abstract.primaryAuthor?.gender ? (
-                            <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
-                              abstract.primaryAuthor.gender === 'female'
-                                ? 'bg-pink-100 text-pink-700'
-                                : abstract.primaryAuthor.gender === 'male'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}>
-                              {{
-                                female: 'Female',
-                                male: 'Male',
-                                'non-binary': 'Non-binary',
-                                'prefer-not-to-say': 'Undisclosed',
-                              }[abstract.primaryAuthor.gender as string] ?? abstract.primaryAuthor.gender}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
+                          {/* Age & Gender on one line */}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {abstract.primaryAuthor?.age != null && (
+                              <span className="text-xs text-gray-500">Age {abstract.primaryAuthor.age}</span>
+                            )}
+                            {abstract.primaryAuthor?.gender && (
+                              <span className={`inline-block px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                                abstract.primaryAuthor.gender === 'female'
+                                  ? 'bg-pink-100 text-pink-700'
+                                  : abstract.primaryAuthor.gender === 'male'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              }`}>
+                                {({'female':'Female','male':'Male','non-binary':'Non-binary','prefer-not-to-say':'Undisclosed'} as Record<string,string>)[abstract.primaryAuthor.gender] ?? abstract.primaryAuthor.gender}
+                              </span>
+                            )}
+                          </div>
+                          {abstract.primaryAuthor?.institution && (
+                            <div className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]" title={abstract.primaryAuthor.institution}>
+                              {abstract.primaryAuthor.institution}
+                            </div>
                           )}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 max-w-[160px] truncate" title={abstract.primaryAuthor?.institution}>
-                          {abstract.primaryAuthor?.institution || <span className="text-gray-400">—</span>}
                         </td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
