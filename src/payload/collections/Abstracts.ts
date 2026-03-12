@@ -190,10 +190,10 @@ const Abstracts: CollectionConfig = {
               type: 'number',
               required: true,
               label: 'Age',
-              min: 10,
+              min: 18,
               max: 35,
               admin: {
-                description: 'SARSYC focuses on young people aged 10–35',
+                description: 'SARSYC focuses on young people aged 18–35',
               },
             },
             {

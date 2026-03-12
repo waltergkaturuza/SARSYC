@@ -38,8 +38,8 @@ const abstractSchema = z.object({
     country: z.string().min(2),
     age: z.coerce.number({ required_error: 'Age is required', invalid_type_error: 'Please enter a valid age' })
       .int()
-      .min(10, 'Age must be at least 10')
-      .max(35, 'SARSYC targets young people aged 10–35'),
+      .min(18, 'Age must be at least 18')
+      .max(35, 'SARSYC targets young people aged 18–35'),
     gender: z.enum(['male', 'female', 'non-binary', 'prefer-not-to-say'], {
       required_error: 'Please select your gender',
     }),
@@ -597,14 +597,14 @@ export default function SubmitAbstractPage() {
                       <input
                         {...register('primaryAuthor.age')}
                         type="number"
-                        min={10}
+                        min={18}
                         max={35}
                         className={`w-full px-4 py-3 rounded-lg border ${
                           errors.primaryAuthor?.age ? 'border-red-500' : 'border-gray-300'
                         } focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="e.g. 24"
                       />
-                      <p className="mt-1 text-xs text-gray-500">SARSYC targets young people aged 10–35</p>
+                      <p className="mt-1 text-xs text-gray-500">SARSYC targets young people aged 18–35</p>
                       {errors.primaryAuthor?.age && (
                         <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.age.message}</p>
                       )}
