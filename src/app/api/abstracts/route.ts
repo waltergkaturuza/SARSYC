@@ -73,7 +73,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate primaryAuthor structure
-    if (!body.primaryAuthor.firstName || !body.primaryAuthor.lastName || !body.primaryAuthor.email || !body.primaryAuthor.organization || !body.primaryAuthor.country) {
+    if (
+      !body.primaryAuthor.firstName || !body.primaryAuthor.lastName ||
+      !body.primaryAuthor.email || !body.primaryAuthor.organization ||
+      !body.primaryAuthor.country || !body.primaryAuthor.gender ||
+      !body.primaryAuthor.institution || body.primaryAuthor.age == null
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -84,6 +89,9 @@ export async function POST(request: NextRequest) {
             email: !body.primaryAuthor.email,
             organization: !body.primaryAuthor.organization,
             country: !body.primaryAuthor.country,
+            age: body.primaryAuthor.age == null,
+            gender: !body.primaryAuthor.gender,
+            institution: !body.primaryAuthor.institution,
           },
         },
         { status: 400 }
@@ -104,6 +112,9 @@ export async function POST(request: NextRequest) {
         phone: body.primaryAuthor.phone?.trim() || undefined,
         organization: body.primaryAuthor.organization.trim(),
         country: body.primaryAuthor.country.trim(),
+        age: Number(body.primaryAuthor.age),
+        gender: body.primaryAuthor.gender,
+        institution: body.primaryAuthor.institution.trim(),
       },
       presentationType: body.presentationType,
       // Don't set status explicitly - let Payload use the defaultValue: 'received'

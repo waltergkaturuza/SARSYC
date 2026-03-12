@@ -36,6 +36,14 @@ const abstractSchema = z.object({
     phone: z.string().optional(),
     organization: z.string().min(2),
     country: z.string().min(2),
+    age: z.coerce.number({ required_error: 'Age is required', invalid_type_error: 'Please enter a valid age' })
+      .int()
+      .min(10, 'Age must be at least 10')
+      .max(35, 'SARSYC targets young people aged 10–35'),
+    gender: z.enum(['male', 'female', 'non-binary', 'prefer-not-to-say'], {
+      required_error: 'Please select your gender',
+    }),
+    institution: z.string().min(2, 'Please enter your university or tertiary institution'),
   }),
   coAuthors: z.array(z.object({
     name: z.string().min(2, 'Name is required'),
@@ -199,7 +207,11 @@ export default function SubmitAbstractPage() {
     if (currentStep === 1) {
       fieldsToValidate = ['title', 'abstract', 'keywords', 'track', 'presentationType']
     } else if (currentStep === 2) {
-      fieldsToValidate = ['primaryAuthor']
+      fieldsToValidate = [
+        'primaryAuthor.firstName', 'primaryAuthor.lastName', 'primaryAuthor.email',
+        'primaryAuthor.organization', 'primaryAuthor.country',
+        'primaryAuthor.age', 'primaryAuthor.gender', 'primaryAuthor.institution',
+      ]
     } else if (currentStep === 3) {
       // Co-authors step - no validation needed as it's optional
     }
@@ -576,6 +588,67 @@ export default function SubmitAbstractPage() {
                       <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.country.message}</p>
                     )}
                   </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Age *
+                      </label>
+                      <input
+                        {...register('primaryAuthor.age')}
+                        type="number"
+                        min={10}
+                        max={35}
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.primaryAuthor?.age ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        placeholder="e.g. 24"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">SARSYC targets young people aged 10–35</p>
+                      {errors.primaryAuthor?.age && (
+                        <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.age.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Gender *
+                      </label>
+                      <select
+                        {...register('primaryAuthor.gender')}
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          errors.primaryAuthor?.gender ? 'border-red-500' : 'border-gray-300'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="non-binary">Non-binary / Gender diverse</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                      </select>
+                      {errors.primaryAuthor?.gender && (
+                        <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      University / Tertiary Institution *
+                    </label>
+                    <input
+                      {...register('primaryAuthor.institution')}
+                      type="text"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.primaryAuthor?.institution ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      placeholder="e.g. University of Zimbabwe"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Name of your college, university, or tertiary institution</p>
+                    {errors.primaryAuthor?.institution && (
+                      <p className="mt-1 text-sm text-red-600">{errors.primaryAuthor.institution.message}</p>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -766,6 +839,19 @@ export default function SubmitAbstractPage() {
                         <p className="text-gray-600">
                           {countries.find(c => c.value === formData.primaryAuthor?.country)?.label || formData.primaryAuthor?.country}
                         </p>
+                        {formData.primaryAuthor?.age && (
+                          <p className="text-gray-600">Age: {formData.primaryAuthor.age}</p>
+                        )}
+                        {formData.primaryAuthor?.gender && (
+                          <p className="text-gray-600">
+                            Gender: {
+                              { male: 'Male', female: 'Female', 'non-binary': 'Non-binary / Gender diverse', 'prefer-not-to-say': 'Prefer not to say' }[formData.primaryAuthor.gender] ?? formData.primaryAuthor.gender
+                            }
+                          </p>
+                        )}
+                        {formData.primaryAuthor?.institution && (
+                          <p className="text-gray-600">Institution: {formData.primaryAuthor.institution}</p>
+                        )}
                       </div>
                     </div>
 

@@ -182,6 +182,43 @@ const Abstracts: CollectionConfig = {
             },
           ],
         },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'age',
+              type: 'number',
+              required: true,
+              label: 'Age',
+              min: 10,
+              max: 35,
+              admin: {
+                description: 'SARSYC focuses on young people aged 10–35',
+              },
+            },
+            {
+              name: 'gender',
+              type: 'select',
+              required: true,
+              label: 'Gender',
+              options: [
+                { label: 'Male', value: 'male' },
+                { label: 'Female', value: 'female' },
+                { label: 'Non-binary / Gender diverse', value: 'non-binary' },
+                { label: 'Prefer not to say', value: 'prefer-not-to-say' },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'institution',
+          type: 'text',
+          required: true,
+          label: 'University / Tertiary Institution',
+          admin: {
+            description: 'Name of your college, university, or other tertiary institution',
+          },
+        },
       ],
     },
     {
