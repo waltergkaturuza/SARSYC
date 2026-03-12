@@ -16,6 +16,9 @@ interface SearchParams {
   status?: string
   track?: string
   country?: string
+  gender?: string
+  ageGroup?: string
+  institution?: string
   search?: string
   tab?: string
 }
@@ -50,23 +53,39 @@ export default async function AbstractsManagementPage({
   const status = searchParams.status
   const track = searchParams.track
   const country = searchParams.country
+  const gender = searchParams.gender
+  const ageGroup = searchParams.ageGroup
+  const institution = searchParams.institution
   const search = searchParams.search
 
   // Build where clause
   const where: any = {}
-  
+
   if (status && status !== 'all') {
     where.status = { equals: status }
   }
-  
+
   if (track && track !== 'all') {
     where.track = { equals: track }
   }
-  
+
   if (country && country !== 'all') {
     where['primaryAuthor.country'] = { equals: country }
   }
-  
+
+  if (gender && gender !== 'all') {
+    where['primaryAuthor.gender'] = { equals: gender }
+  }
+
+  if (ageGroup && ageGroup !== 'all') {
+    const [minAge, maxAge] = ageGroup.split('-').map(Number)
+    where['primaryAuthor.age'] = { greater_than_equal: minAge, less_than_equal: maxAge }
+  }
+
+  if (institution) {
+    where['primaryAuthor.institution'] = { contains: institution }
+  }
+
   if (search) {
     where.or = [
       { title: { contains: search } },
@@ -250,6 +269,15 @@ export default async function AbstractsManagementPage({
                       Author
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Age
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Gender
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Institution
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Track
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -279,6 +307,33 @@ export default async function AbstractsManagementPage({
                             {abstract.primaryAuthor?.firstName} {abstract.primaryAuthor?.lastName}
                           </div>
                           <div className="text-xs text-gray-500">{abstract.primaryAuthor?.email}</div>
+                          <div className="text-xs text-gray-400">{abstract.primaryAuthor?.country}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                          {abstract.primaryAuthor?.age ?? '—'}
+                        </td>
+                        <td className="px-6 py-4">
+                          {abstract.primaryAuthor?.gender ? (
+                            <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
+                              abstract.primaryAuthor.gender === 'female'
+                                ? 'bg-pink-100 text-pink-700'
+                                : abstract.primaryAuthor.gender === 'male'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}>
+                              {{
+                                female: 'Female',
+                                male: 'Male',
+                                'non-binary': 'Non-binary',
+                                'prefer-not-to-say': 'Undisclosed',
+                              }[abstract.primaryAuthor.gender as string] ?? abstract.primaryAuthor.gender}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-[160px] truncate" title={abstract.primaryAuthor?.institution}>
+                          {abstract.primaryAuthor?.institution || <span className="text-gray-400">—</span>}
                         </td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
@@ -335,22 +390,37 @@ export default async function AbstractsManagementPage({
                 Page {page} of {totalPages}
               </div>
               <div className="flex gap-2">
-                {page > 1 && (
-                  <Link
-                    href={`/admin/abstracts?page=${page - 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}${country ? `&country=${country}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Previous
-                  </Link>
-                )}
-                {page < totalPages && (
-                  <Link
-                    href={`/admin/abstracts?page=${page + 1}${status ? `&status=${status}` : ''}${track ? `&track=${track}` : ''}${country ? `&country=${country}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                  >
-                    Next
-                  </Link>
-                )}
+                {(() => {
+                  const base = [
+                    status ? `status=${status}` : '',
+                    track ? `track=${track}` : '',
+                    country ? `country=${country}` : '',
+                    gender ? `gender=${gender}` : '',
+                    ageGroup ? `ageGroup=${ageGroup}` : '',
+                    institution ? `institution=${encodeURIComponent(institution)}` : '',
+                    search ? `search=${encodeURIComponent(search)}` : '',
+                  ].filter(Boolean).join('&')
+                  return (
+                    <>
+                      {page > 1 && (
+                        <Link
+                          href={`/admin/abstracts?page=${page - 1}${base ? `&${base}` : ''}`}
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          Previous
+                        </Link>
+                      )}
+                      {page < totalPages && (
+                        <Link
+                          href={`/admin/abstracts?page=${page + 1}${base ? `&${base}` : ''}`}
+                          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                        >
+                          Next
+                        </Link>
+                      )}
+                    </>
+                  )
+                })()}
               </div>
             </div>
           )}
