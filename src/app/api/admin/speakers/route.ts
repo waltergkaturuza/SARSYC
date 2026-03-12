@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { put } from '@vercel/blob'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -61,12 +62,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create media record with a real file (preferred), with URL fallback.
+    // Create media record: upload to Vercel Blob, then create media with URL only.
+    // This bypasses Payload/Sharp file processing which fails with "Expected Uint8Array or ArrayBuffer".
     let photoId: string | undefined
     try {
       let fileForUpload: File | null = photoFile && photoFile.size > 0 ? photoFile : null
       if (!fileForUpload && photoUrl?.startsWith('https://')) {
-        // Fallback for edit mode when only URL is sent.
         const fetched = await fetch(photoUrl)
         if (!fetched.ok) {
           throw new Error(`Could not fetch existing photo URL (${fetched.status})`)
@@ -81,12 +82,32 @@ export async function POST(request: NextRequest) {
         throw new Error('No photo file available for media upload')
       }
 
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+      if (!blobToken) {
+        throw new Error('Blob storage not configured')
+      }
+
+      const nameHash = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 50)
+      const fileExt = fileForUpload.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const filename = `Speakers/photos/${nameHash}.${fileExt}`
+
+      const blob = await put(filename, fileForUpload, {
+        access: 'public',
+        token: blobToken,
+      })
+
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
+          url: blob.url,
+          filename: blob.pathname?.split('/').pop() || fileForUpload.name,
+          mimeType: fileForUpload.type || 'image/jpeg',
         },
-        file: fileForUpload,
         overrideAccess: true,
       })
       

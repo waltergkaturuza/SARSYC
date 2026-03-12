@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { put } from '@vercel/blob'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -44,7 +45,8 @@ export async function PATCH(
     const photoUrl = formData.get('photoUrl') as string | null // Existing URL fallback
     const photoFile = formData.get('photoFile') as File | null
     
-    // Create media record with file if provided (or URL fallback for existing image)
+    // Create media record: upload to Vercel Blob, then create media with URL only.
+    // Bypasses Payload/Sharp file processing (avoids "Expected Uint8Array or ArrayBuffer").
     let photoId: string | undefined
     if ((photoFile && photoFile.size > 0) || (photoUrl && photoUrl.startsWith('https://'))) {
       try {
@@ -54,22 +56,42 @@ export async function PATCH(
           if (!fetched.ok) {
             throw new Error(`Could not fetch existing photo URL (${fetched.status})`)
           }
-          const blob = await fetched.blob()
+          const fetchedBlob = await fetched.blob()
           const urlPath = new URL(photoUrl).pathname
-          const filename = decodeURIComponent(urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`)
-          fileForUpload = new File([blob], filename, { type: blob.type || 'image/jpeg' })
+          const fallbackFilename = decodeURIComponent(urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`)
+          fileForUpload = new File([fetchedBlob], fallbackFilename, { type: fetchedBlob.type || 'image/jpeg' })
         }
 
         if (!fileForUpload) {
           throw new Error('No photo file available for media upload')
         }
 
+        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+        if (!blobToken) {
+          throw new Error('Blob storage not configured')
+        }
+
+        const nameHash = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-')
+          .replace(/-+/g, '-')
+          .substring(0, 50)
+        const fileExt = fileForUpload.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const filename = `Speakers/photos/${nameHash}-${params.id}.${fileExt}`
+
+        const blob = await put(filename, fileForUpload, {
+          access: 'public',
+          token: blobToken,
+        })
+
         const photoUpload = await payload.create({
           collection: 'media',
           data: {
             alt: `Speaker photo: ${name}`,
+            url: blob.url,
+            filename: blob.pathname?.split('/').pop() || fileForUpload.name,
+            mimeType: fileForUpload.type || 'image/jpeg',
           },
-          file: fileForUpload,
           overrideAccess: true,
         })
         photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
