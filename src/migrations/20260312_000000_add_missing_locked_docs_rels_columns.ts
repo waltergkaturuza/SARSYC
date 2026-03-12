@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 
 /**
  * Add missing collection columns to payload_locked_documents_rels.
@@ -8,48 +8,34 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
  * orathon_registrations, abstract_reviews, page_views, site_events) are missing
  * their FK columns, causing Payload's locking query to fail with a SQL error.
  */
-export async function up({ db }: MigrateUpArgs): Promise<void> {
+export async function up({ payload }: MigrateUpArgs): Promise<void> {
   console.log('📋 Adding missing collection columns to payload_locked_documents_rels...')
 
-  const columns = [
-    'audit_logs_id',
-    'volunteers_id',
-    'youth_steering_committee_id',
-    'orathon_registrations_id',
-    'abstract_reviews_id',
-    'page_views_id',
-    'site_events_id',
-  ]
-
-  for (const col of columns) {
-    await db.execute(sql`
-      ALTER TABLE "payload_locked_documents_rels"
-      ADD COLUMN IF NOT EXISTS ${sql.raw(`"${col}"`)} integer;
-    `)
-    console.log(`   ✅ Added column: ${col}`)
-  }
+  await payload.db.drizzle.execute(`
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "audit_logs_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "volunteers_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "youth_steering_committee_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "orathon_registrations_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "abstract_reviews_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "page_views_id" integer;
+    ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "site_events_id" integer;
+  `)
 
   console.log('✅ All missing columns added to payload_locked_documents_rels')
 }
 
-export async function down({ db }: MigrateDownArgs): Promise<void> {
+export async function down({ payload }: MigrateDownArgs): Promise<void> {
   console.log('🗑️  Removing added columns from payload_locked_documents_rels...')
 
-  const columns = [
-    'audit_logs_id',
-    'volunteers_id',
-    'youth_steering_committee_id',
-    'orathon_registrations_id',
-    'abstract_reviews_id',
-    'page_views_id',
-    'site_events_id',
-  ]
+  await payload.db.drizzle.execute(`
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "audit_logs_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "volunteers_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "youth_steering_committee_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "orathon_registrations_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "abstract_reviews_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "page_views_id";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "site_events_id";
+  `)
 
-  for (const col of columns) {
-    await db.execute(sql`
-      ALTER TABLE "payload_locked_documents_rels"
-      DROP COLUMN IF EXISTS ${sql.raw(`"${col}"`)};
-    `)
-    console.log(`   ✅ Dropped column: ${col}`)
-  }
+  console.log('✅ Columns removed from payload_locked_documents_rels')
 }
