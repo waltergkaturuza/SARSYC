@@ -106,6 +106,10 @@ const registrationSchema = z.object({
 
 type RegistrationFormData = z.infer<typeof registrationSchema>
 
+// Temporarily suspend registration while payment gateway is being set up
+const REGISTRATION_SUSPENDED = true
+const REGISTRATION_OPENS = '1 April 2026'
+
 const steps = [
   { id: 1, name: 'Personal Info', icon: FiUser },
   { id: 2, name: 'Location', icon: FiMapPin },
@@ -461,6 +465,40 @@ export default function RegisterPage() {
       setCurrentStep(currentStep - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }
+
+  // Registration suspended — show overlay instead of form
+  if (REGISTRATION_SUSPENDED) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" aria-hidden />
+        <div className="relative z-50 bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border-2 border-primary-100">
+          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+            Registration Coming Soon
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            We&apos;re putting the finishing touches on our registration system. Please check back soon — we&apos;ll be ready to welcome you on{' '}
+            <strong className="text-primary-600">{REGISTRATION_OPENS}</strong>.
+          </p>
+          <p className="text-sm text-gray-500 mb-8">
+            In the meantime, you can still submit an abstract for the conference or explore our programme. We look forward to having you join us in Windhoek, Namibia for SARSYC VI!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" className="btn-outline">
+              Back to Homepage
+            </a>
+            <a href="/participate/submit-abstract" className="btn-primary">
+              Submit an Abstract
+            </a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (isSuccess) {

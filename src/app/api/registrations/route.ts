@@ -6,7 +6,21 @@ import { put } from '@vercel/blob'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+// Temporarily suspend registration while payment gateway is being set up
+const REGISTRATION_SUSPENDED = true
+const REGISTRATION_OPENS = '1 April 2026'
+
 export async function POST(request: NextRequest) {
+  if (REGISTRATION_SUSPENDED) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Registration is temporarily suspended. Registrations will open on ${REGISTRATION_OPENS}. Please check back then.`,
+      },
+      { status: 503 }
+    )
+  }
+
   // Log immediately to ensure we capture errors
   // Use multiple logging methods to ensure visibility
   console.log('🚀 Registration API called')
