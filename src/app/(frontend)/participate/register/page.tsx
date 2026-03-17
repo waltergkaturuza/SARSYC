@@ -482,7 +482,7 @@ export default function RegisterPage() {
             Registration Coming Soon
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            We&apos;re putting the finishing touches on our registration system. Please check back soon — we&apos;ll be ready to welcome you on{' '}
+            Registrations open on{' '}
             <strong className="text-primary-600">{REGISTRATION_OPENS}</strong>.
           </p>
           <p className="text-sm text-gray-500 mb-8">
