@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { plainTextToSlate } from '@/lib/newsContent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -16,7 +17,8 @@ export async function POST(request: NextRequest) {
     const content = formData.get('content') as string
     const category = JSON.parse(formData.get('category') as string || '[]')
     const tags = JSON.parse(formData.get('tags') as string || '[]')
-    const author = formData.get('author') as string
+    const authorRaw = formData.get('author') as string
+    const author = Number(authorRaw)
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
@@ -42,22 +44,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create news article
+    const publishedAt =
+      publishedDate && status === 'published'
+        ? new Date(publishedDate).toISOString()
+        : status === 'published'
+          ? new Date().toISOString()
+          : undefined
+
+    // Create news article (content as Slate blocks from textarea)
     const news = await payload.create({
       collection: 'news',
       data: {
         title,
         slug,
         excerpt,
-        content,
+        content: plainTextToSlate(content),
         category,
         tags: tags.map((tag: string) => ({ tag })),
         author,
         status,
         featured,
-        ...(publishedDate && { publishedDate: new Date(publishedDate).toISOString() }),
+        ...(publishedAt && { publishedDate: publishedAt }),
         ...(featuredImageId && { featuredImage: featuredImageId }),
       },
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true, doc: news })

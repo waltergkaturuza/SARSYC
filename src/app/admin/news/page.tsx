@@ -36,7 +36,7 @@ export default async function NewsManagementPage({
   }
   
   if (category && category !== 'all') {
-    where.category = { equals: category }
+    where.category = { contains: category }
   }
   
   if (search) {

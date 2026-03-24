@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { plainTextToSlate } from '@/lib/newsContent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -19,7 +20,8 @@ export async function PATCH(
     const content = formData.get('content') as string
     const category = JSON.parse(formData.get('category') as string || '[]')
     const tags = JSON.parse(formData.get('tags') as string || '[]')
-    const author = formData.get('author') as string
+    const authorRaw = formData.get('author') as string
+    const author = Number(authorRaw)
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
@@ -45,31 +47,41 @@ export async function PATCH(
       }
     }
 
-    // Update data
     const updateData: any = {
       title,
       slug,
       excerpt,
-      content,
+      content: plainTextToSlate(content),
       category,
       tags: tags.map((tag: string) => ({ tag })),
       author,
       status,
       featured,
     }
-    
-    if (publishedDate) {
+
+    if (publishedDate && status === 'published') {
       updateData.publishedDate = new Date(publishedDate).toISOString()
+    } else if (status === 'published') {
+      const existing = await payload.findByID({
+        collection: 'news',
+        id: params.id,
+        depth: 0,
+        overrideAccess: true,
+      })
+      if (!existing?.publishedDate) {
+        updateData.publishedDate = new Date().toISOString()
+      }
     }
+
     if (featuredImageId) {
       updateData.featuredImage = featuredImageId
     }
 
-    // Update news article
     const news = await payload.update({
       collection: 'news',
       id: params.id,
       data: updateData,
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true, doc: news })
@@ -92,6 +104,7 @@ export async function DELETE(
     await payload.delete({
       collection: 'news',
       id: params.id,
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true })

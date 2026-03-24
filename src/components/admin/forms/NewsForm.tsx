@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
 import Image from 'next/image'
+import { slateToPlainText } from '@/lib/newsContent'
 
 interface NewsData {
   title: string
@@ -41,7 +42,7 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     title: initialData?.title || '',
     slug: initialData?.slug || '',
     excerpt: initialData?.excerpt || '',
-    content: initialData?.content || '',
+    content: slateToPlainText(initialData?.content) || '',
     featuredImage: initialData?.featuredImage?.url || '',
     category: initialData?.category || [],
     tags: initialData?.tags?.map((t: any) => t.tag || t).filter(Boolean) || [],
@@ -112,7 +113,6 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     if (!formData.featuredImage && !initialData?.featuredImage) newErrors.featuredImage = 'Featured image is required'
     if (formData.category.length === 0) newErrors.category = 'At least one category is required'
     if (!formData.author) newErrors.author = 'Author is required'
-    if (formData.tags.some(t => !t.trim())) newErrors.tags = 'Tags cannot be empty'
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
