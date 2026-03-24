@@ -496,7 +496,11 @@ export default async function DashboardPage() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <p className="text-white/80">Abstract Deadline</p>
-                    <p className="font-bold">April 30, 2026</p>
+                    <p className="font-bold">15 April 2026</p>
+                  </div>
+                  <div>
+                    <p className="text-white/80">Notification of Acceptance</p>
+                    <p className="font-bold">1 May 2026</p>
                   </div>
                   <div>
                     <p className="text-white/80">Conference Dates</p>

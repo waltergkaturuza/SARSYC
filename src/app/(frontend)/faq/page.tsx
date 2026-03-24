@@ -30,7 +30,7 @@ const faqData = [
     questions: [
       {
         question: 'What is the abstract submission deadline?',
-        answer: 'Abstracts must be submitted by April 30, 2026, at 11:59 PM (GMT+2). Late submissions will not be considered.',
+        answer: 'Abstracts must be submitted by 15 April 2026, at 11:59 PM (GMT+2). Late submissions will not be considered.',
       },
       {
         question: 'What are the abstract guidelines?',
@@ -42,7 +42,7 @@ const faqData = [
       },
       {
         question: 'When will I know if my abstract is accepted?',
-        answer: 'All submitters will be notified of decisions by May 31, 2026. You\'ll receive an email with the review outcome and next steps.',
+        answer: 'All submitters will be notified of decisions by 1 May 2026. You\'ll receive an email with the review outcome and next steps.',
       },
     ],
   },
