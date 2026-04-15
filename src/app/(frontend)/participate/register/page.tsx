@@ -108,7 +108,7 @@ type RegistrationFormData = z.infer<typeof registrationSchema>
 
 // Temporarily suspend registration while payment gateway is being set up
 const REGISTRATION_SUSPENDED = true
-const REGISTRATION_OPENS = '1 April 2026'
+const REGISTRATION_OPENS = ''
 
 const steps = [
   { id: 1, name: 'Personal Info', icon: FiUser },
@@ -482,8 +482,7 @@ export default function RegisterPage() {
             Registration Coming Soon
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            Registrations open on{' '}
-            <strong className="text-primary-600">{REGISTRATION_OPENS}</strong>.
+            Registrations will be opening soon.
           </p>
           <p className="text-sm text-gray-500 mb-8">
             In the meantime, you can still submit an abstract for the conference or explore our programme. We look forward to having you join us in Windhoek, Namibia for SARSYC VI!
