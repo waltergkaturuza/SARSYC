@@ -81,6 +81,8 @@ export async function POST(
     })
 
     let review
+    // Thread authenticated user into Payload so collection hooks see req.user
+    // (createLocalReq only sets req.user when `user` is passed; otherwise hooks throw)
     if (existing.totalDocs > 0) {
       review = await payload.update({
         collection: 'abstract-reviews',
@@ -92,6 +94,7 @@ export async function POST(
           confidence,
         },
         overrideAccess: true,
+        user,
       })
     } else {
       review = await payload.create({
@@ -105,6 +108,7 @@ export async function POST(
           confidence,
         },
         overrideAccess: true,
+        user,
       })
     }
 
@@ -118,6 +122,7 @@ export async function POST(
             status: 'under-review',
           },
           overrideAccess: true,
+          user,
         })
       } catch (statusError) {
         console.warn('Unable to update abstract status after review submission:', statusError)
