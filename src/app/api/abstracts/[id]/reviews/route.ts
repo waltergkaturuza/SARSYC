@@ -26,6 +26,7 @@ export async function POST(
 
     const reviewerIdNorm = normalizePayloadId(user.id)
     const reviewerFk = toRelationshipId(reviewerIdNorm)
+    const abstractFk = toRelationshipId(normalizePayloadId(abstractId))
 
     // Ensure reviewer is assigned to the abstract (unless admin)
     if (user.role === 'reviewer') {
@@ -72,7 +73,7 @@ export async function POST(
       collection: 'abstract-reviews',
       where: {
         and: [
-          { abstract: { equals: abstractId } },
+          { abstract: { equals: abstractFk } },
           { reviewer: { equals: reviewerFk } },
         ],
       },
@@ -88,6 +89,8 @@ export async function POST(
         collection: 'abstract-reviews',
         id: existing.docs[0].id,
         data: {
+          abstract: abstractFk,
+          reviewer: reviewerFk,
           score,
           recommendation,
           comments,
@@ -100,7 +103,7 @@ export async function POST(
       review = await payload.create({
         collection: 'abstract-reviews',
         data: {
-          abstract: abstractId,
+          abstract: abstractFk,
           reviewer: reviewerFk,
           score,
           recommendation,

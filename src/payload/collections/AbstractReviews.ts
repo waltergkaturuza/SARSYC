@@ -103,12 +103,18 @@ const AbstractReviews: CollectionConfig = {
         }
 
         const payload = req.payload
-        const abstractId =
-          typeof data.abstract === 'object'
-            ? (data.abstract as any).id || (data.abstract as any)
+        // Partial updates may omit relationship fields; resolve from payload data or existing doc
+        const abstractFromData =
+          typeof data.abstract === 'object' && data.abstract != null
+            ? (data.abstract as any).id ?? (data.abstract as any)
             : data.abstract
+        const abstractFromOriginal =
+          typeof originalDoc?.abstract === 'object' && originalDoc.abstract != null
+            ? (originalDoc.abstract as any).id ?? (originalDoc.abstract as any)
+            : originalDoc?.abstract
+        const abstractId = abstractFromData ?? abstractFromOriginal
 
-        if (!abstractId) {
+        if (abstractId == null || abstractId === '') {
           throw new Error('Abstract is required for a review')
         }
 
@@ -116,7 +122,7 @@ const AbstractReviews: CollectionConfig = {
         if (user.role === 'reviewer') {
           const abstract = await payload.findByID({
             collection: 'abstracts',
-            id: abstractId,
+            id: toRelationshipId(normalizePayloadId(abstractId)),
             depth: 0,
             overrideAccess: true,
           })
@@ -145,13 +151,14 @@ const AbstractReviews: CollectionConfig = {
             : data.reviewer,
         )
         const reviewerFk = toRelationshipId(reviewerIdNorm)
+        const abstractFk = toRelationshipId(normalizePayloadId(abstractId))
 
         // Prevent duplicate reviews
         const existing = await payload.find({
           collection: 'abstract-reviews',
           where: {
             and: [
-              { abstract: { equals: abstractId } },
+              { abstract: { equals: abstractFk } },
               { reviewer: { equals: reviewerFk } },
             ],
           },
