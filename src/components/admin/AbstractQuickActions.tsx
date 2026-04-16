@@ -38,6 +38,7 @@ export default function AbstractQuickActions({
     try {
       const response = await fetch(`/api/admin/abstracts/${abstractId}/quick-update`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -73,6 +74,7 @@ export default function AbstractQuickActions({
     try {
       const response = await fetch(`/api/admin/abstracts/${abstractId}/quick-update`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
