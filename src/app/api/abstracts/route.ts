@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendMail } from '@/lib/mail'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -8,6 +9,16 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   let body: any = null
   try {
+    if (isAbstractSubmissionClosed()) {
+      return NextResponse.json(
+        {
+          error: 'Abstract submission is closed for SARSYC VI.',
+          code: 'ABSTRACT_SUBMISSION_CLOSED',
+        },
+        { status: 403 },
+      )
+    }
+
     body = await request.json()
     const payload = await getPayloadClient()
 

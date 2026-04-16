@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -11,6 +12,13 @@ export const runtime = 'nodejs'
  */
 export async function POST(request: NextRequest) {
   try {
+    if (isAbstractSubmissionClosed()) {
+      return NextResponse.json(
+        { error: 'Abstract submission is closed.', code: 'ABSTRACT_SUBMISSION_CLOSED' },
+        { status: 403 },
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const track = formData.get('track') as string | null // e.g., 'education-rights', 'hiv-aids', etc.

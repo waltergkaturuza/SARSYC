@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -9,6 +10,13 @@ export const runtime = 'nodejs'
  */
 export async function POST(request: NextRequest) {
   try {
+    if (isAbstractSubmissionClosed()) {
+      return NextResponse.json(
+        { error: 'Abstract submission is closed. File uploads are not available.', code: 'ABSTRACT_SUBMISSION_CLOSED' },
+        { status: 403 },
+      )
+    }
+
     const body = await request.json() as HandleUploadBody
 
     const jsonResponse = await handleUpload({

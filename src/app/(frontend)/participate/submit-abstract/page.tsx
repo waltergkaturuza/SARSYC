@@ -1,12 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiFileText, FiUser, FiCheck, FiUpload, FiArrowRight, FiArrowLeft, FiX, FiEdit2, FiPlus } from 'react-icons/fi'
+import {
+  FiFileText,
+  FiUser,
+  FiCheck,
+  FiUpload,
+  FiArrowRight,
+  FiArrowLeft,
+  FiX,
+  FiEdit2,
+  FiPlus,
+  FiCalendar,
+  FiInfo,
+} from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 // Word count helper for abstract (350-500 words required)
 const countWords = (text: string) =>
@@ -126,6 +140,11 @@ export default function SubmitAbstractPage() {
   }
 
   const onSubmit = async (data: AbstractFormData) => {
+    if (isAbstractSubmissionClosed()) {
+      showToast.error('Abstract submission is closed for SARSYC VI.')
+      return
+    }
+
     setIsSubmitting(true)
     
     try {
@@ -233,6 +252,72 @@ export default function SubmitAbstractPage() {
   const editField = (step: number) => {
     setCurrentStep(step)
     setShowPreview(false)
+  }
+
+  const submissionClosed = isAbstractSubmissionClosed()
+
+  if (submissionClosed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-primary-50/30 py-12 px-4">
+        <div className="container-custom max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="h-2 bg-gradient-to-r from-primary-600 to-secondary-600" />
+            <div className="p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Abstract submission is closed
+              </h1>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Thank you for your interest in the{' '}
+                <span className="font-semibold text-gray-800">SARSYC VI Research Indaba</span>. The call for
+                abstracts for this edition has now closed, and we are no longer accepting new submissions online.
+              </p>
+              <div className="bg-secondary-50 border border-secondary-100 rounded-xl p-5 text-left mb-6">
+                <p className="text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-2">
+                  <FiInfo className="w-4 h-4 flex-shrink-0" aria-hidden />
+                  Next edition
+                </p>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  The next conference in the series will be{' '}
+                  <strong>SARSYC VII (7)</strong>, planned for <strong>2028</strong>. You will be able to submit a
+                  fresh abstract when the SARSYC VII call for papers opens—watch our website and social channels for
+                  announcements.
+                </p>
+              </div>
+              <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                We still encourage you to <strong>register as a participant for SARSYC VI</strong> so you can join
+                sessions, workshops, and the Indaba as a delegate and connect with young leaders from across the
+                region.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 text-left">
+                <p className="text-sm text-amber-900 leading-relaxed">
+                  <strong>Registration note:</strong> Conference registration is <strong>temporarily paused</strong>{' '}
+                  while we finalise arrangements. You can still open the registration form to review requirements and
+                  complete your application when submissions reopen.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/participate/register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all"
+                >
+                  Go to registration form
+                  <FiArrowRight className="w-4 h-4" aria-hidden />
+                </Link>
+                <Link
+                  href="/participate"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Participate hub
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (isSuccess) {

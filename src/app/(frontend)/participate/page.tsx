@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FiUserPlus, FiFileText, FiHeart, FiArrowRight, FiCheck } from 'react-icons/fi'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 const participationOptions = [
   {
@@ -51,6 +52,8 @@ const participationOptions = [
 ]
 
 export default function ParticipatePage() {
+  const abstractClosed = isAbstractSubmissionClosed()
+
   return (
     <>
       {/* Hero */}
@@ -73,6 +76,14 @@ export default function ParticipatePage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {participationOptions.map((option) => {
               const Icon = option.icon
+              const isAbstractCard = option.href === '/participate/submit-abstract'
+              const deadlineLabel =
+                isAbstractCard && abstractClosed
+                  ? 'Abstract submission is closed for SARSYC VI. SARSYC VII (2028) will open a new call when announced.'
+                  : option.deadline
+              const ctaLabel =
+                isAbstractCard && abstractClosed ? 'Read notice' : option.cta
+
               return (
                 <div key={option.title} className="card overflow-hidden group hover:shadow-2xl transition-all">
                   <div className={`h-2 bg-gradient-to-r ${option.color}`}></div>
@@ -85,10 +96,21 @@ export default function ParticipatePage() {
                     <h3 className="text-2xl font-bold text-gray-900 mb-3">{option.title}</h3>
                     <p className="text-gray-600 mb-6">{option.description}</p>
 
-                    {option.deadline && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
-                        <p className="text-sm font-semibold text-red-600">
-                          ⏰ {option.deadline}
+                    {deadlineLabel && (
+                      <div
+                        className={`rounded-lg p-3 mb-6 border ${
+                          isAbstractCard && abstractClosed
+                            ? 'bg-gray-50 border-gray-200'
+                            : 'bg-red-50 border-red-200'
+                        }`}
+                      >
+                        <p
+                          className={`text-sm font-semibold ${
+                            isAbstractCard && abstractClosed ? 'text-gray-800' : 'text-red-600'
+                          }`}
+                        >
+                          {isAbstractCard && abstractClosed ? '' : '⏰ '}
+                          {deadlineLabel}
                         </p>
                       </div>
                     )}
@@ -106,7 +128,7 @@ export default function ParticipatePage() {
                     </div>
 
                     <Link href={option.href} className="btn-primary w-full justify-center group-hover:scale-105 transition-transform">
-                      {option.cta}
+                      {ctaLabel}
                       <FiArrowRight className="ml-2" />
                     </Link>
                   </div>

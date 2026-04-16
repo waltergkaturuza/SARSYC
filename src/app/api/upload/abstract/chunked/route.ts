@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -9,6 +10,13 @@ const uploadSessions = new Map<string, { chunks: Buffer[], metadata: any }>()
 
 export async function POST(request: NextRequest) {
   try {
+    if (isAbstractSubmissionClosed()) {
+      return NextResponse.json(
+        { error: 'Abstract submission is closed.', code: 'ABSTRACT_SUBMISSION_CLOSED' },
+        { status: 403 },
+      )
+    }
+
     const formData = await request.formData()
     const chunk = formData.get('chunk') as File | null
     const chunkIndex = parseInt(formData.get('chunkIndex') as string)
