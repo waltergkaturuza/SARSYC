@@ -516,10 +516,11 @@ const Abstracts: CollectionConfig = {
             })()
           }
           
-          // Import email function dynamically to avoid circular dependencies
-          // Use fire-and-forget pattern to not block the update
+          // Status emails (rejected, revisions, under-review, accepted, etc.): never block the update.
+          // Heavy work only exists for `accepted` (presenter account) above — other buttons only hit this path.
           const emailPromise = (async () => {
             try {
+              await new Promise<void>((resolve) => setImmediate(resolve))
               const { sendAbstractStatusUpdate } = await import('@/lib/mail')
               
               // Send confirmation email on submission
