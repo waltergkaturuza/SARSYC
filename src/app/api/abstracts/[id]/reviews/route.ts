@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import { normalizePayloadId, toRelationshipId } from '@/lib/payloadIds'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -23,7 +24,8 @@ export async function POST(
     const data = await request.json()
     const abstractId = params.id
 
-    const reviewerId = typeof user.id === 'object' ? user.id.toString() : user.id
+    const reviewerIdNorm = normalizePayloadId(user.id)
+    const reviewerFk = toRelationshipId(reviewerIdNorm)
 
     // Ensure reviewer is assigned to the abstract (unless admin)
     if (user.role === 'reviewer') {
@@ -36,10 +38,11 @@ export async function POST(
 
       const assigned = Array.isArray(abstract.assignedReviewers) ? abstract.assignedReviewers : []
       const assignedIds = assigned.map((r: any) =>
-        typeof r === 'object' ? r.id?.toString() : r?.toString()
+        normalizePayloadId(typeof r === 'object' && r != null ? r.id : r),
       )
 
-      if (!assignedIds.includes(reviewerId)) {
+      const isAssigned = assignedIds.some((id: string) => id !== '' && id === reviewerIdNorm)
+      if (!isAssigned) {
         return NextResponse.json(
           { error: 'You are not assigned to review this abstract.' },
           { status: 403 }
@@ -47,10 +50,15 @@ export async function POST(
       }
     }
 
-    const score = Number(data.score ?? 0)
-    if (Number.isNaN(score) || score < 0 || score > 100) {
+    const score = Number(data.score)
+    if (
+      !Number.isFinite(score) ||
+      !Number.isInteger(score) ||
+      score < 1 ||
+      score > 30
+    ) {
       return NextResponse.json(
-        { error: 'Score must be between 0 and 100.' },
+        { error: 'Score must be a whole number from 1 to 30 (rubric total).' },
         { status: 400 }
       )
     }
@@ -65,7 +73,7 @@ export async function POST(
       where: {
         and: [
           { abstract: { equals: abstractId } },
-          { reviewer: { equals: reviewerId } },
+          { reviewer: { equals: reviewerFk } },
         ],
       },
       limit: 1,
@@ -90,7 +98,7 @@ export async function POST(
         collection: 'abstract-reviews',
         data: {
           abstract: abstractId,
-          reviewer: reviewerId,
+          reviewer: reviewerFk,
           score,
           recommendation,
           comments,

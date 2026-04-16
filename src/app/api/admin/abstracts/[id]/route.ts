@@ -67,7 +67,18 @@ export async function PATCH(
     const abstract = formData.get('abstract') as string
     const keywords = JSON.parse(formData.get('keywords') as string || '[]')
     const track = formData.get('track') as string
-    const primaryAuthor = JSON.parse(formData.get('primaryAuthor') as string || '{}')
+    const primaryAuthorRaw = JSON.parse(formData.get('primaryAuthor') as string || '{}')
+    const existingPA =
+      existingAbstract?.primaryAuthor && typeof existingAbstract.primaryAuthor === 'object'
+        ? (existingAbstract.primaryAuthor as Record<string, unknown>)
+        : {}
+    const primaryAuthor: Record<string, unknown> = {
+      ...existingPA,
+      ...primaryAuthorRaw,
+    }
+    if (primaryAuthor.age !== undefined && primaryAuthor.age !== null && primaryAuthor.age !== '') {
+      primaryAuthor.age = Number(primaryAuthor.age)
+    }
     const coAuthors = JSON.parse(formData.get('coAuthors') as string || '[]')
     const presentationType = formData.get('presentationType') as string
     const status = formData.get('status') as string
@@ -524,11 +535,20 @@ export async function PATCH(
     let errorMessage = error.message || 'Failed to update abstract'
     
     if (error.data?.errors) {
-      // Handle array of errors (Payload format: [{ message: '...' }, ...])
+      // Handle array of errors (Payload often uses { path, message } — show path, not array index)
       if (Array.isArray(error.data.errors)) {
         errorMessage = error.data.errors
-          .map((err: any, index: number) => `${index}: ${err.message || err}`)
-          .join(', ')
+          .map((err: any, index: number) => {
+            if (err == null) return `(${index}): unknown`
+            if (typeof err === 'string') return err
+            const pathRaw = err.path ?? err.field
+            const path =
+              Array.isArray(pathRaw) ? pathRaw.join('.') : pathRaw != null ? String(pathRaw) : ''
+            const label = path || `(${index})`
+            const msg = err.message ?? (typeof err === 'object' ? JSON.stringify(err) : String(err))
+            return `${label}: ${msg}`
+          })
+          .join('; ')
       } else if (typeof error.data.errors === 'object') {
         // Handle object format: { field: { message: '...' } }
         errorMessage = Object.entries(error.data.errors)

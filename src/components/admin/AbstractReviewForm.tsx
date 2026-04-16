@@ -24,13 +24,19 @@ const confidenceOptions = [
   { value: 'low', label: 'Low confidence' },
 ]
 
+function initialRubricScore(existing: number | undefined | null): number {
+  if (existing == null || !Number.isFinite(Number(existing))) return 1
+  const n = Math.round(Number(existing))
+  return Math.min(30, Math.max(1, n))
+}
+
 export default function AbstractReviewForm({
   abstractId,
   existingReview,
   allowEdit,
 }: AbstractReviewFormProps) {
   const router = useRouter()
-  const [score, setScore] = useState<number>(existingReview?.score ?? 0)
+  const [score, setScore] = useState<number>(() => initialRubricScore(existingReview?.score))
   const [recommendation, setRecommendation] = useState<string>(existingReview?.recommendation ?? 'accept')
   const [confidence, setConfidence] = useState<string | null>(existingReview?.confidence || null)
   const [comments, setComments] = useState<string>(existingReview?.comments ?? '')
@@ -46,6 +52,7 @@ export default function AbstractReviewForm({
     try {
       const response = await fetch(`/api/abstracts/${abstractId}/reviews`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -76,17 +83,26 @@ export default function AbstractReviewForm({
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Score (0-100)
+            Total rubric score (1–30)
           </label>
           <input
             type="number"
             value={score}
-            min={0}
-            max={100}
-            onChange={(e) => setScore(Number(e.target.value))}
+            min={1}
+            max={30}
+            step={1}
+            onChange={(e) => {
+              const v = Number(e.target.value)
+              if (!Number.isFinite(v)) return
+              setScore(Math.min(30, Math.max(1, Math.round(v))))
+            }}
             disabled={!allowEdit || loading}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Enter the sum from the SARSYC rubric: six criteria scored 1–5 each (maximum 30). Benchmarks:
+            18–30 accept band; below 18 reject band—use comments for nuance.
+          </p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

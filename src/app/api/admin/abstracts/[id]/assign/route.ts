@@ -22,10 +22,29 @@ export async function PATCH(
     const assignedReviewers = Array.isArray(body?.assignedReviewers) ? body.assignedReviewers : []
 
     const payload = await getPayloadClient()
+    // Payload validates the full document; legacy abstracts may lack primaryAuthor.age/gender/institution.
+    const doc = await payload.findByID({
+      collection: 'abstracts',
+      id: params.id,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const pa = (doc as any)?.primaryAuthor && typeof (doc as any).primaryAuthor === 'object'
+      ? { ...(doc as any).primaryAuthor }
+      : {}
+    const org = typeof pa.organization === 'string' ? pa.organization.trim() : ''
+    const inst = typeof pa.institution === 'string' ? pa.institution.trim() : ''
+    const primaryAuthor = {
+      ...pa,
+      ...(pa.age == null || pa.age === '' ? { age: 18 } : { age: Number(pa.age) }),
+      ...(!pa.gender ? { gender: 'prefer-not-to-say' } : {}),
+      ...(!inst ? { institution: org || 'Not specified' } : {}),
+    }
+
     await payload.update({
       collection: 'abstracts',
       id: params.id,
-      data: { assignedReviewers },
+      data: { assignedReviewers, primaryAuthor },
       overrideAccess: true,
     })
 

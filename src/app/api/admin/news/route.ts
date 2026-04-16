@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { plainTextToSlate } from '@/lib/newsContent'
+import { createNewsFeaturedMedia } from '@/lib/newsFeaturedMediaUpload'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -24,23 +25,20 @@ export async function POST(request: NextRequest) {
     const publishedDate = formData.get('publishedDate') as string | null
     const featuredImageFile = formData.get('featuredImage') as File | null
     
-    // Upload featured image if provided
+    // Upload featured image if provided (Blob + URL media, or buffer fallback)
     let featuredImageId: string | undefined
     if (featuredImageFile && featuredImageFile.size > 0) {
       try {
-        const imageUpload = await payload.create({
-          collection: 'media',
-          data: {
-            alt: `Featured image: ${title}`,
-          },
-          file: featuredImageFile,
-          overrideAccess: true, // Allow admin uploads
-        })
-        featuredImageId = typeof imageUpload === 'string' ? imageUpload : imageUpload.id
-      } catch (uploadError: any) {
-        console.error('Image upload error:', uploadError)
-        // Continue without image if upload fails
-        console.warn('News article creation proceeding without featured image')
+        featuredImageId = await createNewsFeaturedMedia(
+          payload,
+          featuredImageFile,
+          `Featured image: ${title}`,
+        )
+      } catch (uploadError: unknown) {
+        console.error('Featured media upload error:', uploadError)
+        const message =
+          uploadError instanceof Error ? uploadError.message : 'Failed to upload featured image'
+        return NextResponse.json({ error: message }, { status: 500 })
       }
     }
 

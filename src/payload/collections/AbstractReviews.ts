@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types'
+import { normalizePayloadId, toRelationshipId } from '@/lib/payloadIds'
 
 const AbstractReviews: CollectionConfig = {
   slug: 'abstract-reviews',
@@ -52,12 +53,13 @@ const AbstractReviews: CollectionConfig = {
     {
       name: 'score',
       type: 'number',
-      min: 0,
-      max: 100,
+      min: 1,
+      max: 30,
       required: true,
-      defaultValue: 0,
+      defaultValue: 1,
       admin: {
-        description: 'Overall score (0-100)',
+        description:
+          'Total rubric score (1–30): six criteria × 1–5 points each (SARSYC VI Abstracts Evaluation Rubric).',
       },
     },
     {
@@ -123,23 +125,26 @@ const AbstractReviews: CollectionConfig = {
             ? abstract.assignedReviewers
             : []
 
-          const reviewerId = typeof user.id === 'object' ? user.id.toString() : user.id
+          const reviewerIdNorm = normalizePayloadId(user.id)
           const assignedIds = assigned.map((r: any) =>
-            typeof r === 'object' ? r.id?.toString() : r?.toString()
+            normalizePayloadId(typeof r === 'object' && r != null ? r.id : r),
           )
 
-          if (!assignedIds.includes(reviewerId)) {
+          const isAssigned = assignedIds.some((id: string) => id !== '' && id === reviewerIdNorm)
+          if (!isAssigned) {
             throw new Error('You are not assigned to review this abstract')
           }
 
-          // Ensure reviewer field matches authenticated user
-          data.reviewer = reviewerId
+          // Ensure reviewer field matches authenticated user (stable FK type for Postgres)
+          data.reviewer = toRelationshipId(reviewerIdNorm)
         }
 
-        const reviewerId =
-          typeof data.reviewer === 'object'
-            ? (data.reviewer as any).id || (data.reviewer as any)
-            : data.reviewer
+        const reviewerIdNorm = normalizePayloadId(
+          typeof data.reviewer === 'object' && data.reviewer != null
+            ? (data.reviewer as any).id ?? (data.reviewer as any)
+            : data.reviewer,
+        )
+        const reviewerFk = toRelationshipId(reviewerIdNorm)
 
         // Prevent duplicate reviews
         const existing = await payload.find({
@@ -147,7 +152,7 @@ const AbstractReviews: CollectionConfig = {
           where: {
             and: [
               { abstract: { equals: abstractId } },
-              { reviewer: { equals: reviewerId } },
+              { reviewer: { equals: reviewerFk } },
             ],
           },
           limit: 1,

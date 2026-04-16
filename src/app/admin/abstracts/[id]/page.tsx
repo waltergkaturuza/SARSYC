@@ -419,7 +419,7 @@ export default async function AbstractDetailPage({ params }: AbstractDetailPageP
                           </div>
                           <div className="flex items-center gap-3 text-sm">
                             <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold">
-                              Score: {review.score}
+                              Score: {review.score}/30
                             </span>
                             <span className="px-2 py-1 rounded-full bg-gray-200 text-gray-700 capitalize">
                               {String(review.recommendation || '').replace('-', ' ')}

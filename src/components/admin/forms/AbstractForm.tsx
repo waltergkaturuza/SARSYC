@@ -14,6 +14,10 @@ interface AuthorData {
   phone?: string
   organization: string
   country: string
+  /** Must satisfy Payload abstracts.primaryAuthor (18–35) */
+  age: number | ''
+  gender: string
+  institution: string
 }
 
 interface CoAuthorData {
@@ -65,14 +69,39 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
         )
         .filter((k: string) => k && k.trim().length > 0) || [],
     track: initialData?.track || '',
-    primaryAuthor: initialData?.primaryAuthor || {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      organization: '',
-      country: '',
-    },
+    primaryAuthor: (() => {
+      const pa = initialData?.primaryAuthor
+      if (pa && typeof pa === 'object') {
+        const ageVal = pa.age
+        return {
+          firstName: pa.firstName || '',
+          lastName: pa.lastName || '',
+          email: pa.email || '',
+          phone: pa.phone || '',
+          organization: pa.organization || '',
+          country: pa.country || '',
+          age:
+            ageVal === null || ageVal === undefined || ageVal === ''
+              ? ''
+              : typeof ageVal === 'number'
+                ? ageVal
+                : Number(ageVal),
+          gender: pa.gender || '',
+          institution: pa.institution || '',
+        }
+      }
+      return {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        organization: '',
+        country: '',
+        age: '' as const,
+        gender: '',
+        institution: '',
+      }
+    })(),
     coAuthors: initialData?.coAuthors?.map((ca: any) => ({
       name: ca.name || '',
       organization: ca.organization || '',
@@ -140,10 +169,10 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     }
   }
 
-  const handleAuthorChange = (field: string, value: string) => {
+  const handleAuthorChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
-      primaryAuthor: { ...prev.primaryAuthor, [field]: value }
+      primaryAuthor: { ...prev.primaryAuthor, [field]: value },
     }))
   }
 
@@ -213,6 +242,17 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
     if (!formData.primaryAuthor.email.includes('@')) newErrors['primaryAuthor.email'] = 'Valid email is required'
     if (!formData.primaryAuthor.organization.trim()) newErrors['primaryAuthor.organization'] = 'Organization is required'
     if (!formData.primaryAuthor.country.trim()) newErrors['primaryAuthor.country'] = 'Country is required'
+    const ageNum =
+      formData.primaryAuthor.age === '' ? NaN : Number(formData.primaryAuthor.age)
+    if (!Number.isFinite(ageNum) || ageNum < 18 || ageNum > 35) {
+      newErrors['primaryAuthor.age'] = 'Age is required (18–35)'
+    }
+    if (!formData.primaryAuthor.gender) {
+      newErrors['primaryAuthor.gender'] = 'Gender is required'
+    }
+    if (!formData.primaryAuthor.institution?.trim()) {
+      newErrors['primaryAuthor.institution'] = 'Institution is required'
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -254,7 +294,15 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       } else {
         submitData.append('track', trackToSend)
       }
-      submitData.append('primaryAuthor', JSON.stringify(formData.primaryAuthor))
+      const ageForPayload =
+        formData.primaryAuthor.age === '' ? null : Number(formData.primaryAuthor.age)
+      submitData.append(
+        'primaryAuthor',
+        JSON.stringify({
+          ...formData.primaryAuthor,
+          age: ageForPayload,
+        }),
+      )
       submitData.append('coAuthors', JSON.stringify(formData.coAuthors.filter(ca => ca.name.trim())))
       submitData.append('presentationType', formData.presentationType)
       submitData.append('status', formData.status)
@@ -550,6 +598,48 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
                 </option>
               ))}
             </select>
+          </FormField>
+
+          <FormField label="Age" required error={errors['primaryAuthor.age']} hint="18–35 (conference policy)">
+            <input
+              type="number"
+              min={18}
+              max={35}
+              value={formData.primaryAuthor.age === '' ? '' : formData.primaryAuthor.age}
+              onChange={(e) => {
+                const v = e.target.value
+                handleAuthorChange('age', v === '' ? '' : Number(v))
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </FormField>
+
+          <FormField label="Gender" required error={errors['primaryAuthor.gender']}>
+            <select
+              value={formData.primaryAuthor.gender}
+              onChange={(e) => handleAuthorChange('gender', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="non-binary">Non-binary / Gender diverse</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+          </FormField>
+
+          <FormField
+            label="University / Institution"
+            required
+            error={errors['primaryAuthor.institution']}
+            hint="Tertiary institution name"
+          >
+            <input
+              type="text"
+              value={formData.primaryAuthor.institution}
+              onChange={(e) => handleAuthorChange('institution', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
           </FormField>
         </div>
       </div>
