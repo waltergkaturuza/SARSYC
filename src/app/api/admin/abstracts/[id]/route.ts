@@ -79,6 +79,22 @@ export async function PATCH(
     if (primaryAuthor.age !== undefined && primaryAuthor.age !== null && primaryAuthor.age !== '') {
       primaryAuthor.age = Number(primaryAuthor.age)
     }
+    // Strip null/undefined optional noise so merged form values win for legacy rows
+    if (primaryAuthor.institution === null || primaryAuthor.institution === undefined) {
+      delete primaryAuthor.institution
+    }
+    if (primaryAuthor.gender === null || primaryAuthor.gender === undefined) {
+      delete primaryAuthor.gender
+    }
+    if (primaryAuthor.age === null) {
+      delete primaryAuthor.age
+    }
+    if (typeof primaryAuthor.institution === 'string') {
+      primaryAuthor.institution = primaryAuthor.institution.trim()
+    }
+    if (typeof primaryAuthor.gender === 'string') {
+      primaryAuthor.gender = primaryAuthor.gender.trim()
+    }
     const coAuthors = JSON.parse(formData.get('coAuthors') as string || '[]')
     const presentationType = formData.get('presentationType') as string
     const status = formData.get('status') as string
@@ -358,46 +374,11 @@ export async function PATCH(
     }, null, 2))
 
     // Update abstract (overrideAccess so admin/editor can update assignedReviewers and other fields)
-    // CRITICAL: Clean database relationships first, then update with clean data
+    // IMPORTANT: Never call payload.update with ONLY assignedReviewers on legacy abstracts — Payload
+    // validates the full document, and pre-migration rows can have null primaryAuthor.age/gender/institution.
+    // Those partial updates failed before the merged primaryAuthor from this request was ever saved.
     try {
-      // STEP 1: Clean up any invalid "0" relationships directly in database using Payload's adapter
-      if (hasInvalidExistingIds || existingAbstract?.assignedReviewers) {
-        console.log('[Abstract Update] 🗑️ Cleaning invalid relationships from database...')
-        try {
-          // Use Payload's find to get current relationships, then update to remove "0"
-          const currentAbstract = await payload.findByID({
-            collection: 'abstracts',
-            id: params.id,
-            overrideAccess: true,
-            depth: 0, // Don't populate relationships
-          })
-          
-          // If current abstract has invalid IDs, clear them first
-          const currentReviewers = currentAbstract?.assignedReviewers || []
-          const hasZero = Array.isArray(currentReviewers) && currentReviewers.some((r: any) => {
-            const id = typeof r === 'object' ? r.id : r
-            return String(id).trim() === '0'
-          })
-          
-          if (hasZero) {
-            console.log('[Abstract Update] Found "0" in existing relationships, clearing...')
-            await payload.update({
-              collection: 'abstracts',
-              id: params.id,
-              data: {
-                assignedReviewers: [], // Clear all first
-              },
-              overrideAccess: true,
-            })
-            console.log('[Abstract Update] ✅ Cleared invalid relationships')
-          }
-        } catch (cleanError: any) {
-          console.warn('[Abstract Update] ⚠️ Could not clean relationships:', cleanError.message)
-          // Continue anyway
-        }
-      }
-      
-      // STEP 2: Final verification - ensure assignedReviewers is clean array with no "0"
+      // STEP 1: Final verification - ensure assignedReviewers is clean array with no "0"
       // CRITICAL: Keep as strings, don't convert to numbers (to avoid "0" becoming 0)
       const finalCheck = Array.isArray(finalAssignedReviewers) 
         ? finalAssignedReviewers
@@ -431,7 +412,7 @@ export async function PATCH(
         rawValue: JSON.stringify(updateData.assignedReviewers),
       })
       
-      // STEP 3: CRITICAL - Delete "0" rows DIRECTLY from database BEFORE Payload validates
+      // STEP 2: CRITICAL - Delete "0" rows DIRECTLY from database BEFORE Payload validates
       // Payload reads abstracts_rels during validation, so we must clean it first
       console.log('[Abstract Update] 🗑️ Deleting invalid "0" rows directly from abstracts_rels...')
       try {
@@ -455,60 +436,24 @@ export async function PATCH(
         // Continue - Payload update might still work
       }
       
-      // STEP 4: Always clear assignedReviewers first, then set new list (prevents Payload from merging with existing "0" rows)
-      console.log('[Abstract Update] 🔄 Clearing then setting assignedReviewers...')
-      console.log('[Abstract Update] 📤 Sending ONLY these reviewer IDs:', {
-        ids: finalCheck,
-        count: finalCheck.length,
-        type: typeof finalCheck[0],
-        containsZero: finalCheck.includes('0'),
-        allAreStrings: finalCheck.every((id: any) => typeof id === 'string'),
-      })
-      
-      try {
-        // Clear first so Payload never merges with existing invalid relationships (e.g. users_id = 0)
-        await payload.update({
-          collection: 'abstracts',
-          id: params.id,
-          data: { assignedReviewers: [] },
-          overrideAccess: true,
-        })
-        // Now set the clean list
-        const reviewerUpdateResult = await payload.update({
-          collection: 'abstracts',
-          id: params.id,
-          data: {
-            assignedReviewers: finalCheck, // ONLY the clean reviewer IDs as strings
-          },
-          overrideAccess: true,
-        })
-        console.log('[Abstract Update] ✅ Updated assignedReviewers with clean data:', finalCheck)
-      } catch (reviewerError: any) {
-        console.error('[Abstract Update] ❌ Error updating assignedReviewers separately:', {
-          message: reviewerError.message,
-          data: reviewerError.data,
-          errors: reviewerError.data?.errors,
-          stack: reviewerError.stack,
-        })
-        // If reviewer update fails, throw the error - don't continue with other fields
-        // This ensures the user knows reviewer assignment failed
-        throw reviewerError
-      }
-      
-      // STEP 4: Update all other fields (excluding assignedReviewers since we already updated it)
-      const { assignedReviewers: _, ...otherFields } = updateData
-      
-      console.log('[Abstract Update] 🚀 Calling Payload.update for other fields:', {
+      // STEP 3: One Payload update with full document (primaryAuthor + reviewers + everything).
+      // Reviewer IDs as integers match Postgres FKs; collection hook also normalizes arrays.
+      const assignedReviewersForPayload = finalCheck
+        .map((id: string) => parseInt(id, 10))
+        .filter((n: number) => Number.isInteger(n) && n > 0)
+
+      updateData.assignedReviewers = assignedReviewersForPayload
+
+      console.log('[Abstract Update] 🚀 Single Payload.update (full document):', {
         id: params.id,
-        fields: Object.keys(otherFields),
-        assignedReviewersAlreadySet: finalCheck,
+        fields: Object.keys(updateData),
+        assignedReviewers: assignedReviewersForPayload,
       })
-      
-      // Update with clean data - assignedReviewers already set separately
+
       const abstractDoc = await payload.update({
         collection: 'abstracts',
         id: params.id,
-        data: otherFields,
+        data: updateData,
         overrideAccess: true,
       })
 

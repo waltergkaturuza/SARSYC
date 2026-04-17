@@ -170,10 +170,17 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
   }
 
   const handleAuthorChange = (field: string, value: string | number) => {
+    const errKey = `primaryAuthor.${field}`
     setFormData(prev => ({
       ...prev,
       primaryAuthor: { ...prev.primaryAuthor, [field]: value },
     }))
+    setErrors(prev => {
+      if (!prev[errKey]) return prev
+      const next = { ...prev }
+      delete next[errKey]
+      return next
+    })
   }
 
   const addKeyword = () => {
@@ -415,6 +422,7 @@ export default function AbstractForm({ initialData, mode }: AbstractFormProps) {
       const response = await fetch(url, {
         method,
         body: submitData,
+        credentials: 'include',
       })
 
       const result = await response.json()
