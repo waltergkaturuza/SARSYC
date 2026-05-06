@@ -23,26 +23,39 @@ export const runtime = 'nodejs'
 export const maxDuration = 60
 
 /**
- * After a registration is saved, POST { registrationPayloadId: number } to get the hosted payment URL.
+ * After a registration is saved, POST JSON with either:
+ * - `registrationPayloadId`: Payload CMS document id (number or string), and/or
+ * - `registrationId`: human-readable id (e.g. SARSYC-…), for lookup if the CMS id is wrong.
  */
 export async function POST(req: NextRequest) {
   if (!registrationRequiresHostedPayment()) {
     return NextResponse.json({ error: 'Hosted payment is not enabled' }, { status: 400 })
   }
 
-  let body: { registrationPayloadId?: number }
+  type Body = { registrationPayloadId?: unknown; registrationId?: unknown }
+  let body: Body
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const registrationPayloadId = body.registrationPayloadId
-  if (typeof registrationPayloadId !== 'number' && typeof registrationPayloadId !== 'string') {
-    return NextResponse.json({ error: 'registrationPayloadId is required' }, { status: 400 })
-  }
+  const payloadIdRaw = body.registrationPayloadId
+  const payloadIdCandidate =
+    payloadIdRaw === null || payloadIdRaw === undefined
+      ? ''
+      : String(payloadIdRaw).trim()
+  const registrationIdHuman =
+    typeof body.registrationId === 'string' ? body.registrationId.trim() : ''
 
-  const idStr = String(registrationPayloadId)
+  const looksLikeHumanRef = /^sarsyc-/i.test(payloadIdCandidate)
+
+  if (!payloadIdCandidate && !registrationIdHuman && !looksLikeHumanRef) {
+    return NextResponse.json(
+      { error: 'Provide registrationPayloadId (CMS id) or registrationId (e.g. SARSYC-…).' },
+      { status: 400 },
+    )
+  }
 
   let payload: Awaited<ReturnType<typeof getPayloadClient>>
   try {
@@ -57,16 +70,39 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let registration
-  try {
-    registration = await payload.findByID({
+  let registration: Awaited<ReturnType<typeof payload.findByID>> | null = null
+
+  if (payloadIdCandidate && !looksLikeHumanRef) {
+    try {
+      registration = await payload.findByID({
+        collection: 'registrations',
+        id: payloadIdCandidate,
+        overrideAccess: true,
+      })
+    } catch {
+      registration = null
+    }
+  }
+
+  const humanLookup = registrationIdHuman || (looksLikeHumanRef ? payloadIdCandidate : '')
+  if (!registration && humanLookup) {
+    const found = await payload.find({
       collection: 'registrations',
-      id: idStr,
+      where: { registrationId: { equals: humanLookup } },
+      limit: 1,
       overrideAccess: true,
     })
-  } catch {
-    return NextResponse.json({ error: 'Registration not found' }, { status: 404 })
+    registration = found.docs[0] ?? null
   }
+
+  if (!registration) {
+    return NextResponse.json(
+      { error: 'Registration not found. Use the same email to register or contact support with your registration ID.' },
+      { status: 404 },
+    )
+  }
+
+  const idStr = String(registration.id)
 
   if (registration.paymentStatus === 'paid' || registration.paymentStatus === 'waived') {
     return NextResponse.json({ error: 'Registration does not require payment' }, { status: 409 })

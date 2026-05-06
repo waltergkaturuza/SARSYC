@@ -100,7 +100,6 @@ export default function Header() {
                   alt="SARSYC Logo"
                   fill
                   className="object-cover scale-110"
-                  priority
                   sizes="64px"
                 />
               </div>

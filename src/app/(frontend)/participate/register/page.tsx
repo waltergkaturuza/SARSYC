@@ -248,7 +248,10 @@ export default function RegisterPage() {
       const payRes = await fetch('/api/payments/stanbic/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registrationPayloadId: savedPayloadId }),
+        body: JSON.stringify({
+          registrationPayloadId: savedPayloadId,
+          ...(registrationId.trim() ? { registrationId: registrationId.trim() } : {}),
+        }),
       })
       const payJson = await payRes.json().catch(() => ({}))
       if (
@@ -261,9 +264,17 @@ export default function RegisterPage() {
         return
       }
       showToast.dismiss(loadId)
+      const apiMsg =
+        typeof payJson.error === 'string'
+          ? payJson.error
+          : typeof (payJson as { message?: unknown }).message === 'string'
+            ? (payJson as { message: string }).message
+            : null
       showToast.error(
-        payJson.error ||
-          'We could not open the payment page. Check your email or try again in a few minutes.',
+        apiMsg ||
+          (payRes.status
+            ? `Payment could not start (HTTP ${payRes.status}). Try again or contact registration@sarsyc.org.`
+            : 'We could not open the payment page. Check your email or try again in a few minutes.'),
       )
     } catch {
       showToast.dismiss(loadId)
@@ -271,7 +282,7 @@ export default function RegisterPage() {
     } finally {
       setPaymentRetryBusy(false)
     }
-  }, [savedPayloadId])
+  }, [savedPayloadId, registrationId])
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true)
@@ -395,11 +406,16 @@ export default function RegisterPage() {
         if (result.paymentRequired && payloadId != null) {
           const loadId = showToast.loading('Redirecting to secure payment…')
           try {
-            const payRes = await fetch('/api/payments/stanbic/create-order', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ registrationPayloadId: payloadId }),
-            })
+      const payRes = await fetch('/api/payments/stanbic/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationPayloadId: payloadId,
+          ...(typeof regIdHuman === 'string' && regIdHuman.trim()
+            ? { registrationId: regIdHuman.trim() }
+            : {}),
+        }),
+      })
             const payJson = await payRes.json().catch(() => ({}))
             if (
               payRes.ok &&
