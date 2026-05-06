@@ -7,6 +7,7 @@ import {
   getRegistrationPricingTier,
   isRegistrationPackageId,
 } from '@/lib/registrationPackages'
+import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest) {
     console.log('📩 passportScanUrl present:', !!registrationData.passportScanUrl)
     
     const payload = await getPayloadClient()
+    await ensureRegistrationsLatestColumns(payload)
 
     // Handle passport file - either from FormData (legacy) or from client-side upload (new)
     if (registrationData.passportScanUrl) {

@@ -6,6 +6,7 @@ import {
   isOrderPaymentSuccessful,
   registrationRequiresHostedPayment,
 } from '@/lib/stanbic/ngenius'
+import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
   }
 
   const payload = await getPayloadClient()
+  await ensureRegistrationsLatestColumns(payload)
 
   let registration
   try {
