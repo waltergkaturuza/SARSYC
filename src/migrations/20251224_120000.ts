@@ -28,10 +28,19 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     CREATE UNIQUE INDEX IF NOT EXISTS participants_email_unique ON participants (email);
     CREATE INDEX IF NOT EXISTS participants_registration_idx ON participants (registration_id);
-
-    ALTER TABLE participants
-      ADD CONSTRAINT IF NOT EXISTS participants_registration_fk FOREIGN KEY (registration_id) REFERENCES registrations (id) ON DELETE SET NULL;
   `)
+
+  /** PostgreSQL before 15 does not support ADD CONSTRAINT IF NOT EXISTS */
+  await db.execute(sql.raw(`
+    DO $$
+    BEGIN
+      ALTER TABLE participants
+        ADD CONSTRAINT participants_registration_fk
+        FOREIGN KEY (registration_id) REFERENCES registrations (id) ON DELETE SET NULL;
+    EXCEPTION
+      WHEN duplicate_object THEN NULL;
+    END $$;
+  `))
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
