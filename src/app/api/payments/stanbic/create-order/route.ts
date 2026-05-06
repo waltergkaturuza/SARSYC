@@ -8,6 +8,7 @@ import {
   registrationFeeCurrency,
   resolveHostedPaymentMinorUnits,
   formatStanbicOutboundError,
+  httpStatusForStanbicOutboundFailure,
 } from '@/lib/stanbic/ngenius'
 import {
   getRegistrationPricingTier,
@@ -17,6 +18,9 @@ import {
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
+
+const STANBIC_CREATE_ORDER_UPSTREAM_HINT =
+  'If this repeats: check STANBIC_* secrets and gateway URL on Vercel, and that the payment return URL origin (NEXT_PUBLIC_SITE_URL) is allow-listed for your N-Genius outlet.'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -189,7 +193,9 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: unknown) {
     const msg = formatStanbicOutboundError(e)
+    const httpStatus = httpStatusForStanbicOutboundFailure(msg)
     console.error('[stanbic create-order]', e)
+    console.error('[stanbic create-order] payment return URL (allow-list):', redirectUrl)
     logStanbicPaymentEvent({
       event: 'stanbic_start',
       registrationRef:
@@ -233,6 +239,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ error: msg }, { status: 503 })
+    return NextResponse.json(
+      httpStatus === 502
+        ? { error: msg, hint: STANBIC_CREATE_ORDER_UPSTREAM_HINT }
+        : { error: msg },
+      { status: httpStatus },
+    )
   }
 }

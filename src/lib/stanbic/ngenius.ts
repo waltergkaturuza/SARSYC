@@ -10,15 +10,40 @@ import {
   minorAmountForPackage,
 } from '@/lib/registrationPackages'
 
+/**
+ * Sandbox N-Genius API key credential (already Base64 of `clientId:clientSecret`) used only when
+ * `STANBIC_MERCHANT_API_KEY` is unset. Must be sent as `Authorization: Basic <this>` — do not URL-encode again.
+ */
+const STANBIC_MERCHANT_API_KEY_FALLBACK =
+  'M2ZiZGQwMTgtYWU2OS00NTYyLWE3OWMtZWU1OThkOTdiMzQ4OjBiOWRkNWVkLWQ3OTItNGI2Yi05NzRiLTVjMTVmYzMxZjlhOQ=='
+
 function gatewayBase(): string | null {
   const u = process.env.STANBIC_API_GATEWAY_URL?.trim().replace(/\/$/, '')
   return u || null
 }
 
+function resolvedMerchantApiKey(): string {
+  const fromEnv = process.env.STANBIC_MERCHANT_API_KEY?.trim()
+  return fromEnv || STANBIC_MERCHANT_API_KEY_FALLBACK
+}
+
+/** True when value is Base64 of `clientId:clientSecret` (Stanbic portal copy-paste), not a plain API key id. */
+function looksLikePreencodedNiBasic(credential: string): boolean {
+  if (credential.length < 24) return false
+  if (!/^[A-Za-z0-9+/]+=*$/.test(credential)) return false
+  try {
+    const decoded = Buffer.from(credential, 'base64').toString('utf8')
+    return decoded.includes(':') && /^[\x20-\x7E]+$/.test(decoded)
+  } catch {
+    return false
+  }
+}
+
 function stanbicOutboundTimeoutMs(): number {
   const raw = process.env.STANBIC_FETCH_TIMEOUT_MS?.trim()
   const n = raw ? parseInt(raw, 10) : NaN
-  const ms = Number.isFinite(n) && n >= 5000 ? n : 30000
+  const fallback = 45000
+  const ms = Number.isFinite(n) && n >= 5000 ? n : fallback
   return Math.min(ms, 120000)
 }
 
@@ -46,9 +71,24 @@ export function formatStanbicOutboundError(err: unknown): string {
   return msg
 }
 
+/**
+ * Pick route HTTP status when N-Genius outbound fails.
+ * 502 = upstream responded with a client error (credentials, validation, redirect URL block).
+ * 503 = timeout, DNS, connectivity, or upstream 5xx.
+ */
+export function httpStatusForStanbicOutboundFailure(message: string): number {
+  const m = message.trim()
+  if (/did not respond within/i.test(m) || /^Stanbic\/N-Genius did not respond/i.test(m)) return 503
+  if (/abort|timed out|timeout|fetch failed|ENOTFOUND|ECONNREFUSED|EAI_AGAIN/i.test(m)) return 503
+  const match = m.match(/\((\d{3})\)/)
+  const code = match ? parseInt(match[1], 10) : NaN
+  if (Number.isFinite(code) && code >= 400 && code < 500) return 502
+  return 503
+}
+
 export function stanbicHostedPaymentsConfigured(): boolean {
   const b = gatewayBase()
-  const key = process.env.STANBIC_MERCHANT_API_KEY?.trim()
+  const key = resolvedMerchantApiKey()
   const outlet = process.env.STANBIC_OUTLET_REFERENCE?.trim()
   const realm = process.env.STANBIC_REALM_NAME?.trim()
   return Boolean(b && key && outlet && realm)
@@ -97,9 +137,12 @@ export function publicSiteOrigin(): string {
 }
 
 function basicAuthHeader(): string {
-  const apiKey = process.env.STANBIC_MERCHANT_API_KEY?.trim() || ''
-  // N-Genius examples use "Authorization: Basic " + portal API key string; alternately HTTP Basic (key:password).
-  if (process.env.STANBIC_API_KEY_AUTHORIZATION_RAW === 'true') {
+  const apiKey = resolvedMerchantApiKey()
+  const envExplicit = Boolean(process.env.STANBIC_MERCHANT_API_KEY?.trim())
+  const rawMode = process.env.STANBIC_API_KEY_AUTHORIZATION_RAW === 'true'
+  const usePreencodedBasic =
+    rawMode || !envExplicit || (envExplicit && looksLikePreencodedNiBasic(apiKey))
+  if (usePreencodedBasic) {
     return `Basic ${apiKey}`
   }
   const token = Buffer.from(`${apiKey}:`, 'utf8').toString('base64')
@@ -132,11 +175,11 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
   }
 
   if (!res.ok) {
-    throw new Error(
-      typeof data.message === 'string'
-        ? data.message
-        : `Stanbic auth failed (${res.status}): ${text.slice(0, 200)}`,
-    )
+    const detail =
+      typeof data.message === 'string' && data.message.trim()
+        ? data.message.trim()
+        : text.slice(0, 200)
+    throw new Error(`Stanbic auth failed (${res.status}): ${detail}`)
   }
 
   const tok = data.access_token
@@ -202,11 +245,11 @@ export async function stanbicCreateHostedOrder(params: {
   }
 
   if (!res.ok) {
-    const msg =
-      typeof data.message === 'string'
-        ? data.message
-        : `Create order failed (${res.status}): ${text.slice(0, 300)}`
-    throw new Error(msg)
+    const detail =
+      typeof data.message === 'string' && data.message.trim()
+        ? data.message.trim()
+        : text.slice(0, 300)
+    throw new Error(`Create order failed (${res.status}): ${detail}`)
   }
 
   const links = data._links as Record<string, { href?: string }> | undefined

@@ -270,8 +270,13 @@ export default function RegisterPage() {
           : typeof (payJson as { message?: unknown }).message === 'string'
             ? (payJson as { message: string }).message
             : null
+      const apiHint =
+        typeof (payJson as { hint?: unknown }).hint === 'string'
+          ? (payJson as { hint: string }).hint
+          : ''
+      const combined = [apiMsg, apiHint].filter(Boolean).join(' ')
       showToast.error(
-        apiMsg ||
+        combined ||
           (payRes.status
             ? `Payment could not start (HTTP ${payRes.status}). Try again or contact registration@sarsyc.org.`
             : 'We could not open the payment page. Check your email or try again in a few minutes.'),
@@ -428,9 +433,15 @@ export default function RegisterPage() {
             }
             console.error('Payment session error:', payJson)
             showToast.dismiss(loadId)
+            const savedPayErr = typeof payJson.error === 'string' ? payJson.error : ''
+            const savedPayHint =
+              typeof (payJson as { hint?: unknown }).hint === 'string'
+                ? (payJson as { hint: string }).hint
+                : ''
+            const savedPayDetail = [savedPayErr, savedPayHint].filter(Boolean).join(' ')
             showToast.info(
-              payJson.error
-                ? `Registration saved. ${payJson.error} — complete payment below or check your email.`
+              savedPayDetail
+                ? `Registration saved. ${savedPayDetail} — complete payment below or check your email.`
                 : 'Registration saved — card payment still required. Use the button below or check your email.',
             )
             setPaymentOutstanding(true)
