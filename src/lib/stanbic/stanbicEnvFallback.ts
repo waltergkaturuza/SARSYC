@@ -12,7 +12,7 @@
  * - `STANBIC_REALM` or `STANBIC_REALM_NAME` = `StanbicBankZimbabweSandbox`  
  * - `STANBIC_API_KEY` or `STANBIC_MERCHANT_API_KEY` = Service account API key from sandbox portal  
  * - `STANBIC_OUTLET_REF` or `STANBIC_OUTLET_REFERENCE` = outlet REFERENCE UUID  
- * - `STANBIC_API_KEY_AUTHORIZATION_RAW` = `true` (typical for portal Base64 key)  
+ * - `STANBIC_API_KEY_AUTHORIZATION_RAW` = `true` if the portal shows **one long Base64** credential (usual). Use `false` **only** for a **plain** API key where N-Genius expects HTTP Basic with Base64 of `key:` (empty password); `false` breaks auth if the pasted value is already composite Base64.  
  *
  * **Optional:** `STANBIC_DISABLE_CODE_FALLBACK=true` → never read defaults from this file (forces explicit env).
  *

@@ -70,7 +70,7 @@ function resolvedGatewayBase(): string | null {
   return u || null
 }
 
-/** Host for `/identity/auth/access-token` — optional dedicated identity URL, else gateway. */
+/** Host for `{base}/identity/auth/access-token`. Omit `STANBIC_IDENTITY_URL` unless Stanbic’s pack names a separate identity base; wrong host → HTML/404 on token. */
 function resolvedIdentityRoot(): string | null {
   const explicit = process.env.STANBIC_IDENTITY_URL?.trim().replace(/\/$/, '')
   const fromFile = stripTrailingSlash(fbIdentity())
@@ -225,12 +225,11 @@ function resolvedRawAuthorizationFlag(): boolean {
 
 function basicAuthHeader(): string {
   const apiKey = resolvedMerchantApiKey()
-  const envExplicit = Boolean(
-    process.env.STANBIC_MERCHANT_API_KEY?.trim() || process.env.STANBIC_API_KEY?.trim(),
-  )
+  /** Stanbic portal often shows one Base64 string = Base64(`${clientId}:${clientSecret}`) → send as `Basic ${apiKey}` (no second encoding).
+   *  Some integrations use a plain API key id only → `STANBIC_API_KEY_AUTHORIZATION_RAW=false` → `Basic ${Base64(`${apiKey}:`)}`.
+   *  We never assume encoding based solely on “env unset”; blob shape drives pre-encoded detection. */
   const rawMode = resolvedRawAuthorizationFlag()
-  const usePreencodedBasic =
-    rawMode || !envExplicit || (envExplicit && looksLikePreencodedNiBasic(apiKey))
+  const usePreencodedBasic = rawMode || looksLikePreencodedNiBasic(apiKey)
   if (usePreencodedBasic) {
     return `Basic ${apiKey}`
   }
