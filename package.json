@@ -21,7 +21,10 @@
     "verify:locking-tables": "node scripts/verify_locking_tables.mjs",
     "cleanup:orphaned-photos": "node scripts/cleanup_orphaned_speaker_photos.mjs",
     "backfill:user-accounts": "npx tsx scripts/backfill_user_accounts.mjs",
-    "backup:database": "node scripts/backup_database.mjs"
+    "backup:database": "node scripts/backup_database.mjs",
+    "mail:demographics-reminders": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/send_demographics_reminders.ts",
+    "mail:demographics-reminders:send": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/send_demographics_reminders.ts --send",
+    "mail:verify-smtp": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/verify_smtp.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",

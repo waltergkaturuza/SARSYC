@@ -611,6 +611,20 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'stanbicPaymentOrderRef',
+      type: 'text',
+      label: 'Stanbic / N-Genius order reference',
+      admin: {
+        description: 'Set automatically when delegate is sent to the hosted payment page.',
+        position: 'sidebar',
+      },
+      access: {
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+        create: () => false,
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
       label: 'Admin Notes',

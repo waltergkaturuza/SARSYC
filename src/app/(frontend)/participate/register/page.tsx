@@ -106,9 +106,8 @@ const registrationSchema = z.object({
 
 type RegistrationFormData = z.infer<typeof registrationSchema>
 
-// Temporarily suspend registration while payment gateway is being set up
-const REGISTRATION_SUSPENDED = true
-const REGISTRATION_OPENS = ''
+// Must match API: NEXT_PUBLIC_REGISTRATION_OPEN=true to allow submissions
+const REGISTRATION_SUSPENDED = process.env.NEXT_PUBLIC_REGISTRATION_OPEN !== 'true'
 
 const steps = [
   { id: 1, name: 'Personal Info', icon: FiUser },
@@ -339,9 +338,44 @@ export default function RegisterPage() {
 
       if (response.ok) {
         const result = await response.json()
-        setRegistrationId(result.doc.registrationId)
-        setIsSuccess(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        const regIdHuman = result.doc?.registrationId
+        const payloadId = result.doc?.id
+
+        if (result.paymentRequired && payloadId != null) {
+          showToast.loading('Redirecting to secure payment...')
+          try {
+            const payRes = await fetch('/api/payments/stanbic/create-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ registrationPayloadId: payloadId }),
+            })
+            const payJson = await payRes.json().catch(() => ({}))
+            if (payRes.ok && typeof payJson.redirectUrl === 'string' && payJson.redirectUrl.startsWith('http')) {
+              window.location.href = payJson.redirectUrl
+              return
+            }
+            console.error('Payment session error:', payJson)
+            showToast.error(
+              payJson.error ||
+                'Registration was saved but we could not open the payment page. You will receive confirmation by email — please contact sarsyc@saywhat.org.zw to complete payment.',
+            )
+            setRegistrationId(regIdHuman || String(payloadId))
+            setIsSuccess(true)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          } catch (payErr) {
+            console.error(payErr)
+            showToast.error(
+              'Registration was saved but payment could not be started. Please email sarsyc@saywhat.org.zw.',
+            )
+            setRegistrationId(regIdHuman || String(payloadId))
+            setIsSuccess(true)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+        } else {
+          setRegistrationId(regIdHuman)
+          setIsSuccess(true)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
       } else {
         const errorData = await response.json().catch(() => ({}))
         let errorMessage = errorData.message || errorData.error || 'Registration failed. Please try again.'
@@ -482,10 +516,10 @@ export default function RegisterPage() {
             Registration Coming Soon
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            Registrations will be opening soon.
+            Online registration opens when organisers enable it in the configuration.
           </p>
           <p className="text-sm text-gray-500 mb-8">
-            In the meantime, you can still submit an abstract for the conference or explore our programme. We look forward to having you join us in Windhoek, Namibia for SARSYC VI!
+            In the meantime, you can submit an abstract or explore the programme. SARSYC VI — Windhoek, Namibia.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/" className="btn-outline">

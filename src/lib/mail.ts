@@ -1,40 +1,94 @@
 import nodemailer from 'nodemailer'
 
+/** Trim and strip one pair of surrounding quotes (common .env mistake). */
+function readEnvRaw(key: string): string | undefined {
+  const v = process.env[key]
+  if (v == null) return undefined
+  let s = v.trim()
+  if (s.length >= 2) {
+    const q = s[0]
+    if ((q === '"' || q === "'") && s[s.length - 1] === q) {
+      s = s.slice(1, -1).trim()
+    }
+  }
+  return s
+}
+
+function smtpPassword(): string | undefined {
+  const raw =
+    readEnvRaw('SMTP_PASS') ??
+    readEnvRaw('SMTP_PASSWORD') ??
+    readEnvRaw('EMAIL_PASSWORD') ??
+    readEnvRaw('MAIL_PASSWORD')
+  if (!raw) return undefined
+  return raw.replace(/\s+/g, '').trim()
+}
+
 const getTransporter = (() => {
-  let transporter: any = null
+  let cached: any | null | undefined
   return () => {
-    if (transporter) return transporter
+    if (cached !== undefined) return cached
 
-    // Hardcoded Gmail SMTP configuration
-    const host = process.env.SMTP_HOST || 'smtp.gmail.com'
+    const host = (readEnvRaw('SMTP_HOST') || 'smtp.gmail.com').toLowerCase()
     const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587
-    const user = process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
-    // Hardcoded Gmail App Password
-    const pass = process.env.SMTP_PASS || 'iacl gzjo qxbr syjy'
+    const user = readEnvRaw('SMTP_USER')?.trim()
+    const pass = smtpPassword()
 
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // true for 465, false for other ports
-      auth: { user, pass },
-    })
+    if (!user || !pass) {
+      console.warn(
+        'SMTP: Set SMTP_USER and SMTP_PASS (or SMTP_PASSWORD) in .env.local — see .env.example.',
+      )
+      cached = null
+      return null
+    }
 
-    // Optional: verify once
-    transporter.verify().catch((err: any) => {
+    const useGmailService =
+      host.includes('gmail.com') || user.toLowerCase().endsWith('@gmail.com')
+
+    const transport = useGmailService
+      ? nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user, pass },
+        })
+      : nodemailer.createTransport({
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass },
+        })
+
+    transport.verify().catch((err: any) => {
       console.warn('SMTP transporter verification failed:', err?.message || err)
     })
 
-    return transporter
+    cached = transport
+    return cached
   }
 })()
 
+/** Call from CLI to confirm Gmail accepts SMTP_USER + app password before bulk send. */
+export async function verifySmtpConnection(): Promise<{ ok: true } | { ok: false; error: string }> {
+  const transporter = getTransporter()
+  if (!transporter) {
+    return {
+      ok: false,
+      error:
+        'SMTP_USER and password not set (use SMTP_PASS or SMTP_PASSWORD — see .env.example).',
+    }
+  }
+  try {
+    await transporter.verify()
+    return { ok: true }
+  } catch (e: unknown) {
+    const err = e instanceof Error ? e.message : String(e)
+    return { ok: false, error: err }
+  }
+}
+
 export async function sendMail({ to, subject, text, html }: { to: string; subject: string; text?: string; html?: string }) {
   const transporter = getTransporter()
-  // Default to Gmail address if SMTP_FROM not set
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
-  // Use SMTP_REPLY_TO if set, otherwise fall back to SMTP_USER (the authenticated email account)
-  // This allows replies to go to a monitored inbox rather than the noreply address
-  const replyTo = process.env.SMTP_REPLY_TO || process.env.SMTP_USER || 'waltergkaturuza@gmail.com'
+  const from = readEnvRaw('SMTP_FROM') || readEnvRaw('SMTP_USER') || 'noreply@localhost'
+  const replyTo = readEnvRaw('SMTP_REPLY_TO') || readEnvRaw('SMTP_USER') || from
 
   const message = {
     from,
@@ -320,4 +374,118 @@ SARSYC VI Organizing Committee
     text,
     html,
   })
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export type DemographicsReminderItem = {
+  submissionId: string | null
+  title: string
+}
+
+/**
+ * Bulk outreach: ask primary authors to complete age, gender, and/or institution on file.
+ * Call from admin script; one email can cover multiple abstracts for the same address.
+ */
+export async function sendAbstractDemographicsReminder({
+  to,
+  firstName,
+  items,
+}: {
+  to: string
+  firstName?: string
+  items: DemographicsReminderItem[]
+}) {
+  const researchUnitEmail = 'researchunit@saywhat.org.zw'
+  const officeEmail =
+    readEnvRaw('SMTP_REPLY_TO') || readEnvRaw('SMTP_FROM') || readEnvRaw('SMTP_USER') || ''
+  const showOffice =
+    officeEmail &&
+    officeEmail.toLowerCase() !== researchUnitEmail.toLowerCase() &&
+    officeEmail.includes('@')
+  const name = (firstName || 'Author').trim() || 'Author'
+
+  const listHtml = items
+    .map(
+      (it) =>
+        `<li style="margin:8px 0;"><strong>${escapeHtml(String(it.submissionId || '—'))}</strong> — ${escapeHtml(it.title)}</li>`,
+    )
+    .join('')
+
+  const listText = items
+    .map((it) => `- ${it.submissionId || 'N/A'} — ${it.title}`)
+    .join('\n')
+
+  const subject =
+    items.length > 1
+      ? 'SARSYC VI — missing author details: email us (portal closed; multiple abstracts)'
+      : 'SARSYC VI — missing author details: email us (portal closed)'
+
+  const officeText = showOffice
+    ? `\nYou may also email: ${officeEmail}\n`
+    : ''
+  const officeHtml = showOffice
+    ? `<p style="font-size: 14px; color: #6b7280;">You may also write to <a href="mailto:${escapeHtml(officeEmail)}">${escapeHtml(officeEmail)}</a>.</p>`
+    : ''
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); padding: 24px; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 22px;">SARSYC VI Research Indaba</h1>
+        <p style="color: rgba(255,255,255,0.95); margin: 8px 0 0 0; font-size: 14px;">Author information (by email)</p>
+      </div>
+      <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+        <p>Dear ${escapeHtml(name)},</p>
+        <p>Our records show that one or more of your abstract submissions are <strong>missing required primary-author details</strong> (age, gender, and/or university / tertiary institution). These fields are required for conference reporting and delegate records.</p>
+        <p><strong>Submission(s) concerned:</strong></p>
+        <ul style="padding-left: 20px; margin: 12px 0;">${listHtml}</ul>
+        <p style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px 14px; border-radius: 6px;"><strong>Important:</strong> Abstract submission and editing on the conference website are <strong>closed</strong>. You can no longer add or change these details through the online form or dashboard.</p>
+        <p>If you received an earlier message asking you to update your profile online, please use the email instructions below instead.</p>
+        <p><strong>What to do:</strong> Send <strong>one email</strong> that includes, for <strong>each</strong> submission ID above, the missing information: <strong>age</strong>, <strong>gender</strong>, and <strong>university or tertiary institution</strong> (as they should appear on our records). Use the same email address you used when submitting, if possible.</p>
+        <p><strong>Where to send it:</strong></p>
+        <ul style="padding-left: 20px; margin: 8px 0;">
+          <li style="margin:6px 0;"><strong>Reply to this email</strong> (recommended), or</li>
+          <li style="margin:6px 0;">Email <a href="mailto:${researchUnitEmail}">${researchUnitEmail}</a></li>
+        </ul>
+        ${officeHtml}
+        <p style="font-size: 14px; color: #6b7280;">For general conference queries you can still contact <a href="mailto:info@sarsyc.org">info@sarsyc.org</a>.</p>
+        <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">Best regards,<br>SARSYC VI Organizing Committee</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const text = `
+Dear ${name},
+
+Our records show that one or more of your abstract submissions are missing required primary-author details (age, gender, and/or university / tertiary institution).
+
+Submission(s) concerned:
+${listText}
+
+IMPORTANT: Abstract submission and editing on the conference website are CLOSED. You cannot add these details through the online form or dashboard anymore.
+
+If you already received an earlier message asking you to update your profile online, please ignore those instructions about the website and follow this email instead.
+
+WHAT TO DO: Send one email that includes, for EACH submission ID above, the missing information: age, gender, and university or tertiary institution. Use the same email address you used when submitting, if possible.
+
+WHERE TO SEND IT:
+- Reply to this email, OR
+- Email: ${researchUnitEmail}${officeText}
+For general conference queries: info@sarsyc.org
+
+Best regards,
+SARSYC VI Organizing Committee
+  `.trim()
+
+  return sendMail({ to, subject, text, html })
 }

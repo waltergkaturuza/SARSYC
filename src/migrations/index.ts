@@ -10,6 +10,7 @@ import * as migration_20250202_000000_create_youth_steering_committee from './20
 import * as migration_20250216_000000_create_analytics_tables from './20250216_000000_create_analytics_tables';
 import * as migration_20260312_000000_add_missing_locked_docs_rels_columns from './20260312_000000_add_missing_locked_docs_rels_columns';
 import * as migration_20260312_000001_add_abstract_author_demographics from './20260312_000001_add_abstract_author_demographics';
+import * as migration_20260506_000000_add_registrations_stanbic_order_ref from './20260506_000000_add_registrations_stanbic_order_ref';
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20260312_000001_add_abstract_author_demographics.up,
     down: migration_20260312_000001_add_abstract_author_demographics.down,
     name: '20260312_000001_add_abstract_author_demographics'
+  },
+  {
+    up: migration_20260506_000000_add_registrations_stanbic_order_ref.up,
+    down: migration_20260506_000000_add_registrations_stanbic_order_ref.down,
+    name: '20260506_000000_add_registrations_stanbic_order_ref'
   },
 ];

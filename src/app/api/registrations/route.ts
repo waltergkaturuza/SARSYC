@@ -2,20 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendRegistrationConfirmation } from '@/lib/mail'
 import { put } from '@vercel/blob'
+import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Temporarily suspend registration while payment gateway is being set up
-const REGISTRATION_SUSPENDED = true
-const REGISTRATION_OPENS = '1 April 2026'
+/** Set NEXT_PUBLIC_REGISTRATION_OPEN=true in env when you want the public form active. */
+function isRegistrationOpen(): boolean {
+  return process.env.NEXT_PUBLIC_REGISTRATION_OPEN === 'true'
+}
 
 export async function POST(request: NextRequest) {
-  if (REGISTRATION_SUSPENDED) {
+  if (!isRegistrationOpen()) {
     return NextResponse.json(
       {
         success: false,
-        error: `Registration is temporarily suspended. Registrations will open on ${REGISTRATION_OPENS}. Please check back then.`,
+        error:
+          'Online registration is not open yet. When it opens, complete the form and — if a fee applies — you will be redirected to secure card payment (Stanbic hosted page).',
       },
       { status: 503 }
     )
@@ -785,10 +788,15 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send registration confirmation email:', emailError)
     }
 
+    const paymentRequired = registrationRequiresHostedPayment()
+
     return NextResponse.json({
       success: true,
       doc: registration,
-      message: 'Registration successful',
+      message: paymentRequired
+        ? 'Registration saved — continue to payment on the next page.'
+        : 'Registration successful',
+      paymentRequired,
     })
   } catch (error: any) {
     // Log error immediately and aggressively using ALL methods
