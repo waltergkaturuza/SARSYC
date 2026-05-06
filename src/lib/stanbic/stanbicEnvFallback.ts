@@ -7,9 +7,14 @@
  * Generic NI sandbox uses realm `ni`; **Stanbic UAT** uses `StanbicBankZimbabweSandbox` (not `ni`).
  * Docs: https://docs.ngenius-payments.com/reference/request-an-access-token-paypage
  *
- * **Sandbox (UAT)** — typical with Stanbic test portal / sandbox service account
- * | STANBIC_API_GATEWAY_URL | https://api-gateway.sandbox.stanbicbank.co.zw |
- * | STANBIC_REALM_NAME     | StanbicBankZimbabweSandbox |
+ * **Vercel sandbox checklist (set all, then redeploy)**  
+ * - `STANBIC_GATEWAY_URL` or `STANBIC_API_GATEWAY_URL` = `https://api-gateway.sandbox.stanbicbank.co.zw` (**not** portal)  
+ * - `STANBIC_REALM` or `STANBIC_REALM_NAME` = `StanbicBankZimbabweSandbox`  
+ * - `STANBIC_API_KEY` or `STANBIC_MERCHANT_API_KEY` = Service account API key from sandbox portal  
+ * - `STANBIC_OUTLET_REF` or `STANBIC_OUTLET_REFERENCE` = outlet REFERENCE UUID  
+ * - `STANBIC_API_KEY_AUTHORIZATION_RAW` = `true` (typical for portal Base64 key)  
+ *
+ * **Optional:** `STANBIC_DISABLE_CODE_FALLBACK=true` → never read defaults from this file (forces explicit env).
  *
  * **Live** — must match Stanbic’s production pack (all three together)
  * | STANBIC_API_GATEWAY_URL | https://api-gateway.stanbicbank.co.zw |
@@ -20,7 +25,7 @@
 
 /** Short hint on create-order failures; alignment details are in the file header & Vercel function logs. */
 export const STANBIC_PAYMENT_SUPPORT_HINT =
-  'Use one Stanbic environment only (sandbox gateway + realm StanbicBankZimbabweSandbox + sandbox key, OR the live trio Stanbic gave you). Unset STANBIC_* on Vercel uses repo sandbox defaults—they must match that service account.'
+  'Use api-gateway URL (not portal), matching realm + API key + outlet. Env aliases: STANBIC_GATEWAY_URL, STANBIC_REALM, STANBIC_API_KEY, STANBIC_OUTLET_REF. Set STANBIC_DISABLE_CODE_FALLBACK=true to require all values on Vercel (no repo defaults). Redeploy after env changes.'
 
 export const STANBIC_ENV_FALLBACK = {
   /**

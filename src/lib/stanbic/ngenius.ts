@@ -11,37 +11,93 @@ import {
 } from '@/lib/registrationPackages'
 import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
 
+/** When `STANBIC_DISABLE_CODE_FALLBACK` is true, `stanbicEnvFallback.ts` values are not used (forces explicit Vercel/local env). */
+function useStanbicCodeFallback(): boolean {
+  const v = process.env.STANBIC_DISABLE_CODE_FALLBACK?.trim().toLowerCase()
+  return v !== 'true' && v !== '1' && v !== 'yes'
+}
+
+function fbGateway(): string {
+  return useStanbicCodeFallback() ? STANBIC_ENV_FALLBACK.STANBIC_API_GATEWAY_URL.trim() : ''
+}
+
+function fbIdentity(): string {
+  return useStanbicCodeFallback() ? STANBIC_ENV_FALLBACK.STANBIC_IDENTITY_URL.trim() : ''
+}
+
+function fbMerchantKey(): string {
+  return useStanbicCodeFallback() ? STANBIC_ENV_FALLBACK.STANBIC_MERCHANT_API_KEY.trim() : ''
+}
+
+function fbOutlet(): string {
+  return useStanbicCodeFallback() ? STANBIC_ENV_FALLBACK.STANBIC_OUTLET_REFERENCE.trim() : ''
+}
+
+function fbRealm(): string {
+  if (!useStanbicCodeFallback()) return ''
+  const r = STANBIC_ENV_FALLBACK.STANBIC_REALM_NAME.trim()
+  return r || 'StanbicBankZimbabweSandbox'
+}
+
+function stripTrailingSlash(url: string): string {
+  return url.trim().replace(/\/$/, '')
+}
+
+/** Reject merchant portal URLs — tokens/orders must use `api-gateway` host. */
+function assertStanbicGatewayIsNotPortalHostname(gatewayUrl: string): void {
+  const raw = stripTrailingSlash(gatewayUrl)
+  let host = ''
+  try {
+    host = new URL(raw.startsWith('http') ? raw : `https://${raw}`).hostname.toLowerCase()
+  } catch {
+    return
+  }
+  const portalHosts = new Set([
+    'portal.sandbox.stanbicbank.co.zw',
+    'portal.stanbicbank.co.zw',
+  ])
+  if (portalHosts.has(host)) {
+    throw new Error(
+      'Stanbic gateway must be api-gateway… (e.g. https://api-gateway.sandbox.stanbicbank.co.zw), not https://portal.sandbox.stanbicbank.co.zw — see Stanbic docs.',
+    )
+  }
+}
+
 function resolvedGatewayBase(): string | null {
-  const u =
-    process.env.STANBIC_API_GATEWAY_URL?.trim().replace(/\/$/, '') ||
-    STANBIC_ENV_FALLBACK.STANBIC_API_GATEWAY_URL.trim().replace(/\/$/, '')
+  const envFirst =
+    process.env.STANBIC_API_GATEWAY_URL?.trim() || process.env.STANBIC_GATEWAY_URL?.trim()
+  const u = stripTrailingSlash(envFirst || fbGateway())
   return u || null
 }
 
 /** Host for `/identity/auth/access-token` — optional dedicated identity URL, else gateway. */
 function resolvedIdentityRoot(): string | null {
   const explicit = process.env.STANBIC_IDENTITY_URL?.trim().replace(/\/$/, '')
-  const fromFile = STANBIC_ENV_FALLBACK.STANBIC_IDENTITY_URL.trim().replace(/\/$/, '')
+  const fromFile = stripTrailingSlash(fbIdentity())
   return explicit || fromFile || resolvedGatewayBase()
 }
 
 function resolvedMerchantApiKey(): string {
-  const fromEnv = process.env.STANBIC_MERCHANT_API_KEY?.trim()
-  return fromEnv || STANBIC_ENV_FALLBACK.STANBIC_MERCHANT_API_KEY.trim()
+  return (
+    process.env.STANBIC_MERCHANT_API_KEY?.trim() ||
+    process.env.STANBIC_API_KEY?.trim() ||
+    fbMerchantKey()
+  )
 }
 
 function resolvedOutletReference(): string {
   return (
     process.env.STANBIC_OUTLET_REFERENCE?.trim() ||
-    STANBIC_ENV_FALLBACK.STANBIC_OUTLET_REFERENCE.trim()
+    process.env.STANBIC_OUTLET_REF?.trim() ||
+    fbOutlet()
   )
 }
 
 function resolvedRealmName(): string {
   return (
     process.env.STANBIC_REALM_NAME?.trim() ||
-    STANBIC_ENV_FALLBACK.STANBIC_REALM_NAME.trim() ||
-    'StanbicBankZimbabweSandbox'
+    process.env.STANBIC_REALM?.trim() ||
+    fbRealm()
   )
 }
 
@@ -59,7 +115,9 @@ function looksLikePreencodedNiBasic(credential: string): boolean {
 
 function stanbicOutboundTimeoutMs(): number {
   const raw = process.env.STANBIC_FETCH_TIMEOUT_MS?.trim()
-  const fallbackCfg = STANBIC_ENV_FALLBACK.STANBIC_FETCH_TIMEOUT_MS
+  const fallbackCfg = useStanbicCodeFallback()
+    ? STANBIC_ENV_FALLBACK.STANBIC_FETCH_TIMEOUT_MS
+    : 45000
   const n = raw ? parseInt(raw, 10) : fallbackCfg
   const base = Number.isFinite(n) && n >= 5000 ? n : fallbackCfg >= 5000 ? fallbackCfg : 45000
   return Math.min(base, 120000)
@@ -156,17 +214,20 @@ export function publicSiteOrigin(): string {
   return 'http://localhost:3000'
 }
 
-/** Env wins when set (`true` / `false`); otherwise use fallback file. */
+/** Env wins when set (`true` / `false`); otherwise use fallback file (unless code fallback disabled). */
 function resolvedRawAuthorizationFlag(): boolean {
   const e = process.env.STANBIC_API_KEY_AUTHORIZATION_RAW?.trim().toLowerCase()
   if (e === 'true') return true
   if (e === 'false') return false
+  if (!useStanbicCodeFallback()) return false
   return STANBIC_ENV_FALLBACK.STANBIC_API_KEY_AUTHORIZATION_RAW === true
 }
 
 function basicAuthHeader(): string {
   const apiKey = resolvedMerchantApiKey()
-  const envExplicit = Boolean(process.env.STANBIC_MERCHANT_API_KEY?.trim())
+  const envExplicit = Boolean(
+    process.env.STANBIC_MERCHANT_API_KEY?.trim() || process.env.STANBIC_API_KEY?.trim(),
+  )
   const rawMode = resolvedRawAuthorizationFlag()
   const usePreencodedBasic =
     rawMode || !envExplicit || (envExplicit && looksLikePreencodedNiBasic(apiKey))
@@ -204,8 +265,12 @@ function formatIdentityFailureDetail(data: Record<string, unknown>, text: string
 }
 
 export async function stanbicAccessToken(): Promise<{ access_token: string }> {
+  const gw = resolvedGatewayBase()
+  if (!gw) throw new Error('STANBIC_API_GATEWAY_URL / STANBIC_GATEWAY_URL is not set')
+  assertStanbicGatewayIsNotPortalHostname(gw)
+
   const base = resolvedIdentityRoot()
-  if (!base) throw new Error('STANBIC_API_GATEWAY_URL is not set')
+  if (!base) throw new Error('STANBIC_API_GATEWAY_URL / STANBIC_GATEWAY_URL is not set')
 
   const url = `${base}/identity/auth/access-token`
   const realmName = resolvedRealmName()
@@ -277,10 +342,14 @@ export async function stanbicCreateHostedOrder(params: {
   const base = resolvedGatewayBase()
   const outlet = resolvedOutletReference()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
+  assertStanbicGatewayIsNotPortalHostname(base)
 
   const action = (
-    process.env.STANBIC_ORDER_ACTION?.trim() || STANBIC_ENV_FALLBACK.STANBIC_ORDER_ACTION
-  ).toUpperCase() as 'PURCHASE' | 'AUTH'
+    process.env.STANBIC_ORDER_ACTION?.trim() ||
+    (useStanbicCodeFallback() ? STANBIC_ENV_FALLBACK.STANBIC_ORDER_ACTION : 'PURCHASE')
+  )
+    .toUpperCase()
+    .trim() as 'PURCHASE' | 'AUTH'
 
   const body: Record<string, unknown> = {
     action: action === 'AUTH' ? 'AUTH' : 'PURCHASE',
@@ -340,6 +409,7 @@ export async function stanbicRetrieveOrder(params: {
   const base = resolvedGatewayBase()
   const outlet = resolvedOutletReference()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
+  assertStanbicGatewayIsNotPortalHostname(base)
 
   const url = `${base}/transactions/outlets/${encodeURIComponent(outlet)}/orders/${encodeURIComponent(params.orderReference)}`
   const res = await fetch(url, stanbicFetchInit({
