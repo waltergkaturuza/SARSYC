@@ -16,5 +16,9 @@ export async function ensureRegistrationsLatestColumns(payload: Payload): Promis
     `ALTER TABLE "registrations" ADD COLUMN IF NOT EXISTS "registration_package" varchar`,
   )
 
+  await payload.db.drizzle.execute(
+    `ALTER TABLE "registrations" ADD COLUMN IF NOT EXISTS "payment_follow_up_sent_at" timestamp with time zone`,
+  )
+
   patchedThisInstance = true
 }

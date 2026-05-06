@@ -16,6 +16,7 @@ import {
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
+import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -172,6 +173,30 @@ export async function POST(req: NextRequest) {
       dbStanbicOrderRefSaved: false,
       gatewayError: msg,
     })
+
+    const stanbicRef =
+      typeof registration.stanbicPaymentOrderRef === 'string'
+        ? registration.stanbicPaymentOrderRef.trim()
+        : ''
+    const emailTo =
+      typeof registration.email === 'string' ? registration.email.trim() : ''
+    if (emailTo && !stanbicRef) {
+      try {
+        await sendRegistrationPaymentSessionFailed({
+          to: emailTo,
+          firstName:
+            typeof registration.firstName === 'string' ? registration.firstName : undefined,
+          registrationId:
+            typeof registration.registrationId === 'string'
+              ? registration.registrationId
+              : idStr,
+          hint: msg,
+        })
+      } catch (mailErr: unknown) {
+        console.error('[stanbic create-order] payment-session email failed:', mailErr)
+      }
+    }
+
     return NextResponse.json({ error: msg }, { status: 503 })
   }
 }

@@ -803,19 +803,20 @@ export async function POST(request: NextRequest) {
       throw createError
     }
 
-    // Send confirmation email
+    const paymentRequired = registrationRequiresHostedPayment()
+
+    // Send confirmation email (different copy when hosted payment is expected next)
     try {
       await sendRegistrationConfirmation({
         to: registration.email,
         firstName: registration.firstName,
         registrationId: registration.registrationId || registration.id.toString(),
+        paymentRequired,
       })
     } catch (emailError: any) {
       // Log but don't fail the registration if email fails
       console.error('Failed to send registration confirmation email:', emailError)
     }
-
-    const paymentRequired = registrationRequiresHostedPayment()
 
     return NextResponse.json({
       success: true,

@@ -9,6 +9,10 @@ import {
 } from '@/lib/stanbic/ngenius'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
+import {
+  sendRegistrationPaymentConfirmed,
+  sendRegistrationPaymentNotConfirmed,
+} from '@/lib/mail'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -203,6 +207,8 @@ export async function POST(req: NextRequest) {
       })
 
       const paid = isOrderPaymentSuccessful(paymentStates)
+      const wasNotPaidYet =
+        registration.paymentStatus !== 'paid' && registration.paymentStatus !== 'waived'
 
       if (paid) {
         await payload.update({
@@ -215,6 +221,27 @@ export async function POST(req: NextRequest) {
           },
           overrideAccess: true,
         })
+
+        const regEmail =
+          typeof registration.email === 'string' ? registration.email.trim() : ''
+        if (wasNotPaidYet && regEmail) {
+          try {
+            const mailRes = await sendRegistrationPaymentConfirmed({
+              to: regEmail,
+              firstName:
+                typeof registration.firstName === 'string' ? registration.firstName : undefined,
+              registrationId:
+                typeof registration.registrationId === 'string'
+                  ? registration.registrationId
+                  : regId,
+            })
+            if (mailRes && 'success' in mailRes && !mailRes.success) {
+              console.error('[stanbic verify] payment-confirmed email not sent:', mailRes)
+            }
+          } catch (mailErr: unknown) {
+            console.error('[stanbic verify] payment-confirmed email failed:', mailErr)
+          }
+        }
 
         logStanbicPaymentEvent({
           event: 'stanbic_return',
@@ -267,6 +294,43 @@ export async function POST(req: NextRequest) {
         itemDescription: 'SARSYC VI registration fee',
         email: registration.email,
       })
+
+      const followUpEligible =
+        registration.paymentStatus === 'pending' &&
+        !registration.paymentFollowUpSentAt &&
+        typeof registration.email === 'string' &&
+        registration.email.trim().length > 0
+
+      if (followUpEligible) {
+        const summary =
+          paymentStates.length ? paymentStates.join(', ') : 'No payment confirmation from gateway yet'
+        try {
+          const mailOut = await sendRegistrationPaymentNotConfirmed({
+            to: registration.email!.trim(),
+            firstName:
+              typeof registration.firstName === 'string' ? registration.firstName : undefined,
+            registrationId:
+              typeof registration.registrationId === 'string'
+                ? registration.registrationId
+                : regId,
+            summary,
+          })
+          if (mailOut && 'success' in mailOut && mailOut.success) {
+            await payload.update({
+              collection: 'registrations',
+              id: regId,
+              data: {
+                paymentFollowUpSentAt: new Date().toISOString(),
+              },
+              overrideAccess: true,
+            })
+          } else {
+            console.error('[stanbic verify] payment-not-confirmed email failed or mock:', mailOut)
+          }
+        } catch (mailErr: unknown) {
+          console.error('[stanbic verify] payment-not-confirmed email threw:', mailErr)
+        }
+      }
 
       return NextResponse.json({
         ok: true,

@@ -43,9 +43,19 @@ export async function POST(req: Request) {
           const res = await payload.find({ collection: 'registrations', where: { id: { equals: id } } })
           const doc = res?.docs?.[0]
           if (doc) {
-            // Fire-and-forget
-            sendRegistrationConfirmation(doc).catch((e) => console.error('send email failed', e))
-            results.updated.push(id)
+            const to = typeof doc.email === 'string' ? doc.email.trim() : ''
+            if (!to) {
+              results.failed.push({ id, reason: 'registration has no email' })
+            } else {
+              sendRegistrationConfirmation({
+                to,
+                firstName: typeof doc.firstName === 'string' ? doc.firstName : undefined,
+                registrationId:
+                  typeof doc.registrationId === 'string' ? doc.registrationId : String(doc.id),
+                paymentRequired: false,
+              }).catch((e) => console.error('send email failed', e))
+              results.updated.push(id)
+            }
           }
         } else if (action === 'softDelete') {
           // If deletedAt field exists it will be set; otherwise mark as cancelled

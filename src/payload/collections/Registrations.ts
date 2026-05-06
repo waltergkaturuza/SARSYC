@@ -656,6 +656,24 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'paymentFollowUpSentAt',
+      type: 'date',
+      label: 'Payment follow-up email sent',
+      admin: {
+        description:
+          'Set automatically when we email the delegate after returning from the gateway without a confirmed payment (dedupes repeat notifications).',
+        position: 'sidebar',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
       label: 'Admin Notes',

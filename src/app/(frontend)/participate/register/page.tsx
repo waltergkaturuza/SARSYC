@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX } from 'react-icons/fi'
+import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX, FiAlertCircle } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 import { showToast } from '@/lib/toast'
@@ -203,6 +203,10 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  /** Saved in Payload but redirect to Stanbic did not happen */
+  const [paymentOutstanding, setPaymentOutstanding] = useState(false)
+  const [savedPayloadId, setSavedPayloadId] = useState<string | null>(null)
+  const [paymentRetryBusy, setPaymentRetryBusy] = useState(false)
   const [registrationId, setRegistrationId] = useState('')
   const [passportFile, setPassportFile] = useState<File | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -235,6 +239,39 @@ export default function RegisterPage() {
   const visaRequired = watch('visaRequired')
   const hasHealthInsurance = watch('hasHealthInsurance')
   const accommodationRequired = watch('accommodationRequired')
+
+  const retryHostedPayment = useCallback(async () => {
+    if (!savedPayloadId) return
+    setPaymentRetryBusy(true)
+    const loadId = showToast.loading('Opening secure payment…')
+    try {
+      const payRes = await fetch('/api/payments/stanbic/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationPayloadId: savedPayloadId }),
+      })
+      const payJson = await payRes.json().catch(() => ({}))
+      if (
+        payRes.ok &&
+        typeof payJson.redirectUrl === 'string' &&
+        payJson.redirectUrl.startsWith('http')
+      ) {
+        showToast.dismiss(loadId)
+        window.location.href = payJson.redirectUrl
+        return
+      }
+      showToast.dismiss(loadId)
+      showToast.error(
+        payJson.error ||
+          'We could not open the payment page. Check your email or try again in a few minutes.',
+      )
+    } catch {
+      showToast.dismiss(loadId)
+      showToast.error('Could not reach the payment service. Please try again.')
+    } finally {
+      setPaymentRetryBusy(false)
+    }
+  }, [savedPayloadId])
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true)
@@ -356,7 +393,7 @@ export default function RegisterPage() {
         const payloadId = result.doc?.id
 
         if (result.paymentRequired && payloadId != null) {
-          showToast.loading('Redirecting to secure payment...')
+          const loadId = showToast.loading('Redirecting to secure payment…')
           try {
             const payRes = await fetch('/api/payments/stanbic/create-order', {
               method: 'POST',
@@ -364,28 +401,42 @@ export default function RegisterPage() {
               body: JSON.stringify({ registrationPayloadId: payloadId }),
             })
             const payJson = await payRes.json().catch(() => ({}))
-            if (payRes.ok && typeof payJson.redirectUrl === 'string' && payJson.redirectUrl.startsWith('http')) {
+            if (
+              payRes.ok &&
+              typeof payJson.redirectUrl === 'string' &&
+              payJson.redirectUrl.startsWith('http')
+            ) {
+              showToast.dismiss(loadId)
               window.location.href = payJson.redirectUrl
               return
             }
             console.error('Payment session error:', payJson)
-            showToast.error(
-              payJson.error ||
-                'Registration was saved but we could not open the payment page. You will receive confirmation by email — please contact sarsyc@saywhat.org.zw to complete payment.',
+            showToast.dismiss(loadId)
+            showToast.info(
+              payJson.error
+                ? `Registration saved. ${payJson.error} — complete payment below or check your email.`
+                : 'Registration saved — card payment still required. Use the button below or check your email.',
             )
+            setPaymentOutstanding(true)
+            setSavedPayloadId(String(payloadId))
             setRegistrationId(regIdHuman || String(payloadId))
             setIsSuccess(true)
             window.scrollTo({ top: 0, behavior: 'smooth' })
           } catch (payErr) {
             console.error(payErr)
-            showToast.error(
-              'Registration was saved but payment could not be started. Please email sarsyc@saywhat.org.zw.',
+            showToast.dismiss(loadId)
+            showToast.info(
+              'Registration saved — we could not start the payment page. Check your email or use Complete payment below.',
             )
+            setPaymentOutstanding(true)
+            setSavedPayloadId(String(payloadId))
             setRegistrationId(regIdHuman || String(payloadId))
             setIsSuccess(true)
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }
         } else {
+          setPaymentOutstanding(false)
+          setSavedPayloadId(null)
           setRegistrationId(regIdHuman)
           setIsSuccess(true)
           window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -581,6 +632,62 @@ export default function RegisterPage() {
   }
 
   if (isSuccess) {
+    if (paymentOutstanding) {
+      return (
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="container-custom">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center border border-amber-100">
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiAlertCircle className="w-10 h-10 text-amber-600" aria-hidden />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Registration saved — payment still required
+                </h1>
+                <p className="text-lg text-gray-600 mb-6">
+                  Your details are on file, but your place is not confirmed until the registration fee is paid
+                  successfully on the secure Stanbic page.
+                </p>
+                <div className="bg-primary-50 rounded-lg p-6 mb-6">
+                  <p className="text-sm text-gray-600 mb-2">Your Registration ID</p>
+                  <p className="text-2xl font-bold text-primary-600 font-mono">{registrationId}</p>
+                </div>
+                <p className="text-sm text-gray-600 mb-6 text-left bg-amber-50 rounded-lg p-4 border border-amber-100">
+                  We have emailed you with next steps. You can also tap <strong>Complete payment</strong> below to
+                  try opening the payment page again. If your bank shows a charge but the site still says unpaid,
+                  email{' '}
+                  <a href="mailto:registration@sarsyc.org" className="text-primary-600 underline">
+                    registration@sarsyc.org
+                  </a>{' '}
+                  with your registration ID.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                  <button
+                    type="button"
+                    className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-60"
+                    onClick={() => void retryHostedPayment()}
+                    disabled={paymentRetryBusy}
+                  >
+                    {paymentRetryBusy ? (
+                      <>
+                        <FiLoader className="w-5 h-5 animate-spin" aria-hidden />
+                        Opening payment…
+                      </>
+                    ) : (
+                      'Complete payment'
+                    )}
+                  </button>
+                  <a href="/" className="btn-outline inline-flex items-center justify-center">
+                    Back to Homepage
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container-custom">

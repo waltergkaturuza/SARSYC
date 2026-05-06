@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiCheck, FiLoader, FiAlertCircle } from 'react-icons/fi'
+import { showToast } from '@/lib/toast'
 
 function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId: string }) {
   const searchParams = useSearchParams()
@@ -19,6 +20,7 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
       setMessage(
         'Missing payment reference from Stanbic/N-Genius. Return here from the bank page after paying, or contact sarsyc@saywhat.org.zw.',
       )
+      showToast.error('Missing payment reference. Open the link from the bank page or contact support.')
       return
     }
 
@@ -49,6 +51,7 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
         if (!res.ok) {
           setPhase('error')
           setMessage(data.error || 'Could not verify payment. Please contact sarsyc@saywhat.org.zw.')
+          showToast.error(data.error || 'Could not verify payment.')
           return
         }
 
@@ -57,16 +60,21 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
         if (data.paid) {
           setPhase('success')
           setMessage('Your payment was received. Registration is confirmed.')
+          showToast.success('Payment received — your registration is confirmed.')
         } else {
           setPhase('pending')
           setMessage(
             'Payment is not confirmed yet or was unsuccessful. If you completed payment, wait a minute and refresh, or email sarsyc@saywhat.org.zw with your registration ID.',
+          )
+          showToast.info(
+            'Payment not confirmed yet. If you paid, wait a moment and refresh — or check your email.',
           )
         }
       } catch {
         if (!cancelled) {
           setPhase('error')
           setMessage('Something went wrong. Please try again or contact sarsyc@saywhat.org.zw.')
+          showToast.error('Something went wrong while verifying payment.')
         }
       }
     })()
