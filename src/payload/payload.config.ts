@@ -8,6 +8,9 @@ import nodemailer from 'nodemailer'
 import sharp from 'sharp'
 import path from 'path'
 
+// Postgres migrations — run via `payload migrate` (CI/build) or `prodMigrations` at runtime in production
+import { migrations } from '../migrations'
+
 // Collections
 import Users from './collections/Users'
 import Registrations from './collections/Registrations'
@@ -133,8 +136,9 @@ export default buildConfig({
         rejectUnauthorized: false,
       },
     },
-    // Note: Payload's postgresAdapter doesn't support migrations config
-    // We use manual migrations via SQL scripts
+    migrationDir: path.resolve(process.cwd(), 'src', 'migrations'),
+    prodMigrations: migrations,
+    // Runs pending migrations on Payload init when NODE_ENV=production (e.g. Vercel cold starts).
   }),
   collections: [
     Users,
