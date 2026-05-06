@@ -17,6 +17,9 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+  },
   title: 'SARSYC VI - Southern African Regional Students and Youth Conference',
   description: 'Join us for SARSYC VI in Windhoek, Namibia, August 5-7, 2026. Align for Action: Sustaining Progress in Youth Health and Education.',
   keywords: ['SARSYC', 'youth conference', 'Southern Africa', 'youth health', 'education', 'SAYWHAT'],

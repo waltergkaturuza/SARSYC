@@ -31,6 +31,11 @@ const nextConfig = {
     unoptimized: false,
   },
   // PWA Support
+  async rewrites() {
+    return [
+      { source: '/favicon.ico', destination: '/favicon.svg' },
+    ]
+  },
   async headers() {
     return [
       {

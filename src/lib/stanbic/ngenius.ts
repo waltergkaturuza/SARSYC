@@ -9,22 +9,40 @@ import {
   getRegistrationPricingTier,
   minorAmountForPackage,
 } from '@/lib/registrationPackages'
+import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
 
-/**
- * Sandbox N-Genius API key credential (already Base64 of `clientId:clientSecret`) used only when
- * `STANBIC_MERCHANT_API_KEY` is unset. Must be sent as `Authorization: Basic <this>` — do not URL-encode again.
- */
-const STANBIC_MERCHANT_API_KEY_FALLBACK =
-  'M2ZiZGQwMTgtYWU2OS00NTYyLWE3OWMtZWU1OThkOTdiMzQ4OjBiOWRkNWVkLWQ3OTItNGI2Yi05NzRiLTVjMTVmYzMxZjlhOQ=='
-
-function gatewayBase(): string | null {
-  const u = process.env.STANBIC_API_GATEWAY_URL?.trim().replace(/\/$/, '')
+function resolvedGatewayBase(): string | null {
+  const u =
+    process.env.STANBIC_API_GATEWAY_URL?.trim().replace(/\/$/, '') ||
+    STANBIC_ENV_FALLBACK.STANBIC_API_GATEWAY_URL.trim().replace(/\/$/, '')
   return u || null
+}
+
+/** Host for `/identity/auth/access-token` — optional dedicated identity URL, else gateway. */
+function resolvedIdentityRoot(): string | null {
+  const explicit = process.env.STANBIC_IDENTITY_URL?.trim().replace(/\/$/, '')
+  const fromFile = STANBIC_ENV_FALLBACK.STANBIC_IDENTITY_URL.trim().replace(/\/$/, '')
+  return explicit || fromFile || resolvedGatewayBase()
 }
 
 function resolvedMerchantApiKey(): string {
   const fromEnv = process.env.STANBIC_MERCHANT_API_KEY?.trim()
-  return fromEnv || STANBIC_MERCHANT_API_KEY_FALLBACK
+  return fromEnv || STANBIC_ENV_FALLBACK.STANBIC_MERCHANT_API_KEY.trim()
+}
+
+function resolvedOutletReference(): string {
+  return (
+    process.env.STANBIC_OUTLET_REFERENCE?.trim() ||
+    STANBIC_ENV_FALLBACK.STANBIC_OUTLET_REFERENCE.trim()
+  )
+}
+
+function resolvedRealmName(): string {
+  return (
+    process.env.STANBIC_REALM_NAME?.trim() ||
+    STANBIC_ENV_FALLBACK.STANBIC_REALM_NAME.trim() ||
+    'StanbicBankZimbabweSandbox'
+  )
 }
 
 /** True when value is Base64 of `clientId:clientSecret` (Stanbic portal copy-paste), not a plain API key id. */
@@ -87,10 +105,10 @@ export function httpStatusForStanbicOutboundFailure(message: string): number {
 }
 
 export function stanbicHostedPaymentsConfigured(): boolean {
-  const b = gatewayBase()
+  const b = resolvedGatewayBase()
   const key = resolvedMerchantApiKey()
-  const outlet = process.env.STANBIC_OUTLET_REFERENCE?.trim()
-  const realm = process.env.STANBIC_REALM_NAME?.trim()
+  const outlet = resolvedOutletReference()
+  const realm = resolvedRealmName()
   return Boolean(b && key && outlet && realm)
 }
 
@@ -133,6 +151,8 @@ export function publicSiteOrigin(): string {
   if (explicit) return explicit.replace(/\/$/, '')
   const vercel = process.env.VERCEL_URL?.trim()
   if (vercel) return (vercel.startsWith('http') ? vercel : `https://${vercel}`).replace(/\/$/, '')
+  const fb = STANBIC_ENV_FALLBACK.PUBLIC_SITE_ORIGIN_FALLBACK.trim()
+  if (fb) return fb.replace(/\/$/, '')
   return 'http://localhost:3000'
 }
 
@@ -150,11 +170,11 @@ function basicAuthHeader(): string {
 }
 
 export async function stanbicAccessToken(): Promise<{ access_token: string }> {
-  const base = gatewayBase()
+  const base = resolvedIdentityRoot()
   if (!base) throw new Error('STANBIC_API_GATEWAY_URL is not set')
 
   const url = `${base}/identity/auth/access-token`
-  const realmName = process.env.STANBIC_REALM_NAME?.trim() || 'StanbicBankZimbabweSandbox'
+  const realmName = resolvedRealmName()
 
   const res = await fetch(url, stanbicFetchInit({
     method: 'POST',
@@ -204,8 +224,8 @@ export async function stanbicCreateHostedOrder(params: {
   redirectUrl: string
   merchantOrderReference?: string
 }): Promise<HostedOrderResult> {
-  const base = gatewayBase()
-  const outlet = process.env.STANBIC_OUTLET_REFERENCE?.trim()
+  const base = resolvedGatewayBase()
+  const outlet = resolvedOutletReference()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
 
   const action = (process.env.STANBIC_ORDER_ACTION || 'PURCHASE').trim().toUpperCase() as
@@ -267,8 +287,8 @@ export async function stanbicRetrieveOrder(params: {
   accessToken: string
   orderReference: string
 }): Promise<{ raw: Record<string, unknown>; paymentStates: string[]; retrieveHttpStatus: number }> {
-  const base = gatewayBase()
-  const outlet = process.env.STANBIC_OUTLET_REFERENCE?.trim()
+  const base = resolvedGatewayBase()
+  const outlet = resolvedOutletReference()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
 
   const url = `${base}/transactions/outlets/${encodeURIComponent(outlet)}/orders/${encodeURIComponent(params.orderReference)}`
