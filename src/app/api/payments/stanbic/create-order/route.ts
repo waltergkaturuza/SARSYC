@@ -7,6 +7,7 @@ import {
   registrationRequiresHostedPayment,
   registrationFeeCurrency,
   resolveHostedPaymentMinorUnits,
+  formatStanbicOutboundError,
 } from '@/lib/stanbic/ngenius'
 import {
   getRegistrationPricingTier,
@@ -16,6 +17,7 @@ import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 /**
  * After a registration is saved, POST { registrationPayloadId: number } to get the hosted payment URL.
@@ -38,8 +40,19 @@ export async function POST(req: NextRequest) {
   }
 
   const idStr = String(registrationPayloadId)
-  const payload = await getPayloadClient()
-  await ensureRegistrationsLatestColumns(payload)
+
+  let payload: Awaited<ReturnType<typeof getPayloadClient>>
+  try {
+    payload = await getPayloadClient()
+    await ensureRegistrationsLatestColumns(payload)
+  } catch (boot: unknown) {
+    const msg = boot instanceof Error ? boot.message : String(boot)
+    console.error('[stanbic create-order] payload init / schema', boot)
+    return NextResponse.json(
+      { error: msg || 'Database is temporarily unavailable. Try again in a moment.' },
+      { status: 503 },
+    )
+  }
 
   let registration
   try {
@@ -105,8 +118,8 @@ export async function POST(req: NextRequest) {
       orderReference,
     })
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Payment session failed'
-    console.error('[stanbic create-order]', msg)
-    return NextResponse.json({ error: msg }, { status: 502 })
+    const msg = formatStanbicOutboundError(e)
+    console.error('[stanbic create-order]', e)
+    return NextResponse.json({ error: msg }, { status: 503 })
   }
 }

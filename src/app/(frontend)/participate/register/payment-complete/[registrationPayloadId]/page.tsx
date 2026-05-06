@@ -24,8 +24,8 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
 
     let cancelled = false
     ;(async () => {
-      try {
-        const res = await fetch('/api/payments/stanbic/verify', {
+      const verifyOnce = async () =>
+        fetch('/api/payments/stanbic/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -33,6 +33,15 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
             registrationPayloadId,
           }),
         })
+
+      try {
+        let res = await verifyOnce()
+        // One delayed retry — gateway / cold starts sometimes fail right after bank redirect.
+        if (!cancelled && !res.ok && res.status >= 502) {
+          await new Promise((r) => setTimeout(r, 2800))
+          if (!cancelled) res = await verifyOnce()
+        }
+
         const data = await res.json().catch(() => ({}))
 
         if (cancelled) return

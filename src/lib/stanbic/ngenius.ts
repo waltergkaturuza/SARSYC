@@ -15,6 +15,37 @@ function gatewayBase(): string | null {
   return u || null
 }
 
+function stanbicOutboundTimeoutMs(): number {
+  const raw = process.env.STANBIC_FETCH_TIMEOUT_MS?.trim()
+  const n = raw ? parseInt(raw, 10) : NaN
+  const ms = Number.isFinite(n) && n >= 5000 ? n : 30000
+  return Math.min(ms, 120000)
+}
+
+function stanbicFetchInit(extra?: RequestInit): RequestInit {
+  return {
+    ...extra,
+    signal: AbortSignal.timeout(stanbicOutboundTimeoutMs()),
+  }
+}
+
+/** User-facing message for failed outbound calls to N-Genius (timeouts, DNS, etc.). */
+export function formatStanbicOutboundError(err: unknown): string {
+  if (!(err instanceof Error)) {
+    return typeof err === 'string' ? err : 'Payment gateway request failed'
+  }
+  const msg = err.message || ''
+  const name = err.name || ''
+  if (
+    name === 'AbortError' ||
+    name === 'TimeoutError' ||
+    /aborted|timed out|timeout/i.test(msg)
+  ) {
+    return `Stanbic/N-Genius did not respond within ${stanbicOutboundTimeoutMs()}ms. Please try again shortly.`
+  }
+  return msg
+}
+
 export function stanbicHostedPaymentsConfigured(): boolean {
   const b = gatewayBase()
   const key = process.env.STANBIC_MERCHANT_API_KEY?.trim()
@@ -82,7 +113,7 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
   const url = `${base}/identity/auth/access-token`
   const realmName = process.env.STANBIC_REALM_NAME?.trim() || 'StanbicBankZimbabweSandbox'
 
-  const res = await fetch(url, {
+  const res = await fetch(url, stanbicFetchInit({
     method: 'POST',
     headers: {
       Accept: 'application/vnd.ni-identity.v1+json',
@@ -90,7 +121,7 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
       Authorization: basicAuthHeader(),
     },
     body: JSON.stringify({ realmName }),
-  })
+  }))
 
   const text = await res.text()
   let data: Record<string, unknown> = {}
@@ -151,7 +182,7 @@ export async function stanbicCreateHostedOrder(params: {
   }
 
   const url = `${base}/transactions/outlets/${encodeURIComponent(outlet)}/orders`
-  const res = await fetch(url, {
+  const res = await fetch(url, stanbicFetchInit({
     method: 'POST',
     headers: {
       Authorization: `Bearer ${params.accessToken}`,
@@ -159,7 +190,7 @@ export async function stanbicCreateHostedOrder(params: {
       Accept: 'application/vnd.ni-payment.v2+json',
     },
     body: JSON.stringify(body),
-  })
+  }))
 
   const text = await res.text()
   let data: Record<string, unknown> = {}
@@ -197,13 +228,13 @@ export async function stanbicRetrieveOrder(params: {
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
 
   const url = `${base}/transactions/outlets/${encodeURIComponent(outlet)}/orders/${encodeURIComponent(params.orderReference)}`
-  const res = await fetch(url, {
+  const res = await fetch(url, stanbicFetchInit({
     method: 'GET',
     headers: {
       Authorization: `Bearer ${params.accessToken}`,
       Accept: 'application/vnd.ni-payment.v2+json',
     },
-  })
+  }))
 
   const text = await res.text()
   let data: Record<string, unknown> = {}
