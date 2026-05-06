@@ -237,11 +237,30 @@ function basicAuthHeader(): string {
   return `Basic ${token}`
 }
 
+function stanbicVerboseUpstream(): boolean {
+  const v = process.env.STANBIC_VERBOSE_ERRORS?.trim().toLowerCase()
+  return v === 'true' || v === '1'
+}
+
 /** Map N-Genius identity error JSON into a single string (often more useful than plain "Bad Request"). */
 function formatIdentityFailureDetail(data: Record<string, unknown>, text: string): string {
+  const fault = data.fault
+  if (fault != null && typeof fault === 'object') {
+    const fo = fault as Record<string, unknown>
+    const fm = fo.message ?? fo.faultString ?? fo.detail ?? fo.description
+    if (typeof fm === 'string' && fm.trim()) return fm.trim()
+  }
+  const errDesc = data.error_description ?? data.errorMessage ?? data.description ?? data.title
+  if (typeof errDesc === 'string' && errDesc.trim()) return errDesc.trim()
   const top = data.message
   if (typeof top === 'string' && top.trim()) return top.trim()
   const errs = data.errors ?? data.invalidFields ?? data.validationErrors
+  const errNest = data.error
+  if (errNest != null && typeof errNest === 'object' && !(Array.isArray(errs) && errs.length)) {
+    const eo = errNest as Record<string, unknown>
+    const em = eo.message ?? eo.reason ?? eo.error_description ?? eo.description
+    if (typeof em === 'string' && em.trim()) return em.trim()
+  }
   if (Array.isArray(errs) && errs.length) {
     return errs
       .map((item) => {
@@ -260,7 +279,17 @@ function formatIdentityFailureDetail(data: Record<string, unknown>, text: string
   const reason = data.reason ?? data.error ?? data.detail
   if (code && typeof reason === 'string') return `${code}: ${reason.trim()}`
   if (typeof reason === 'string' && reason.trim()) return reason.trim()
-  return text.slice(0, 400).trim()
+  const t = text.trim()
+  if (!t.startsWith('<') && !/^[\[{"']/.test(t)) return t.slice(0, 400)
+  try {
+    const opaque = JSON.parse(t) as unknown
+    if (opaque !== null && typeof opaque === 'object' && Object.keys(opaque as object).length) {
+      return JSON.stringify(opaque).slice(0, 400)
+    }
+  } catch {
+    return t.slice(0, 400)
+  }
+  return t.slice(0, 400)
 }
 
 export async function stanbicAccessToken(): Promise<{ access_token: string }> {
@@ -305,12 +334,17 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
         detail =
           'Token rejected (realm, gateway URL, and API key must all belong to the same Stanbic sandbox or live environment).'
       }
+      if (stanbicVerboseUpstream() && text.trim() && !looksLikeHtml) {
+        const sn = text.replace(/\s+/g, ' ').trim().slice(0, 320)
+        if (sn.length > 4) detail = `${detail} Details: ${sn}`
+      }
       console.error('[stanbic] access-token failed', {
         url,
         status: res.status,
         gateway: resolvedGatewayBase(),
         realm: realmName,
-        detail: detail.slice(0, 160),
+        detail: detail.slice(0, 200),
+        responseBodyPreview: text.slice(0, 1500),
       })
     }
     throw new Error(`Stanbic auth failed (${res.status}): ${detail}`)
