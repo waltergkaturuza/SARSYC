@@ -177,6 +177,32 @@ function basicAuthHeader(): string {
   return `Basic ${token}`
 }
 
+/** Map N-Genius identity error JSON into a single string (often more useful than plain "Bad Request"). */
+function formatIdentityFailureDetail(data: Record<string, unknown>, text: string): string {
+  const top = data.message
+  if (typeof top === 'string' && top.trim()) return top.trim()
+  const errs = data.errors ?? data.invalidFields ?? data.validationErrors
+  if (Array.isArray(errs) && errs.length) {
+    return errs
+      .map((item) => {
+        if (item != null && typeof item === 'object') {
+          const o = item as Record<string, unknown>
+          const m = o.message ?? o.reason ?? o.detail ?? o.description
+          if (typeof m === 'string') return m.trim()
+          const f = o.field ?? o.fieldName
+          if (typeof f === 'string') return `${f}: ${JSON.stringify(o)}`
+        }
+        return String(item)
+      })
+      .join(' — ')
+  }
+  const code = [data.errorCode, data.code].find((x) => typeof x === 'string') as string | undefined
+  const reason = data.reason ?? data.error ?? data.detail
+  if (code && typeof reason === 'string') return `${code}: ${reason.trim()}`
+  if (typeof reason === 'string' && reason.trim()) return reason.trim()
+  return text.slice(0, 400).trim()
+}
+
 export async function stanbicAccessToken(): Promise<{ access_token: string }> {
   const base = resolvedIdentityRoot()
   if (!base) throw new Error('STANBIC_API_GATEWAY_URL is not set')
@@ -210,11 +236,18 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
         'The token URL returned an HTML page (not the N-Genius API). Remove or fix STANBIC_IDENTITY_URL (try clearing it so the gateway host is used), verify STANBIC_API_GATEWAY_URL matches your Stanbic pack, or ask the bank if server IPs must be allow-listed.'
       console.error('[stanbic] access-token unexpected HTML', { url, status: res.status })
     } else {
-      detail =
-        typeof data.message === 'string' && data.message.trim()
-          ? data.message.trim()
-          : text.slice(0, 200)
-      console.error('[stanbic] access-token failed', { url, status: res.status, detail: detail.slice(0, 120) })
+      detail = formatIdentityFailureDetail(data, text)
+      if (!detail || detail.toLowerCase() === 'bad request') {
+        detail =
+          'Bad Request (realm/gateway/key mismatch is common). Confirm STANBIC_API_GATEWAY_URL, STANBIC_REALM_NAME, and service-account key are all sandbox or all live — see N-Genius token docs.'
+      }
+      console.error('[stanbic] access-token failed', {
+        url,
+        status: res.status,
+        gateway: resolvedGatewayBase(),
+        realm: realmName,
+        detail: detail.slice(0, 160),
+      })
     }
     throw new Error(`Stanbic auth failed (${res.status}): ${detail}`)
   }
