@@ -18,9 +18,9 @@
  * @see `.env.example`
  */
 
-/** Toast / JSON `hint` when create-order gets an upstream client error (4xx). */
+/** Short hint on create-order failures; alignment details are in the file header & Vercel function logs. */
 export const STANBIC_PAYMENT_SUPPORT_HINT =
-  'Auth 400 is almost always wrong realm or mixed environments: use sandbox gateway + StanbicBankZimbabweSandbox + sandbox key together, OR live gateway + live realm (from Stanbic) + live key — never mix. On Vercel, align every STANBIC_* or remove them to use src/lib/stanbic/stanbicEnvFallback.ts. Allow-list NEXT_PUBLIC_SITE_URL only affects order/redirect, not this token call.'
+  'Use one Stanbic environment only (sandbox gateway + realm StanbicBankZimbabweSandbox + sandbox key, OR the live trio Stanbic gave you). Unset STANBIC_* on Vercel uses repo sandbox defaults—they must match that service account.'
 
 export const STANBIC_ENV_FALLBACK = {
   /**

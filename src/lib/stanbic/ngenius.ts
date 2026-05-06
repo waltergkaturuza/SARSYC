@@ -239,7 +239,7 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
       detail = formatIdentityFailureDetail(data, text)
       if (!detail || detail.toLowerCase() === 'bad request') {
         detail =
-          'Bad Request (realm/gateway/key mismatch is common). Confirm STANBIC_API_GATEWAY_URL, STANBIC_REALM_NAME, and service-account key are all sandbox or all live — see N-Genius token docs.'
+          'Token rejected (realm, gateway URL, and API key must all belong to the same Stanbic sandbox or live environment).'
       }
       console.error('[stanbic] access-token failed', {
         url,
