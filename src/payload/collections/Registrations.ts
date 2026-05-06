@@ -509,6 +509,37 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'registrationPackage',
+      type: 'select',
+      required: true,
+      label: 'Conference package',
+      options: [
+        {
+          label: 'Students / Youth Discount — Shared accommodation package',
+          value: 'student_youth_shared',
+        },
+        {
+          label: 'Institutions / Partners — Non-sharing accommodation package',
+          value: 'institutions_partners',
+        },
+        {
+          label: 'Half Package',
+          value: 'half_package',
+        },
+        {
+          label: 'Half Package — Youth Discount',
+          value: 'half_package_youth',
+        },
+        {
+          label: 'Day Pass',
+          value: 'day_pass',
+        },
+      ],
+      admin: {
+        description: '2026 tiers: Early bird 1 May–30 Jun; Late 1–31 Jul (USD incl. VAT where applicable — confirm with organisers).',
+      },
+    },
+    {
       name: 'category',
       type: 'select',
       required: true,

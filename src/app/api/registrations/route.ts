@@ -3,6 +3,10 @@ import { getPayloadClient } from '@/lib/payload'
 import { sendRegistrationConfirmation } from '@/lib/mail'
 import { put } from '@vercel/blob'
 import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
+import {
+  getRegistrationPricingTier,
+  isRegistrationPackageId,
+} from '@/lib/registrationPackages'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -19,6 +23,17 @@ export async function POST(request: NextRequest) {
         success: false,
         error:
           'Online registration is not open yet. When it opens, complete the form and — if a fee applies — you will be redirected to secure card payment (Stanbic hosted page).',
+      },
+      { status: 503 }
+    )
+  }
+
+  if (getRegistrationPricingTier() === 'closed') {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          'Online registration for this conference cycle has closed (the published early and late windows have ended).',
       },
       { status: 503 }
     )
@@ -645,6 +660,16 @@ export async function POST(request: NextRequest) {
     // Remove passportScan if not international (to avoid validation errors)
     if (!registrationData.isInternational && registrationData.passportScan) {
       delete registrationData.passportScan
+    }
+
+    if (!isRegistrationPackageId(registrationData.registrationPackage)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Please select a valid conference registration package.',
+        },
+        { status: 400 }
+      )
     }
 
     // Check for duplicate registrations before creating

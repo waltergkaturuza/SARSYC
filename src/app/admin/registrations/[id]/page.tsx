@@ -11,6 +11,7 @@ import {
 import Image from 'next/image'
 import { format } from 'date-fns'
 import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
+import { registrationPackageDisplayName } from '@/lib/registrationPackages'
 
 export const revalidate = 0
 
@@ -632,6 +633,16 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Registration Details</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-500 mb-1">Conference package</div>
+                  <div className="font-medium text-gray-900">
+                    {registrationPackageDisplayName(
+                      typeof registration.registrationPackage === 'string'
+                        ? registration.registrationPackage
+                        : undefined,
+                    )}
+                  </div>
+                </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="text-sm text-gray-500 mb-1">Participation Category</div>
                   <div className="font-medium text-gray-900">

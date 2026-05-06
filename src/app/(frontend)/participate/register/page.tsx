@@ -8,6 +8,14 @@ import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, 
 import { countries } from '@/lib/countries'
 import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 import { showToast } from '@/lib/toast'
+import {
+  REGISTRATION_PACKAGES,
+  currencyForPayments,
+  getRegistrationPackage,
+  getRegistrationPricingTier,
+  isRegistrationPackageId,
+  packageUsdForTier,
+} from '@/lib/registrationPackages'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -79,6 +87,10 @@ const registrationSchema = z.object({
   bloodType: z.enum(['a-positive', 'a-negative', 'b-positive', 'b-negative', 'ab-positive', 'ab-negative', 'o-positive', 'o-negative', 'unknown']).optional(),
   
   // Participation
+  registrationPackage: z.enum(
+    ['student_youth_shared', 'institutions_partners', 'half_package', 'half_package_youth', 'day_pass'],
+    { required_error: 'Please select a conference registration package' },
+  ),
   category: z.enum(['student', 'researcher', 'policymaker', 'partner', 'observer'], {
     required_error: 'Please select a participation category',
   }),
@@ -115,7 +127,7 @@ const steps = [
   { id: 3, name: 'Organization', icon: FiBriefcase },
   { id: 4, name: 'Travel & ID', icon: FiGlobe },
   { id: 5, name: 'Emergency Contact', icon: FiShield },
-  { id: 6, name: 'Preferences', icon: FiCheck },
+  { id: 6, name: 'Package & Preferences', icon: FiCheck },
 ]
 
 const categories = [
@@ -251,6 +263,8 @@ export default function RegisterPage() {
           setCurrentStep(2)
         } else if (errorFields.some(f => ['organization', 'category'].includes(f))) {
           setCurrentStep(3)
+        } else if (errorFields.includes('registrationPackage')) {
+          setCurrentStep(6)
         } else if (errorFields.some(f => ['passportNumber', 'passportExpiry', 'passportIssuingCountry', 'passportScan'].includes(f))) {
           setCurrentStep(4)
         } else if (errorFields.some(f => f.startsWith('emergencyContact'))) {
@@ -463,6 +477,8 @@ export default function RegisterPage() {
       }
     } else if (currentStep === 5) {
       fieldsToValidate = ['emergencyContactName', 'emergencyContactRelationship', 'emergencyContactPhone', 'emergencyContactEmail', 'emergencyContactAddress', 'emergencyContactCountry', 'emergencyContactCity']
+    } else if (currentStep === 6) {
+      fieldsToValidate = ['registrationPackage']
     }
 
     const isValid = await trigger(fieldsToValidate)
@@ -527,6 +543,36 @@ export default function RegisterPage() {
             </a>
             <a href="/participate/submit-abstract" className="btn-primary">
               Submit an Abstract
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const pricingTier = getRegistrationPricingTier()
+  const registrationPeriodClosed = pricingTier === 'closed'
+
+  if (!REGISTRATION_SUSPENDED && registrationPeriodClosed) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" aria-hidden />
+        <div className="relative z-50 bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border-2 border-gray-200">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FiCalendar className="w-10 h-10 text-gray-600" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+            Registration period has closed
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Online registration for SARSYC VI followed published early-bird and late windows. If you need help, please contact the organisers.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" className="btn-outline">
+              Back to Homepage
+            </a>
+            <a href="mailto:registration@sarsyc.org" className="btn-primary">
+              Contact registration
             </a>
           </div>
         </div>
@@ -1508,7 +1554,64 @@ export default function RegisterPage() {
               {/* Step 6: Preferences */}
               {currentStep === 6 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Preferences & Requirements</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Package & preferences</h2>
+                  <div className="rounded-xl border border-primary-200 bg-primary-50 p-4 text-sm text-gray-800 mb-6">
+                    <p className="font-semibold text-primary-900 mb-1">Pricing period</p>
+                    {getRegistrationPricingTier() === 'early' && (
+                      <p>
+                        <strong>Early bird</strong> (1 May–30 June 2026). Before 1 May we still show early-bird rates so you can register ahead of the official opening date.
+                      </p>
+                    )}
+                    {getRegistrationPricingTier() === 'late' && (
+                      <p>
+                        <strong>Late registration</strong> (1–31 July 2026). Listed prices are late rates.
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-gray-600">
+                      Amounts are shown in {currencyForPayments()}; card payment (when enabled) uses the tier in effect when you complete checkout.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Conference registration package <span className="text-red-500">*</span>
+                    </label>
+                    <div className="space-y-3">
+                      {REGISTRATION_PACKAGES.map((pkg) => {
+                        const tier = getRegistrationPricingTier()
+                        const usd = packageUsdForTier(pkg, tier)
+                        return (
+                          <label
+                            key={pkg.id}
+                            className="flex items-start gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary-400 transition-colors has-[[type=radio]:checked]:border-primary-600 has-[[type=radio]:checked]:bg-primary-50/60"
+                          >
+                            <input
+                              {...register('registrationPackage')}
+                              type="radio"
+                              value={pkg.id}
+                              className="mt-1.5 text-primary-600 focus:ring-primary-500 shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <span className="font-semibold text-gray-900">{pkg.name}</span>
+                                <span className="text-lg font-bold text-primary-700 tabular-nums">
+                                  {currencyForPayments()} {usd}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
+                            </div>
+                          </label>
+                        )
+                      })}
+                    </div>
+                    {errors.registrationPackage && (
+                      <p className="mt-2 text-sm text-red-600">{errors.registrationPackage.message}</p>
+                    )}
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-gray-900 pt-4 border-t border-gray-200">
+                    Participation & requirements
+                  </h3>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1745,8 +1848,46 @@ export default function RegisterPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => {
-                      // Show preview before final submission
+                    onClick={async () => {
+                      const fields: (keyof RegistrationFormData)[] = [
+                        'firstName',
+                        'lastName',
+                        'email',
+                        'phone',
+                        'dateOfBirth',
+                        'gender',
+                        'country',
+                        'nationality',
+                        'city',
+                        'address',
+                        'organization',
+                        'category',
+                        'registrationPackage',
+                        'emergencyContactName',
+                        'emergencyContactRelationship',
+                        'emergencyContactPhone',
+                        'emergencyContactEmail',
+                        'emergencyContactAddress',
+                        'emergencyContactCountry',
+                        'emergencyContactCity',
+                      ]
+                      if (isInternational) {
+                        fields.push('passportNumber', 'passportExpiry', 'passportIssuingCountry')
+                      }
+                      const ok = await trigger(fields, { shouldFocus: true })
+                      if (!ok) {
+                        showToast.error('Please complete all required fields before review.')
+                        return
+                      }
+                      if (isInternational && !passportFile) {
+                        setError('passportScan', {
+                          type: 'manual',
+                          message: 'Passport scan is required for international attendees',
+                        })
+                        setCurrentStep(4)
+                        showToast.error('Please upload your passport scan.')
+                        return
+                      }
                       setShowPreview(true)
                     }}
                     className="btn-primary ml-auto flex items-center gap-2"
@@ -1796,7 +1937,11 @@ export default function RegisterPage() {
               </div>
 
               {/* Preview Content */}
-              <RegistrationPreview data={watch()} passportFile={passportFile} />
+              <RegistrationPreview
+                data={watch()}
+                passportFile={passportFile}
+                pricingTier={getRegistrationPricingTier()}
+              />
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between pt-6 border-t border-gray-200">
@@ -1845,7 +1990,15 @@ export default function RegisterPage() {
 }
 
 // Preview Component
-function RegistrationPreview({ data, passportFile }: { data: any, passportFile: File | null }) {
+function RegistrationPreview({
+  data,
+  passportFile,
+  pricingTier,
+}: {
+  data: any
+  passportFile: File | null
+  pricingTier: ReturnType<typeof getRegistrationPricingTier>
+}) {
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'Not provided'
     try {
@@ -1941,6 +2094,16 @@ function RegistrationPreview({ data, passportFile }: { data: any, passportFile: 
                 <span className="ml-2 text-gray-900">{data.organizationPosition}</span>
               </div>
             )}
+            <div>
+              <span className="font-medium text-gray-700">Conference package:</span>
+              <span className="ml-2 text-gray-900">
+                {isRegistrationPackageId(data.registrationPackage) && pricingTier !== 'closed'
+                  ? `${getRegistrationPackage(data.registrationPackage).name} — ${currencyForPayments()} ${packageUsdForTier(getRegistrationPackage(data.registrationPackage), pricingTier)} (${pricingTier === 'late' ? 'late' : 'early'} rate)`
+                  : isRegistrationPackageId(data.registrationPackage)
+                    ? getRegistrationPackage(data.registrationPackage).name
+                    : 'Not selected'}
+              </span>
+            </div>
             <div>
               <span className="font-medium text-gray-700">Category:</span>
               <span className="ml-2 text-gray-900 capitalize">{data.category?.replace(/-/g, ' ') || 'Not provided'}</span>

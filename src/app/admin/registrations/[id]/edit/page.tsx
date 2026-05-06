@@ -7,6 +7,14 @@ import { FiArrowLeft, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 
+const REGISTRATION_PACKAGE_EDIT_OPTIONS = [
+  { value: 'student_youth_shared', label: 'Students / Youth Discount (shared accommodation package)' },
+  { value: 'institutions_partners', label: 'Institutions / Partners (non-sharing accommodation)' },
+  { value: 'half_package', label: 'Half Package' },
+  { value: 'half_package_youth', label: 'Half Package — Youth Discount' },
+  { value: 'day_pass', label: 'Day Pass' },
+] as const
+
 const CATEGORIES = [
   { value: 'student', label: 'Student / Youth Delegate' },
   { value: 'researcher', label: 'Young Researcher' },
@@ -73,6 +81,7 @@ export default function EditRegistrationPage() {
           address: form.address,
           organization: form.organization,
           organizationPosition: form.organizationPosition,
+          registrationPackage: form.registrationPackage,
           category: form.category,
           status: form.status,
           paymentStatus: form.paymentStatus,
@@ -224,16 +233,38 @@ export default function EditRegistrationPage() {
           </h2>
 
           <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Conference package">
+              <select
+                className={input}
+                value={form.registrationPackage || ''}
+                onChange={(e) => set('registrationPackage', e.target.value)}
+              >
+                <option value="">Select package</option>
+                {REGISTRATION_PACKAGE_EDIT_OPTIONS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <Field label="Participation Category">
               <select className={input} value={form.category || ''} onChange={(e) => set('category', e.target.value)}>
                 <option value="">Select category</option>
-                {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                {CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="T-Shirt Size">
               <select className={input} value={form.tshirtSize || ''} onChange={(e) => set('tshirtSize', e.target.value)}>
                 <option value="">Select size</option>
-                {TSHIRT_SIZES.map((s) => <option key={s} value={s.toLowerCase()}>{s}</option>)}
+                {TSHIRT_SIZES.map((s) => (
+                  <option key={s} value={s.toLowerCase()}>
+                    {s}
+                  </option>
+                ))}
               </select>
             </Field>
           </div>

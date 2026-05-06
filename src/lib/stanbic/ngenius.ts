@@ -4,6 +4,12 @@
  * Sandbox URLs from Stanbic use *.stanbicbank.co.zw (configure via env).
  */
 
+import type { RegistrationPackageId } from '@/lib/registrationPackages'
+import {
+  getRegistrationPricingTier,
+  minorAmountForPackage,
+} from '@/lib/registrationPackages'
+
 function gatewayBase(): string | null {
   const u = process.env.STANBIC_API_GATEWAY_URL?.trim().replace(/\/$/, '')
   return u || null
@@ -17,7 +23,10 @@ export function stanbicHostedPaymentsConfigured(): boolean {
   return Boolean(b && key && outlet && realm)
 }
 
-/** Minor units e.g. 5000 = USD 50.00 when currency is USD. */
+/**
+ * Optional flat override in minor units (e.g. 5000 = USD 50.00 when currency is USD).
+ * When greater than zero, every hosted order uses this amount instead of package-based pricing (useful for sandbox tests).
+ */
 export function registrationFeeMinorUnits(): number {
   const raw = process.env.REGISTRATION_FEE_MINOR_UNITS?.trim()
   if (!raw) return 0
@@ -25,13 +34,24 @@ export function registrationFeeMinorUnits(): number {
   return Number.isFinite(n) && n >= 0 ? n : 0
 }
 
+/** Amount to charge for a registration, given the selected package and current pricing tier. */
+export function resolveHostedPaymentMinorUnits(packageId: RegistrationPackageId): number {
+  const override = registrationFeeMinorUnits()
+  if (override > 0) return override
+  return minorAmountForPackage(packageId, getRegistrationPricingTier())
+}
+
 export function registrationFeeCurrency(): string {
   return (process.env.REGISTRATION_FEE_CURRENCY || 'USD').trim().toUpperCase() || 'USD'
 }
 
-/** True when gateway is configured AND a positive registration fee is set. */
+/** True when gateway is configured, pricing period is open, and hosted card payment should be offered. */
 export function registrationRequiresHostedPayment(): boolean {
-  return stanbicHostedPaymentsConfigured() && registrationFeeMinorUnits() > 0
+  if (!stanbicHostedPaymentsConfigured()) return false
+  const tier = getRegistrationPricingTier()
+  if (tier === 'closed') return false
+  if (registrationFeeMinorUnits() > 0) return true
+  return tier === 'early' || tier === 'late'
 }
 
 export function publicSiteOrigin(): string {

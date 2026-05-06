@@ -6,8 +6,12 @@ import {
   publicSiteOrigin,
   registrationRequiresHostedPayment,
   registrationFeeCurrency,
-  registrationFeeMinorUnits,
+  resolveHostedPaymentMinorUnits,
 } from '@/lib/stanbic/ngenius'
+import {
+  getRegistrationPricingTier,
+  isRegistrationPackageId,
+} from '@/lib/registrationPackages'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -50,6 +54,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Registration does not require payment' }, { status: 409 })
   }
 
+  if (getRegistrationPricingTier() === 'closed') {
+    return NextResponse.json(
+      { error: 'The online registration payment window has closed.' },
+      { status: 403 },
+    )
+  }
+
+  const pkgRaw = registration.registrationPackage
+  if (!isRegistrationPackageId(pkgRaw)) {
+    return NextResponse.json(
+      { error: 'Registration is missing a valid conference package. Contact support.' },
+      { status: 400 },
+    )
+  }
+
+  const value = resolveHostedPaymentMinorUnits(pkgRaw)
+  if (value <= 0) {
+    return NextResponse.json({ error: 'No payment amount is due for this registration.' }, { status: 400 })
+  }
+
   const redirectUrl = `${publicSiteOrigin()}/participate/register/payment-complete/${encodeURIComponent(idStr)}`
 
   try {
@@ -58,7 +82,7 @@ export async function POST(req: NextRequest) {
     const { orderReference, paymentHref } = await stanbicCreateHostedOrder({
       accessToken: access_token,
       currencyCode: registrationFeeCurrency(),
-      value: registrationFeeMinorUnits(),
+      value,
       emailAddress: registration.email,
       redirectUrl,
       merchantOrderReference:
