@@ -8,11 +8,20 @@ import {
   formatStanbicOutboundError,
 } from '@/lib/stanbic/ngenius'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
+import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 /** Cold Payload init + two Stanbic hops can exceed serverless defaults */
 export const maxDuration = 60
+
+function retrieveHttpFromError(e: unknown): number | null {
+  if (typeof e === 'object' && e !== null && 'retrieveHttpStatus' in e) {
+    const n = (e as { retrieveHttpStatus?: unknown }).retrieveHttpStatus
+    return typeof n === 'number' ? n : null
+  }
+  return null
+}
 
 /**
  * After redirect from hosted pay page, N-Genius appends ref=<order-reference> to redirectUrl.
@@ -24,6 +33,18 @@ export const maxDuration = 60
 export async function POST(req: NextRequest) {
   try {
     if (!stanbicHostedPaymentsConfigured()) {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'gateway_not_configured',
+        reason: 'stanbic_env_incomplete',
+      })
       return NextResponse.json(
         {
           ok: false,
@@ -39,6 +60,17 @@ export async function POST(req: NextRequest) {
     try {
       body = await req.json()
     } catch {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'invalid_json_body',
+      })
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
@@ -49,9 +81,33 @@ export async function POST(req: NextRequest) {
         : ''
 
     if (!ref) {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationPayloadId: regId || undefined,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'missing_gateway_order_ref_query',
+      })
       return NextResponse.json({ error: 'ref (gateway order reference) is required' }, { status: 400 })
     }
     if (!regId) {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        gatewayOrderRef: ref,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'missing_registration_payload_id',
+      })
       return NextResponse.json({ error: 'registrationPayloadId is required' }, { status: 400 })
     }
 
@@ -62,6 +118,20 @@ export async function POST(req: NextRequest) {
     } catch (boot: unknown) {
       const msg = boot instanceof Error ? boot.message : String(boot)
       console.error('[stanbic verify] payload init / schema', boot)
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationPayloadId: regId,
+        gatewayOrderRef: ref,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'payload_db_init_failed',
+        description: msg,
+      })
       return NextResponse.json(
         { ok: false, paid: false, error: msg || 'Could not connect to the database. Try again shortly.' },
         { status: 503 },
@@ -76,6 +146,19 @@ export async function POST(req: NextRequest) {
         overrideAccess: true,
       })
     } catch {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationPayloadId: regId,
+        gatewayOrderRef: ref,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'registration_not_found',
+      })
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 })
     }
 
@@ -85,6 +168,23 @@ export async function POST(req: NextRequest) {
         : ''
 
     if (storedRef && storedRef !== ref) {
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationRef:
+          typeof registration.registrationId === 'string' ? registration.registrationId : undefined,
+        registrationPayloadId: regId,
+        gatewayOrderRef: ref,
+        storedGatewayOrderRef: storedRef,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: null,
+        authoriseInfoApproved: false,
+        authoriseInfoError: 'order_ref_mismatch',
+        email: registration.email,
+      })
       return NextResponse.json(
         {
           ok: false,
@@ -97,7 +197,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const { access_token } = await stanbicAccessToken()
-      const { paymentStates } = await stanbicRetrieveOrder({
+      const { paymentStates, retrieveHttpStatus } = await stanbicRetrieveOrder({
         accessToken: access_token,
         orderReference: ref,
       })
@@ -116,6 +216,28 @@ export async function POST(req: NextRequest) {
           overrideAccess: true,
         })
 
+        logStanbicPaymentEvent({
+          event: 'stanbic_return',
+          method: 'POST',
+          registrationRef:
+            typeof registration.registrationId === 'string' ? registration.registrationId : regId,
+          registrationPayloadId: regId,
+          gatewayOrderRef: ref,
+          returnKind: 'success',
+          success: true,
+          paid: true,
+          dbPaymentStatusUpdated: true,
+          paymentStates,
+          gatewayStateSummary: paymentStates.length ? paymentStates.join(', ') : '(none)',
+          authoriseInfoHttp: retrieveHttpStatus,
+          authoriseInfoApproved: true,
+          authoriseInfoError: null,
+          category: registration.category,
+          registrationPackage: registration.registrationPackage,
+          itemDescription: 'SARSYC VI registration fee',
+          email: registration.email,
+        })
+
         return NextResponse.json({
           ok: true,
           paid: true,
@@ -123,6 +245,28 @@ export async function POST(req: NextRequest) {
           registrationId: registration.registrationId,
         })
       }
+
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationRef:
+          typeof registration.registrationId === 'string' ? registration.registrationId : regId,
+        registrationPayloadId: regId,
+        gatewayOrderRef: ref,
+        returnKind: 'pending',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        paymentStates,
+        gatewayStateSummary: paymentStates.length ? paymentStates.join(', ') : '(none)',
+        authoriseInfoHttp: retrieveHttpStatus,
+        authoriseInfoApproved: false,
+        authoriseInfoError: paymentStates.length ? `states:${paymentStates.join(',')}` : 'no_payment_states_yet',
+        category: registration.category,
+        registrationPackage: registration.registrationPackage,
+        itemDescription: 'SARSYC VI registration fee',
+        email: registration.email,
+      })
 
       return NextResponse.json({
         ok: true,
@@ -132,12 +276,42 @@ export async function POST(req: NextRequest) {
       })
     } catch (e: unknown) {
       const msg = formatStanbicOutboundError(e)
+      const httpErr = retrieveHttpFromError(e)
       console.error('[stanbic verify] gateway error', e)
+      logStanbicPaymentEvent({
+        event: 'stanbic_return',
+        method: 'POST',
+        registrationRef:
+          typeof registration.registrationId === 'string' ? registration.registrationId : regId,
+        registrationPayloadId: regId,
+        gatewayOrderRef: ref,
+        returnKind: 'error',
+        success: false,
+        paid: false,
+        dbPaymentStatusUpdated: false,
+        authoriseInfoHttp: httpErr,
+        authoriseInfoApproved: false,
+        authoriseInfoError: msg,
+        itemDescription: 'SARSYC VI registration fee',
+        email: registration.email,
+      })
       return NextResponse.json({ ok: false, error: msg, paid: false }, { status: 503 })
     }
   } catch (fatal: unknown) {
     const msg = fatal instanceof Error ? fatal.message : String(fatal)
     console.error('[stanbic verify] fatal', fatal)
+    logStanbicPaymentEvent({
+      event: 'stanbic_return',
+      method: 'POST',
+      returnKind: 'error',
+      success: false,
+      paid: false,
+      dbPaymentStatusUpdated: false,
+      authoriseInfoHttp: null,
+      authoriseInfoApproved: false,
+      authoriseInfoError: 'fatal_exception',
+      description: msg,
+    })
     return NextResponse.json({ ok: false, paid: false, error: msg }, { status: 500 })
   }
 }

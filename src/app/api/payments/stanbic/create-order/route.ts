@@ -11,9 +11,11 @@ import {
 } from '@/lib/stanbic/ngenius'
 import {
   getRegistrationPricingTier,
+  getRegistrationPackage,
   isRegistrationPackageId,
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
+import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -91,10 +93,12 @@ export async function POST(req: NextRequest) {
 
   const redirectUrl = `${publicSiteOrigin()}/participate/register/payment-complete/${encodeURIComponent(idStr)}`
 
+  const tier = getRegistrationPricingTier()
+
   try {
     const { access_token } = await stanbicAccessToken()
 
-    const { orderReference, paymentHref } = await stanbicCreateHostedOrder({
+    const { orderReference, paymentHref, createOrderHttpStatus } = await stanbicCreateHostedOrder({
       accessToken: access_token,
       currencyCode: registrationFeeCurrency(),
       value,
@@ -113,6 +117,35 @@ export async function POST(req: NextRequest) {
       overrideAccess: true,
     })
 
+    let paymentPageHost = ''
+    try {
+      paymentPageHost = new URL(paymentHref).hostname
+    } catch {
+      /* ignore */
+    }
+
+    logStanbicPaymentEvent({
+      event: 'stanbic_start',
+      registrationRef:
+        typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
+      registrationPayloadId: idStr,
+      gatewayOrderRef: orderReference,
+      amount: String(value),
+      amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+      amountDisplayMajor: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+      currency: registrationFeeCurrency(),
+      itemDescription: 'SARSYC VI registration fee',
+      pricingTier: tier,
+      registrationPackage: pkgRaw,
+      packageName: getRegistrationPackage(pkgRaw).name,
+      category: registration.category,
+      email: registration.email,
+      success: true,
+      dbStanbicOrderRefSaved: true,
+      createOrderHttp: createOrderHttpStatus,
+      paymentPageHost,
+    })
+
     return NextResponse.json({
       redirectUrl: paymentHref,
       orderReference,
@@ -120,6 +153,25 @@ export async function POST(req: NextRequest) {
   } catch (e: unknown) {
     const msg = formatStanbicOutboundError(e)
     console.error('[stanbic create-order]', e)
+    logStanbicPaymentEvent({
+      event: 'stanbic_start',
+      registrationRef:
+        typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
+      registrationPayloadId: idStr,
+      amount: String(value),
+      amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+      amountDisplayMajor: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+      currency: registrationFeeCurrency(),
+      itemDescription: 'SARSYC VI registration fee',
+      pricingTier: tier,
+      registrationPackage: pkgRaw,
+      packageName: getRegistrationPackage(pkgRaw).name,
+      category: registration.category,
+      email: registration.email,
+      success: false,
+      dbStanbicOrderRefSaved: false,
+      gatewayError: msg,
+    })
     return NextResponse.json({ error: msg }, { status: 503 })
   }
 }

@@ -149,6 +149,7 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
 export type HostedOrderResult = {
   orderReference: string
   paymentHref: string
+  createOrderHttpStatus: number
 }
 
 export async function stanbicCreateHostedOrder(params: {
@@ -216,13 +217,13 @@ export async function stanbicCreateHostedOrder(params: {
     throw new Error('Create order: missing payment.href or reference in gateway response')
   }
 
-  return { orderReference: reference, paymentHref: href }
+  return { orderReference: reference, paymentHref: href, createOrderHttpStatus: res.status }
 }
 
 export async function stanbicRetrieveOrder(params: {
   accessToken: string
   orderReference: string
-}): Promise<{ raw: Record<string, unknown>; paymentStates: string[] }> {
+}): Promise<{ raw: Record<string, unknown>; paymentStates: string[]; retrieveHttpStatus: number }> {
   const base = gatewayBase()
   const outlet = process.env.STANBIC_OUTLET_REFERENCE?.trim()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
@@ -245,18 +246,20 @@ export async function stanbicRetrieveOrder(params: {
   }
 
   if (!res.ok) {
-    throw new Error(
+    const err = new Error(
       typeof data.message === 'string'
         ? data.message
         : `Retrieve order failed (${res.status}): ${text.slice(0, 300)}`,
-    )
+    ) as Error & { retrieveHttpStatus?: number }
+    err.retrieveHttpStatus = res.status
+    throw err
   }
 
   const embedded = data._embedded as { payment?: Array<{ state?: string }> } | undefined
   const paymentStates =
     embedded?.payment?.map((p) => (typeof p.state === 'string' ? p.state : '')).filter(Boolean) || []
 
-  return { raw: data, paymentStates }
+  return { raw: data, paymentStates, retrieveHttpStatus: res.status }
 }
 
 /** Treat these N-Genius payment states as successfully collected (PURCHASE / capture). */
