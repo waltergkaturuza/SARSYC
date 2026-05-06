@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 
-export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ payload }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(`
     CREATE TABLE IF NOT EXISTS "audit_logs" (
       "id" serial PRIMARY KEY NOT NULL,
@@ -26,13 +26,20 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "audit_logs_user_id_idx" ON "audit_logs"("user_id");
     CREATE INDEX IF NOT EXISTS "audit_logs_created_at_idx" ON "audit_logs"("created_at");
     CREATE INDEX IF NOT EXISTS "audit_logs_document_id_idx" ON "audit_logs"("document_id");
+  `)
 
-    ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_users_id_fk" 
-      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  await payload.db.drizzle.execute(`
+    DO $$
+    BEGIN
+      ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_users_id_fk"
+        FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    EXCEPTION
+      WHEN duplicate_object THEN NULL;
+    END $$;
   `)
 }
 
-export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ payload }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(`
     DROP TABLE IF EXISTS "audit_logs";
   `)
