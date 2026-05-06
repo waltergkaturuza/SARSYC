@@ -18,9 +18,7 @@ import {
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
-
-const STANBIC_CREATE_ORDER_UPSTREAM_HINT =
-  'If this repeats: check STANBIC_* secrets and gateway URL on Vercel, and that the payment return URL origin (NEXT_PUBLIC_SITE_URL) is allow-listed for your N-Genius outlet.'
+import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -241,7 +239,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       httpStatus === 502
-        ? { error: msg, hint: STANBIC_CREATE_ORDER_UPSTREAM_HINT }
+        ? { error: msg, hint: STANBIC_PAYMENT_SUPPORT_HINT }
         : { error: msg },
       { status: httpStatus },
     )

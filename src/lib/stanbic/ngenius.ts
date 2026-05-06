@@ -59,10 +59,10 @@ function looksLikePreencodedNiBasic(credential: string): boolean {
 
 function stanbicOutboundTimeoutMs(): number {
   const raw = process.env.STANBIC_FETCH_TIMEOUT_MS?.trim()
-  const n = raw ? parseInt(raw, 10) : NaN
-  const fallback = 45000
-  const ms = Number.isFinite(n) && n >= 5000 ? n : fallback
-  return Math.min(ms, 120000)
+  const fallbackCfg = STANBIC_ENV_FALLBACK.STANBIC_FETCH_TIMEOUT_MS
+  const n = raw ? parseInt(raw, 10) : fallbackCfg
+  const base = Number.isFinite(n) && n >= 5000 ? n : fallbackCfg >= 5000 ? fallbackCfg : 45000
+  return Math.min(base, 120000)
 }
 
 function stanbicFetchInit(extra?: RequestInit): RequestInit {
@@ -156,10 +156,18 @@ export function publicSiteOrigin(): string {
   return 'http://localhost:3000'
 }
 
+/** Env wins when set (`true` / `false`); otherwise use fallback file. */
+function resolvedRawAuthorizationFlag(): boolean {
+  const e = process.env.STANBIC_API_KEY_AUTHORIZATION_RAW?.trim().toLowerCase()
+  if (e === 'true') return true
+  if (e === 'false') return false
+  return STANBIC_ENV_FALLBACK.STANBIC_API_KEY_AUTHORIZATION_RAW === true
+}
+
 function basicAuthHeader(): string {
   const apiKey = resolvedMerchantApiKey()
   const envExplicit = Boolean(process.env.STANBIC_MERCHANT_API_KEY?.trim())
-  const rawMode = process.env.STANBIC_API_KEY_AUTHORIZATION_RAW === 'true'
+  const rawMode = resolvedRawAuthorizationFlag()
   const usePreencodedBasic =
     rawMode || !envExplicit || (envExplicit && looksLikePreencodedNiBasic(apiKey))
   if (usePreencodedBasic) {
@@ -237,9 +245,9 @@ export async function stanbicCreateHostedOrder(params: {
   const outlet = resolvedOutletReference()
   if (!base || !outlet) throw new Error('Stanbic gateway or outlet not configured')
 
-  const action = (process.env.STANBIC_ORDER_ACTION || 'PURCHASE').trim().toUpperCase() as
-    | 'PURCHASE'
-    | 'AUTH'
+  const action = (
+    process.env.STANBIC_ORDER_ACTION?.trim() || STANBIC_ENV_FALLBACK.STANBIC_ORDER_ACTION
+  ).toUpperCase() as 'PURCHASE' | 'AUTH'
 
   const body: Record<string, unknown> = {
     action: action === 'AUTH' ? 'AUTH' : 'PURCHASE',
