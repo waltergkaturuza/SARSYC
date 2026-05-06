@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "dev:server": "cross-env NODE_OPTIONS=--no-deprecation node src/server-with-nextjs.js",
-    "build": "cross-env NODE_OPTIONS=--no-deprecation payload migrate && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build": "node scripts/payload-migrate-noninteractive.mjs && cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "next lint",
     "generate:types": "payload generate:types",
