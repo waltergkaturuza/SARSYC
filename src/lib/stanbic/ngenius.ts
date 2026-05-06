@@ -195,10 +195,19 @@ export async function stanbicAccessToken(): Promise<{ access_token: string }> {
   }
 
   if (!res.ok) {
-    const detail =
-      typeof data.message === 'string' && data.message.trim()
-        ? data.message.trim()
-        : text.slice(0, 200)
+    const looksLikeHtml = /<html[\s>]|<!doctype html|<body[\s>]/i.test(text)
+    let detail: string
+    if (looksLikeHtml) {
+      detail =
+        'The token URL returned an HTML page (not the N-Genius API). Remove or fix STANBIC_IDENTITY_URL (try clearing it so the gateway host is used), verify STANBIC_API_GATEWAY_URL matches your Stanbic pack, or ask the bank if server IPs must be allow-listed.'
+      console.error('[stanbic] access-token unexpected HTML', { url, status: res.status })
+    } else {
+      detail =
+        typeof data.message === 'string' && data.message.trim()
+          ? data.message.trim()
+          : text.slice(0, 200)
+      console.error('[stanbic] access-token failed', { url, status: res.status, detail: detail.slice(0, 120) })
+    }
     throw new Error(`Stanbic auth failed (${res.status}): ${detail}`)
   }
 
