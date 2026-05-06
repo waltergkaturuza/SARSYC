@@ -1,6 +1,31 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+function usersTableRowCount(probe: unknown): number {
+  if (probe == null) return 0
+  if (Array.isArray(probe) && probe[0] && typeof probe[0] === 'object' && 'c' in probe[0]) {
+    return Number((probe[0] as { c: unknown }).c) || 0
+  }
+  if (typeof probe === 'object' && 'rows' in probe && Array.isArray((probe as { rows: unknown }).rows)) {
+    const rows = (probe as { rows: Array<{ c?: unknown }> }).rows
+    if (rows[0]?.c !== undefined) return Number(rows[0].c) || 0
+  }
+  return 0
+}
+
+/** Full initial schema DDL — skip if DB was already created via `next dev`/drizzle push without this row in `payload_migrations`. */
+export async function up({ db, payload }: MigrateUpArgs): Promise<void> {
+  const probe = await db.execute(sql`
+    SELECT COUNT(*)::int AS c FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'users'
+  `)
+
+  if (usersTableRowCount(probe) > 0) {
+    payload?.logger?.info({
+      msg: 'Skipping 20251223_130213: `public.users` already exists (baseline applied outside migrations).',
+    })
+    return
+  }
+
   await db.execute(sql`
    CREATE TYPE "public"."enum_users_role" AS ENUM('admin', 'editor', 'contributor');
   CREATE TYPE "public"."enum_registrations_dietary_restrictions" AS ENUM('none', 'vegetarian', 'vegan', 'halal', 'gluten-free', 'other');
