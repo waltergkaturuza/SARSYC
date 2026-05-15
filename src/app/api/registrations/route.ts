@@ -4,6 +4,12 @@ import { sendRegistrationConfirmation } from '@/lib/mail'
 import { put } from '@vercel/blob'
 import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
 import {
+  registrationFeePaymentDue,
+  registrationManualBankPaymentEnabled,
+  registrationPackageAmountUsd,
+} from '@/lib/registrationBankTransfer'
+import {
+  getRegistrationPackage,
   getRegistrationPricingTier,
   isRegistrationPackageId,
 } from '@/lib/registrationPackages'
@@ -803,15 +809,27 @@ export async function POST(request: NextRequest) {
       throw createError
     }
 
-    const paymentRequired = registrationRequiresHostedPayment()
+    const hostedPaymentRequired = registrationRequiresHostedPayment()
+    const manualBankPayment =
+      registrationManualBankPaymentEnabled() && registrationFeePaymentDue()
+    const pkgRaw = registration.registrationPackage
+    let packageName: string | undefined
+    let amountUsd: number | undefined
+    if (manualBankPayment && isRegistrationPackageId(pkgRaw)) {
+      packageName = getRegistrationPackage(pkgRaw).name
+      amountUsd = registrationPackageAmountUsd(pkgRaw)
+    }
 
-    // Send confirmation email (different copy when hosted payment is expected next)
+    // Send confirmation email (hosted card vs manual bank transfer)
     try {
       await sendRegistrationConfirmation({
         to: registration.email,
         firstName: registration.firstName,
         registrationId: registration.registrationId || registration.id.toString(),
-        paymentRequired,
+        paymentRequired: hostedPaymentRequired,
+        manualBankPayment,
+        packageName,
+        amountUsd,
       })
     } catch (emailError: any) {
       // Log but don't fail the registration if email fails
@@ -821,10 +839,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       doc: registration,
-      message: paymentRequired
-        ? 'Registration saved — continue to payment on the next page.'
-        : 'Registration successful',
-      paymentRequired,
+      message: manualBankPayment
+        ? 'Registration saved — bank transfer instructions are in your email.'
+        : hostedPaymentRequired
+          ? 'Registration saved — continue to payment on the next page.'
+          : 'Registration successful',
+      paymentRequired: hostedPaymentRequired,
+      manualBankPayment,
+      ...(manualBankPayment && packageName != null && amountUsd != null
+        ? { packageName, amountUsd }
+        : {}),
     })
   } catch (error: any) {
     // Log error immediately and aggressively using ALL methods

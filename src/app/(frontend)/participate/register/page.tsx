@@ -16,6 +16,10 @@ import {
   isRegistrationPackageId,
   packageUsdForTier,
 } from '@/lib/registrationPackages'
+import {
+  REGISTRATION_BANK_PROOF_EMAILS,
+  SARSYC_BANK_TRANSFER_DETAILS,
+} from '@/lib/registrationBankTransfer'
 
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
@@ -203,6 +207,10 @@ export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  /** Manual bank transfer required (hosted card payments temporarily off) */
+  const [manualBankPaymentPending, setManualBankPaymentPending] = useState(false)
+  const [manualPaymentPackageName, setManualPaymentPackageName] = useState('')
+  const [manualPaymentAmountUsd, setManualPaymentAmountUsd] = useState<number | null>(null)
   /** Saved in Payload but redirect to Stanbic did not happen */
   const [paymentOutstanding, setPaymentOutstanding] = useState(false)
   const [savedPayloadId, setSavedPayloadId] = useState<string | null>(null)
@@ -408,7 +416,22 @@ export default function RegisterPage() {
         const regIdHuman = result.doc?.registrationId
         const payloadId = result.doc?.id
 
-        if (result.paymentRequired && payloadId != null) {
+        if (result.manualBankPayment) {
+          setManualBankPaymentPending(true)
+          setPaymentOutstanding(false)
+          setSavedPayloadId(null)
+          setRegistrationId(regIdHuman || String(payloadId))
+          setManualPaymentPackageName(
+            typeof result.packageName === 'string' ? result.packageName : '',
+          )
+          setManualPaymentAmountUsd(
+            typeof result.amountUsd === 'number' ? result.amountUsd : null,
+          )
+          showToast.success('Registration saved — bank transfer details are in your email.')
+          setIsSuccess(true)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        } else if (result.paymentRequired && payloadId != null) {
+          setManualBankPaymentPending(false)
           const loadId = showToast.loading('Redirecting to secure payment…')
           try {
       const payRes = await fetch('/api/payments/stanbic/create-order', {
@@ -462,6 +485,7 @@ export default function RegisterPage() {
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }
         } else {
+          setManualBankPaymentPending(false)
           setPaymentOutstanding(false)
           setSavedPayloadId(null)
           setRegistrationId(regIdHuman)
@@ -659,6 +683,69 @@ export default function RegisterPage() {
   }
 
   if (isSuccess) {
+    if (manualBankPaymentPending) {
+      const b = SARSYC_BANK_TRANSFER_DETAILS
+      const amount =
+        manualPaymentAmountUsd != null
+          ? `USD ${manualPaymentAmountUsd.toFixed(2)}`
+          : '—'
+      return (
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="container-custom">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-amber-100">
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiAlertCircle className="w-10 h-10 text-amber-600" aria-hidden />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                  Registration saved — bank transfer required
+                </h1>
+                <p className="text-lg text-gray-600 mb-6 text-center">
+                  Your details are on file. Your place is confirmed only after we receive your fee and verify proof
+                  of payment.
+                </p>
+                <div className="bg-primary-50 rounded-lg p-6 mb-6 text-center">
+                  <p className="text-sm text-gray-600 mb-2">Your Registration ID</p>
+                  <p className="text-2xl font-bold text-primary-600 font-mono">{registrationId}</p>
+                  <p className="text-sm text-gray-600 mt-3">
+                    Use this ID as your <strong>payment reference</strong> on the deposit.
+                  </p>
+                </div>
+                {manualPaymentPackageName ? (
+                  <p className="text-center text-gray-800 mb-4">
+                    Package: <strong>{manualPaymentPackageName}</strong> — Amount due:{' '}
+                    <strong>{amount}</strong>
+                  </p>
+                ) : null}
+                <div className="text-left bg-gray-50 rounded-lg p-6 mb-6 text-sm text-gray-700 space-y-2 border border-gray-200">
+                  <p className="font-semibold text-gray-900">Bank details (USD)</p>
+                  <p><span className="text-gray-500">Bank:</span> {b.bankName}</p>
+                  <p><span className="text-gray-500">Account name:</span> {b.accountName}</p>
+                  <p><span className="text-gray-500">Account number:</span> <strong className="font-mono">{b.accountNumber}</strong></p>
+                  <p><span className="text-gray-500">Branch:</span> {b.branchName}</p>
+                  <p><span className="text-gray-500">SWIFT:</span> {b.swiftCode}</p>
+                  <p><span className="text-gray-500">Intermediary bank:</span> {b.intermediaryBankName} (SWIFT: {b.intermediarySwiftCode})</p>
+                </div>
+                <p className="text-sm text-gray-600 mb-6 text-left bg-amber-50 rounded-lg p-4 border border-amber-100">
+                  After paying, email <strong>proof of payment</strong> to{' '}
+                  {REGISTRATION_BANK_PROOF_EMAILS.map((email, i) => (
+                    <span key={email}>
+                      {i > 0 ? ' and ' : ''}
+                      <a href={`mailto:${email}`} className="text-primary-600 underline">{email}</a>
+                    </span>
+                  ))}
+                  , including your registration ID and full name. The same instructions were sent to your email.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <a href="/" className="btn-primary inline-flex items-center justify-center">Back to Homepage</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     if (paymentOutstanding) {
       return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -681,12 +768,7 @@ export default function RegisterPage() {
                 </div>
                 <p className="text-sm text-gray-600 mb-6 text-left bg-amber-50 rounded-lg p-4 border border-amber-100">
                   We have emailed you with next steps. You can also tap <strong>Complete payment</strong> below to
-                  try opening the payment page again. If your bank shows a charge but the site still says unpaid,
-                  email{' '}
-                  <a href="mailto:registration@sarsyc.org" className="text-primary-600 underline">
-                    registration@sarsyc.org
-                  </a>{' '}
-                  with your registration ID.
+                  try opening the payment page again.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                   <button
@@ -714,7 +796,6 @@ export default function RegisterPage() {
         </div>
       )
     }
-
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container-custom">

@@ -1,4 +1,8 @@
 import nodemailer from 'nodemailer'
+import {
+  formatRegistrationBankTransferHtml,
+  formatRegistrationBankTransferText,
+} from '@/lib/registrationBankTransfer'
 
 /** Trim and strip one pair of surrounding quotes (common .env mistake). */
 function readEnvRaw(key: string): string | undefined {
@@ -120,18 +124,42 @@ export async function sendRegistrationConfirmation({
   firstName,
   registrationId,
   paymentRequired,
+  manualBankPayment,
+  packageName,
+  amountUsd,
 }: {
   to: string
   firstName?: string
   registrationId: string
   /** When true, delegate must complete card payment before registration is fully confirmed */
   paymentRequired?: boolean
+  /** Bank transfer instructions (hosted card payment temporarily disabled) */
+  manualBankPayment?: boolean
+  packageName?: string
+  amountUsd?: number
 }) {
   const name = firstName || 'attendee'
   const subject = `SARSYC VI — Registration received (${registrationId})`
   let text: string
   let html: string
-  if (paymentRequired) {
+  if (manualBankPayment && packageName != null && amountUsd != null) {
+    const bankText = formatRegistrationBankTransferText({
+      registrationId,
+      packageName,
+      amountUsd,
+    })
+    const bankHtml = formatRegistrationBankTransferHtml({
+      registrationId,
+      packageName,
+      amountUsd,
+    })
+    text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nYour place is not confirmed until we receive your registration fee by bank transfer and verify proof of payment.\n\n${bankText}\n\nWe will email you once payment is confirmed. Questions: registration@sarsyc.org`
+    html = `<p>Dear ${name},</p>
+<p>Thank you. Your registration has been <strong>saved</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
+<p><strong>Important:</strong> your place is not confirmed until we receive your fee by <strong>bank transfer</strong> and verify proof of payment.</p>
+${bankHtml}
+<p>We will email you once payment is confirmed. Questions: <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a>.</p>`
+  } else if (paymentRequired) {
     text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nImportant: your place is not confirmed until your card payment completes successfully on the secure Stanbic hosted page. You should be redirected there automatically after you submit the form.\n\nIf the payment page did not open, use the link on the confirmation screen to try again, or contact registration@sarsyc.org with your registration ID.\n\nYou will receive another email as soon as payment is confirmed (or instructions if payment could not be completed).`
     html = `<p>Dear ${name},</p>
 <p>Thank you. Your registration has been <strong>saved</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>

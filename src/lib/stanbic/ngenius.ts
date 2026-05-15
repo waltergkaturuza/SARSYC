@@ -9,6 +9,7 @@ import {
   getRegistrationPricingTier,
   minorAmountForPackage,
 } from '@/lib/registrationPackages'
+import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTransfer'
 import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
 
 /** When `STANBIC_DISABLE_CODE_FALLBACK` is true, `stanbicEnvFallback.ts` values are not used (forces explicit Vercel/local env). */
@@ -194,6 +195,7 @@ export function registrationFeeCurrency(): string {
 
 /** True when gateway is configured, pricing period is open, and hosted card payment should be offered. */
 export function registrationRequiresHostedPayment(): boolean {
+  if (registrationManualBankPaymentEnabled()) return false
   if (!stanbicHostedPaymentsConfigured()) return false
   const tier = getRegistrationPricingTier()
   if (tier === 'closed') return false
