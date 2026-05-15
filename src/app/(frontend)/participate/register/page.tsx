@@ -18,6 +18,8 @@ import {
 } from '@/lib/registrationPackages'
 import {
   REGISTRATION_BANK_PROOF_EMAILS,
+  REGISTRATION_CONTACT_EMAIL,
+  REGISTRATION_SUPPORT_EMAILS,
   SARSYC_BANK_TRANSFER_DETAILS,
 } from '@/lib/registrationBankTransfer'
 
@@ -286,7 +288,7 @@ export default function RegisterPage() {
       showToast.error(
         combined ||
           (payRes.status
-            ? `Payment could not start (HTTP ${payRes.status}). Try again or contact registration@sarsyc.org.`
+            ? `Payment could not start (HTTP ${payRes.status}). Try again or contact ${REGISTRATION_CONTACT_EMAIL}.`
             : 'We could not open the payment page. Check your email or try again in a few minutes.'),
       )
     } catch {
@@ -673,7 +675,7 @@ export default function RegisterPage() {
             <a href="/" className="btn-outline">
               Back to Homepage
             </a>
-            <a href="mailto:registration@sarsyc.org" className="btn-primary">
+            <a href={`mailto:${REGISTRATION_CONTACT_EMAIL}`} className="btn-primary">
               Contact registration
             </a>
           </div>
@@ -735,6 +737,11 @@ export default function RegisterPage() {
                     </span>
                   ))}
                   , including your registration ID and full name. The same instructions were sent to your email.
+                </p>
+                <p className="text-sm text-gray-600 mb-6 text-left bg-blue-50 rounded-lg p-4 border border-blue-100">
+                  After we confirm your payment, you will receive an email with a link to complete mandatory{' '}
+                  <strong>safeguarding training</strong> and a zero-tolerance acknowledgment before you are fully
+                  registered for the conference.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a href="/" className="btn-primary inline-flex items-center justify-center">Back to Homepage</a>
@@ -2116,12 +2123,22 @@ export default function RegisterPage() {
           </div>
 
           {/* Help Text */}
-          <div className="mt-8 text-center text-sm text-gray-600">
+          <div className="mt-8 text-center text-sm text-gray-600 space-y-3">
+            <p className="max-w-2xl mx-auto text-gray-700 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+              After you register and your payment is confirmed, you must complete mandatory safeguarding training
+              and submit a zero-tolerance acknowledgment (link sent by email) before you are fully registered for
+              SARSYC VI.
+            </p>
             <p>
-              Need help? Contact us at{' '}
-              <a href="mailto:registration@sarsyc.org" className="text-primary-600 hover:underline">
-                registration@sarsyc.org
-              </a>
+              Need help? Contact{' '}
+              {REGISTRATION_SUPPORT_EMAILS.map((email, i) => (
+                <span key={email}>
+                  {i > 0 ? (i === REGISTRATION_SUPPORT_EMAILS.length - 1 ? ' or ' : ', ') : ''}
+                  <a href={`mailto:${email}`} className="text-primary-600 hover:underline">
+                    {email}
+                  </a>
+                </span>
+              ))}
             </p>
           </div>
         </div>

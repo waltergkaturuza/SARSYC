@@ -14,6 +14,7 @@ import * as migration_20260312_000001_add_abstract_author_demographics from './2
 import * as migration_20260506_000000_add_registrations_stanbic_order_ref from './20260506_000000_add_registrations_stanbic_order_ref';
 import * as migration_20260506_000001_add_registration_package from './20260506_000001_add_registration_package';
 import * as migration_20260507_000002_add_payment_follow_up_sent_at from './20260507_000002_add_payment_follow_up_sent_at';
+import * as migration_20260515_000001_add_safeguarding_ack_fields from './20260515_000001_add_safeguarding_ack_fields';
 
 export const migrations = [
   {
@@ -95,5 +96,10 @@ export const migrations = [
     up: migration_20260507_000002_add_payment_follow_up_sent_at.up,
     down: migration_20260507_000002_add_payment_follow_up_sent_at.down,
     name: '20260507_000002_add_payment_follow_up_sent_at'
+  },
+  {
+    up: migration_20260515_000001_add_safeguarding_ack_fields.up,
+    down: migration_20260515_000001_add_safeguarding_ack_fields.down,
+    name: '20260515_000001_add_safeguarding_ack_fields'
   },
 ];

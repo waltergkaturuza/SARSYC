@@ -123,6 +123,17 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                   }`}>
                     Payment: {registration.paymentStatus?.charAt(0).toUpperCase() + registration.paymentStatus?.slice(1) || 'Pending'}
                   </span>
+                  {(registration.paymentStatus === 'paid' || registration.paymentStatus === 'waived') && (
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        registration.safeguardingAcknowledgedAt
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      Safeguarding: {registration.safeguardingAcknowledgedAt ? 'Complete' : 'Pending'}
+                    </span>
+                  )}
                   {registration.securityCheckStatus && (
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       securityColors[registration.securityCheckStatus] || 'bg-gray-100 text-gray-800'

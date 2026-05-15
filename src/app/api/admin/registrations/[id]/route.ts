@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
+import { registrationPaymentSettled } from '@/lib/safeguarding'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -34,13 +36,29 @@ export async function PATCH(
   try {
     const payload = await getPayloadClient()
     const body = await request.json()
-    
-    // Update registration
+
+    const before = await payload.findByID({
+      collection: 'registrations',
+      id: params.id,
+      depth: 0,
+    })
+
     const registration = await payload.update({
       collection: 'registrations',
       id: params.id,
       data: body,
     })
+
+    const paymentNowSettled =
+      registrationPaymentSettled(registration.paymentStatus) &&
+      !registrationPaymentSettled(before.paymentStatus)
+    if (paymentNowSettled) {
+      try {
+        await ensureSafeguardingTrainingEmailSent(payload, registration as any)
+      } catch (e) {
+        console.error('[admin registration PATCH] safeguarding email failed', e)
+      }
+    }
 
     return NextResponse.json({ success: true, doc: registration })
   } catch (error: any) {

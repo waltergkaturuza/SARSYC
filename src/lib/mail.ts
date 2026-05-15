@@ -2,7 +2,14 @@ import nodemailer from 'nodemailer'
 import {
   formatRegistrationBankTransferHtml,
   formatRegistrationBankTransferText,
+  formatRegistrationSupportContactsHtml,
+  formatRegistrationSupportContactsText,
 } from '@/lib/registrationBankTransfer'
+import {
+  SAFEGUARDING_TRAINING_URL,
+  formatSafeguardingPolicyText,
+  safeguardingAcknowledgeUrl,
+} from '@/lib/safeguarding'
 
 /** Trim and strip one pair of surrounding quotes (common .env mistake). */
 function readEnvRaw(key: string): string | undefined {
@@ -153,19 +160,25 @@ export async function sendRegistrationConfirmation({
       packageName,
       amountUsd,
     })
-    text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nYour place is not confirmed until we receive your registration fee by bank transfer and verify proof of payment.\n\n${bankText}\n\nWe will email you once payment is confirmed. Questions: registration@sarsyc.org`
+    const supportText = formatRegistrationSupportContactsText()
+    const supportHtml = formatRegistrationSupportContactsHtml()
+    text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nYour place is not confirmed until we receive your registration fee by bank transfer and verify proof of payment.\n\n${bankText}\n\nWe will email you once payment is confirmed. Questions: ${supportText}`
     html = `<p>Dear ${name},</p>
 <p>Thank you. Your registration has been <strong>saved</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
 <p><strong>Important:</strong> your place is not confirmed until we receive your fee by <strong>bank transfer</strong> and verify proof of payment.</p>
 ${bankHtml}
-<p>We will email you once payment is confirmed. Questions: <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a>.</p>`
+<p>We will email you once payment is confirmed. After payment is verified you must complete mandatory <strong>safeguarding training</strong> (link by email) before your registration is fully complete.</p>
+<p>Questions: ${supportHtml}.</p>`
   } else if (paymentRequired) {
-    text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nImportant: your place is not confirmed until your card payment completes successfully on the secure Stanbic hosted page. You should be redirected there automatically after you submit the form.\n\nIf the payment page did not open, use the link on the confirmation screen to try again, or contact registration@sarsyc.org with your registration ID.\n\nYou will receive another email as soon as payment is confirmed (or instructions if payment could not be completed).`
+    const supportText = formatRegistrationSupportContactsText()
+    const supportHtml = formatRegistrationSupportContactsHtml()
+    text = `Dear ${name},\n\nThank you. Your registration has been saved. Your registration ID is ${registrationId}.\n\nImportant: your place is not confirmed until your card payment completes successfully on the secure Stanbic hosted page. You should be redirected there automatically after you submit the form.\n\nIf the payment page did not open, use the link on the confirmation screen to try again, or contact ${supportText} with your registration ID.\n\nYou will receive another email as soon as payment is confirmed (or instructions if payment could not be completed).`
     html = `<p>Dear ${name},</p>
 <p>Thank you. Your registration has been <strong>saved</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
 <p><strong>Important:</strong> your place is not fully confirmed until <strong>card payment completes</strong> on the secure Stanbic / N-Genius page. You should be redirected there right after submitting the form.</p>
-<p>If the payment page did not open, use the <strong>“Complete payment”</strong> option on the website with your registration ID, or email <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a>.</p>
-<p>You will get <strong>another email</strong> when payment succeeds or if we need you to retry.</p>`
+<p>If the payment page did not open, use the <strong>“Complete payment”</strong> option on the website with your registration ID, or email ${supportHtml}.</p>
+<p>You will get <strong>another email</strong> when payment succeeds or if we need you to retry.</p>
+<p>After payment, you must complete <strong>safeguarding training</strong> and an acknowledgment form (sent by email) before you are fully registered.</p>`
   } else {
     text = `Dear ${name},\n\nThank you for registering for SARSYC VI. Your registration ID is ${registrationId}. We will be in touch with next steps.`
     html = `<p>Dear ${name},</p><p>Thank you for registering for <strong>SARSYC VI</strong>. Your registration ID is <strong>${registrationId}</strong>.</p><p>We will be in touch with next steps.</p>`
@@ -184,13 +197,77 @@ export async function sendRegistrationPaymentConfirmed({
 }) {
   const name = firstName || 'attendee'
   const subject = `SARSYC VI — Payment received (${registrationId})`
-  const text = `Dear ${name},\n\nWe have received your registration payment successfully. Your registration ID is ${registrationId}.\n\nYour registration is now confirmed from a payment perspective. We look forward to seeing you in Windhoek.\n\nIf you did not make this payment, contact registration@sarsyc.org immediately.`
+  const supportText = formatRegistrationSupportContactsText()
+  const supportHtml = formatRegistrationSupportContactsHtml()
+  const text = `Dear ${name},\n\nWe have received your registration payment successfully. Your registration ID is ${registrationId}.\n\nYour fee is recorded. To be fully registered for the conference you must also complete the mandatory safeguarding training and acknowledgment (a separate email with your personal link will follow shortly).\n\nIf you did not make this payment, contact ${supportText} immediately.`
   const html = `<p>Dear ${name},</p>
 <p>We have received your <strong>registration payment successfully</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
-<p>Your registration is now <strong>confirmed</strong> from a payment perspective. We look forward to seeing you at SARSYC VI in Windhoek.</p>
-<p>If you did not make this payment, contact <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a> immediately.</p>`
+<p>Your fee is recorded. To be <strong>fully registered</strong> for SARSYC VI you must also complete the mandatory <strong>safeguarding training</strong> and submit the acknowledgment form (you will receive a separate email with your personal link shortly).</p>
+<p>If you did not make this payment, contact ${supportHtml} immediately.</p>`
   return sendMail({ to, subject, text, html })
 }
+
+export async function sendSafeguardingTrainingRequired({
+  to,
+  firstName,
+  registrationId,
+  token,
+}: {
+  to: string
+  firstName?: string
+  registrationId: string
+  token: string
+}) {
+  const name = firstName || 'attendee'
+  const ackUrl = safeguardingAcknowledgeUrl(token)
+  const policyText = formatSafeguardingPolicyText()
+  const subject = `Action required: safeguarding training — SARSYC VI (${registrationId})`
+
+  const text = `Dear ${name},
+
+Thank you for registering and paying for the Southern African Regional Youth Conference (SARSYC VI). Your registration ID is ${registrationId}.
+
+Before you can be fully registered for the conference, you must complete the safeguarding training and submit the acknowledgment below.
+
+1. Watch the safeguarding training video:
+${SAFEGUARDING_TRAINING_URL}
+
+2. Open your personal acknowledgment form (one-time link):
+${ackUrl}
+
+On that form you must confirm that you understand SAYWHAT's zero-tolerance approach and related policies.
+
+${policyText}
+
+Your conference registration is only complete after we receive your submitted acknowledgment.
+
+If the link does not work, contact us with your registration ID.`
+
+  const html = `<p>Dear ${escapeHtml(name)},</p>
+<p>Thank you for registering and paying for <strong>SARSYC VI</strong>. Your registration ID is <strong>${escapeHtml(registrationId)}</strong>.</p>
+<p><strong>Action required:</strong> before you can be fully registered for the conference, you must complete safeguarding training and submit the acknowledgment form.</p>
+<ol style="line-height:1.7;">
+  <li>Watch the training video: <a href="${SAFEGUARDING_TRAINING_URL}">${SAFEGUARDING_TRAINING_URL}</a></li>
+  <li>Complete your acknowledgment (personal link): <a href="${ackUrl}">${ackUrl}</a></li>
+</ol>
+<div style="margin:1.25rem 0;padding:1rem;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;font-size:14px;">
+<p style="margin:0 0 0.75rem;font-weight:600;">SAYWHAT zero tolerance — you will confirm on the form that you understand:</p>
+<ul style="margin:0;padding-left:1.25rem;">
+<li>Sexual exploitation, abuse, and harassment</li>
+<li>Any form of violence</li>
+<li>Drug and substance abuse</li>
+<li>No partner, supplier, sub-contractor, agent, or individual engaged by SAYWHAT may engage in sexual abuse or exploitation</li>
+<li>Equal right to protection for all persons regardless of personal characteristics</li>
+<li>No abuse or exploitation by staff or associated personnel during the conference</li>
+</ul>
+</div>
+<p style="margin:1rem 0 0;"><a href="${ackUrl}" style="display:inline-block;padding:12px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Complete safeguarding acknowledgment</a></p>
+</div>
+<p>Your registration is only <strong>complete</strong> after this form is submitted.</p>`
+
+  return sendMail({ to, subject, text, html })
+}
+
 
 /** After returning from the gateway without a successful capture (one email per registration, deduped via Payload). */
 export async function sendRegistrationPaymentNotConfirmed({
@@ -207,11 +284,13 @@ export async function sendRegistrationPaymentNotConfirmed({
   const name = firstName || 'attendee'
   const subject = `SARSYC VI — Payment not completed (${registrationId})`
   const extra = summary ? `\n\nDetails from the gateway: ${summary}` : ''
-  const text = `Dear ${name},\n\nWe noticed you returned from the payment page but your registration fee has not yet been confirmed as paid. Your registration ID is ${registrationId}.${extra}\n\nYou can try paying again using the registration flow with your email, or contact registration@sarsyc.org with your registration ID.\n\nIf payment was deducted from your card but this email says otherwise, attach your bank SMS or receipt and email registration@sarsyc.org — we will reconcile with Stanbic.\n`
+  const supportText = formatRegistrationSupportContactsText()
+  const supportHtml = formatRegistrationSupportContactsHtml()
+  const text = `Dear ${name},\n\nWe noticed you returned from the payment page but your registration fee has not yet been confirmed as paid. Your registration ID is ${registrationId}.${extra}\n\nYou can try paying again using the registration flow with your email, or contact ${supportText} with your registration ID.\n\nIf payment was deducted from your card but this email says otherwise, attach your bank SMS or receipt and email ${supportText} — we will reconcile with Stanbic.\n`
   const html = `<p>Dear ${name},</p>
 <p>You returned from the secure payment page, but your <strong>registration fee has not yet been confirmed as paid</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
 ${summary ? `<p><strong>Gateway summary:</strong> ${escapeHtml(summary)}</p>` : ''}
-<p>You can try again from the registration site (same email) or email <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a> with your registration ID.</p>
+<p>You can try again from the registration site (same email) or email ${supportHtml} with your registration ID.</p>
 <p>If your bank shows a debit but this email says unpaid, reply with proof and we will follow up with the bank.</p>`
   return sendMail({ to, subject, text, html })
 }
@@ -231,11 +310,13 @@ export async function sendRegistrationPaymentSessionFailed({
   const name = firstName || 'attendee'
   const subject = `Action needed: complete payment — SARSYC VI (${registrationId})`
   const tech = hint ? `\nTechnical note (for support): ${hint}` : ''
-  const text = `Dear ${name},\n\nYour registration was saved successfully. Your registration ID is ${registrationId}.\nHowever, we could not redirect you to the secure card payment page (temporary bank or connection issue).\n\nPlease try completing payment again from the website using the same email address, or contact registration@sarsyc.org with your registration ID.${tech}\n`
+  const supportText = formatRegistrationSupportContactsText()
+  const supportHtml = formatRegistrationSupportContactsHtml()
+  const text = `Dear ${name},\n\nYour registration was saved successfully. Your registration ID is ${registrationId}.\nHowever, we could not redirect you to the secure card payment page (temporary bank or connection issue).\n\nPlease try completing payment again from the website using the same email address, or contact ${supportText} with your registration ID.${tech}\n`
   const html = `<p>Dear ${name},</p>
 <p>Your registration was <strong>saved</strong>. Your registration ID is <strong>${registrationId}</strong>.</p>
 <p>We could <strong>not</strong> open the secure card payment page (this is often temporary).</p>
-<p>Please use the <strong>“Complete payment”</strong> option on the registration site, or email <a href="mailto:registration@sarsyc.org">registration@sarsyc.org</a> with your registration ID.</p>
+<p>Please use the <strong>“Complete payment”</strong> option on the registration site, or email ${supportHtml} with your registration ID.</p>
 ${hint ? `<p style="font-size:12px;color:#666">${escapeHtml(hint)}</p>` : ''}`
   return sendMail({ to, subject, text, html })
 }

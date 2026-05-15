@@ -209,7 +209,7 @@ export default function TrackPage() {
 
                   {/* Payment Status */}
                   {registration.paymentStatus && (
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-600">Payment Status</p>
                         {(() => {
@@ -221,6 +221,20 @@ export default function TrackPage() {
                           )
                         })()}
                       </div>
+                      {(registration.paymentStatus === 'paid' || registration.paymentStatus === 'waived') && (
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                          <p className="text-sm text-gray-600">Safeguarding training</p>
+                          {registration.safeguardingAcknowledgedAt ? (
+                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
+                              Required — check your email
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -560,4 +574,5 @@ export default function TrackPage() {
     </>
   )
 }
+
 

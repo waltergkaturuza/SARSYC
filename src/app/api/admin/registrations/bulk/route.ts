@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendRegistrationConfirmation } from '@/lib/mail'
+import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
 import { logExport } from '@/lib/telemetry'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 
@@ -37,7 +38,16 @@ export async function POST(req: Request) {
     for (const id of ids) {
       try {
         if (action === 'markConfirmed') {
-          await payload.update({ collection: 'registrations', id, data: { status: 'confirmed', paymentStatus: 'paid' } })
+          const updated = await payload.update({
+            collection: 'registrations',
+            id,
+            data: { status: 'pending', paymentStatus: 'paid' },
+          })
+          try {
+            await ensureSafeguardingTrainingEmailSent(payload, updated as any)
+          } catch (e) {
+            console.error('[bulk markConfirmed] safeguarding email failed', e)
+          }
           results.updated.push(id)
         } else if (action === 'sendEmail') {
           const res = await payload.find({ collection: 'registrations', where: { id: { equals: id } } })

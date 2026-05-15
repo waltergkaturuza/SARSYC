@@ -656,6 +656,73 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'safeguardingAckToken',
+      type: 'text',
+      label: 'Safeguarding acknowledgment token',
+      admin: {
+        description: 'Secret link token for the safeguarding training form (set automatically).',
+        position: 'sidebar',
+        readOnly: true,
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
+      name: 'safeguardingAcknowledgedAt',
+      type: 'date',
+      label: 'Safeguarding training acknowledged',
+      admin: {
+        description:
+          'Timestamp when the delegate completed the safeguarding video acknowledgment form.',
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: (args: any) => args.req?.user?.role === 'admin',
+      },
+    },
+    {
+      name: 'safeguardingTrainingEmailSentAt',
+      type: 'date',
+      label: 'Safeguarding training email sent',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
+      name: 'safeguardingAckIp',
+      type: 'text',
+      label: 'Safeguarding ack IP',
+      admin: { position: 'sidebar', readOnly: true },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
+      name: 'safeguardingAckUserAgent',
+      type: 'text',
+      label: 'Safeguarding ack user agent',
+      admin: { position: 'sidebar', readOnly: true },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
       name: 'paymentFollowUpSentAt',
       type: 'date',
       label: 'Payment follow-up email sent',

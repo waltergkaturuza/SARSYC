@@ -59,8 +59,10 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
 
         if (data.paid) {
           setPhase('success')
-          setMessage('Your payment was received. Registration is confirmed.')
-          showToast.success('Payment received — your registration is confirmed.')
+          setMessage(
+            'Your payment was received. Check your email for the mandatory safeguarding training link — you must complete that acknowledgment before you are fully registered.',
+          )
+          showToast.success('Payment received — complete safeguarding training from your email.')
         } else {
           setPhase('pending')
           setMessage(
@@ -103,13 +105,21 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
             <h1 className="text-2xl font-bold text-gray-900 mb-3">Payment successful</h1>
             <p className="text-gray-700 mb-4">{message}</p>
             {registrationIdDisplay && (
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-gray-500 mb-4">
                 Registration ID: <span className="font-mono font-semibold">{registrationIdDisplay}</span>
               </p>
             )}
-            <Link href="/" className="btn-primary inline-block">
-              Back to home
-            </Link>
+            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg p-3 mb-6 text-left">
+              Next step: open the safeguarding email we sent you, watch the training video, and submit the acknowledgment form.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/participate/safeguarding" className="btn-outline">
+                Safeguarding form
+              </Link>
+              <Link href="/" className="btn-primary inline-block">
+                Back to home
+              </Link>
+            </div>
           </>
         )}
 

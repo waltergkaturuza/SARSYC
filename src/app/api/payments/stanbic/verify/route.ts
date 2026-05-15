@@ -13,6 +13,7 @@ import {
   sendRegistrationPaymentConfirmed,
   sendRegistrationPaymentNotConfirmed,
 } from '@/lib/mail'
+import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -211,12 +212,12 @@ export async function POST(req: NextRequest) {
         registration.paymentStatus !== 'paid' && registration.paymentStatus !== 'waived'
 
       if (paid) {
-        await payload.update({
+        const updatedReg = await payload.update({
           collection: 'registrations',
           id: regId,
           data: {
             paymentStatus: 'paid',
-            status: registration.status === 'cancelled' ? registration.status : 'confirmed',
+            status: registration.status === 'cancelled' ? registration.status : 'pending',
             stanbicPaymentOrderRef: ref,
           },
           overrideAccess: true,
@@ -240,6 +241,11 @@ export async function POST(req: NextRequest) {
             }
           } catch (mailErr: unknown) {
             console.error('[stanbic verify] payment-confirmed email failed:', mailErr)
+          }
+          try {
+            await ensureSafeguardingTrainingEmailSent(payload, updatedReg as any)
+          } catch (sgErr: unknown) {
+            console.error('[stanbic verify] safeguarding email failed:', sgErr)
           }
         }
 

@@ -22,6 +22,29 @@ export const REGISTRATION_BANK_PROOF_EMAILS = [
   'isabella@saywhat.org.zw',
 ] as const
 
+/** General registration and conference queries (replaces registration@sarsyc.org). */
+export const REGISTRATION_CONTACT_EMAIL = 'researchunit@saywhat.org.zw'
+
+export const REGISTRATION_SUPPORT_EMAILS = [
+  REGISTRATION_CONTACT_EMAIL,
+  ...REGISTRATION_BANK_PROOF_EMAILS,
+] as const
+
+export function formatRegistrationSupportContactsText(): string {
+  const list = [...REGISTRATION_SUPPORT_EMAILS]
+  if (list.length === 1) return list[0]
+  return `${list.slice(0, -1).join(', ')} or ${list[list.length - 1]}`
+}
+
+export function formatRegistrationSupportContactsHtml(): string {
+  return REGISTRATION_SUPPORT_EMAILS.map((email, i) => {
+    const link = `<a href="mailto:${email}">${email}</a>`
+    if (i === 0) return link
+    if (i === REGISTRATION_SUPPORT_EMAILS.length - 1) return ` or ${link}`
+    return `, ${link}`
+  }).join('')
+}
+
 export const SARSYC_BANK_TRANSFER_DETAILS = {
   bankName: 'Stanbic Bank Zimbabwe',
   accountName: 'SAYWHAT',
