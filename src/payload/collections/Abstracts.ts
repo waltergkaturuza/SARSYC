@@ -540,6 +540,7 @@ const Abstracts: CollectionConfig = {
                 await sendAbstractStatusUpdate({
                   to: doc.primaryAuthor.email,
                   firstName: doc.primaryAuthor.firstName,
+                  lastName: doc.primaryAuthor.lastName,
                   submissionId: doc.submissionId || `ABS-${doc.id}`,
                   title: doc.title,
                   status: doc.status,

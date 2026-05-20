@@ -321,9 +321,120 @@ ${hint ? `<p style="font-size:12px;color:#666">${escapeHtml(hint)}</p>` : ''}`
   return sendMail({ to, subject, text, html })
 }
 
+/** Total abstracts assessed (override via env when the number changes year on year). */
+function abstractsAssessedTotal(): string {
+  const v = process.env.SARSYC_ABSTRACTS_ASSESSED_TOTAL?.trim()
+  if (v && /^\d+$/.test(v)) return v
+  return '289'
+}
+
+function abstractRejectionLetter({
+  fullName,
+  title,
+  submissionId,
+  reviewerComments,
+  registerUrl,
+  siteUrl,
+}: {
+  fullName: string
+  title: string
+  submissionId: string
+  reviewerComments?: string
+  registerUrl: string
+  siteUrl: string
+}): { subject: string; text: string; html: string } {
+  const total = abstractsAssessedTotal()
+  const subject = 'SARSYC VI — Abstract decision (not accepted)'
+
+  const text = `Dear ${fullName},
+
+We truly appreciate your interest in the conference and your commitment to advancing Sexual Reproductive Health Rights (SRHR). The Conference Review Committee assessed a total of ${total} abstracts, all of which were carefully assessed by our team of senior researchers from various countries. Unfortunately, your abstract was not accepted for presentation at the conference.
+
+Title of your abstract: ${title}
+Submission ID: ${submissionId}
+
+We appreciate your interest in the conference which will be held from 5-7 August 2026 in Windhoek, Namibia, and sincerely hope that you will still participate by registering for the conference.
+
+We encourage you to apply for SAYWHAT's annual Young Researchers Initiative Program (YRIP). This programme aims to support young researchers by providing a platform where young researchers are trained by experienced researchers for a 5-month program to publish their work. The call for abstracts for this programme will be released shortly. Mentors offer valuable feedback on the structure, content, and presentation of abstracts, helping to enhance the quality of future submissions and ultimately publish your work. Thank you once again for your contribution. We look forward to your continued involvement and hope to see you at the conference.
+
+Registration
+Registration for the conference has officially opened. Detailed information on conference registration is available at ${registerUrl}. Visit our website ${siteUrl} for more details on key dates and essential conference material.
+${reviewerComments ? `\nReviewer feedback:\n${reviewerComments}\n` : ''}
+Yours Sincerely,
+SAYWHAT Research Team
+
+Organising Secretariat: SAYWHAT  •  Host Partner: University of Namibia
+E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +264 81 627 9224
+`
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <div style="max-width:640px;margin:0 auto;background:#ffffff;">
+    <div style="background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%);padding:28px 32px;color:#ffffff;">
+      <p style="margin:0;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:0.85;">SARSYC VI • 6th Edition</p>
+      <h1 style="margin:6px 0 8px;font-size:22px;line-height:1.3;">Align for Action: Sustaining Progress in Youth Health and Education</h1>
+      <p style="margin:0;font-size:14px;opacity:0.95;">5 – 7 August 2026 &nbsp;|&nbsp; Windhoek, Namibia</p>
+    </div>
+    <div style="padding:28px 32px;font-size:15px;line-height:1.65;color:#1f2937;">
+      <p style="margin:0 0 14px;">Dear ${escapeHtml(fullName)},</p>
+      <p style="margin:0 0 14px;">
+        We truly appreciate your interest in the conference and your commitment to advancing
+        Sexual Reproductive Health Rights (SRHR). The Conference Review Committee assessed a total of
+        <strong>${total}</strong> abstracts, all of which were carefully assessed by our team of senior
+        researchers from various countries. Unfortunately,
+        <strong>your abstract was not accepted for presentation at the conference</strong>.
+      </p>
+      <p style="margin:0 0 14px;"><strong>Title of your abstract:</strong> ${escapeHtml(title)}<br/>
+      <span style="color:#6b7280;font-size:13px;">Submission ID: ${escapeHtml(submissionId)}</span></p>
+      <p style="margin:0 0 14px;">
+        We appreciate your interest in the conference which will be held from
+        <strong>5 – 7 August 2026 in Windhoek, Namibia</strong>, and sincerely hope that you will still
+        participate by registering for the conference.
+      </p>
+      <p style="margin:0 0 14px;">
+        We encourage you to apply for SAYWHAT's annual <strong>Young Researchers Initiative Program (YRIP)</strong>.
+        This programme aims to support young researchers by providing a platform where young researchers are
+        trained by experienced researchers for a 5-month program to publish their work. The call for abstracts
+        for this programme will be released shortly. Mentors offer valuable feedback on the structure, content,
+        and presentation of abstracts, helping to enhance the quality of future submissions and ultimately
+        publish your work. Thank you once again for your contribution. We look forward to your continued
+        involvement and hope to see you at the conference.
+      </p>
+      ${
+        reviewerComments
+          ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:6px;margin:18px 0;"><p style="margin:0 0 6px;font-weight:bold;color:#92400e;">Reviewer feedback</p><p style="margin:0;color:#78350f;white-space:pre-wrap;">${escapeHtml(reviewerComments)}</p></div>`
+          : ''
+      }
+      <p style="margin:18px 0 6px;font-weight:bold;">Registration</p>
+      <p style="margin:0 0 14px;">
+        Registration for the conference has officially opened. Detailed information on conference registration
+        is available at <a href="${registerUrl}" style="color:#1d4ed8;">${registerUrl}</a>. Visit our website
+        <a href="${siteUrl}" style="color:#1d4ed8;">${siteUrl}</a> for more details on key dates and essential
+        conference material.
+      </p>
+      <p style="margin:24px 0 4px;font-weight:bold;">Yours Sincerely,</p>
+      <p style="margin:0 0 8px;">SAYWHAT Research Team</p>
+    </div>
+    <div style="background:#1e3a8a;color:#ffffff;padding:18px 32px;font-size:12px;line-height:1.5;">
+      <p style="margin:0;"><strong>ORGANISING SECRETARIAT:</strong> SAYWHAT &nbsp;|&nbsp;
+      <strong>HOST PARTNER:</strong> University of Namibia</p>
+      <p style="margin:6px 0 0;">E: <a href="mailto:sarsyc@saywhat.org.zw" style="color:#bfdbfe;">sarsyc@saywhat.org.zw</a>
+      &nbsp;|&nbsp; W: <a href="https://www.sarsyc.org" style="color:#bfdbfe;">www.sarsyc.org</a>
+      &nbsp;|&nbsp; T: +263 782 702 887 / +264 81 627 9224</p>
+    </div>
+  </div>
+</body>
+</html>`
+
+  return { subject, text, html }
+}
+
 export async function sendAbstractStatusUpdate({
   to,
   firstName,
+  lastName,
   submissionId,
   title,
   status,
@@ -331,6 +442,7 @@ export async function sendAbstractStatusUpdate({
 }: {
   to: string
   firstName?: string
+  lastName?: string
   submissionId: string
   title: string
   status: string
@@ -362,6 +474,23 @@ export async function sendAbstractStatusUpdate({
       message: 'Our review committee has requested revisions to your abstract. Please review the feedback and submit a revised version.',
       color: '#F59E0B',
     },
+  }
+
+  if (status === 'rejected') {
+    const siteOrigin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_SERVER_URL ||
+      'https://www.sarsyc.org'
+    const fullName = [firstName, lastName].filter(Boolean).join(' ').trim() || 'Author'
+    const { subject, text, html } = abstractRejectionLetter({
+      fullName,
+      title,
+      submissionId,
+      reviewerComments,
+      registerUrl: `${siteOrigin.replace(/\/$/, '')}/participate/register`,
+      siteUrl: siteOrigin.replace(/\/$/, ''),
+    })
+    return sendMail({ to, subject, text, html })
   }
 
   const statusInfo = statusMessages[status] || statusMessages['received']
