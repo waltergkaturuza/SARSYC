@@ -162,6 +162,7 @@ export default async function AbstractsManagementPage({
 
   if (search) {
     where.or = [
+      { submissionId: { contains: search } },
       { title: { contains: search } },
       { 'primaryAuthor.firstName': { contains: search } },
       { 'primaryAuthor.lastName': { contains: search } },

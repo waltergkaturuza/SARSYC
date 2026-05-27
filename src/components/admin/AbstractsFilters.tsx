@@ -165,7 +165,7 @@ export default function AbstractsFilters() {
             <input
               type="text"
               name="search"
-              placeholder="Search by title or author name..."
+              placeholder="Search by submission ID, title or author..."
               defaultValue={search}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
