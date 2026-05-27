@@ -402,122 +402,7 @@ const Abstracts: CollectionConfig = {
           const payload = req.payload
           const authorEmail = doc.primaryAuthor.email.toLowerCase().trim()
 
-          // Create/link presenter account when accepted — MUST NOT block the main update.
-          // Nested payload.update on the same abstract inside this hook can stall the HTTP response
-          // (transaction / hook re-entrancy). Defer to the next macrotask so quick-accept returns fast.
-          if (operation === 'update' && previousDoc?.status !== doc.status && doc.status === 'accepted') {
-            const abstractId = doc.id
-            const primaryAuthor = { ...doc.primaryAuthor }
-            void (async () => {
-              try {
-                await new Promise<void>((resolve) => setImmediate(resolve))
-                const p = payload
-                const existingUsers = await p.find({
-                  collection: 'users',
-                  where: {
-                    email: {
-                      equals: authorEmail,
-                    },
-                  },
-                  limit: 1,
-                  depth: 0,
-                  overrideAccess: true,
-                })
-
-                if (existingUsers.totalDocs > 0) {
-                  const existingUser = existingUsers.docs[0]
-                  await p.update({
-                    collection: 'abstracts',
-                    id: abstractId,
-                    data: {
-                      user: existingUser.id,
-                    },
-                    overrideAccess: true,
-                  })
-
-                  if (!existingUser.abstract) {
-                    await p.update({
-                      collection: 'users',
-                      id: existingUser.id,
-                      data: {
-                        abstract: abstractId,
-                      },
-                      overrideAccess: true,
-                    })
-                  }
-
-                  console.log(`Abstract ${abstractId} linked to existing user ${existingUser.id}`)
-                } else {
-                  const randomPassword = crypto.randomBytes(16).toString('hex')
-                  const firstName = primaryAuthor.firstName || 'Author'
-                  const lastName = primaryAuthor.lastName || 'User'
-
-                  const newUser = await p.create({
-                    collection: 'users',
-                    data: {
-                      email: authorEmail,
-                      password: randomPassword,
-                      firstName,
-                      lastName,
-                      role: 'presenter',
-                      organization: primaryAuthor.organization || undefined,
-                      phone: primaryAuthor.phone || undefined,
-                      abstract: abstractId,
-                    },
-                    overrideAccess: true,
-                  })
-
-                  await p.update({
-                    collection: 'abstracts',
-                    id: abstractId,
-                    data: {
-                      user: typeof newUser === 'string' ? newUser : newUser.id,
-                    },
-                    overrideAccess: true,
-                  })
-
-                  const resetToken = crypto.randomBytes(32).toString('hex')
-                  const resetTokenExpiry = new Date()
-                  resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 24)
-
-                  await p.update({
-                    collection: 'users',
-                    id: typeof newUser === 'string' ? newUser : newUser.id,
-                    data: {
-                      resetPasswordToken: resetToken,
-                      resetPasswordExpiration: resetTokenExpiry.toISOString(),
-                    },
-                    overrideAccess: true,
-                  })
-
-                  void (async () => {
-                    try {
-                      const { sendWelcomeEmail } = await import('@/lib/mail')
-                      await sendWelcomeEmail({
-                        to: authorEmail,
-                        firstName,
-                        lastName,
-                        role: 'presenter',
-                        resetToken,
-                      })
-                      console.log(`Welcome email sent to presenter: ${authorEmail}`)
-                    } catch (emailError: any) {
-                      console.error('Failed to send welcome email to presenter:', emailError.message || emailError)
-                    }
-                  })().catch((err) => {
-                    console.error('Welcome email promise error (non-blocking):', err)
-                  })
-
-                  console.log(`User account created for presenter ${abstractId} (${authorEmail})`)
-                }
-              } catch (userError: any) {
-                console.error('Error creating user account for presenter:', userError.message || userError)
-              }
-            })()
-          }
-          
-          // Status emails (rejected, revisions, under-review, accepted, etc.): never block the update.
-          // Heavy work only exists for `accepted` (presenter account) above — other buttons only hit this path.
+          // Status emails: never block the update.
           const emailPromise = (async () => {
             try {
               await new Promise<void>((resolve) => setImmediate(resolve))
@@ -545,6 +430,7 @@ const Abstracts: CollectionConfig = {
                   title: doc.title,
                   status: doc.status,
                   reviewerComments: doc.reviewerComments || undefined,
+                  presentationType: doc.presentationType || undefined,
                 })
                 console.log('Abstract status update email sent to:', doc.primaryAuthor.email, '- New status:', doc.status)
               }
