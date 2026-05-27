@@ -379,18 +379,20 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
   <div style="max-width:640px;margin:0 auto;background:#ffffff;">
-    <div style="background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%);padding:28px 32px;color:#ffffff;">
-      <p style="margin:0;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:0.85;">SARSYC VI • 6th Edition</p>
-      <h1 style="margin:6px 0 8px;font-size:22px;line-height:1.3;font-weight:bold;">ALIGN FOR ACTION: SUSTAINING PROGRESS IN YOUTH HEALTH AND EDUCATION</h1>
-      <p style="margin:0;font-size:14px;opacity:0.95;">5 – 7 AUGUST 2026 &nbsp;|&nbsp; Windhoek, Namibia</p>
-    </div>
-    <div style="padding:28px 32px;font-size:15px;line-height:1.7;color:#1f2937;">
+
+    <!-- Letterhead banner -->
+    <img src="https://www.sarsyc.org/email-letterhead.png"
+         alt="SARSYC VI — Align for Action: Sustaining Progress in Youth Health and Education | 5–7 August 2026, Windhoek, Namibia"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+    <!-- Body -->
+    <div style="padding:28px 32px;font-size:15px;line-height:1.75;color:#1f2937;">
       <p style="margin:0 0 16px;">Dear ${escapeHtml(fullName)},</p>
       <p style="margin:0 0 14px;">
         <strong>Congratulations!</strong> We are delighted to inform you that your abstract,
         <span style="color:#d97706;font-weight:bold;"> ${escapeHtml(title)}</span>,
         abstract ID <strong>${escapeHtml(submissionId)}</strong> has been accepted for
-        <strong>[${escapeHtml(presentationLabel)}]</strong> presentation at the
+        <strong>${escapeHtml(presentationLabel)}</strong> presentation at the
         <strong>6th edition of the Southern African Regional Students and Youth Conference (SARSYC VI)</strong>
         in Windhoek, Namibia, from <strong>August 5–7 2026</strong>.
       </p>
@@ -424,15 +426,14 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
         efforts towards sustaining progress in youth health and education.
       </p>
       <p style="margin:0 0 4px;">Yours Sincerely,</p>
-      <p style="margin:0;">SARSYC Research Committee</p>
+      <p style="margin:0;font-weight:bold;">SARSYC Research Committee</p>
     </div>
-    <div style="background:#1e3a8a;color:#ffffff;padding:18px 32px;font-size:12px;line-height:1.5;">
-      <p style="margin:0;"><strong>ORGANISING SECRETARIAT:</strong> SAYWHAT &nbsp;|&nbsp;
-      <strong>HOST PARTNER:</strong> University of Namibia</p>
-      <p style="margin:6px 0 0;">E: <a href="mailto:sarsyc@saywhat.org.zw" style="color:#bfdbfe;">sarsyc@saywhat.org.zw</a>
-      &nbsp;|&nbsp; W: <a href="https://www.sarsyc.org" style="color:#bfdbfe;">www.sarsyc.org</a>
-      &nbsp;|&nbsp; T: +263 782 702 887 / +264 81 627 9224</p>
-    </div>
+
+    <!-- Footer banner -->
+    <img src="https://www.sarsyc.org/email-footer.png"
+         alt="Organising Secretariat: SAYWHAT | Host Partner: University of Namibia | sarsyc@saywhat.org.zw | www.sarsyc.org | +263 782 702 887 | +264 81 627 9224"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
   </div>
 </body>
 </html>`
@@ -479,20 +480,23 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
   <div style="max-width:640px;margin:0 auto;background:#ffffff;">
-    <div style="background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%);padding:28px 32px;color:#ffffff;">
-      <p style="margin:0;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:0.85;">SARSYC VI • 6th Edition</p>
-      <h1 style="margin:6px 0 8px;font-size:22px;line-height:1.3;font-weight:bold;">ALIGN FOR ACTION: SUSTAINING PROGRESS IN YOUTH HEALTH AND EDUCATION</h1>
-      <p style="margin:0;font-size:14px;opacity:0.95;">5 – 7 AUGUST 2026 &nbsp;|&nbsp; Windhoek, Namibia</p>
-    </div>
-    <div style="padding:28px 32px;font-size:15px;line-height:1.7;color:#1f2937;">
+
+    <!-- Letterhead banner -->
+    <img src="https://www.sarsyc.org/email-letterhead.png"
+         alt="SARSYC VI — Align for Action: Sustaining Progress in Youth Health and Education | 5–7 August 2026, Windhoek, Namibia"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+    <!-- Body -->
+    <div style="padding:28px 32px;font-size:15px;line-height:1.75;color:#1f2937;">
       <p style="margin:0 0 16px;">Dear ${escapeHtml(fullName)},</p>
       <p style="margin:0 0 14px;">
         We truly appreciate your interest in the <strong>6th edition of the Southern African Regional
         Students and Youth Conference</strong> and your commitment to advancing youth health and education.
         The Conference Review Committee assessed a total of <strong>${total} abstracts</strong>,
         a substantial increase from 51 abstracts at the 5th edition in 2024. All abstracts underwent
-        peer-review by at least two research experts from Stellenbosch University Africa Centre for
-        Inclusive Health Management and UNESCO University Twinning and Networking Programme (UNITWIN).
+        peer-review by at least two research experts from <strong>Stellenbosch University Africa Centre for
+        Inclusive Health Management</strong> and <strong>UNESCO University Twinning and Networking
+        Programme (UNITWIN)</strong>.
         <strong>Unfortunately, your abstract was not accepted for presentation at the conference.</strong>
       </p>
       <p style="margin:0 0 16px;">
@@ -518,15 +522,14 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
         hope to see you at the conference.
       </p>
       <p style="margin:0 0 4px;">Yours Sincerely,</p>
-      <p style="margin:0;">SARSYC Research Committee</p>
+      <p style="margin:0 0 4px;font-weight:bold;">SARSYC Research Committee</p>
     </div>
-    <div style="background:#1e3a8a;color:#ffffff;padding:18px 32px;font-size:12px;line-height:1.5;">
-      <p style="margin:0;"><strong>ORGANISING SECRETARIAT:</strong> SAYWHAT &nbsp;|&nbsp;
-      <strong>HOST PARTNER:</strong> University of Namibia</p>
-      <p style="margin:6px 0 0;">E: <a href="mailto:sarsyc@saywhat.org.zw" style="color:#bfdbfe;">sarsyc@saywhat.org.zw</a>
-      &nbsp;|&nbsp; W: <a href="https://www.sarsyc.org" style="color:#bfdbfe;">www.sarsyc.org</a>
-      &nbsp;|&nbsp; T: +263 782 702 887 / +264 81 627 9224</p>
-    </div>
+
+    <!-- Footer banner -->
+    <img src="https://www.sarsyc.org/email-footer.png"
+         alt="Organising Secretariat: SAYWHAT | Host Partner: University of Namibia | sarsyc@saywhat.org.zw | www.sarsyc.org | +263 782 702 887 | +264 81 627 9224"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
   </div>
 </body>
 </html>`
@@ -581,10 +584,15 @@ export async function sendAbstractStatusUpdate({
     },
   }
 
-  const siteOrigin =
+  // Always use the public production URL in emails — never a localhost address
+  const rawOrigin =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_SERVER_URL ||
-    'https://www.sarsyc.org'
+    ''
+  const siteOrigin =
+    rawOrigin && !rawOrigin.includes('localhost') && !rawOrigin.includes('127.0.0.1')
+      ? rawOrigin
+      : 'https://www.sarsyc.org'
   const registerUrl = `${siteOrigin.replace(/\/$/, '')}/participate/register`
   const fullName = [firstName, lastName].filter(Boolean).join(' ').trim() || 'Author'
 
