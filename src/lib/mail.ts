@@ -465,7 +465,7 @@ Title of your abstract: ${title}
 Submission ID: ${submissionId}
 
 We appreciate your interest in the conference which will be held from 5-7 August in Windhoek, Namibia, and sincerely hope that you will still participate. Registration for the conference has officially opened. To register please visit ${registerUrl}. Take advantage of the Early Bird registration period (until 15 July 2026) for lower rates.
-${reviewerComments ? `\nReviewer feedback:\n${reviewerComments}\n` : ''}
+
 Thank you once again for your contribution. We look forward to your continued involvement and hope to see you at the conference.
 
 Yours Sincerely,
@@ -512,11 +512,6 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
         Take advantage of the <strong>Early Bird registration period (until 15 July 2026)</strong> for
         lower rates.
       </p>
-      ${
-        reviewerComments
-          ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:6px;margin:18px 0;"><p style="margin:0 0 6px;font-weight:bold;color:#92400e;">Reviewer feedback</p><p style="margin:0;color:#78350f;white-space:pre-wrap;">${escapeHtml(reviewerComments)}</p></div>`
-          : ''
-      }
       <p style="margin:0 0 24px;">
         Thank you once again for your contribution. We look forward to your continued involvement and
         hope to see you at the conference.
