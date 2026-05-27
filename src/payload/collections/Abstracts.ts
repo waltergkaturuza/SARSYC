@@ -400,51 +400,51 @@ const Abstracts: CollectionConfig = {
           }
           
           const payload = req.payload
-          const authorEmail = doc.primaryAuthor.email.toLowerCase().trim()
 
-          // Status emails: never block the update.
-          const emailPromise = (async () => {
-            try {
-              await new Promise<void>((resolve) => setImmediate(resolve))
-              const { sendAbstractStatusUpdate } = await import('@/lib/mail')
-              
-              // Send confirmation email on submission
-              if (operation === 'create') {
-                await sendAbstractStatusUpdate({
-                  to: doc.primaryAuthor.email,
-                  firstName: doc.primaryAuthor.firstName,
-                  submissionId: doc.submissionId || `ABS-${doc.id}`,
-                  title: doc.title,
-                  status: 'received',
-                })
+          // Send status emails — awaited so they run before the hook returns,
+          // but wrapped in try/catch so a failure never blocks the document update.
+          try {
+            const { sendAbstractStatusUpdate } = await import('@/lib/mail')
+
+            // Confirmation email on first submission
+            if (operation === 'create') {
+              const result = await sendAbstractStatusUpdate({
+                to: doc.primaryAuthor.email,
+                firstName: doc.primaryAuthor.firstName,
+                submissionId: doc.submissionId || `ABS-${doc.id}`,
+                title: doc.title,
+                status: 'received',
+              })
+              if ((result as any)?.mock) {
+                console.warn('Abstract submission confirmation: SMTP not configured, email was NOT sent (mock). Check SMTP_USER/SMTP_PASS.')
+              } else {
                 console.log('Abstract submission confirmation sent to:', doc.primaryAuthor.email)
               }
-              
-              // Send status update email when status changes
-              if (operation === 'update' && previousDoc?.status !== doc.status) {
-                await sendAbstractStatusUpdate({
-                  to: doc.primaryAuthor.email,
-                  firstName: doc.primaryAuthor.firstName,
-                  lastName: doc.primaryAuthor.lastName,
-                  submissionId: doc.submissionId || `ABS-${doc.id}`,
-                  title: doc.title,
-                  status: doc.status,
-                  reviewerComments: doc.reviewerComments || undefined,
-                  presentationType: doc.presentationType || undefined,
-                })
+            }
+
+            // Status-change email
+            if (operation === 'update' && previousDoc?.status !== doc.status) {
+              console.log(`Abstract hook: status changed ${previousDoc?.status} → ${doc.status}, sending email to ${doc.primaryAuthor.email}`)
+              const result = await sendAbstractStatusUpdate({
+                to: doc.primaryAuthor.email,
+                firstName: doc.primaryAuthor.firstName,
+                lastName: doc.primaryAuthor.lastName,
+                submissionId: doc.submissionId || `ABS-${doc.id}`,
+                title: doc.title,
+                status: doc.status,
+                reviewerComments: doc.reviewerComments || undefined,
+                presentationType: doc.presentationType || undefined,
+              })
+              if ((result as any)?.mock) {
+                console.warn('Abstract status email: SMTP not configured, email was NOT sent (mock). Check SMTP_USER/SMTP_PASS.')
+              } else {
                 console.log('Abstract status update email sent to:', doc.primaryAuthor.email, '- New status:', doc.status)
               }
-            } catch (emailError: any) {
-              // Log but don't throw - email failures shouldn't block updates
-              console.error('Email sending error in abstract hook:', emailError.message || emailError)
             }
-          })()
-          
-          // Don't await - let it run in background
-          // This ensures the update completes even if email fails
-          emailPromise.catch((err) => {
-            console.error('Email promise error (non-blocking):', err)
-          })
+          } catch (emailError: any) {
+            // Email failures must never block the document update
+            console.error('Email sending error in abstract hook:', emailError.message || emailError)
+          }
         } catch (hookError: any) {
           // Catch any unexpected errors in the hook itself
           // Log but don't throw - we don't want hook errors to fail the update

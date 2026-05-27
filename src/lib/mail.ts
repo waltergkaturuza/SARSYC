@@ -36,7 +36,7 @@ function smtpPassword(): string | undefined {
 }
 
 const getTransporter = (() => {
-  let cached: any | null | undefined
+  let cached: any | undefined
   return () => {
     if (cached !== undefined) return cached
 
@@ -49,7 +49,7 @@ const getTransporter = (() => {
       console.warn(
         'SMTP: Set SMTP_USER and SMTP_PASS (or SMTP_PASSWORD) in .env.local — see .env.example.',
       )
-      cached = null
+      // Do NOT cache null — env vars may load lazily; retry on the next call.
       return null
     }
 
