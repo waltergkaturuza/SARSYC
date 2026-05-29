@@ -1,11 +1,11 @@
 /**
- * GET /api/admin/stanbic-test?secret=<PAYLOAD_SECRET>
+ * GET /api/admin/stanbic-test?secret=sarsyc-stanbic-diag-2026
  *
  * Diagnostic endpoint — tests the Stanbic gateway connection from the server and returns
  * the exact error so you can identify whether it is a timeout, DNS, credential, realm, or
  * IP-whitelist problem without looking at server logs.
  *
- * Protected by PAYLOAD_SECRET so it is never publicly accessible.
+ * Protected by STANBIC_DIAG_TOKEN env var (falls back to fixed token below).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
@@ -13,6 +13,8 @@ import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const maxDuration = 30
+
+const FALLBACK_DIAG_TOKEN = 'sarsyc-stanbic-diag-2026'
 
 function readEnv(key: string): string {
   return process.env[key]?.trim() ?? ''
@@ -23,10 +25,10 @@ function stripSlash(u: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Simple secret-based auth
+  // Simple secret-based auth — override via STANBIC_DIAG_TOKEN env var if needed
   const secret = req.nextUrl.searchParams.get('secret') ?? ''
-  const expected = readEnv('PAYLOAD_SECRET')
-  if (!expected || secret !== expected) {
+  const expected = readEnv('STANBIC_DIAG_TOKEN') || FALLBACK_DIAG_TOKEN
+  if (!secret || secret !== expected) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
