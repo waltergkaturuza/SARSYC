@@ -7,7 +7,7 @@ import {
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
-  FiAward, FiActivity, FiMail, FiInbox, FiTrendingUp
+  FiAward, FiActivity, FiMail, FiInbox, FiTrendingUp, FiCreditCard
 } from 'react-icons/fi'
 
 const navigation = [
@@ -34,6 +34,12 @@ const navigation = [
     href: '/admin/donations',
     icon: FiHeart,
     description: 'Donations & sponsorships',
+  },
+  {
+    name: 'Stanbic certification',
+    href: '/admin/stanbic-cert',
+    icon: FiCreditCard,
+    description: 'N-Genius sandbox test matrix',
   },
   {
     name: 'Abstracts',

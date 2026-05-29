@@ -9,6 +9,7 @@ import {
 } from '@/lib/stanbic/ngenius'
 import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
+import { buildStanbicStartLogPayload } from '@/lib/stanbic/stanbicCertification'
 import { isConferenceTrackId, conferenceTrackLabel } from '@/lib/conferenceTracks'
 import { trackSponsorshipAmountUsd } from '@/lib/trackSponsorship'
 import { buildDonationCategoryDisplay, donationCategorySlug } from '@/lib/donationCategory'
@@ -224,21 +225,21 @@ export async function POST(req: NextRequest) {
       overrideAccess: true,
     })
 
-    logStanbicPaymentEvent({
-      event: 'stanbic_start',
-      registrationRef: donationId,
-      registrationPayloadId: donationDocId,
-      gatewayOrderRef: orderReference,
-      amount: String(amountMinorUnits),
-      amountDisplayUsd: amountUsd,
-      amountDisplayMajor: amountUsd,
-      currency: 'USD',
-      itemDescription: sponsorshipDescription,
-      email,
-      success: true,
-      dbStanbicOrderRefSaved: true,
-      createOrderHttp: createOrderHttpStatus,
-    })
+    logStanbicPaymentEvent(
+      buildStanbicStartLogPayload({
+        registrationRef: donationId,
+        registrationPayloadId: donationDocId,
+        orderReference,
+        amount: String(amountMinorUnits),
+        amountDisplayUsd: amountUsd,
+        currency: 'USD',
+        itemDescription: sponsorshipDescription,
+        email,
+        success: true,
+        dbStanbicOrderRefSaved: true,
+        createOrderHttp: createOrderHttpStatus,
+      }),
+    )
 
     return NextResponse.json({ redirectUrl: paymentHref, orderReference, donationId })
   } catch (e: unknown) {
@@ -246,20 +247,20 @@ export async function POST(req: NextRequest) {
     const httpStatus = httpStatusForStanbicOutboundFailure(msg)
     console.error('[donate create-order]', e)
 
-    logStanbicPaymentEvent({
-      event: 'stanbic_start',
-      registrationRef: donationId,
-      registrationPayloadId: donationDocId,
-      amount: String(amountMinorUnits),
-      amountDisplayUsd: amountUsd,
-      amountDisplayMajor: amountUsd,
-      currency: 'USD',
-      itemDescription: sponsorshipDescription,
-      email,
-      success: false,
-      dbStanbicOrderRefSaved: false,
-      gatewayError: msg,
-    })
+    logStanbicPaymentEvent(
+      buildStanbicStartLogPayload({
+        registrationRef: donationId,
+        registrationPayloadId: donationDocId,
+        amount: String(amountMinorUnits),
+        amountDisplayUsd: amountUsd,
+        currency: 'USD',
+        itemDescription: sponsorshipDescription,
+        email,
+        success: false,
+        dbStanbicOrderRefSaved: false,
+        gatewayError: msg,
+      }),
+    )
 
     return NextResponse.json(
       httpStatus === 502

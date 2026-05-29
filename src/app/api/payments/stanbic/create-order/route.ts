@@ -17,6 +17,10 @@ import {
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
+import {
+  buildStanbicStartLogPayload,
+  logStanbicDuplicatePaymentAttempt,
+} from '@/lib/stanbic/stanbicCertification'
 import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
 import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 
@@ -107,6 +111,7 @@ export async function POST(req: NextRequest) {
   const idStr = String(registration.id)
 
   if (registration.paymentStatus === 'paid' || registration.paymentStatus === 'waived') {
+    await logStanbicDuplicatePaymentAttempt(registration)
     return NextResponse.json({ error: 'Registration does not require payment' }, { status: 409 })
   }
 
@@ -163,27 +168,27 @@ export async function POST(req: NextRequest) {
       /* ignore */
     }
 
-    logStanbicPaymentEvent({
-      event: 'stanbic_start',
-      registrationRef:
-        typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
-      registrationPayloadId: idStr,
-      gatewayOrderRef: orderReference,
-      amount: String(value),
-      amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
-      amountDisplayMajor: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
-      currency: registrationFeeCurrency(),
-      itemDescription: 'SARSYC VI registration fee',
-      pricingTier: tier,
-      registrationPackage: pkgRaw,
-      packageName: getRegistrationPackage(pkgRaw).name,
-      category: registration.category,
-      email: registration.email,
-      success: true,
-      dbStanbicOrderRefSaved: true,
-      createOrderHttp: createOrderHttpStatus,
-      paymentPageHost,
-    })
+    logStanbicPaymentEvent(
+      buildStanbicStartLogPayload({
+        registrationRef:
+          typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
+        registrationPayloadId: idStr,
+        orderReference,
+        amount: String(value),
+        amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+        currency: registrationFeeCurrency(),
+        itemDescription: 'SARSYC registration fee',
+        pricingTier: tier,
+        registrationPackage: pkgRaw,
+        packageName: getRegistrationPackage(pkgRaw).name,
+        category: registration.category,
+        email: registration.email,
+        success: true,
+        dbStanbicOrderRefSaved: true,
+        createOrderHttp: createOrderHttpStatus,
+        paymentPageHost,
+      }),
+    )
 
     return NextResponse.json({
       redirectUrl: paymentHref,
@@ -194,25 +199,25 @@ export async function POST(req: NextRequest) {
     const httpStatus = httpStatusForStanbicOutboundFailure(msg)
     console.error('[stanbic create-order]', e)
     console.error('[stanbic create-order] payment return URL (allow-list):', redirectUrl)
-    logStanbicPaymentEvent({
-      event: 'stanbic_start',
-      registrationRef:
-        typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
-      registrationPayloadId: idStr,
-      amount: String(value),
-      amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
-      amountDisplayMajor: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
-      currency: registrationFeeCurrency(),
-      itemDescription: 'SARSYC VI registration fee',
-      pricingTier: tier,
-      registrationPackage: pkgRaw,
-      packageName: getRegistrationPackage(pkgRaw).name,
-      category: registration.category,
-      email: registration.email,
-      success: false,
-      dbStanbicOrderRefSaved: false,
-      gatewayError: msg,
-    })
+    logStanbicPaymentEvent(
+      buildStanbicStartLogPayload({
+        registrationRef:
+          typeof registration.registrationId === 'string' ? registration.registrationId : idStr,
+        registrationPayloadId: idStr,
+        amount: String(value),
+        amountDisplayUsd: registrationFeeCurrency() === 'USD' ? Math.round(value) / 100 : null,
+        currency: registrationFeeCurrency(),
+        itemDescription: 'SARSYC registration fee',
+        pricingTier: tier,
+        registrationPackage: pkgRaw,
+        packageName: getRegistrationPackage(pkgRaw).name,
+        category: registration.category,
+        email: registration.email,
+        success: false,
+        dbStanbicOrderRefSaved: false,
+        gatewayError: msg,
+      }),
+    )
 
     const stanbicRef =
       typeof registration.stanbicPaymentOrderRef === 'string'

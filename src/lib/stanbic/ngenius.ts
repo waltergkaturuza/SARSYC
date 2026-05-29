@@ -480,9 +480,9 @@ export async function stanbicRetrieveOrder(params: {
   return { raw: data, paymentStates, retrieveHttpStatus: res.status }
 }
 
-/** Treat these N-Genius payment states as successfully collected (PURCHASE / capture). */
-const PAID_STATES = new Set(['CAPTURED', 'PURCHASED', 'AUTHORISED', 'AUTHORIZED'])
+import { isStanbicPaymentCaptured } from '@/lib/stanbic/stanbicPaymentStates'
 
+/** CAPTURED / PURCHASED only — AUTHORISED is auth-only (pending capture), not paid. */
 export function isOrderPaymentSuccessful(paymentStates: string[]): boolean {
-  return paymentStates.some((s) => PAID_STATES.has(s))
+  return isStanbicPaymentCaptured(paymentStates)
 }
