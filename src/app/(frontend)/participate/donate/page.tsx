@@ -239,7 +239,7 @@ export default function DonatePage() {
   const b = SARSYC_BANK_TRANSFER_DETAILS
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen text-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-700">
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -262,7 +262,12 @@ export default function DonatePage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Form + bank transfer — distinct band above site footer */}
+      <section
+        className="bg-gradient-to-b from-slate-900 via-[#0c1424] to-slate-950 border-b border-gray-800/90"
+        aria-label="Donate or sponsor"
+      >
+      <div className="max-w-6xl mx-auto px-4 py-10 pb-14 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* ── Left: Card payment form ──────────────────────────────────────── */}
         <div className="lg:col-span-2">
@@ -770,6 +775,7 @@ export default function DonatePage() {
           )}
         </div>
       </div>
+      </section>
     </div>
   )
 }
