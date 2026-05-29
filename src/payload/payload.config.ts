@@ -35,6 +35,7 @@ import AbstractReviews from './collections/AbstractReviews'
 import OrathonRegistrations from './collections/OrathonRegistrations'
 import PageViews from './collections/PageViews'
 import SiteEvents from './collections/SiteEvents'
+import Donations from './collections/Donations'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -164,6 +165,7 @@ export default buildConfig({
     AbstractReviews,
     PageViews,
     SiteEvents,
+    Donations,
   ],
   globals: [
     SiteSettings,

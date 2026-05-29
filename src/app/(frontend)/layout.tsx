@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import DonateFAB from '@/components/layout/DonateFAB'
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker'
 
 export default function FrontendLayout({
@@ -15,6 +16,7 @@ export default function FrontendLayout({
         {children}
       </main>
       <Footer />
+      <DonateFAB />
     </div>
   )
 }

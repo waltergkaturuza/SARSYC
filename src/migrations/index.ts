@@ -15,6 +15,7 @@ import * as migration_20260506_000000_add_registrations_stanbic_order_ref from '
 import * as migration_20260506_000001_add_registration_package from './20260506_000001_add_registration_package';
 import * as migration_20260507_000002_add_payment_follow_up_sent_at from './20260507_000002_add_payment_follow_up_sent_at';
 import * as migration_20260515_000001_add_safeguarding_ack_fields from './20260515_000001_add_safeguarding_ack_fields';
+import * as migration_20260529_000000_create_donations from './20260529_000000_create_donations';
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260515_000001_add_safeguarding_ack_fields.up,
     down: migration_20260515_000001_add_safeguarding_ack_fields.down,
     name: '20260515_000001_add_safeguarding_ack_fields'
+  },
+  {
+    up: migration_20260529_000000_create_donations.up,
+    down: migration_20260529_000000_create_donations.down,
+    name: '20260529_000000_create_donations'
   },
 ];

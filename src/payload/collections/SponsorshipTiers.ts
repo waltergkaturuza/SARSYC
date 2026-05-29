@@ -33,9 +33,18 @@ const SponsorshipTiers: CollectionConfig = {
       name: 'price',
       type: 'text',
       required: true,
-      label: 'Price',
+      label: 'Display Price',
       admin: {
-        description: 'Display price (e.g., "$25,000" or "Custom")',
+        description: 'Display price label (e.g., "$25,000" or "Custom")',
+      },
+    },
+    {
+      name: 'priceAmountUsd',
+      type: 'number',
+      label: 'Amount (USD)',
+      min: 0,
+      admin: {
+        description: 'Numeric USD amount used for card payment. Leave blank for custom/contact pricing.',
       },
     },
     {
