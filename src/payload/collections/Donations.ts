@@ -7,7 +7,7 @@ const Donations: CollectionConfig = {
     defaultColumns: [
       'donationId',
       'type',
-      'sponsorshipCategory',
+      'categoryDisplay',
       'donorName',
       'email',
       'amountUsd',
@@ -104,6 +104,22 @@ const Donations: CollectionConfig = {
       name: 'message',
       type: 'textarea',
       label: 'Message / Note',
+    },
+    {
+      name: 'categoryDisplay',
+      type: 'text',
+      label: 'Category (display)',
+      admin: {
+        description: 'Human-readable category shown in admin lists (e.g. General support, Sponsorship: Platinum).',
+      },
+    },
+    {
+      name: 'categorySlug',
+      type: 'text',
+      label: 'Category slug',
+      admin: {
+        description: 'Short slug for filtering: general, package_sponsorship, track_sponsorship.',
+      },
     },
     {
       name: 'sponsorshipCategory',

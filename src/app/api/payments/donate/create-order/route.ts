@@ -11,6 +11,7 @@ import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 import { isConferenceTrackId, conferenceTrackLabel } from '@/lib/conferenceTracks'
 import { trackSponsorshipAmountUsd } from '@/lib/trackSponsorship'
+import { buildDonationCategoryDisplay, donationCategorySlug } from '@/lib/donationCategory'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -125,6 +126,28 @@ export async function POST(req: NextRequest) {
   }
 
   const donationId = generateDonationId()
+  const sponsorshipType = type === 'sponsorship' ? 'sponsorship' : 'donation'
+  const categoryDisplay = buildDonationCategoryDisplay({
+    type: sponsorshipType,
+    sponsorshipCategory:
+      type === 'sponsorship' ? sponsorshipCategory : null,
+    sponsorshipTierName: sponsorshipTierName || null,
+    conferenceTrack: conferenceTrack || null,
+    trackSponsorshipMode:
+      type === 'sponsorship' && sponsorshipCategory === 'track'
+        ? trackSponsorshipMode
+        : null,
+    studentsSponsored:
+      type === 'sponsorship' &&
+      sponsorshipCategory === 'track' &&
+      trackSponsorshipMode === 'students'
+        ? studentsSponsored
+        : null,
+  })
+  const categorySlug = donationCategorySlug({
+    type: sponsorshipType,
+    sponsorshipCategory: type === 'sponsorship' ? sponsorshipCategory : null,
+  })
 
   // Create the donation record (pending)
   let donationDocId: string
@@ -144,6 +167,8 @@ export async function POST(req: NextRequest) {
         amountUsd,
         currency: 'USD',
         message: message || undefined,
+        categoryDisplay,
+        categorySlug,
         sponsorshipCategory: type === 'sponsorship' ? sponsorshipCategory : undefined,
         sponsorshipTierName:
           type === 'sponsorship' && sponsorshipCategory === 'package'

@@ -30,6 +30,12 @@ const navigation = [
     description: 'Manage participants',
   },
   {
+    name: 'Donations',
+    href: '/admin/donations',
+    icon: FiHeart,
+    description: 'Donations & sponsorships',
+  },
+  {
     name: 'Abstracts',
     href: '/admin/abstracts',
     icon: FiFileText,

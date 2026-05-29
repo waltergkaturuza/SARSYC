@@ -17,6 +17,7 @@ import * as migration_20260507_000002_add_payment_follow_up_sent_at from './2026
 import * as migration_20260515_000001_add_safeguarding_ack_fields from './20260515_000001_add_safeguarding_ack_fields';
 import * as migration_20260529_000000_create_donations from './20260529_000000_create_donations';
 import * as migration_20260529_000001_add_donation_track_sponsorship from './20260529_000001_add_donation_track_sponsorship';
+import * as migration_20260529_000002_add_donation_category_display from './20260529_000002_add_donation_category_display';
 
 export const migrations = [
   {
@@ -113,5 +114,10 @@ export const migrations = [
     up: migration_20260529_000001_add_donation_track_sponsorship.up,
     down: migration_20260529_000001_add_donation_track_sponsorship.down,
     name: '20260529_000001_add_donation_track_sponsorship'
+  },
+  {
+    up: migration_20260529_000002_add_donation_category_display.up,
+    down: migration_20260529_000002_add_donation_category_display.down,
+    name: '20260529_000002_add_donation_category_display'
   },
 ];
