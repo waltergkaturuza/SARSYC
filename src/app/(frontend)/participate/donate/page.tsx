@@ -5,15 +5,19 @@ import Link from 'next/link'
 import {
   FiHeart, FiArrowLeft, FiLoader, FiCopy, FiCheck,
   FiUser, FiBriefcase, FiMail, FiPhone, FiMessageSquare,
-  FiCreditCard, FiStar, FiAward, FiTrendingUp, FiZap, FiShield,
+  FiCreditCard,
 } from 'react-icons/fi'
 import { showToast } from '@/lib/toast'
 import { SARSYC_BANK_TRANSFER_DETAILS } from '@/lib/registrationBankTransfer'
+import { CONFERENCE_TRACKS } from '@/lib/conferenceTracks'
+import { studentSponsorshipRateUsd, trackSponsorshipAmountUsd } from '@/lib/trackSponsorship'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Mode = 'donating' | 'sponsoring'
 type DonorType = 'individual' | 'organisation'
+type SponsorshipCategory = 'package' | 'track'
+type TrackPayMode = 'students' | 'custom_amount'
 
 interface SponsorshipTier {
   id: string | number
@@ -29,24 +33,18 @@ interface SponsorshipTier {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const COLOR_MAP: Record<string, string> = {
-  yellow: 'from-yellow-500 to-yellow-600',
-  silver: 'from-gray-400 to-gray-500',
-  orange: 'from-orange-500 to-orange-600',
-  blue: 'from-blue-500 to-blue-600',
-  purple: 'from-purple-500 to-purple-600',
-  green: 'from-green-500 to-green-600',
-  red: 'from-red-500 to-red-600',
-  gray: 'from-gray-600 to-gray-700',
+function parseUsdFromPriceLabel(price: string): number | null {
+  const digits = price.replace(/[^0-9.]/g, '')
+  if (!digits) return null
+  const n = parseFloat(digits)
+  return Number.isFinite(n) && n > 0 ? n : null
 }
 
-const ICON_MAP: Record<string, React.ComponentType<any>> = {
-  star: FiStar,
-  award: FiAward,
-  trending: FiTrendingUp,
-  heart: FiHeart,
-  diamond: FiZap,
-  trophy: FiShield,
+function tierAmountUsd(tier: SponsorshipTier): number | null {
+  if (typeof tier.priceAmountUsd === 'number' && tier.priceAmountUsd > 0) {
+    return tier.priceAmountUsd
+  }
+  return parseUsdFromPriceLabel(tier.price)
 }
 
 function CopyButton({ value, label }: { value: string; label: string }) {
@@ -82,28 +80,65 @@ export default function DonatePage() {
   const [selectedTier, setSelectedTier] = useState<SponsorshipTier | null>(null)
   const [tiers, setTiers] = useState<SponsorshipTier[]>([])
   const [tiersLoading, setTiersLoading] = useState(true)
+  const [sponsorshipCategory, setSponsorshipCategory] = useState<SponsorshipCategory>('package')
+  const [selectedTrack, setSelectedTrack] = useState('')
+  const [trackPayMode, setTrackPayMode] = useState<TrackPayMode>('students')
+  const [studentCount, setStudentCount] = useState('1')
+  const studentRateUsd = studentSponsorshipRateUsd()
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // ── Load sponsorship tiers ──────────────────────────────────────────────────
+  // ── Load sponsorship tiers (same source as /partnerships) ─────────────────
   useEffect(() => {
-    fetch('/api/sponsorship-tiers?where[isActive][equals]=true&sort=order&limit=20')
+    fetch('/api/sponsorship-tiers')
       .then((r) => r.json())
       .then((data) => {
-        const docs: SponsorshipTier[] = data?.docs ?? []
-        setTiers(docs)
-        if (docs.length > 0) setSelectedTier(docs[0])
+        const loaded: SponsorshipTier[] = data?.tiers ?? []
+        setTiers(loaded)
+        if (loaded.length > 0) {
+          const first = loaded[0]
+          setSelectedTier(first)
+          const amt = tierAmountUsd(first)
+          if (amt) setAmountUsd(String(amt))
+        }
       })
       .catch(() => {/* tiers optional */})
       .finally(() => setTiersLoading(false))
   }, [])
 
-  // ── When mode switches to sponsoring, pick tier amount ────────────────────
-  useEffect(() => {
-    if (mode === 'sponsoring' && selectedTier?.priceAmountUsd) {
-      setAmountUsd(String(selectedTier.priceAmountUsd))
+  const handleTierSelect = (tierId: string) => {
+    const tier = tiers.find((t) => String(t.id) === tierId) ?? null
+    setSelectedTier(tier)
+    if (tier) {
+      const amt = tierAmountUsd(tier)
+      if (amt) setAmountUsd(String(amt))
     }
-  }, [mode, selectedTier])
+  }
+
+  const recalcTrackStudentAmount = useCallback((countRaw: string) => {
+    const count = Math.max(1, Math.floor(Number(countRaw) || 0))
+    const amt = trackSponsorshipAmountUsd({ mode: 'students', studentCount: count })
+    if (amt > 0) setAmountUsd(String(amt))
+  }, [])
+
+  useEffect(() => {
+    if (mode !== 'sponsoring' || sponsorshipCategory !== 'track') return
+    if (trackPayMode === 'students') {
+      recalcTrackStudentAmount(studentCount)
+    }
+  }, [mode, sponsorshipCategory, trackPayMode, studentCount, recalcTrackStudentAmount])
+
+  useEffect(() => {
+    if (mode === 'sponsoring' && sponsorshipCategory === 'package' && selectedTier) {
+      const amt = tierAmountUsd(selectedTier)
+      if (amt) setAmountUsd(String(amt))
+    }
+  }, [mode, sponsorshipCategory, selectedTier])
+
+  const amountIsLocked =
+    mode === 'sponsoring' &&
+    ((sponsorshipCategory === 'package' && !!selectedTier && !!tierAmountUsd(selectedTier)) ||
+      (sponsorshipCategory === 'track' && trackPayMode === 'students'))
 
   const validate = useCallback((): boolean => {
     const e: Record<string, string> = {}
@@ -118,11 +153,32 @@ export default function DonatePage() {
     const amt = parseFloat(amountUsd)
     if (!amountUsd || isNaN(amt) || amt < 1)
       e.amountUsd = 'Minimum amount is USD 1'
-    if (mode === 'sponsoring' && !selectedTier)
+    if (mode === 'sponsoring' && sponsorshipCategory === 'package' && !selectedTier)
       e.tier = 'Please select a sponsorship package'
+    if (mode === 'sponsoring' && sponsorshipCategory === 'track') {
+      if (!selectedTrack) e.track = 'Please select a conference track'
+      if (trackPayMode === 'students') {
+        const count = Math.floor(Number(studentCount))
+        if (!Number.isFinite(count) || count < 1)
+          e.studentCount = 'Enter at least one student to sponsor'
+      }
+    }
     setErrors(e)
     return Object.keys(e).length === 0
-  }, [donorType, firstName, lastName, orgName, email, amountUsd, mode, selectedTier])
+  }, [
+    donorType,
+    firstName,
+    lastName,
+    orgName,
+    email,
+    amountUsd,
+    mode,
+    selectedTier,
+    sponsorshipCategory,
+    selectedTrack,
+    trackPayMode,
+    studentCount,
+  ])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -142,8 +198,29 @@ export default function DonatePage() {
           phone: phone || undefined,
           amountUsd: parseFloat(amountUsd),
           message: message || undefined,
-          sponsorshipTierName: selectedTier?.name,
-          sponsorshipTierId: selectedTier?.id,
+          sponsorshipCategory: mode === 'sponsoring' ? sponsorshipCategory : undefined,
+          sponsorshipTierName:
+            mode === 'sponsoring' && sponsorshipCategory === 'package'
+              ? selectedTier?.name
+              : undefined,
+          sponsorshipTierId:
+            mode === 'sponsoring' && sponsorshipCategory === 'package'
+              ? selectedTier?.id
+              : undefined,
+          conferenceTrack:
+            mode === 'sponsoring' && sponsorshipCategory === 'track'
+              ? selectedTrack
+              : undefined,
+          trackSponsorshipMode:
+            mode === 'sponsoring' && sponsorshipCategory === 'track'
+              ? trackPayMode
+              : undefined,
+          studentsSponsored:
+            mode === 'sponsoring' &&
+            sponsorshipCategory === 'track' &&
+            trackPayMode === 'students'
+              ? Math.floor(Number(studentCount))
+              : undefined,
         }),
       })
       const data = await res.json()
@@ -305,59 +382,215 @@ export default function DonatePage() {
                 </div>
               </div>
 
-              {/* ── Sponsoring: tier picker ─────────────────────────────── */}
+              {/* ── Sponsoring options ─────────────────────────────────────── */}
               {mode === 'sponsoring' && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
-                    Sponsorship Package
-                  </label>
-                  {tiersLoading ? (
-                    <div className="flex items-center gap-2 text-gray-400 text-sm py-3">
-                      <FiLoader className="animate-spin" size={14} /> Loading packages…
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
+                      Sponsorship type
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {([
+                        ['package', 'Partnership package'],
+                        ['track', 'Track sponsorship'],
+                      ] as const).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            setSponsorshipCategory(value)
+                            if (value === 'package' && selectedTier) {
+                              const amt = tierAmountUsd(selectedTier)
+                              if (amt) setAmountUsd(String(amt))
+                            }
+                            if (value === 'track' && trackPayMode === 'students') {
+                              recalcTrackStudentAmount(studentCount)
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            sponsorshipCategory === value
+                              ? 'bg-primary-600 border-primary-600 text-white'
+                              : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
-                  ) : tiers.length === 0 ? (
-                    <p className="text-gray-400 text-sm py-2">
-                      No sponsorship packages are available right now. Please contact us directly.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {tiers.map((tier) => {
-                        const gradient = COLOR_MAP[tier.color ?? 'gray'] ?? COLOR_MAP.gray
-                        const Icon = ICON_MAP[tier.icon ?? 'star'] ?? FiStar
-                        const isSelected = selectedTier?.id === tier.id
-                        return (
-                          <button
-                            key={tier.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTier(tier)
-                              if (tier.priceAmountUsd) setAmountUsd(String(tier.priceAmountUsd))
-                            }}
-                            className={`relative text-left p-4 rounded-xl border-2 transition-all ${
-                              isSelected
-                                ? 'border-primary-500 bg-primary-900/30'
-                                : 'border-gray-700 hover:border-gray-500 bg-gray-900/50'
-                            }`}
+                  </div>
+
+                  {sponsorshipCategory === 'package' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wide">
+                          Select sponsorship package <span className="text-primary-400">*</span>
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Packages match those on the{' '}
+                          <Link href="/partnerships" className="text-primary-400 hover:underline">
+                            Partnerships page
+                          </Link>
+                          .
+                        </p>
+                        {tiersLoading ? (
+                          <div className="flex items-center gap-2 text-gray-400 text-sm py-3">
+                            <FiLoader className="animate-spin" size={14} /> Loading packages…
+                          </div>
+                        ) : tiers.length === 0 ? (
+                          <p className="text-gray-400 text-sm py-2">
+                            No sponsorship packages are available right now.
+                          </p>
+                        ) : (
+                          <select
+                            value={selectedTier ? String(selectedTier.id) : ''}
+                            onChange={(e) => handleTierSelect(e.target.value)}
+                            className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary-500"
                           >
-                            {tier.isPopular && (
-                              <span className="absolute -top-2.5 left-3 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">
-                                POPULAR
-                              </span>
-                            )}
-                            <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${gradient} mb-2`}>
-                              <Icon size={14} className="text-white" />
-                            </div>
-                            <p className="font-semibold text-sm">{tier.name}</p>
-                            <p className="text-primary-400 font-bold text-sm">{tier.price}</p>
-                            {tier.description && (
-                              <p className="text-gray-400 text-xs mt-1 line-clamp-2">{tier.description}</p>
-                            )}
-                          </button>
-                        )
-                      })}
+                            <option value="" disabled>
+                              Choose a package…
+                            </option>
+                            {tiers.map((tier) => (
+                              <option key={tier.id} value={String(tier.id)}>
+                                {tier.name} — {tier.price}
+                                {tier.isPopular ? ' (Popular)' : ''}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {errors.tier && <p className="text-red-400 text-xs mt-1">{errors.tier}</p>}
+                      </div>
+
+                      {selectedTier && (
+                        <div className="rounded-xl border border-gray-600 bg-gray-900/60 p-4">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                            Package category
+                          </p>
+                          <p className="font-semibold text-white">{selectedTier.name}</p>
+                          {selectedTier.description && (
+                            <p className="text-sm text-gray-400 mt-1">{selectedTier.description}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
-                  {errors.tier && <p className="text-red-400 text-xs mt-1">{errors.tier}</p>}
+
+                  {sponsorshipCategory === 'track' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wide">
+                          Select conference track <span className="text-primary-400">*</span>
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Choose the track you would like to spotlight with your sponsorship.
+                        </p>
+                        <select
+                          value={selectedTrack}
+                          onChange={(e) => setSelectedTrack(e.target.value)}
+                          className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary-500"
+                        >
+                          <option value="">Choose a track…</option>
+                          {CONFERENCE_TRACKS.map((track) => (
+                            <option key={track.value} value={track.value}>
+                              {track.label}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.track && <p className="text-red-400 text-xs mt-1">{errors.track}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
+                          How would you like to sponsor?
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <label className="flex items-start gap-2 cursor-pointer bg-gray-900/60 border border-gray-600 rounded-lg p-3 flex-1">
+                            <input
+                              type="radio"
+                              name="trackPayMode"
+                              checked={trackPayMode === 'students'}
+                              onChange={() => {
+                                setTrackPayMode('students')
+                                recalcTrackStudentAmount(studentCount)
+                              }}
+                              className="accent-primary-500 mt-0.5"
+                            />
+                            <span>
+                              <span className="block text-sm font-medium text-white">
+                                Number of students
+                              </span>
+                              <span className="block text-xs text-gray-400 mt-0.5">
+                                USD {studentRateUsd.toLocaleString()} per student/youth registration
+                              </span>
+                            </span>
+                          </label>
+                          <label className="flex items-start gap-2 cursor-pointer bg-gray-900/60 border border-gray-600 rounded-lg p-3 flex-1">
+                            <input
+                              type="radio"
+                              name="trackPayMode"
+                              checked={trackPayMode === 'custom_amount'}
+                              onChange={() => setTrackPayMode('custom_amount')}
+                              className="accent-primary-500 mt-0.5"
+                            />
+                            <span>
+                              <span className="block text-sm font-medium text-white">
+                                Custom amount
+                              </span>
+                              <span className="block text-xs text-gray-400 mt-0.5">
+                                Enter any USD amount you wish to sponsor
+                              </span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {trackPayMode === 'students' && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wide">
+                            Number of students to sponsor <span className="text-primary-400">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={studentCount}
+                            onChange={(e) => {
+                              setStudentCount(e.target.value)
+                              recalcTrackStudentAmount(e.target.value)
+                            }}
+                            className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary-500"
+                          />
+                          {errors.studentCount && (
+                            <p className="text-red-400 text-xs mt-1">{errors.studentCount}</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-2">
+                            {Math.max(1, Math.floor(Number(studentCount) || 0))} student(s) × USD{' '}
+                            {studentRateUsd.toLocaleString()} ={' '}
+                            <strong className="text-primary-300">
+                              USD{' '}
+                              {trackSponsorshipAmountUsd({
+                                mode: 'students',
+                                studentCount: Math.max(1, Math.floor(Number(studentCount) || 0)),
+                              }).toLocaleString()}
+                            </strong>
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedTrack && (
+                        <div className="rounded-xl border border-gray-600 bg-gray-900/60 p-4">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                            Track spotlight
+                          </p>
+                          <p className="font-semibold text-white">
+                            {CONFERENCE_TRACKS.find((t) => t.value === selectedTrack)?.label}
+                          </p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Your sponsorship supports youth participation in this conference track.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -365,11 +598,11 @@ export default function DonatePage() {
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wide">
                   Amount (USD)
-                  {mode === 'sponsoring' && selectedTier?.priceAmountUsd
-                    ? ' — set by package'
+                  {amountIsLocked
+                    ? ' — calculated automatically'
                     : mode === 'donating'
                     ? ' — enter any amount (minimum 1)'
-                    : ''}
+                    : ' — enter amount to sponsor'}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
@@ -379,12 +612,16 @@ export default function DonatePage() {
                     step="any"
                     value={amountUsd}
                     onChange={(e) => setAmountUsd(e.target.value)}
-                    readOnly={mode === 'sponsoring' && !!selectedTier?.priceAmountUsd}
-                    placeholder={mode === 'donating' ? 'e.g. 50' : ''}
-                    className={`w-full bg-gray-900 border border-gray-600 rounded-lg pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 ${
-                      mode === 'sponsoring' && selectedTier?.priceAmountUsd
-                        ? 'opacity-60 cursor-not-allowed'
+                    readOnly={amountIsLocked}
+                    placeholder={
+                      mode === 'donating'
+                        ? 'e.g. 50'
+                        : mode === 'sponsoring' && sponsorshipCategory === 'track' && trackPayMode === 'custom_amount'
+                        ? 'e.g. 1000'
                         : ''
+                    }
+                    className={`w-full bg-gray-900 border border-gray-600 rounded-lg pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 ${
+                      amountIsLocked ? 'opacity-60 cursor-not-allowed' : ''
                     }`}
                   />
                 </div>
@@ -496,8 +733,12 @@ export default function DonatePage() {
             </p>
           </div>
 
-          {/* Benefits preview for selected sponsorship tier */}
-          {mode === 'sponsoring' && selectedTier && selectedTier.benefits && selectedTier.benefits.length > 0 && (
+          {/* Benefits preview */}
+          {mode === 'sponsoring' &&
+            sponsorshipCategory === 'package' &&
+            selectedTier &&
+            selectedTier.benefits &&
+            selectedTier.benefits.length > 0 && (
             <div className="bg-gray-800 rounded-2xl p-5 border border-gray-700">
               <p className="font-semibold text-sm mb-3">
                 {selectedTier.name} — included benefits
@@ -510,6 +751,21 @@ export default function DonatePage() {
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {mode === 'sponsoring' && sponsorshipCategory === 'track' && selectedTrack && (
+            <div className="bg-gray-800 rounded-2xl p-5 border border-gray-700">
+              <p className="font-semibold text-sm mb-2">Track sponsorship summary</p>
+              <p className="text-sm text-gray-300">
+                {CONFERENCE_TRACKS.find((t) => t.value === selectedTrack)?.label}
+              </p>
+              {trackPayMode === 'students' && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Sponsoring {Math.max(1, Math.floor(Number(studentCount) || 0))} student(s) at USD{' '}
+                  {studentRateUsd.toLocaleString()} each.
+                </p>
+              )}
             </div>
           )}
         </div>

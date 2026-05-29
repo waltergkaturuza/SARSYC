@@ -4,7 +4,18 @@ const Donations: CollectionConfig = {
   slug: 'donations',
   admin: {
     useAsTitle: 'donationId',
-    defaultColumns: ['donationId', 'type', 'donorName', 'email', 'amountUsd', 'paymentStatus', 'createdAt'],
+    defaultColumns: [
+      'donationId',
+      'type',
+      'sponsorshipCategory',
+      'donorName',
+      'email',
+      'amountUsd',
+      'conferenceTrack',
+      'studentsSponsored',
+      'paymentStatus',
+      'createdAt',
+    ],
     group: 'Conference',
     description: 'Donations and sponsorships received for SARSYC VI.',
   },
@@ -95,11 +106,24 @@ const Donations: CollectionConfig = {
       label: 'Message / Note',
     },
     {
+      name: 'sponsorshipCategory',
+      type: 'select',
+      label: 'Sponsorship Category',
+      options: [
+        { label: 'Partnership package', value: 'package' },
+        { label: 'Track sponsorship', value: 'track' },
+      ],
+      admin: {
+        condition: (data: any) => data.type === 'sponsorship',
+      },
+    },
+    {
       name: 'sponsorshipTierName',
       type: 'text',
       label: 'Sponsorship Tier',
       admin: {
-        condition: (data: any) => data.type === 'sponsorship',
+        condition: (data: any) =>
+          data.type === 'sponsorship' && data.sponsorshipCategory === 'package',
         description: 'Name of the sponsorship tier selected.',
       },
     },
@@ -109,7 +133,49 @@ const Donations: CollectionConfig = {
       relationTo: 'sponsorship-tiers',
       label: 'Sponsorship Tier (linked)',
       admin: {
-        condition: (data: any) => data.type === 'sponsorship',
+        condition: (data: any) =>
+          data.type === 'sponsorship' && data.sponsorshipCategory === 'package',
+      },
+    },
+    {
+      name: 'conferenceTrack',
+      type: 'select',
+      label: 'Conference Track',
+      options: [
+        { label: 'Track 1: Education Rights and Equity', value: 'education-rights' },
+        { label: 'Track 2: HIV/AIDS, STIs and Vulnerable Groups', value: 'hiv-aids' },
+        { label: 'Track 3: Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles', value: 'ncd-prevention' },
+        { label: 'Track 4: Digital Health and Safety', value: 'digital-health' },
+        { label: 'Track 5: Mental Health and Substance Abuse', value: 'mental-health' },
+      ],
+      admin: {
+        condition: (data: any) =>
+          data.type === 'sponsorship' && data.sponsorshipCategory === 'track',
+      },
+    },
+    {
+      name: 'trackSponsorshipMode',
+      type: 'select',
+      label: 'Track Sponsorship Mode',
+      options: [
+        { label: 'By number of students', value: 'students' },
+        { label: 'Custom amount', value: 'custom_amount' },
+      ],
+      admin: {
+        condition: (data: any) =>
+          data.type === 'sponsorship' && data.sponsorshipCategory === 'track',
+      },
+    },
+    {
+      name: 'studentsSponsored',
+      type: 'number',
+      label: 'Students Sponsored',
+      min: 0,
+      admin: {
+        condition: (data: any) =>
+          data.type === 'sponsorship' &&
+          data.sponsorshipCategory === 'track' &&
+          data.trackSponsorshipMode === 'students',
       },
     },
     {

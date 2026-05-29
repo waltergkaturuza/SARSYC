@@ -9,6 +9,8 @@ import {
 } from '@/lib/stanbic/ngenius'
 import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
+import { isConferenceTrackId, conferenceTrackLabel } from '@/lib/conferenceTracks'
+import { trackSponsorshipAmountUsd } from '@/lib/trackSponsorship'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -31,8 +33,12 @@ export async function POST(req: NextRequest) {
     phone?: unknown
     amountUsd?: unknown
     message?: unknown
+    sponsorshipCategory?: unknown
     sponsorshipTierName?: unknown
     sponsorshipTierId?: unknown
+    conferenceTrack?: unknown
+    trackSponsorshipMode?: unknown
+    studentsSponsored?: unknown
   }
 
   let body: Body
@@ -49,16 +55,22 @@ export async function POST(req: NextRequest) {
   const orgName = typeof body.orgName === 'string' ? body.orgName.trim() : ''
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
-  const amountUsd = Number(body.amountUsd)
   const message = typeof body.message === 'string' ? body.message.trim() : ''
+  const sponsorshipCategory =
+    String(body.sponsorshipCategory ?? 'package').trim() === 'track' ? 'track' : 'package'
   const sponsorshipTierName = typeof body.sponsorshipTierName === 'string' ? body.sponsorshipTierName.trim() : ''
   const sponsorshipTierId = body.sponsorshipTierId != null ? String(body.sponsorshipTierId).trim() : ''
+  const conferenceTrack =
+    typeof body.conferenceTrack === 'string' ? body.conferenceTrack.trim() : ''
+  const trackSponsorshipMode =
+    String(body.trackSponsorshipMode ?? 'students').trim() === 'custom_amount'
+      ? 'custom_amount'
+      : 'students'
+  const studentsSponsored = Math.floor(Number(body.studentsSponsored))
+  let amountUsd = Number(body.amountUsd)
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 })
-  }
-  if (!amountUsd || amountUsd < 1) {
-    return NextResponse.json({ error: 'Minimum amount is USD 1.' }, { status: 400 })
   }
   if (donorType === 'individual' && (!firstName || !lastName)) {
     return NextResponse.json({ error: 'First name and last name are required.' }, { status: 400 })
@@ -67,8 +79,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Organisation name is required.' }, { status: 400 })
   }
 
+  if (type === 'sponsorship' && sponsorshipCategory === 'track') {
+    if (!isConferenceTrackId(conferenceTrack)) {
+      return NextResponse.json({ error: 'Please select a valid conference track.' }, { status: 400 })
+    }
+    if (trackSponsorshipMode === 'students') {
+      if (!Number.isFinite(studentsSponsored) || studentsSponsored < 1) {
+        return NextResponse.json(
+          { error: 'Please enter at least one student to sponsor.' },
+          { status: 400 },
+        )
+      }
+      amountUsd = trackSponsorshipAmountUsd({
+        mode: 'students',
+        studentCount: studentsSponsored,
+      })
+    }
+  }
+
+  if (!amountUsd || amountUsd < 1) {
+    return NextResponse.json({ error: 'Minimum amount is USD 1.' }, { status: 400 })
+  }
+
   const donorName =
     donorType === 'organisation' ? orgName : `${firstName} ${lastName}`.trim()
+
+  const sponsorshipDescription =
+    type === 'sponsorship' && sponsorshipCategory === 'track'
+      ? `Track sponsorship — ${conferenceTrackLabel(conferenceTrack)}${
+          trackSponsorshipMode === 'students' ? ` (${studentsSponsored} students)` : ''
+        }`
+      : type === 'sponsorship'
+        ? `SARSYC sponsorship — ${sponsorshipTierName || 'package'}`
+        : 'SARSYC donation'
 
   let payload: Awaited<ReturnType<typeof getPayloadClient>>
   try {
@@ -101,8 +144,29 @@ export async function POST(req: NextRequest) {
         amountUsd,
         currency: 'USD',
         message: message || undefined,
-        sponsorshipTierName: sponsorshipTierName || undefined,
-        sponsorshipTier: sponsorshipTierId ? (sponsorshipTierId as any) : undefined,
+        sponsorshipCategory: type === 'sponsorship' ? sponsorshipCategory : undefined,
+        sponsorshipTierName:
+          type === 'sponsorship' && sponsorshipCategory === 'package'
+            ? sponsorshipTierName || undefined
+            : undefined,
+        sponsorshipTier:
+          type === 'sponsorship' && sponsorshipCategory === 'package' && sponsorshipTierId
+            ? (sponsorshipTierId as any)
+            : undefined,
+        conferenceTrack:
+          type === 'sponsorship' && sponsorshipCategory === 'track'
+            ? conferenceTrack
+            : undefined,
+        trackSponsorshipMode:
+          type === 'sponsorship' && sponsorshipCategory === 'track'
+            ? trackSponsorshipMode
+            : undefined,
+        studentsSponsored:
+          type === 'sponsorship' &&
+          sponsorshipCategory === 'track' &&
+          trackSponsorshipMode === 'students'
+            ? studentsSponsored
+            : undefined,
         paymentMethod: 'card',
         paymentStatus: 'pending',
       },
@@ -144,7 +208,7 @@ export async function POST(req: NextRequest) {
       amountDisplayUsd: amountUsd,
       amountDisplayMajor: amountUsd,
       currency: 'USD',
-      itemDescription: type === 'sponsorship' ? `SARSYC sponsorship — ${sponsorshipTierName || 'tier'}` : 'SARSYC donation',
+      itemDescription: sponsorshipDescription,
       email,
       success: true,
       dbStanbicOrderRefSaved: true,
@@ -165,7 +229,7 @@ export async function POST(req: NextRequest) {
       amountDisplayUsd: amountUsd,
       amountDisplayMajor: amountUsd,
       currency: 'USD',
-      itemDescription: type === 'sponsorship' ? `SARSYC sponsorship — ${sponsorshipTierName || 'tier'}` : 'SARSYC donation',
+      itemDescription: sponsorshipDescription,
       email,
       success: false,
       dbStanbicOrderRefSaved: false,
