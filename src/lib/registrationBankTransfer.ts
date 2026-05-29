@@ -69,7 +69,8 @@ export function registrationManualBankPaymentEnabled(): boolean {
   const v = process.env.REGISTRATION_MANUAL_BANK_PAYMENT?.trim().toLowerCase()
   if (v === 'false' || v === '0' || v === 'no') return false
   if (v === 'true' || v === '1' || v === 'yes') return true
-  return true
+  // Default: hosted card payment (set REGISTRATION_MANUAL_BANK_PAYMENT=true to switch back to bank transfer)
+  return false
 }
 
 /** Fee is due for the current pricing window (independent of hosted vs manual). */

@@ -754,48 +754,76 @@ export default function RegisterPage() {
     }
 
     if (paymentOutstanding) {
+      const b = SARSYC_BANK_TRANSFER_DETAILS
       return (
         <div className="min-h-screen bg-gray-50 py-12">
           <div className="container-custom">
             <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center border border-amber-100">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-amber-100">
                 <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FiAlertCircle className="w-10 h-10 text-amber-600" aria-hidden />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  Registration saved — payment still required
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                  Registration saved — payment required
                 </h1>
-                <p className="text-lg text-gray-600 mb-6">
-                  Your details are on file, but your place is not confirmed until the registration fee is paid
-                  successfully on the secure Stanbic page.
+                <p className="text-lg text-gray-600 mb-6 text-center">
+                  Your details are on file. Your place is confirmed once payment is received.
                 </p>
-                <div className="bg-primary-50 rounded-lg p-6 mb-6">
+                <div className="bg-primary-50 rounded-lg p-6 mb-6 text-center">
                   <p className="text-sm text-gray-600 mb-2">Your Registration ID</p>
                   <p className="text-2xl font-bold text-primary-600 font-mono">{registrationId}</p>
+                  <p className="text-sm text-gray-600 mt-2">Use this ID as your payment reference.</p>
                 </div>
-                <p className="text-sm text-gray-600 mb-6 text-left bg-amber-50 rounded-lg p-4 border border-amber-100">
-                  We have emailed you with next steps. You can also tap <strong>Complete payment</strong> below to
-                  try opening the payment page again.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                  <button
-                    type="button"
-                    className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-60"
-                    onClick={() => void retryHostedPayment()}
-                    disabled={paymentRetryBusy}
-                  >
-                    {paymentRetryBusy ? (
-                      <>
-                        <FiLoader className="w-5 h-5 animate-spin" aria-hidden />
-                        Opening payment…
-                      </>
-                    ) : (
-                      'Complete payment'
-                    )}
-                  </button>
-                  <a href="/" className="btn-outline inline-flex items-center justify-center">
-                    Back to Homepage
-                  </a>
+
+                {/* Primary: retry hosted payment */}
+                <div className="mb-6">
+                  <p className="text-sm font-semibold text-gray-700 mb-3">Option 1 — Pay by card (recommended)</p>
+                  <p className="text-sm text-gray-600 mb-3 bg-amber-50 rounded-lg p-4 border border-amber-100">
+                    The payment page could not be opened automatically. Tap <strong>Complete payment</strong> to try again.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-60"
+                      onClick={() => void retryHostedPayment()}
+                      disabled={paymentRetryBusy}
+                    >
+                      {paymentRetryBusy ? (
+                        <>
+                          <FiLoader className="w-5 h-5 animate-spin" aria-hidden />
+                          Opening payment…
+                        </>
+                      ) : (
+                        'Complete payment'
+                      )}
+                    </button>
+                    <a href="/" className="btn-outline inline-flex items-center justify-center">
+                      Back to Homepage
+                    </a>
+                  </div>
+                </div>
+
+                {/* Fallback: bank transfer */}
+                <div className="border-t border-gray-200 pt-6">
+                  <p className="text-sm font-semibold text-gray-700 mb-3">Option 2 — Bank transfer (if card payment is unavailable)</p>
+                  <div className="text-left bg-gray-50 rounded-lg p-5 mb-4 text-sm text-gray-700 space-y-2 border border-gray-200">
+                    <p className="font-semibold text-gray-900">Bank details (USD)</p>
+                    <p><span className="text-gray-500">Bank:</span> {b.bankName}</p>
+                    <p><span className="text-gray-500">Account name:</span> {b.accountName}</p>
+                    <p><span className="text-gray-500">Account number:</span> <strong className="font-mono">{b.accountNumber}</strong></p>
+                    <p><span className="text-gray-500">Branch:</span> {b.branchName}</p>
+                    <p><span className="text-gray-500">SWIFT:</span> {b.swiftCode}</p>
+                    <p><span className="text-gray-500">Intermediary bank:</span> {b.intermediaryBankName} (SWIFT: {b.intermediarySwiftCode})</p>
+                  </div>
+                  <p className="text-sm text-gray-600 bg-amber-50 rounded-lg p-4 border border-amber-100">
+                    After paying, email <strong>proof of payment</strong> to{' '}
+                    {REGISTRATION_BANK_PROOF_EMAILS.map((email, i) => (
+                      <span key={email}>
+                        {i > 0 ? ' and ' : ''}
+                        <a href={`mailto:${email}`} className="text-primary-600 underline">{email}</a>
+                      </span>
+                    ))}, including your registration ID and full name.
+                  </p>
                 </div>
               </div>
             </div>
