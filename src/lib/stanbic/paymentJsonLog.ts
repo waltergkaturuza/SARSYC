@@ -10,5 +10,9 @@ function logLabel(): string {
 /** Emits `[label] {"event":"…",…,"createdAt":"ISO"}` via console.info for certification grep */
 export function logStanbicPaymentEvent(payload: Record<string, unknown>): void {
   const createdAt = new Date().toISOString()
-  console.info(`[${logLabel()}]`, JSON.stringify({ ...payload, createdAt }))
+  const line = { ...payload, createdAt }
+  console.info(`[${logLabel()}]`, JSON.stringify(line))
+  void import('@/lib/stanbic/persistStanbicPaymentEvent')
+    .then(({ persistStanbicPaymentEvent }) => persistStanbicPaymentEvent(line))
+    .catch((err) => console.error('[stanbic-cert] persist failed', err))
 }

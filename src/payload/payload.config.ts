@@ -36,6 +36,7 @@ import OrathonRegistrations from './collections/OrathonRegistrations'
 import PageViews from './collections/PageViews'
 import SiteEvents from './collections/SiteEvents'
 import Donations from './collections/Donations'
+import StanbicPaymentEvents from './collections/StanbicPaymentEvents'
 
 // Globals
 import SiteSettings from './globals/SiteSettings'
@@ -166,6 +167,7 @@ export default buildConfig({
     PageViews,
     SiteEvents,
     Donations,
+    StanbicPaymentEvents,
   ],
   globals: [
     SiteSettings,

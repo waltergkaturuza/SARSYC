@@ -36,10 +36,10 @@ const navigation = [
     description: 'Donations & sponsorships',
   },
   {
-    name: 'Stanbic certification',
-    href: '/admin/stanbic-cert',
+    name: 'Payments',
+    href: '/admin/payments',
     icon: FiCreditCard,
-    description: 'N-Genius sandbox test matrix',
+    description: 'Payments, card activity & Stanbic cert',
   },
   {
     name: 'Abstracts',

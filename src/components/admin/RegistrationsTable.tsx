@@ -2,6 +2,36 @@
 
 import React, { useState } from 'react'
 import { FiDownload, FiFileText } from 'react-icons/fi'
+import {
+  getRegistrationPackage,
+  getRegistrationPricingTier,
+  isRegistrationPackageId,
+  packageUsdForTier,
+} from '@/lib/registrationPackages'
+
+function registrationFeeUsd(reg: {
+  registrationPackage?: unknown
+  paymentStatus?: unknown
+  createdAt?: unknown
+}): number {
+  if (reg.paymentStatus === 'waived') return 0
+  const pkg = reg.registrationPackage
+  if (!isRegistrationPackageId(pkg)) return 0
+  const tier = getRegistrationPricingTier(
+    reg.createdAt ? new Date(String(reg.createdAt)) : new Date(),
+  )
+  return packageUsdForTier(getRegistrationPackage(pkg), tier)
+}
+
+function formatFeeUsd(amount: number): string {
+  return `$${amount.toLocaleString('en-US')}`
+}
+
+function feeCellClass(paymentStatus: string | undefined): string {
+  if (paymentStatus === 'paid') return 'text-green-700 font-semibold'
+  if (paymentStatus === 'waived') return 'text-sky-700 font-medium'
+  return 'text-red-600 font-semibold'
+}
 
 type Props = {
   docs: any[]
@@ -113,6 +143,7 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
     pending: 'bg-yellow-100 text-yellow-800',
     paid: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
+    waived: 'bg-sky-100 text-sky-800',
   }
 
   return (
@@ -201,6 +232,9 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                     Payment
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fee
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ticket Type
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -244,6 +278,25 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                       }`}>
                         {d.paymentStatus || 'pending'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {(() => {
+                        const fee = registrationFeeUsd(d)
+                        const ps = d.paymentStatus || 'pending'
+                        if (ps === 'waived') {
+                          return (
+                            <span className={`text-sm ${feeCellClass(ps)}`}>Waived</span>
+                          )
+                        }
+                        if (!isRegistrationPackageId(d.registrationPackage)) {
+                          return <span className="text-sm text-gray-400">—</span>
+                        }
+                        return (
+                          <span className={`text-sm ${feeCellClass(ps)}`}>
+                            {formatFeeUsd(fee)}
+                          </span>
+                        )
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {d.ticketType || d.category || 'N/A'}
