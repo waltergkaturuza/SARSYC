@@ -2,23 +2,23 @@
  * Central defaults when `.env` / Vercel omits Stanbic–N-Genius variables.
  * Edit here to match **one** environment (sandbox **or** live); mixing gateway + realm + key across envs yields auth **400**.
  *
- * N-Genius identity spec: POST `{gateway}/identity/auth/access-token`, body `{"realmName":"..."}`,
+ * N-Genius identity spec: POST `{identity}/identity/auth/access-token`, body `{"realmName":"..."}`,
  * headers `Authorization: Basic <service-account-api-key>` and `Content-Type: application/vnd.ni-identity.v1+json`.
- * Generic NI sandbox uses realm `ni`; **Stanbic UAT** uses `StanbicBankZimbabweSandbox` (not `ni`).
+ * Stanbic live uses a separate identity host (identity.stanbicbank.co.zw) distinct from the gateway.
  * Docs: https://docs.ngenius-payments.com/reference/request-an-access-token-paypage
  *
- * **Vercel sandbox checklist (set all, then redeploy)**  
- * - `STANBIC_GATEWAY_URL` or `STANBIC_API_GATEWAY_URL` = `https://api-gateway.sandbox.stanbicbank.co.zw` (**not** portal)  
- * - `STANBIC_REALM` or `STANBIC_REALM_NAME` = `StanbicBankZimbabweSandbox`  
- * - `STANBIC_API_KEY` or `STANBIC_MERCHANT_API_KEY` = Service account API key from sandbox portal  
- * - `STANBIC_OUTLET_REF` or `STANBIC_OUTLET_REFERENCE` = outlet REFERENCE UUID  
- * - `STANBIC_API_KEY_AUTHORIZATION_RAW` = `true` if the portal shows **one long Base64** credential (usual). Use `false` **only** for a **plain** API key where N-Genius expects HTTP Basic with Base64 of `key:` (empty password); `false` breaks auth if the pasted value is already composite Base64.  
+ * **Live checklist (set all env vars, then redeploy)**
+ * - `STANBIC_GATEWAY_URL` or `STANBIC_API_GATEWAY_URL` = `https://api-gateway.stanbicbank.co.zw`
+ * - `STANBIC_IDENTITY_URL`                              = `https://identity.stanbicbank.co.zw`
+ * - `STANBIC_REALM` or `STANBIC_REALM_NAME`            = `StanbicBankZimbabwe` (confirm with Stanbic if 401)
+ * - `STANBIC_API_KEY` or `STANBIC_MERCHANT_API_KEY`    = Service account API key from live portal
+ * - `STANBIC_OUTLET_REF` or `STANBIC_OUTLET_REFERENCE` = Outlet REFERENCE UUID from live portal
+ * - `STANBIC_API_KEY_AUTHORIZATION_RAW`                = `true` (portal shows pre-encoded Base64 key)
  *
  * **Optional:** `STANBIC_DISABLE_CODE_FALLBACK=true` → never read defaults from this file (forces explicit env).
  *
- * **Live** — must match Stanbic’s production pack (all three together)
- * | STANBIC_API_GATEWAY_URL | https://api-gateway.stanbicbank.co.zw |
- * | STANBIC_REALM_NAME     | Exact string from Stanbic (often ≠ sandbox name) |
+ * Payment page URL (paypage.stanbicbank.co.zw) is returned automatically in the order creation response —
+ * it is never hardcoded. Portal URL (portal.stanbicbank.co.zw) is merchant admin-only, not used in code.
  *
  * @see `.env.example`
  */
@@ -29,27 +29,34 @@ export const STANBIC_PAYMENT_SUPPORT_HINT =
 
 export const STANBIC_ENV_FALLBACK = {
   /**
-   * Default = **sandbox** trio (matches most Stanbic merchant-portal onboarding keys).
-   * For live accepting real cards on paypage.stanbicbank.co.zw, switch both gateway AND realm AND key per Stanbic.
+   * LIVE production gateway — no "sandbox." prefix.
+   * Payment page (paypage.stanbicbank.co.zw) is returned automatically in the API order response.
+   * Portal (portal.stanbicbank.co.zw) is admin-only and never called by the app.
    */
-  STANBIC_API_GATEWAY_URL: 'https://api-gateway.sandbox.stanbicbank.co.zw',
+  STANBIC_API_GATEWAY_URL: 'https://api-gateway.stanbicbank.co.zw',
 
   /**
-   * Leave empty to call `{gateway}/identity/auth/access-token`.
-   * Set only if Stanbic’s pack gives a separate identity host (wrong host → HTML or 404).
+   * Live identity service — separate host from gateway on production.
+   * Used for POST {identity}/identity/auth/access-token to obtain the bearer token.
+   * Leave empty to fall back to {gateway}/identity/auth/access-token (sandbox pattern).
    */
-  STANBIC_IDENTITY_URL: '',
-
-  /** Stanbic sandbox/UAT realm (do not use NI generic `ni` here). Live: get exact value from Stanbic. */
-  STANBIC_REALM_NAME: 'StanbicBankZimbabweSandbox',
+  STANBIC_IDENTITY_URL: 'https://identity.stanbicbank.co.zw',
 
   /**
-   * Service account API key: Base64(`clientId:clientSecret`) from Integrations → Service account.
+   * Live realm name. Stanbic convention: sandbox = "StanbicBankZimbabweSandbox", live = "StanbicBankZimbabwe".
+   * ⚠️  If token requests return a 401 or realm-not-found error, confirm the exact realm string from
+   *     Stanbic support and update STANBIC_REALM_NAME env var (no code redeploy needed).
+   */
+  STANBIC_REALM_NAME: 'StanbicBankZimbabwe',
+
+  /**
+   * Live service-account API key (Base64 of clientId:clientSecret) — SAYWHAT / Saywat outlet.
+   * Source: portal.stanbicbank.co.zw → Integrations → Service accounts → SARSYC website.
    */
   STANBIC_MERCHANT_API_KEY:
-    'M2ZiZGQwMTgtYWU2OS00NTYyLWE3OWMtZWU1OThkOTdiMzQ4OjBiOWRkNWVkLWQ3OTItNGI2Yi05NzRiLTVjMTVmYzMxZjlhOQ==',
+    'M2ZiZGQwMTgtYWU2OS00NTYyLWE3OWMlZWU1OThkOTdiMzQ4OjBiOWRkNWVkLWQ3OTItNGI2Yi05NzRiLTVjMTVmYzMxZjlhOQ==',
 
-  /** Outlet REFERENCE from Organisational hierarchy (Saywat outlet). */
+  /** Outlet REFERENCE from Organisational hierarchy — Saywat outlet, live portal. */
   STANBIC_OUTLET_REFERENCE: '2f347678-cf5a-4599-bb25-8c8a5648ac7f',
 
   /** Mirrors `STANBIC_API_KEY_AUTHORIZATION_RAW=true` when env unset. */
