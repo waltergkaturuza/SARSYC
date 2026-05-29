@@ -40,8 +40,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const { access_token } = await stanbicAccessToken()
-    const orderData = await stanbicRetrieveOrder({ accessToken: access_token, orderReference: orderRef })
-    const paid = isOrderPaymentSuccessful(orderData)
+    const { paymentStates } = await stanbicRetrieveOrder({
+      accessToken: access_token,
+      orderReference: orderRef,
+    })
+    const paid = isOrderPaymentSuccessful(paymentStates)
 
     if (paid && donationId) {
       // Find the donation by donationId and mark as paid
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ paid, failed: !paid && orderData ? true : false })
+    return NextResponse.json({ paid, failed: !paid })
   } catch (e: unknown) {
     const msg = formatStanbicOutboundError(e)
     console.error('[donate verify]', e)
