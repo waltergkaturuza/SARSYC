@@ -15,6 +15,24 @@ import {
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 
+/** Postgres timestamptz columns reject ""; strip blank optional dates before insert */
+const REGISTRATION_DATE_FIELDS = [
+  'dateOfBirth',
+  'passportExpiry',
+  'visaApplicationDate',
+  'arrivalDate',
+  'departureDate',
+  'travelInsuranceExpiry',
+] as const
+
+function stripEmptyRegistrationDates(data: Record<string, unknown>): void {
+  for (const key of REGISTRATION_DATE_FIELDS) {
+    if (data[key] === '') {
+      delete data[key]
+    }
+  }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -786,6 +804,8 @@ export async function POST(request: NextRequest) {
       isInternational: registrationData.isInternational,
       hasPassportScan: !!registrationData.passportScan,
     })
+
+    stripEmptyRegistrationDates(registrationData)
 
     // Create registration in Payload CMS
     console.log('💾 Creating registration in Payload...')
