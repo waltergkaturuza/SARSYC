@@ -43,7 +43,12 @@ export const STANBIC_ENV_FALLBACK = {
    * pointing to the base that, when appended with /identity/auth/access-token, gives the correct URL.
    * Leave empty to fall back to {gateway}/identity/auth/access-token (original sandbox pattern).
    */
-  STANBIC_IDENTITY_URL: 'https://identity.stanbicbank.co.zw',
+  /**
+   * Intentionally empty — let the gateway host handle /identity/auth/access-token.
+   * identity.stanbicbank.co.zw returns 404 HTML on that path; the gateway handles it correctly.
+   * Override via STANBIC_IDENTITY_URL env var only if Stanbic confirms a different token URL.
+   */
+  STANBIC_IDENTITY_URL: '',
 
   /**
    * Live realm name. Stanbic convention: sandbox = "StanbicBankZimbabweSandbox", live = "StanbicBankZimbabwe".
