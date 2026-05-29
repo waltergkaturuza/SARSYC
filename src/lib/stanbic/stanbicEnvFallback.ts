@@ -37,8 +37,11 @@ export const STANBIC_ENV_FALLBACK = {
 
   /**
    * Live identity service — separate host from gateway on production.
-   * Used for POST {identity}/identity/auth/access-token to obtain the bearer token.
-   * Leave empty to fall back to {gateway}/identity/auth/access-token (sandbox pattern).
+   * The token endpoint is built as: {identity}/identity/auth/access-token
+   * If the Stanbic live identity host is identity.stanbicbank.co.zw and the path is /auth/access-token
+   * (not /identity/auth/access-token), clear this field and override via STANBIC_IDENTITY_URL env var
+   * pointing to the base that, when appended with /identity/auth/access-token, gives the correct URL.
+   * Leave empty to fall back to {gateway}/identity/auth/access-token (original sandbox pattern).
    */
   STANBIC_IDENTITY_URL: 'https://identity.stanbicbank.co.zw',
 
