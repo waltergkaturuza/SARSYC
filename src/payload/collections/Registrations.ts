@@ -734,6 +734,24 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'paymentDueReminderSentAt',
+      type: 'date',
+      label: 'Payment due reminder sent',
+      admin: {
+        description:
+          'Set when admin bulk-sends a payment due email (card link or bank transfer) for legacy or unpaid registrations.',
+        position: 'sidebar',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
       label: 'Admin Notes',

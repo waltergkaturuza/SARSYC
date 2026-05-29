@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
-import { sendRegistrationConfirmation } from '@/lib/mail'
+import { sendRegistrationConfirmation, sendRegistrationPaymentDueReminder } from '@/lib/mail'
 import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
 import { logExport } from '@/lib/telemetry'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
+import {
+  completePaymentPageUrl,
+  paymentDueEmailAmount,
+  registrationNeedsPayment,
+} from '@/lib/registrationResumePayment'
+import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +38,7 @@ export async function POST(req: Request) {
     }
 
     const payload = await getPayloadClient()
+    await ensureRegistrationsLatestColumns(payload)
 
     // Perform actions
     const results: Record<string, any> = { updated: [], failed: [] }
@@ -67,6 +75,49 @@ export async function POST(req: Request) {
               results.updated.push(id)
             }
           }
+        } else if (action === 'sendPaymentDue') {
+          const res = await payload.find({ collection: 'registrations', where: { id: { equals: id } } })
+          const doc = res?.docs?.[0] as Record<string, unknown> | undefined
+          if (!doc) {
+            results.failed.push({ id, reason: 'not found' })
+            continue
+          }
+          if (!registrationNeedsPayment(doc)) {
+            results.failed.push({ id, reason: 'payment not due or already paid/waived' })
+            continue
+          }
+          const to = typeof doc.email === 'string' ? doc.email.trim() : ''
+          const regHuman =
+            typeof doc.registrationId === 'string' ? doc.registrationId : String(doc.id)
+          if (!to) {
+            results.failed.push({ id, reason: 'registration has no email' })
+            continue
+          }
+          const { packageName, amountUsd } = paymentDueEmailAmount(doc)
+          const mailOut = await sendRegistrationPaymentDueReminder({
+            to,
+            firstName: typeof doc.firstName === 'string' ? doc.firstName : undefined,
+            registrationId: regHuman,
+            completePaymentUrl: completePaymentPageUrl(regHuman),
+            packageName,
+            amountUsd,
+            hostedPaymentAvailable: registrationRequiresHostedPayment(),
+          })
+          if (mailOut && 'success' in mailOut && !mailOut.success) {
+            results.failed.push({ id, reason: 'email send failed' })
+            continue
+          }
+          try {
+            await payload.update({
+              collection: 'registrations',
+              id,
+              data: { paymentDueReminderSentAt: new Date().toISOString() },
+              overrideAccess: true,
+            })
+          } catch {
+            /* column may not exist yet; email still sent */
+          }
+          results.updated.push(id)
         } else if (action === 'softDelete') {
           // If deletedAt field exists it will be set; otherwise mark as cancelled
           try {

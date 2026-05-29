@@ -120,7 +120,11 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
         setLoading(false)
         return
       }
-      setMessage(`Bulk action ${action} completed. Updated: ${json.results.updated.length}`)
+      setMessage(
+        `Bulk action ${action} completed. Updated: ${json.results.updated.length}${
+          json.results.failed?.length ? `, failed: ${json.results.failed.length}` : ''
+        }`,
+      )
       // clear selection
       setSelected({})
       // simple reload
@@ -170,6 +174,14 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
           className="btn-outline"
         >
           Send Email
+        </button>
+        <button 
+          onClick={() => handleBulk('sendPaymentDue')} 
+          disabled={loading || selectedIds().length === 0} 
+          className="btn-outline"
+          title="Email selected delegates a link to pay by card or bank transfer"
+        >
+          Send payment due email
         </button>
         <button 
           onClick={() => handleBulk('softDelete')} 

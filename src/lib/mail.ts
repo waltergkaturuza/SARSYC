@@ -268,6 +268,91 @@ If the link does not work, contact us with your registration ID.`
   return sendMail({ to, subject, text, html })
 }
 
+/** Legacy / pre-fee registrants — pay by card (complete-payment page) or bank transfer. */
+export async function sendRegistrationPaymentDueReminder({
+  to,
+  firstName,
+  registrationId,
+  completePaymentUrl,
+  packageName,
+  amountUsd,
+  hostedPaymentAvailable,
+}: {
+  to: string
+  firstName?: string
+  registrationId: string
+  completePaymentUrl: string
+  packageName?: string | null
+  amountUsd?: number | null
+  hostedPaymentAvailable?: boolean
+}) {
+  const name = firstName || 'delegate'
+  const subject = `Action required: complete your SARSYC VI registration payment (${registrationId})`
+  const supportText = formatRegistrationSupportContactsText()
+  const supportHtml = formatRegistrationSupportContactsHtml()
+
+  const feeLine =
+    packageName != null && amountUsd != null
+      ? `Your registration package: ${packageName} — USD ${amountUsd.toFixed(2)}.`
+      : 'You will confirm your conference package and fee amount on the payment page.'
+
+  const cardBlock = hostedPaymentAvailable
+    ? `\n\nOPTION 1 — PAY BY CARD (recommended)\nOpen this secure link, enter your registration ID and email, then complete payment on the Stanbic hosted page:\n${completePaymentUrl}\n\nYour registration ID: ${registrationId}`
+    : `\n\nPay online: ${completePaymentUrl}\n(Use registration ID ${registrationId} and the same email you registered with.)`
+
+  let bankBlock = ''
+  let bankHtml = ''
+  if (packageName != null && amountUsd != null) {
+    bankBlock = `\n\nOPTION 2 — BANK TRANSFER\n${formatRegistrationBankTransferText({
+      registrationId,
+      packageName: packageName.replace(/ \(confirm on payment page\)$/, ''),
+      amountUsd,
+    })}`
+    bankHtml = `<h3 style="margin:1.25em 0 0.5em;font-size:16px;">Option 2 — Bank transfer</h3>
+${formatRegistrationBankTransferHtml({
+  registrationId,
+  packageName: packageName.replace(/ \(confirm on payment page\)$/, ''),
+  amountUsd,
+})}`
+  } else {
+    bankBlock =
+      '\n\nOPTION 2 — BANK TRANSFER\nVisit the payment page above to see current bank details and your fee after selecting your package.'
+    bankHtml = `<p><strong>Option 2 — Bank transfer:</strong> use the payment link above for bank details once your package is confirmed.</p>`
+  }
+
+  const text = `Dear ${name},
+
+Thank you for registering for SARSYC VI. A registration fee now applies to confirm your place.
+
+${feeLine}
+
+Your registration ID is ${registrationId}. Keep it for payment reference.
+${cardBlock}
+${bankBlock}
+
+After payment is confirmed you must complete mandatory safeguarding training (we will email you a link).
+
+Questions: ${supportText}`
+
+  const cardHtml = hostedPaymentAvailable
+    ? `<h3 style="margin:1.25em 0 0.5em;font-size:16px;">Option 1 — Pay by card</h3>
+<p>Use your registration ID <strong>${registrationId}</strong> and the same email you registered with.</p>
+<p style="margin:16px 0;"><a href="${completePaymentUrl}" style="display:inline-block;background:#0284c7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Complete payment online</a></p>
+<p style="font-size:13px;color:#555;">Or copy this link: ${completePaymentUrl}</p>`
+    : `<p><a href="${completePaymentUrl}">Open the payment page</a> with registration ID <strong>${registrationId}</strong>.</p>`
+
+  const html = `<p>Dear ${name},</p>
+<p>Thank you for registering for <strong>SARSYC VI</strong>. A <strong>registration fee</strong> is now required to confirm your place.</p>
+<p>${feeLine}</p>
+<p>Your registration ID is <strong>${registrationId}</strong>.</p>
+${cardHtml}
+${bankHtml}
+<p>After payment is confirmed you must complete <strong>safeguarding training</strong> (link by email).</p>
+<p>Questions: ${supportHtml}.</p>`
+
+  return sendMail({ to, subject, text, html })
+}
+
 
 /** After returning from the gateway without a successful capture (one email per registration, deduped via Payload). */
 export async function sendRegistrationPaymentNotConfirmed({
