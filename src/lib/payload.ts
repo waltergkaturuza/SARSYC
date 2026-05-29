@@ -3,6 +3,7 @@ import type { Payload } from 'payload/types'
 import config from '../payload/payload.config'
 import { getSecret } from './getSecret'
 import { ensureLockedDocsRelsColumns } from './ensureLockedDocsRelsColumns'
+import { ensureRegistrationsLatestColumns } from './ensureRegistrationSchema'
 
 let cached = (global as any).payload
 
@@ -10,9 +11,14 @@ if (!cached) {
   cached = (global as any).payload = { client: null, promise: null }
 }
 
+async function ensureDatabaseSchemaPatches(client: Payload): Promise<void> {
+  await ensureLockedDocsRelsColumns(client)
+  await ensureRegistrationsLatestColumns(client)
+}
+
 export const getPayloadClient = async (): Promise<Payload> => {
   if (cached.client) {
-    await ensureLockedDocsRelsColumns(cached.client)
+    await ensureDatabaseSchemaPatches(cached.client)
     return cached.client
   }
 
@@ -180,7 +186,7 @@ export const getPayloadClient = async (): Promise<Payload> => {
 
   try {
     cached.client = await cached.promise
-    await ensureLockedDocsRelsColumns(cached.client)
+    await ensureDatabaseSchemaPatches(cached.client)
   } catch (e: unknown) {
     cached.promise = null
     const error = e as Error
