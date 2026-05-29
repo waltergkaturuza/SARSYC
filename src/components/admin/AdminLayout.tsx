@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { 
   FiHome, FiUsers, FiFileText, FiMic, FiCalendar, 
   FiFolder, FiMessageSquare, FiHeart, FiSettings, FiShield,
   FiMenu, FiX, FiLogOut, FiSearch, FiChevronLeft, FiChevronRight,
   FiAward, FiActivity, FiMail, FiInbox, FiTrendingUp, FiCreditCard
 } from 'react-icons/fi'
+import { adminSearchRouteForPath, pushAdminSearch } from '@/lib/admin/registrationSearchWhere'
 
 const navigation = [
   {
@@ -142,10 +143,18 @@ const navigation = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(false) // Mobile only
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true) // Desktop: closed by default
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [headerSearch, setHeaderSearch] = useState('')
+
+  const searchEnabledRoute = adminSearchRouteForPath(pathname)
+
+  useEffect(() => {
+    setHeaderSearch(searchParams.get('search') || '')
+  }, [pathname, searchParams])
 
   useEffect(() => {
     const loadUser = async () => {
@@ -350,15 +359,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <FiMenu className="w-6 h-6" />
             </button>
             
-            {/* Search */}
-            <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-4 py-2 w-96">
-              <FiSearch className="w-5 h-5 text-gray-400" />
+            {/* Search — applies to current list page (registrations, donations, etc.) */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                pushAdminSearch(router, pathname, headerSearch)
+              }}
+              className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-4 py-2 w-96"
+            >
+              <FiSearch className="w-5 h-5 text-gray-400 shrink-0" />
               <input
                 type="text"
-                placeholder="Search..."
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                placeholder={
+                  searchEnabledRoute
+                    ? 'Search this page (Enter)…'
+                    : 'Search registrations (Enter)…'
+                }
                 className="bg-transparent border-none outline-none w-full text-sm text-gray-700 placeholder-gray-400"
               />
-            </div>
+            </form>
           </div>
 
           <div className="flex items-center gap-4">

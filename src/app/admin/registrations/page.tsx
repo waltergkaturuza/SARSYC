@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
 import RegistrationsTable from '@/components/admin/RegistrationsTable'
 import RegistrationsFilters from '@/components/admin/RegistrationsFilters'
+import { buildRegistrationListWhere } from '@/lib/admin/registrationSearchWhere'
 
 export const revalidate = 0
 
@@ -41,38 +42,16 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
   const countryFilter = searchParams.country || 'all'
   const categoryFilter = searchParams.category || 'all'
   const genderFilter = searchParams.gender || 'all'
-  const searchQuery = searchParams.search || ''
+  const searchQuery = searchParams.search?.trim() || ''
 
-  const where: any = {}
-
-  if (statusFilter !== 'all') {
-    where.status = { equals: statusFilter }
-  }
-
-  if (paymentStatusFilter !== 'all') {
-    where.paymentStatus = { equals: paymentStatusFilter }
-  }
-
-  if (countryFilter !== 'all') {
-    where.country = { equals: countryFilter }
-  }
-
-  if (categoryFilter !== 'all') {
-    where.category = { equals: categoryFilter }
-  }
-
-  if (genderFilter !== 'all') {
-    where.gender = { equals: genderFilter }
-  }
-
-  if (searchQuery) {
-    where.or = [
-      { firstName: { contains: searchQuery } },
-      { lastName: { contains: searchQuery } },
-      { email: { contains: searchQuery } },
-      { registrationId: { contains: searchQuery } },
-    ]
-  }
+  const where = buildRegistrationListWhere({
+    status: statusFilter,
+    paymentStatus: paymentStatusFilter,
+    country: countryFilter,
+    category: categoryFilter,
+    gender: genderFilter,
+    search: searchQuery,
+  })
 
   const results = await payload.find({
     collection: 'registrations',
@@ -80,6 +59,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
     limit,
     page,
     sort: '-createdAt',
+    overrideAccess: true,
   })
 
   const docs = results.docs || []
@@ -95,7 +75,9 @@ export default async function AdminRegistrationsPage({ searchParams }: Registrat
         <p className="text-gray-600 mt-2">Manage conference registrations and participant details</p>
       </div>
 
-      <RegistrationsFilters />
+      <Suspense fallback={<div className="mb-8 h-24 bg-white rounded-lg border border-gray-200 animate-pulse" />}>
+        <RegistrationsFilters />
+      </Suspense>
 
       {/* Registrations Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
