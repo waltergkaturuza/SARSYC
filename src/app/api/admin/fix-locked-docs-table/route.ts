@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "abstract_reviews_id" integer`,
       `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "page_views_id" integer`,
       `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "site_events_id" integer`,
+      `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "donations_id" integer`,
     ]
 
     const results: string[] = []

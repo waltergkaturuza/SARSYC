@@ -64,6 +64,9 @@ export default async function AdminDonationsPage({ searchParams }: DonationsPage
       err instanceof Error
         ? err.message
         : 'Could not load donations — database migration may be pending.'
+    if (/donations_id/i.test(dbError)) {
+      dbError += ' Run GET /api/admin/fix-locked-docs-table once, then redeploy or refresh.'
+    }
   }
 
   const paidCount = docs.filter((d) => d.paymentStatus === 'paid').length
