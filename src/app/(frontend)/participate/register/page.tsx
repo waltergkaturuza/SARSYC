@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -136,6 +136,122 @@ const steps = [
   { id: 6, name: 'Package & Preferences', icon: FiCheck },
 ]
 
+const REQUIRED_MARK = <span className="text-red-500" aria-hidden="true">*</span>
+
+const STEP_REQUIRED_FIELDS: Record<number, (keyof RegistrationFormData)[]> = {
+  1: ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender'],
+  2: ['country', 'nationality', 'city', 'address'],
+  3: ['organization', 'category'],
+  5: [
+    'emergencyContactName',
+    'emergencyContactRelationship',
+    'emergencyContactPhone',
+    'emergencyContactEmail',
+    'emergencyContactAddress',
+    'emergencyContactCountry',
+    'emergencyContactCity',
+  ],
+  6: ['registrationPackage'],
+}
+
+const INTERNATIONAL_STEP4_FIELDS: (keyof RegistrationFormData)[] = [
+  'passportNumber',
+  'passportExpiry',
+  'passportIssuingCountry',
+]
+
+const FIELD_LABELS: Partial<Record<keyof RegistrationFormData, string>> = {
+  firstName: 'First name',
+  lastName: 'Last name',
+  email: 'Email address',
+  phone: 'Phone number',
+  dateOfBirth: 'Date of birth',
+  gender: 'Gender',
+  country: 'Country of residence',
+  nationality: 'Nationality',
+  city: 'City',
+  address: 'Full address',
+  organization: 'Organization/institution',
+  category: 'Participation category',
+  passportNumber: 'Passport number',
+  passportExpiry: 'Passport expiration date',
+  passportIssuingCountry: 'Passport issuing country',
+  emergencyContactName: 'Emergency contact name',
+  emergencyContactRelationship: 'Emergency contact relationship',
+  emergencyContactPhone: 'Emergency contact phone',
+  emergencyContactEmail: 'Emergency contact email',
+  emergencyContactAddress: 'Emergency contact address',
+  emergencyContactCountry: 'Emergency contact country',
+  emergencyContactCity: 'Emergency contact city',
+  registrationPackage: 'Conference registration package',
+}
+
+function isFieldFilled(value: unknown): boolean {
+  if (value === undefined || value === null) return false
+  if (typeof value === 'string') return value.trim().length > 0
+  return true
+}
+
+function getStepRequiredFields(
+  step: number,
+  isInternational: boolean,
+): (keyof RegistrationFormData)[] {
+  if (step === 4) {
+    return isInternational ? INTERNATIONAL_STEP4_FIELDS : []
+  }
+  return STEP_REQUIRED_FIELDS[step] ?? []
+}
+
+function isStepComplete(
+  step: number,
+  values: RegistrationFormData,
+  isInternational: boolean,
+  passportFile: File | null,
+): boolean {
+  const fields = getStepRequiredFields(step, isInternational)
+  if (fields.length === 0 && step === 4) return true
+  const fieldsOk = fields.every((field) => isFieldFilled(values[field]))
+  if (step === 4 && isInternational) {
+    return fieldsOk && Boolean(passportFile)
+  }
+  return fieldsOk
+}
+
+function getMissingStepFieldLabels(
+  step: number,
+  values: RegistrationFormData,
+  isInternational: boolean,
+  passportFile: File | null,
+): string[] {
+  const missing = getStepRequiredFields(step, isInternational)
+    .filter((field) => !isFieldFilled(values[field]))
+    .map((field) => FIELD_LABELS[field] ?? field)
+
+  if (step === 4 && isInternational && !passportFile) {
+    missing.push('Passport scan/copy')
+  }
+
+  return missing
+}
+
+function focusFirstInvalidField(fields: (keyof RegistrationFormData)[]) {
+  for (const field of fields) {
+    const el =
+      document.querySelector(`[name="${field}"]`) ||
+      document.querySelector(`#${field}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      ;(el as HTMLElement).focus()
+      return
+    }
+  }
+  const passportEl = document.querySelector('#passportScan')
+  if (passportEl) {
+    passportEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    ;(passportEl as HTMLElement).focus()
+  }
+}
+
 const categories = [
   { value: 'student', label: 'Student/Youth Delegate', description: 'Undergraduate or graduate student' },
   { value: 'researcher', label: 'Young Researcher', description: 'Academic researcher or PhD candidate' },
@@ -248,6 +364,53 @@ export default function RegisterPage() {
   const isInternational = watch('isInternational')
   const visaRequired = watch('visaRequired')
   const hasHealthInsurance = watch('hasHealthInsurance')
+  const formValues = watch()
+
+  const canProceedFromCurrentStep = useMemo(
+    () =>
+      isStepComplete(
+        currentStep,
+        formValues as RegistrationFormData,
+        Boolean(isInternational),
+        passportFile,
+      ),
+    [currentStep, formValues, isInternational, passportFile],
+  )
+
+  const canReviewAndSubmit = useMemo(() => {
+    for (let step = 1; step <= steps.length; step += 1) {
+      if (
+        !isStepComplete(step, formValues as RegistrationFormData, Boolean(isInternational), passportFile)
+      ) {
+        return false
+      }
+    }
+    return true
+  }, [formValues, isInternational, passportFile])
+
+  const missingCurrentStepFields = useMemo(
+    () =>
+      getMissingStepFieldLabels(
+        currentStep,
+        formValues as RegistrationFormData,
+        Boolean(isInternational),
+        passportFile,
+      ),
+    [currentStep, formValues, isInternational, passportFile],
+  )
+
+  const fieldHighlightClass = (field: keyof RegistrationFormData, required = true) => {
+    if (!required || canProceedFromCurrentStep) return ''
+    if (!getStepRequiredFields(currentStep, Boolean(isInternational)).includes(field)) return ''
+    if (isFieldFilled(formValues[field])) return ''
+    return 'border-red-500 ring-2 ring-red-100'
+  }
+
+  const inputBorderClass = (field: keyof RegistrationFormData, required = true) => {
+    const missing = fieldHighlightClass(field, required)
+    if (errors[field] || missing) return missing || 'border-red-500 ring-2 ring-red-100'
+    return 'border-gray-300'
+  }
   const accommodationRequired = watch('accommodationRequired')
 
   const retryHostedPayment = useCallback(async () => {
@@ -556,61 +719,30 @@ export default function RegisterPage() {
   }
 
   const nextStep = async () => {
-    let fieldsToValidate: (keyof RegistrationFormData)[] = []
-    
-    if (currentStep === 1) {
-      fieldsToValidate = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender']
-    } else if (currentStep === 2) {
-      fieldsToValidate = ['country', 'nationality', 'city', 'address']
-    } else if (currentStep === 3) {
-      fieldsToValidate = ['organization', 'category']
-    } else if (currentStep === 4) {
-      if (isInternational) {
-        fieldsToValidate = ['passportNumber', 'passportExpiry', 'passportIssuingCountry']
-        // Also validate passport scan
-        if (!passportFile) {
-          setError('passportScan', {
-            type: 'manual',
-            message: 'Passport scan is required'
-          })
-        } else {
-          clearErrors('passportScan')
-        }
-      } else {
-        fieldsToValidate = []
+    const fieldsToValidate = getStepRequiredFields(currentStep, Boolean(isInternational))
+
+    if (fieldsToValidate.length > 0) {
+      const isValid = await trigger(fieldsToValidate, { shouldFocus: true })
+      if (!isValid) {
+        focusFirstInvalidField(fieldsToValidate)
+        showToast.error('Please complete all required fields marked with *.')
+        return
       }
-    } else if (currentStep === 5) {
-      fieldsToValidate = ['emergencyContactName', 'emergencyContactRelationship', 'emergencyContactPhone', 'emergencyContactEmail', 'emergencyContactAddress', 'emergencyContactCountry', 'emergencyContactCity']
-    } else if (currentStep === 6) {
-      fieldsToValidate = ['registrationPackage']
     }
 
-    const isValid = await trigger(fieldsToValidate)
-    
-    // Check passport scan for international attendees
     if (currentStep === 4 && isInternational && !passportFile) {
       setError('passportScan', {
         type: 'manual',
-        message: 'Passport scan is required'
+        message: 'Passport scan is required for international attendees',
       })
+      focusFirstInvalidField(['passportNumber'])
+      showToast.error('Please upload your passport scan.')
       return
     }
-    
-    if (isValid && currentStep < steps.length) {
+
+    if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
-      // Find first error and scroll to it
-      const errorFields = Object.keys(errors)
-      if (errorFields.length > 0) {
-        const firstError = errorFields[0] as keyof RegistrationFormData
-        const errorElement = document.querySelector(`[name="${firstError}"]`) || 
-                            document.querySelector(`#${firstError}`)
-        if (errorElement) {
-          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          ;(errorElement as HTMLElement).focus()
-        }
-      }
     }
   }
 
@@ -962,11 +1094,25 @@ export default function RegisterPage() {
               </div>
             )}
             
+            {!canProceedFromCurrentStep && missingCurrentStepFields.length > 0 && (
+              <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+                <p className="text-sm text-amber-900 flex items-start gap-2">
+                  <FiAlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="font-semibold">Required fields missing — </strong>
+                    complete the following to enable Next:{' '}
+                    {missingCurrentStepFields.join(', ')}
+                  </span>
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)}>
               {/* Step 1: Personal Information */}
               {currentStep === 1 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Personal Information</h2>
+                  <p className="text-sm text-gray-600 mb-6">Fields marked with {REQUIRED_MARK} are required.</p>
                   
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -977,9 +1123,7 @@ export default function RegisterPage() {
                         {...register('firstName')}
                         type="text"
                         id="firstName"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.firstName ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('firstName')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="John"
                       />
                       {errors.firstName && (
@@ -995,9 +1139,7 @@ export default function RegisterPage() {
                         {...register('lastName')}
                         type="text"
                         id="lastName"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.lastName ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('lastName')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="Doe"
                       />
                       {errors.lastName && (
@@ -1015,9 +1157,7 @@ export default function RegisterPage() {
                       {...register('email')}
                       type="email"
                       id="email"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('email')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="john.doe@example.com"
                     />
                     {errors.email && (
@@ -1033,9 +1173,7 @@ export default function RegisterPage() {
                       {...register('phone')}
                       type="tel"
                       id="phone"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('phone')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="+264 000 000 000"
                     />
                     {errors.phone && (
@@ -1053,9 +1191,7 @@ export default function RegisterPage() {
                         {...register('dateOfBirth')}
                         type="date"
                         id="dateOfBirth"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('dateOfBirth')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       />
                       {errors.dateOfBirth && (
                         <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>
@@ -1069,9 +1205,7 @@ export default function RegisterPage() {
                       <select
                         {...register('gender')}
                         id="gender"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.gender ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('gender')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                       >
                         <option value="">Select gender</option>
                         {genderOptions.map((option) => (
@@ -1091,7 +1225,8 @@ export default function RegisterPage() {
               {/* Step 2: Location */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Location Information</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Location Information</h2>
+                  <p className="text-sm text-gray-600 mb-6">Fields marked with {REQUIRED_MARK} are required.</p>
 
                   <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -1101,9 +1236,7 @@ export default function RegisterPage() {
                     <select
                       {...register('country')}
                       id="country"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.country ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('country')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                     >
                       <option value="">Select your country</option>
                       {countries.map((country) => (
@@ -1124,9 +1257,7 @@ export default function RegisterPage() {
                       <select
                         {...register('nationality')}
                         id="nationality"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.nationality ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('nationality')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                       >
                         <option value="">Select your nationality</option>
                         {countries.map((country) => (
@@ -1143,15 +1274,13 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                      City *
+                      City {REQUIRED_MARK}
                     </label>
                     <input
                       {...register('city')}
                       type="text"
                       id="city"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.city ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('city')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="Windhoek"
                     />
                     {errors.city && (
@@ -1167,9 +1296,7 @@ export default function RegisterPage() {
                       {...register('address')}
                       id="address"
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.address ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('address')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="Street address, postal code, etc."
                     />
                     {errors.address && (
@@ -1182,7 +1309,8 @@ export default function RegisterPage() {
               {/* Step 3: Organization */}
               {currentStep === 3 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Organization Details</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Organization Details</h2>
+                  <p className="text-sm text-gray-600 mb-6">Fields marked with {REQUIRED_MARK} are required.</p>
 
                   <div>
                     <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1192,9 +1320,7 @@ export default function RegisterPage() {
                       {...register('organization')}
                       type="text"
                       id="organization"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.organization ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('organization')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="e.g., University of Namibia"
                     />
                     {errors.organization && (
@@ -1217,9 +1343,15 @@ export default function RegisterPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Participation Category <span className="text-red-500">*</span>
+                      Participation Category {REQUIRED_MARK}
                     </label>
-                    <div className="space-y-3">
+                    <div
+                      className={`space-y-3 ${
+                        errors.category || fieldHighlightClass('category')
+                          ? 'ring-2 ring-red-100 border border-red-400 rounded-lg p-3'
+                          : ''
+                      }`}
+                    >
                       {categories.map((category) => (
                         <label
                           key={category.value}
@@ -1278,9 +1410,7 @@ export default function RegisterPage() {
                           {...register('passportNumber')}
                           type="text"
                           id="passportNumber"
-                          className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.passportNumber ? 'border-red-500' : 'border-gray-300'
-                          } focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono`}
+                          className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('passportNumber')} focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono`}
                           placeholder="A12345678"
                         />
                         {errors.passportNumber && (
@@ -1297,9 +1427,7 @@ export default function RegisterPage() {
                             {...register('passportExpiry')}
                             type="date"
                             id="passportExpiry"
-                            className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.passportExpiry ? 'border-red-500' : 'border-gray-300'
-                            } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                            className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('passportExpiry')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                           />
                           {errors.passportExpiry && (
                             <p className="mt-1 text-sm text-red-600">{errors.passportExpiry.message}</p>
@@ -1316,9 +1444,7 @@ export default function RegisterPage() {
                           <select
                             {...register('passportIssuingCountry')}
                             id="passportIssuingCountry"
-                            className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.passportIssuingCountry ? 'border-red-500' : 'border-gray-300'
-                            } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                            className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('passportIssuingCountry')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                           >
                             <option value="">Select country</option>
                             {countries.map((country) => (
@@ -1478,7 +1604,11 @@ export default function RegisterPage() {
                               }
                             }}
                             className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.passportScan && !passportFile ? 'border-red-500' : 'border-gray-300'
+                              errors.passportScan && !passportFile
+                                ? 'border-red-500 ring-2 ring-red-100'
+                                : !canProceedFromCurrentStep && isInternational && !passportFile
+                                  ? 'border-red-500 ring-2 ring-red-100'
+                                  : 'border-gray-300'
                             } focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100`}
                           />
                         </div>
@@ -1654,9 +1784,7 @@ export default function RegisterPage() {
                       {...register('emergencyContactName')}
                       type="text"
                       id="emergencyContactName"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.emergencyContactName ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactName')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="Full legal name"
                     />
                     {errors.emergencyContactName && (
@@ -1672,9 +1800,7 @@ export default function RegisterPage() {
                       <select
                         {...register('emergencyContactRelationship')}
                         id="emergencyContactRelationship"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.emergencyContactRelationship ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactRelationship')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                       >
                         <option value="">Select relationship</option>
                         {relationshipOptions.map((option) => (
@@ -1696,9 +1822,7 @@ export default function RegisterPage() {
                         {...register('emergencyContactPhone')}
                         type="tel"
                         id="emergencyContactPhone"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.emergencyContactPhone ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactPhone')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="+264 000 000 000"
                       />
                       {errors.emergencyContactPhone && (
@@ -1715,9 +1839,7 @@ export default function RegisterPage() {
                       {...register('emergencyContactEmail')}
                       type="email"
                       id="emergencyContactEmail"
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.emergencyContactEmail ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactEmail')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="contact@example.com"
                     />
                     {errors.emergencyContactEmail && (
@@ -1733,9 +1855,7 @@ export default function RegisterPage() {
                       {...register('emergencyContactAddress')}
                       id="emergencyContactAddress"
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-lg border ${
-                        errors.emergencyContactAddress ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                      className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactAddress')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                       placeholder="Street address, city, state/province, postal code"
                     />
                     {errors.emergencyContactAddress && (
@@ -1751,9 +1871,7 @@ export default function RegisterPage() {
                       <select
                         {...register('emergencyContactCountry')}
                         id="emergencyContactCountry"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.emergencyContactCountry ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactCountry')} focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white`}
                       >
                         <option value="">Select country</option>
                         {countries.map((country) => (
@@ -1775,9 +1893,7 @@ export default function RegisterPage() {
                         {...register('emergencyContactCity')}
                         type="text"
                         id="emergencyContactCity"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.emergencyContactCity ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border ${inputBorderClass('emergencyContactCity')} focus:outline-none focus:ring-2 focus:ring-primary-500`}
                         placeholder="City name"
                       />
                       {errors.emergencyContactCity && (
@@ -1826,7 +1942,13 @@ export default function RegisterPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Conference registration package <span className="text-red-500">*</span>
                     </label>
-                    <div className="space-y-3">
+                    <div
+                      className={`space-y-3 ${
+                        errors.registrationPackage || fieldHighlightClass('registrationPackage')
+                          ? 'ring-2 ring-red-100 border border-red-400 rounded-xl p-3'
+                          : ''
+                      }`}
+                    >
                       {REGISTRATION_PACKAGES.map((pkg) => {
                         const tier = getRegistrationPricingTier()
                         const usd = packageUsdForTier(pkg, tier)
@@ -2090,7 +2212,13 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="btn-primary ml-auto flex items-center gap-2"
+                    disabled={!canProceedFromCurrentStep}
+                    className="btn-primary ml-auto flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      !canProceedFromCurrentStep
+                        ? 'Complete all required fields (*) on this step first'
+                        : undefined
+                    }
                   >
                     Next
                     <FiArrowRight />
@@ -2127,6 +2255,7 @@ export default function RegisterPage() {
                       const ok = await trigger(fields, { shouldFocus: true })
                       if (!ok) {
                         showToast.error('Please complete all required fields before review.')
+                        focusFirstInvalidField(fields)
                         return
                       }
                       if (isInternational && !passportFile) {
@@ -2135,12 +2264,19 @@ export default function RegisterPage() {
                           message: 'Passport scan is required for international attendees',
                         })
                         setCurrentStep(4)
+                        focusFirstInvalidField(['passportNumber'])
                         showToast.error('Please upload your passport scan.')
                         return
                       }
                       setShowPreview(true)
                     }}
-                    className="btn-primary ml-auto flex items-center gap-2"
+                    disabled={!canReviewAndSubmit}
+                    className="btn-primary ml-auto flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      !canReviewAndSubmit
+                        ? 'Complete all required fields on every step first'
+                        : undefined
+                    }
                   >
                     <FiEye />
                     Review & Submit
