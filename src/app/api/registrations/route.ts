@@ -26,8 +26,23 @@ const REGISTRATION_DATE_FIELDS = [
   'travelInsuranceExpiry',
 ] as const
 
+const REGISTRATION_OPTIONAL_SELECT_FIELDS = [
+  'visaStatus',
+  'nationalIdType',
+  'bloodType',
+  'tshirtSize',
+] as const
+
 function stripEmptyRegistrationDates(data: Record<string, unknown>): void {
   for (const key of REGISTRATION_DATE_FIELDS) {
+    if (data[key] === '') {
+      delete data[key]
+    }
+  }
+}
+
+function stripEmptyOptionalSelects(data: Record<string, unknown>): void {
+  for (const key of REGISTRATION_OPTIONAL_SELECT_FIELDS) {
     if (data[key] === '') {
       delete data[key]
     }
@@ -835,6 +850,7 @@ export async function POST(request: NextRequest) {
     })
 
     stripEmptyRegistrationDates(registrationData)
+    stripEmptyOptionalSelects(registrationData)
 
     // Create registration in Payload CMS
     console.log('💾 Creating registration in Payload...')

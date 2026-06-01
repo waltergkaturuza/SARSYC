@@ -22,6 +22,14 @@ import {
   SARSYC_BANK_TRANSFER_DETAILS,
 } from '@/lib/registrationBankTransfer'
 
+/** HTML selects submit "" for the placeholder option; treat as omitted for optional enums */
+function optionalSelectEnum<const T extends readonly [string, ...string[]]>(values: T) {
+  return z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.enum(values).optional(),
+  )
+}
+
 // Comprehensive Validation Schema matching backend
 const registrationSchema = z.object({
   // Personal Information
@@ -50,14 +58,14 @@ const registrationSchema = z.object({
   passportExpiry: z.string().optional(),
   passportIssuingCountry: z.string().optional(),
   visaRequired: z.boolean().optional(),
-  visaStatus: z.enum(['not-applied', 'applied-pending', 'approved', 'denied']).optional(),
+  visaStatus: optionalSelectEnum(['not-applied', 'applied-pending', 'approved', 'denied'] as const),
   visaApplicationDate: z.string().optional(),
   visaNumber: z.string().optional(),
   visaInvitationLetterRequired: z.boolean().optional(),
   
   // National ID (for non-international)
   nationalIdNumber: z.string().optional(),
-  nationalIdType: z.enum(['national-id', 'drivers-license', 'other']).optional(),
+  nationalIdType: optionalSelectEnum(['national-id', 'drivers-license', 'other'] as const),
   
   // Emergency Contact
   emergencyContactName: z.string().min(2, 'Emergency contact name is required'),
@@ -88,7 +96,17 @@ const registrationSchema = z.object({
   insuranceProvider: z.string().optional(),
   insurancePolicyNumber: z.string().optional(),
   medicalConditions: z.string().optional(),
-  bloodType: z.enum(['a-positive', 'a-negative', 'b-positive', 'b-negative', 'ab-positive', 'ab-negative', 'o-positive', 'o-negative', 'unknown']).optional(),
+  bloodType: optionalSelectEnum([
+    'a-positive',
+    'a-negative',
+    'b-positive',
+    'b-negative',
+    'ab-positive',
+    'ab-negative',
+    'o-positive',
+    'o-negative',
+    'unknown',
+  ] as const),
   
   // Participation
   registrationPackage: z.enum(
@@ -100,7 +118,7 @@ const registrationSchema = z.object({
   }),
   dietaryRestrictions: z.array(z.string()).optional(),
   accessibilityNeeds: z.string().optional(),
-  tshirtSize: z.enum(['xs', 's', 'm', 'l', 'xl', 'xxl']).optional(),
+  tshirtSize: optionalSelectEnum(['xs', 's', 'm', 'l', 'xl', 'xxl'] as const),
 }).refine((data) => {
   // If international, passport fields are required
   if (data.isInternational) {
