@@ -1,12 +1,11 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX, FiAlertCircle } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
-import { extractPassportData, mapCountryCode } from '@/lib/passportExtractor'
 import { showToast } from '@/lib/toast'
 import {
   REGISTRATION_PACKAGES,
@@ -50,7 +49,6 @@ const registrationSchema = z.object({
   passportNumber: z.string().optional(),
   passportExpiry: z.string().optional(),
   passportIssuingCountry: z.string().optional(),
-  passportScan: z.any().optional(), // File upload - will be handled separately
   visaRequired: z.boolean().optional(),
   visaStatus: z.enum(['not-applied', 'applied-pending', 'approved', 'denied']).optional(),
   visaApplicationDate: z.string().optional(),
@@ -206,32 +204,20 @@ function isStepComplete(
   step: number,
   values: RegistrationFormData,
   isInternational: boolean,
-  passportFile: File | null,
 ): boolean {
   const fields = getStepRequiredFields(step, isInternational)
   if (fields.length === 0 && step === 4) return true
-  const fieldsOk = fields.every((field) => isFieldFilled(values[field]))
-  if (step === 4 && isInternational) {
-    return fieldsOk && Boolean(passportFile)
-  }
-  return fieldsOk
+  return fields.every((field) => isFieldFilled(values[field]))
 }
 
 function getMissingStepFieldLabels(
   step: number,
   values: RegistrationFormData,
   isInternational: boolean,
-  passportFile: File | null,
 ): string[] {
-  const missing = getStepRequiredFields(step, isInternational)
+  return getStepRequiredFields(step, isInternational)
     .filter((field) => !isFieldFilled(values[field]))
     .map((field) => FIELD_LABELS[field] ?? field)
-
-  if (step === 4 && isInternational && !passportFile) {
-    missing.push('Passport scan/copy')
-  }
-
-  return missing
 }
 
 function focusFirstInvalidField(fields: (keyof RegistrationFormData)[]) {
@@ -245,11 +231,54 @@ function focusFirstInvalidField(fields: (keyof RegistrationFormData)[]) {
       return
     }
   }
-  const passportEl = document.querySelector('#passportScan')
+  const passportEl = document.querySelector('#passportNumber')
   if (passportEl) {
     passportEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
     ;(passportEl as HTMLElement).focus()
   }
+}
+
+function formatValidationErrors(fieldErrors: FieldErrors<RegistrationFormData>): string {
+  const parts: string[] = []
+  for (const [key, err] of Object.entries(fieldErrors)) {
+    if (!err) continue
+    const label = FIELD_LABELS[key as keyof RegistrationFormData] ?? key
+    const msg =
+      typeof err === 'object' && err && 'message' in err && err.message
+        ? String(err.message)
+        : 'Required'
+    parts.push(`${label}: ${msg}`)
+  }
+  if (parts.length === 0) return 'Please check the highlighted required fields.'
+  return parts.slice(0, 4).join('. ') + (parts.length > 4 ? '…' : '')
+}
+
+function navigateToErrorFields(
+  errorFields: string[],
+  setCurrentStep: (step: number) => void,
+) {
+  if (
+    errorFields.some((f) =>
+      ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender'].includes(f),
+    )
+  ) {
+    setCurrentStep(1)
+  } else if (errorFields.some((f) => ['country', 'nationality', 'city', 'address'].includes(f))) {
+    setCurrentStep(2)
+  } else if (errorFields.some((f) => ['organization', 'category'].includes(f))) {
+    setCurrentStep(3)
+  } else if (
+    errorFields.some((f) =>
+      ['passportNumber', 'passportExpiry', 'passportIssuingCountry'].includes(f),
+    )
+  ) {
+    setCurrentStep(4)
+  } else if (errorFields.some((f) => f.startsWith('emergencyContact'))) {
+    setCurrentStep(5)
+  } else if (errorFields.includes('registrationPackage')) {
+    setCurrentStep(6)
+  }
+  focusFirstInvalidField(errorFields as (keyof RegistrationFormData)[])
 }
 
 const categories = [
@@ -334,11 +363,9 @@ export default function RegisterPage() {
   const [savedPayloadId, setSavedPayloadId] = useState<string | null>(null)
   const [paymentRetryBusy, setPaymentRetryBusy] = useState(false)
   const [registrationId, setRegistrationId] = useState('')
-  const [passportFile, setPassportFile] = useState<File | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [isExtracting, setIsExtracting] = useState(false)
-  const [extractionStatus, setExtractionStatus] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [duplicatePaymentUrl, setDuplicatePaymentUrl] = useState<string | null>(null)
 
   const {
     register,
@@ -372,21 +399,20 @@ export default function RegisterPage() {
         currentStep,
         formValues as RegistrationFormData,
         Boolean(isInternational),
-        passportFile,
       ),
-    [currentStep, formValues, isInternational, passportFile],
+    [currentStep, formValues, isInternational],
   )
 
   const canReviewAndSubmit = useMemo(() => {
     for (let step = 1; step <= steps.length; step += 1) {
       if (
-        !isStepComplete(step, formValues as RegistrationFormData, Boolean(isInternational), passportFile)
+        !isStepComplete(step, formValues as RegistrationFormData, Boolean(isInternational))
       ) {
         return false
       }
     }
     return true
-  }, [formValues, isInternational, passportFile])
+  }, [formValues, isInternational])
 
   const missingCurrentStepFields = useMemo(
     () =>
@@ -394,9 +420,8 @@ export default function RegisterPage() {
         currentStep,
         formValues as RegistrationFormData,
         Boolean(isInternational),
-        passportFile,
       ),
-    [currentStep, formValues, isInternational, passportFile],
+    [currentStep, formValues, isInternational],
   )
 
   const fieldHighlightClass = (field: keyof RegistrationFormData, required = true) => {
@@ -465,109 +490,13 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true)
     setSubmitError(null)
+    setDuplicatePaymentUrl(null)
+    setShowPreview(false)
     
     try {
-      // Validate all fields before submission
-      const isValid = await trigger()
-      if (!isValid) {
-        // Find the first error and scroll to it
-        const firstErrorField = Object.keys(errors)[0] as keyof RegistrationFormData
-        if (firstErrorField) {
-          const errorElement = document.querySelector(`[name="${firstErrorField}"]`) || 
-                              document.querySelector(`#${firstErrorField}`)
-          if (errorElement) {
-            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            ;(errorElement as HTMLElement).focus()
-          }
-        }
-        
-        // Find which step has errors and navigate there
-        const errorFields = Object.keys(errors)
-        if (errorFields.some(f => ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender'].includes(f))) {
-          setCurrentStep(1)
-        } else if (errorFields.some(f => ['country', 'nationality', 'city', 'address'].includes(f))) {
-          setCurrentStep(2)
-        } else if (errorFields.some(f => ['organization', 'category'].includes(f))) {
-          setCurrentStep(3)
-        } else if (errorFields.includes('registrationPackage')) {
-          setCurrentStep(6)
-        } else if (errorFields.some(f => ['passportNumber', 'passportExpiry', 'passportIssuingCountry', 'passportScan'].includes(f))) {
-          setCurrentStep(4)
-        } else if (errorFields.some(f => f.startsWith('emergencyContact'))) {
-          setCurrentStep(5)
-        }
-        
-        setSubmitError('Please fill in all required fields. Check the highlighted fields above.')
-        setIsSubmitting(false)
-        return
-      }
+      const registrationPayload = { ...data }
 
-      // Validate passport scan for international attendees
-      if (data.isInternational && !passportFile) {
-        setError('passportScan', {
-          type: 'manual',
-          message: 'Passport scan is required for international attendees'
-        })
-        setCurrentStep(4)
-        const passportScanInput = document.querySelector('#passportScan')
-        if (passportScanInput) {
-          passportScanInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          ;(passportScanInput as HTMLElement).focus()
-        }
-        setSubmitError('Please upload your passport scan.')
-        setIsSubmitting(false)
-        return
-      }
-
-      // CLIENT-SIDE UPLOAD: Upload passport file to dedicated upload endpoint first
-      // This bypasses the 4.5MB API limit and improves performance
-      let passportBlobUrl: string | null = null
-      if (passportFile) {
-        try {
-          showToast.loading('Uploading passport scan...')
-          console.log('📤 Uploading passport file to upload endpoint...', {
-            name: passportFile.name,
-            size: passportFile.size,
-            type: passportFile.type,
-          })
-
-          // Upload to dedicated upload endpoint
-          // Include email to create consistent filename and prevent duplicates
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', passportFile)
-          uploadFormData.append('email', data.email) // Include email for duplicate prevention
-
-          const uploadResponse = await fetch('/api/upload/passport', {
-            method: 'POST',
-            body: uploadFormData,
-          })
-
-          if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}))
-            throw new Error(errorData.error || 'Upload failed')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          passportBlobUrl = uploadResult.url
-          console.log('✅ Passport file uploaded to Vercel Blob:', passportBlobUrl)
-          showToast.success('Passport scan uploaded successfully!')
-        } catch (uploadError: any) {
-          console.error('❌ Passport upload error:', uploadError)
-          showToast.error('Failed to upload passport scan. Please try again.')
-          setSubmitError('Failed to upload passport scan. Please try again.')
-          setIsSubmitting(false)
-          return
-        }
-      }
-
-      // Create JSON payload (no FormData needed - file is already uploaded)
-      const registrationPayload = {
-        ...data,
-        // Replace passportScan file with the blob URL
-        passportScanUrl: passportBlobUrl, // We'll handle this in the API
-      }
-
-      // Submit to Payload CMS API as JSON (much smaller payload)
+      // Submit to Payload CMS API as JSON
       const response = await fetch('/api/registrations', {
         method: 'POST',
         headers: {
@@ -671,13 +600,20 @@ export default function RegisterPage() {
         
         // Handle duplicate registration (409 Conflict)
         if (response.status === 409) {
-          errorMessage = errorData.error || 'You have already registered for this conference.'
+          errorMessage =
+            errorData.error ||
+            'You have already registered for SARSYC VI with this email address.'
           if (errorData.existingRegistrationId) {
-            errorMessage += ` Your existing registration ID is: ${errorData.existingRegistrationId}`
+            errorMessage += ` Your registration ID is ${errorData.existingRegistrationId}.`
           }
-          if (errorData.details) {
-            errorMessage += ` (${errorData.details})`
+          if (typeof errorData.resumePaymentHint === 'string') {
+            errorMessage += ` ${errorData.resumePaymentHint}`
           }
+          if (typeof errorData.completePaymentUrl === 'string') {
+            setDuplicatePaymentUrl(errorData.completePaymentUrl)
+          }
+          setError('email', { type: 'server', message: errorMessage })
+          setCurrentStep(1)
           showToast.error(errorMessage)
         } else {
           // For 400 errors, show more details
@@ -718,6 +654,14 @@ export default function RegisterPage() {
     }
   }
 
+  const handleInvalidSubmit = (fieldErrors: FieldErrors<RegistrationFormData>) => {
+    setShowPreview(false)
+    const message = formatValidationErrors(fieldErrors)
+    setSubmitError(message)
+    showToast.error(message)
+    navigateToErrorFields(Object.keys(fieldErrors), setCurrentStep)
+  }
+
   const nextStep = async () => {
     const fieldsToValidate = getStepRequiredFields(currentStep, Boolean(isInternational))
 
@@ -728,16 +672,6 @@ export default function RegisterPage() {
         showToast.error('Please complete all required fields marked with *.')
         return
       }
-    }
-
-    if (currentStep === 4 && isInternational && !passportFile) {
-      setError('passportScan', {
-        type: 'manual',
-        message: 'Passport scan is required for international attendees',
-      })
-      focusFirstInvalidField(['passportNumber'])
-      showToast.error('Please upload your passport scan.')
-      return
     }
 
     if (currentStep < steps.length) {
@@ -1087,8 +1021,16 @@ export default function RegisterPage() {
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="ml-3">
+                  <div className="ml-3 space-y-2">
                     <p className="text-sm text-red-700 font-medium">{submitError}</p>
+                    {duplicatePaymentUrl && (
+                      <p className="text-sm text-red-700">
+                        <a href={duplicatePaymentUrl} className="font-semibold underline hover:text-red-900">
+                          Complete your payment here
+                        </a>
+                        {' '}(use your registration ID and email).
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1457,190 +1399,6 @@ export default function RegisterPage() {
                             <p className="mt-1 text-sm text-red-600">{errors.passportIssuingCountry.message}</p>
                           )}
                         </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="passportScan" className="block text-sm font-medium text-gray-700 mb-2">
-                          Passport Scan/Copy <span className="text-red-500">*</span>
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            id="passportScan"
-                            type="file"
-                            accept="image/*,application/pdf"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                // Validate file size (5MB max)
-                                if (file.size > 5 * 1024 * 1024) {
-                                  setError('passportScan', {
-                                    type: 'manual',
-                                    message: 'File size must be less than 5MB'
-                                  })
-                                  e.target.value = ''
-                                  setPassportFile(null)
-                                  return
-                                }
-                                // Validate file type (only images for OCR, PDFs need server-side processing)
-                                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
-                                if (!validTypes.includes(file.type)) {
-                                  setError('passportScan', {
-                                    type: 'manual',
-                                    message: 'Please upload a PDF, JPG, or PNG file'
-                                  })
-                                  e.target.value = ''
-                                  setPassportFile(null)
-                                  return
-                                }
-                                
-                                setPassportFile(file)
-                                clearErrors('passportScan')
-                                // Also clear any manual errors set elsewhere
-                                setSubmitError(null)
-                                
-                                // Extract passport data automatically (only for images)
-                                if (file.type.startsWith('image/')) {
-                                  setIsExtracting(true)
-                                  setExtractionStatus('Extracting passport information...')
-                                  
-                                  // Show warning about OCR accuracy
-                                  showToast.info('⚠️ OCR extraction may not be 100% accurate. Please review all extracted information carefully before submitting.')
-                                  
-                                  try {
-                                    const extracted = await extractPassportData(file)
-                                    
-                                    if (extracted.confidence && extracted.confidence > 0) {
-                                      // Auto-fill form fields with extracted data
-                                      if (extracted.passportNumber) {
-                                        setValue('passportNumber', extracted.passportNumber)
-                                        setExtractionStatus(`✓ Passport number extracted: ${extracted.passportNumber}`)
-                                      }
-                                      
-                                      if (extracted.expiryDate) {
-                                        setValue('passportExpiry', extracted.expiryDate)
-                                        setExtractionStatus(prev => prev + `\n✓ Expiry date extracted: ${extracted.expiryDate}`)
-                                      }
-                                      
-                                      if (extracted.dateOfBirth) {
-                                        setValue('dateOfBirth', extracted.dateOfBirth)
-                                        setExtractionStatus(prev => prev + `\n✓ Date of birth extracted: ${extracted.dateOfBirth}`)
-                                      }
-                                      
-                                      if (extracted.gender) {
-                                        setValue('gender', extracted.gender)
-                                        setExtractionStatus(prev => prev + `\n✓ Gender extracted: ${extracted.gender}`)
-                                      }
-                                      
-                                      if (extracted.surname) {
-                                        setValue('lastName', extracted.surname)
-                                        setExtractionStatus(prev => prev + `\n✓ Surname extracted: ${extracted.surname}`)
-                                      }
-                                      
-                                      if (extracted.givenNames) {
-                                        const nameParts = extracted.givenNames.split(' ')
-                                        if (nameParts.length > 0) {
-                                          setValue('firstName', nameParts[0])
-                                          if (nameParts.length > 1) {
-                                            // If there are multiple given names, use first one for firstName
-                                            setExtractionStatus(prev => prev + `\n✓ First name extracted: ${nameParts[0]}`)
-                                          }
-                                        }
-                                      }
-                                      
-                                      // Map country codes to full country codes
-                                      if (extracted.nationality) {
-                                        const countryCode = mapCountryCode(extracted.nationality)
-                                        if (countryCode) {
-                                          const country = countries.find(c => c.value === countryCode)
-                                          if (country) {
-                                            setValue('nationality', countryCode)
-                                            setExtractionStatus(prev => prev + `\n✓ Nationality extracted: ${country.label}`)
-                                          }
-                                        }
-                                      }
-                                      
-                                      if (extracted.issuingCountry) {
-                                        const countryCode = mapCountryCode(extracted.issuingCountry)
-                                        if (countryCode) {
-                                          const country = countries.find(c => c.value === countryCode)
-                                          if (country) {
-                                            setValue('passportIssuingCountry', countryCode)
-                                            setExtractionStatus(prev => prev + `\n✓ Issuing country extracted: ${country.label}`)
-                                          }
-                                        }
-                                      }
-                                      
-                                      // Trigger validation for updated fields
-                                      await trigger(['passportNumber', 'passportExpiry', 'passportIssuingCountry', 'dateOfBirth', 'gender', 'firstName', 'lastName', 'nationality'])
-                                      
-                                      setTimeout(() => {
-                                        setExtractionStatus(null)
-                                      }, 5000)
-                                    } else {
-                                      setExtractionStatus('Could not extract passport data. Please fill manually.')
-                                      setTimeout(() => {
-                                        setExtractionStatus(null)
-                                      }, 3000)
-                                    }
-                                  } catch (error) {
-                                    console.error('Error extracting passport data:', error)
-                                    setExtractionStatus('Error extracting data. Please fill manually.')
-                                    setTimeout(() => {
-                                      setExtractionStatus(null)
-                                    }, 3000)
-                                  } finally {
-                                    setIsExtracting(false)
-                                  }
-                                } else {
-                                  // For PDF files, show message that extraction is not available
-                                  setExtractionStatus('PDF files: Please fill passport details manually.')
-                                  setTimeout(() => {
-                                    setExtractionStatus(null)
-                                  }, 3000)
-                                }
-                              } else {
-                                setPassportFile(null)
-                                setExtractionStatus(null)
-                              }
-                            }}
-                            className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.passportScan && !passportFile
-                                ? 'border-red-500 ring-2 ring-red-100'
-                                : !canProceedFromCurrentStep && isInternational && !passportFile
-                                  ? 'border-red-500 ring-2 ring-red-100'
-                                  : 'border-gray-300'
-                            } focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100`}
-                          />
-                        </div>
-                        {errors.passportScan && !passportFile && (
-                          <p className="mt-1 text-sm text-red-600">{errors.passportScan.message as string}</p>
-                        )}
-                        {passportFile && (
-                          <div className="mt-2 space-y-2">
-                            <p className="text-sm text-green-600 flex items-center gap-2">
-                              <FiCheck className="w-4 h-4" />
-                              File selected: {passportFile.name} ({(passportFile.size / 1024).toFixed(1)} KB)
-                            </p>
-                            {isExtracting && (
-                              <div className="flex items-center gap-2 text-sm text-blue-600">
-                                <FiLoader className="w-4 h-4 animate-spin" />
-                                <span>Extracting passport information...</span>
-                              </div>
-                            )}
-                            {extractionStatus && !isExtracting && (
-                              <div className="text-sm bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                                <p className="font-medium text-yellow-800 mb-2">⚠️ OCR Extraction Results:</p>
-                                <p className="text-yellow-700 whitespace-pre-line">{extractionStatus}</p>
-                                <p className="text-xs text-yellow-600 mt-2">
-                                  <strong>Please verify all extracted information carefully.</strong> OCR may not be 100% accurate. Review and correct any errors before submitting.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <p className="mt-1 text-xs text-gray-500">
-                          Upload a clear scan or photo of your passport bio page. Accepted formats: PDF, JPG, PNG. Max size: 5MB.
-                        </p>
                       </div>
 
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -2258,16 +2016,6 @@ export default function RegisterPage() {
                         focusFirstInvalidField(fields)
                         return
                       }
-                      if (isInternational && !passportFile) {
-                        setError('passportScan', {
-                          type: 'manual',
-                          message: 'Passport scan is required for international attendees',
-                        })
-                        setCurrentStep(4)
-                        focusFirstInvalidField(['passportNumber'])
-                        showToast.error('Please upload your passport scan.')
-                        return
-                      }
                       setShowPreview(true)
                     }}
                     disabled={!canReviewAndSubmit}
@@ -2328,14 +2076,13 @@ export default function RegisterPage() {
             <div className="p-6 space-y-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <p className="text-sm text-yellow-800">
-                  <strong>⚠️ Important:</strong> Please review all information carefully, especially passport details if they were auto-extracted. OCR may not be 100% accurate. Make any necessary corrections before submitting.
+                  <strong>Important:</strong> Please review all information carefully, especially passport details, before submitting.
                 </p>
               </div>
 
               {/* Preview Content */}
               <RegistrationPreview
                 data={watch()}
-                passportFile={passportFile}
                 pricingTier={getRegistrationPricingTier()}
               />
 
@@ -2351,16 +2098,7 @@ export default function RegisterPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={async () => {
-                    setShowPreview(false)
-                    // Validate and submit
-                    const isValid = await trigger()
-                    if (isValid) {
-                      handleSubmit(onSubmit)()
-                    } else {
-                      showToast.error('Please fix errors before submitting')
-                    }
-                  }}
+                  onClick={() => handleSubmit(onSubmit, handleInvalidSubmit)()}
                   disabled={isSubmitting}
                   className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -2388,11 +2126,9 @@ export default function RegisterPage() {
 // Preview Component
 function RegistrationPreview({
   data,
-  passportFile,
   pricingTier,
 }: {
   data: any
-  passportFile: File | null
   pricingTier: ReturnType<typeof getRegistrationPricingTier>
 }) {
   const formatDate = (dateStr?: string) => {
@@ -2516,9 +2252,6 @@ function RegistrationPreview({
             Passport & Travel Information
           </h3>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 text-sm">
-            <p className="text-xs text-yellow-800 mb-3 font-medium">
-              ⚠️ Please verify these details carefully - OCR extraction may contain errors
-            </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <span className="font-medium text-gray-700">Passport Number:</span>
@@ -2531,10 +2264,6 @@ function RegistrationPreview({
               <div>
                 <span className="font-medium text-gray-700">Issuing Country:</span>
                 <span className="ml-2 text-gray-900">{getCountryName(data.passportIssuingCountry)}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Passport File:</span>
-                <span className="ml-2 text-gray-900">{passportFile ? `${passportFile.name} (${(passportFile.size / 1024).toFixed(1)} KB)` : 'Not uploaded'}</span>
               </div>
             </div>
           </div>

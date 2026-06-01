@@ -14,6 +14,7 @@ import {
   isRegistrationPackageId,
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
+import { completePaymentPageUrl } from '@/lib/registrationResumePayment'
 
 /** Postgres timestamptz columns reject ""; strip blank optional dates before insert */
 const REGISTRATION_DATE_FIELDS = [
@@ -31,6 +32,38 @@ function stripEmptyRegistrationDates(data: Record<string, unknown>): void {
       delete data[key]
     }
   }
+}
+
+function normalizeRegistrationEmail(email: unknown): string {
+  if (typeof email !== 'string') return ''
+  return email.trim().toLowerCase()
+}
+
+function duplicateRegistrationResponse(
+  existing: { id: string | number; registrationId?: string | null; email?: string | null },
+  duplicateReason: string,
+) {
+  const regHuman = existing.registrationId || String(existing.id)
+  return NextResponse.json(
+    {
+      success: false,
+      error: `You have already registered for SARSYC VI using this ${duplicateReason}. Each person can only register once.`,
+      details: `Registration ID: ${regHuman}`,
+      existingRegistrationId: regHuman,
+      completePaymentUrl: completePaymentPageUrl(regHuman),
+      resumePaymentHint:
+        'If you still need to pay, open the complete payment page and enter your registration ID and the same email you used when registering.',
+    },
+    { status: 409 },
+  )
+}
+
+function isDuplicateKeyError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const err = error as { code?: string; message?: string; constraint?: string }
+  if (err.code === '23505') return true
+  const msg = (err.message || '').toLowerCase()
+  return msg.includes('unique') || msg.includes('duplicate') || msg.includes('already exists')
 }
 
 export const dynamic = 'force-dynamic'
@@ -203,6 +236,10 @@ export async function POST(request: NextRequest) {
     console.log('📩 isInternational:', registrationData.isInternational)
     console.log('📩 passportFile present:', !!passportFile)
     console.log('📩 passportScanUrl present:', !!registrationData.passportScanUrl)
+
+    if (typeof registrationData.email === 'string') {
+      registrationData.email = normalizeRegistrationEmail(registrationData.email)
+    }
     
     const payload = await getPayloadClient()
     await ensureRegistrationsLatestColumns(payload)
@@ -784,15 +821,7 @@ export async function POST(request: NextRequest) {
         matchedField: duplicateReason,
       })
       
-      return NextResponse.json(
-        {
-          success: false,
-          error: `You have already registered for SARSYC VI using this ${duplicateReason}.`,
-          details: `Registration ID: ${existing.registrationId || existing.id}`,
-          existingRegistrationId: existing.registrationId || existing.id,
-        },
-        { status: 409 } // 409 Conflict
-      )
+      return duplicateRegistrationResponse(existing, duplicateReason)
     }
     
     console.log('✅ No duplicate registrations found, proceeding with creation...')
@@ -825,7 +854,21 @@ export async function POST(request: NextRequest) {
         data: createError.data,
         errors: createError.errors,
         status: createError.status,
+        code: createError.code,
       })
+
+      if (isDuplicateKeyError(createError) && registrationData.email) {
+        const existingByEmail = await payload.find({
+          collection: 'registrations',
+          where: { email: { equals: registrationData.email } },
+          limit: 1,
+          overrideAccess: true,
+        })
+        if (existingByEmail.docs[0]) {
+          return duplicateRegistrationResponse(existingByEmail.docs[0], 'email address')
+        }
+      }
+
       throw createError
     }
 
