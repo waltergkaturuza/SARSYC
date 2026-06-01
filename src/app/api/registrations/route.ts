@@ -49,6 +49,22 @@ function stripEmptyOptionalSelects(data: Record<string, unknown>): void {
   }
 }
 
+function normalizeDietaryRestrictions(data: Record<string, unknown>): void {
+  const value = data.dietaryRestrictions
+  if (value === false || value === true || value === '' || value == null) {
+    delete data.dietaryRestrictions
+    return
+  }
+  if (Array.isArray(value)) {
+    const cleaned = value.filter((item) => typeof item === 'string' && item.length > 0)
+    if (cleaned.length === 0) {
+      delete data.dietaryRestrictions
+    } else {
+      data.dietaryRestrictions = cleaned
+    }
+  }
+}
+
 function normalizeRegistrationEmail(email: unknown): string {
   if (typeof email !== 'string') return ''
   return email.trim().toLowerCase()
@@ -851,6 +867,7 @@ export async function POST(request: NextRequest) {
 
     stripEmptyRegistrationDates(registrationData)
     stripEmptyOptionalSelects(registrationData)
+    normalizeDietaryRestrictions(registrationData)
 
     // Create registration in Payload CMS
     console.log('💾 Creating registration in Payload...')

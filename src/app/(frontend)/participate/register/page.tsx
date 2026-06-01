@@ -116,7 +116,14 @@ const registrationSchema = z.object({
   category: z.enum(['student', 'researcher', 'policymaker', 'partner', 'observer'], {
     required_error: 'Please select a participation category',
   }),
-  dietaryRestrictions: z.array(z.string()).optional(),
+  dietaryRestrictions: z.preprocess(
+    (val) => {
+      if (val === false || val === true || val === '' || val == null) return undefined
+      if (Array.isArray(val)) return val.filter((item) => typeof item === 'string' && item.length > 0)
+      return undefined
+    },
+    z.array(z.string()).optional(),
+  ),
   accessibilityNeeds: z.string().optional(),
   tshirtSize: optionalSelectEnum(['xs', 's', 'm', 'l', 'xl', 'xxl'] as const),
 }).refine((data) => {
@@ -403,12 +410,14 @@ export default function RegisterPage() {
       visaInvitationLetterRequired: true,
       accommodationRequired: false,
       hasHealthInsurance: false,
+      dietaryRestrictions: [],
     },
   })
 
   const isInternational = watch('isInternational')
   const visaRequired = watch('visaRequired')
   const hasHealthInsurance = watch('hasHealthInsurance')
+  const dietaryRestrictions = watch('dietaryRestrictions') ?? []
   const formValues = watch()
 
   const canProceedFromCurrentStep = useMemo(
@@ -1769,9 +1778,15 @@ export default function RegisterPage() {
                       {dietaryOptions.map((option) => (
                         <label key={option.value} className="flex items-center">
                           <input
-                            {...register('dietaryRestrictions')}
                             type="checkbox"
                             value={option.value}
+                            checked={dietaryRestrictions.includes(option.value)}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...dietaryRestrictions, option.value]
+                                : dietaryRestrictions.filter((item) => item !== option.value)
+                              setValue('dietaryRestrictions', next, { shouldValidate: true })
+                            }}
                             className="text-primary-600 focus:ring-primary-500 rounded"
                           />
                           <span className="ml-2 text-sm text-gray-700">{option.label}</span>
