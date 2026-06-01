@@ -114,10 +114,10 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       {/* Main Footer */}
-      <div className="container-custom py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Brand Column */}
-          <div className="lg:col-span-2">
+      <div className="container-custom py-10 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-x-12 lg:gap-y-6">
+          {/* Brand Column — spans full left height on desktop */}
+          <div className="md:col-span-2 lg:col-span-2 lg:row-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden">
                 <Image
@@ -221,11 +221,9 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-        </div>
 
-        {/* Newsletter Signup */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="max-w-2xl">
+          {/* Newsletter — sits below Conference / Participate / Resources on desktop */}
+          <div className="md:col-span-2 lg:col-span-3 lg:col-start-3 lg:self-end">
             <h3 className="font-heading font-semibold text-white mb-2">Stay Updated</h3>
             <p className="text-sm mb-4">
               Subscribe to our newsletter for conference updates, speaker announcements, and more.
