@@ -278,17 +278,17 @@ export default async function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="section bg-white">
+      <section className="py-8 md:py-10 bg-white">
         <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {stats.map((stat) => {
               const Icon = stat.icon
               return (
                 <div key={stat.label} className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-                    <Icon className="w-8 h-8 text-primary-600" />
+                  <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 rounded-full mb-3">
+                    <Icon className="w-7 h-7 text-primary-600" />
                   </div>
-                  <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">
                     {stat.value}
                   </div>
                   <div className="text-sm md:text-base text-gray-600">
@@ -302,18 +302,18 @@ export default async function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="section bg-gray-50">
+      <section className="py-8 md:py-10 bg-gray-50">
         <div className="container-custom">
-          <div className="max-w-3xl mx-auto text-center mb-12">
+          <div className="max-w-3xl mx-auto text-center mb-8">
             <h2 className="section-title">What is SARSYC?</h2>
-            <p className="section-subtitle">
+            <p className="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto">
               The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
               for transnational advocacy on youth health and education.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card p-8">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+            <div className="card p-6">
               <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
                 1
               </div>
@@ -324,7 +324,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="card p-8">
+            <div className="card p-6">
               <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
                 2
               </div>
@@ -335,7 +335,7 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="card p-8">
+            <div className="card p-6">
               <div className="w-12 h-12 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-2xl font-bold mb-4">
                 3
               </div>
@@ -462,21 +462,21 @@ export default async function HomePage() {
       )}
 
       {/* CTA Section */}
-      <section className="section bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+      <section className="py-8 md:py-10 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
               Ready to Join Us in Windhoek?
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-lg md:text-xl mb-6 text-white/90">
               Registration is now open for SARSYC VI. Secure your spot today and be part of this transformative
               conference.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
                 Register for SARSYC VI
               </Link>
-              <Link href="/programme" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/programme" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
                 View Programme
               </Link>
             </div>
