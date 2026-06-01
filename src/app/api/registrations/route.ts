@@ -728,15 +728,6 @@ export async function POST(request: NextRequest) {
         // For non-international users, continue without the file
         console.warn('⚠️  Registration proceeding without passport scan (non-international or upload failed)')
       }
-    } else if (registrationData.isInternational === 'true' || registrationData.isInternational === true) {
-      // International user but no passport file provided
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Passport scan is required for international attendees',
-        },
-        { status: 400 }
-      )
     }
 
     // Ensure boolean values are properly converted

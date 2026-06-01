@@ -196,7 +196,7 @@ const Registrations: CollectionConfig = {
       required: false,
       admin: {
         condition: (data: any) => data.isInternational === true,
-        description: 'Upload a clear scan or photo of your passport bio page (required for visa processing). Accepted formats: PDF, JPG, PNG. Max size: 5MB.',
+        description: 'Optional: upload a clear scan or photo of your passport bio page. Accepted formats: PDF, JPG, PNG. Max size: 5MB.',
       },
     },
     {
