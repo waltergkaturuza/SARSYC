@@ -184,7 +184,7 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
 
-        <div className="relative container-custom py-20 md:py-32">
+        <div className="relative container-custom py-10 md:py-14">
           <div className="relative">
             {/* Logo - Floating at Left Corner (Circular, Reduced by Half) */}
             <div className="hidden sm:block absolute -left-4 -top-4 md:-left-8 md:-top-8 w-32 h-32 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 z-10 animate-float">
@@ -204,7 +204,7 @@ export default async function HomePage() {
             <div className="max-w-4xl sm:ml-40 md:ml-48 lg:ml-64 xl:ml-72 text-center">
 
             {/* Conference Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4">
               <FiCalendar className="w-4 h-4" />
               <span className="text-sm font-medium">August 5-8, 2026</span>
               <span className="w-1 h-1 bg-white/60 rounded-full"></span>
@@ -213,7 +213,7 @@ export default async function HomePage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-6 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               The 6th Southern African Regional Students and Youth Conference
             </h1>
             <p className="text-xl md:text-2xl lg:text-3xl text-white/95 font-medium mb-4">
@@ -225,7 +225,7 @@ export default async function HomePage() {
             <p className="text-base md:text-lg text-white/80 mb-2">
               #DrivingRegionalSolidarity
             </p>
-            <p className="text-sm md:text-base text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-base text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
               A flagship, youth-led regional conference convened by{' '}
               <a 
                 href="https://www.saywhat.org.zw" 
@@ -250,22 +250,22 @@ export default async function HomePage() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
                 Register for SARSYC VI
                 <FiArrowRight className="w-5 h-5 ml-2" />
               </Link>
-              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
                 Submit Abstract (Research Indaba)
               </Link>
-              <Link href="/partnerships" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/partnerships" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
                 Become a Partner / Exhibitor
               </Link>
             </div>
 
             {/* Countdown Timer */}
-            <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-semibold text-white mb-6">
+            <div className="mb-4">
+              <h2 className="text-xl md:text-2xl font-semibold text-white mb-4">
                 Conference Countdown
               </h2>
               <CountdownTimer targetDate={conferenceDate} />

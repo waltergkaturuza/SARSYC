@@ -61,13 +61,13 @@ export default function ProgrammePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-10 md:py-12">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Conference Programme
             </h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-xl text-white/90 mb-6">
               Explore sessions, speakers, and schedule for SARSYC VI
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
