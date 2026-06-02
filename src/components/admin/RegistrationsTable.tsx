@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { FiDownload, FiFileText } from 'react-icons/fi'
+import { FiDownload, FiFileText, FiEye } from 'react-icons/fi'
+import RegistrationViewModal from '@/components/admin/RegistrationViewModal'
 import {
   getRegistrationPackage,
   getRegistrationPricingTier,
@@ -45,6 +46,7 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [viewRegistrationId, setViewRegistrationId] = useState<string | null>(null)
 
   function toggle(id: string) {
     setSelected((s) => ({ ...s, [id]: !s[id] }))
@@ -317,12 +319,14 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                       {new Date(d.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a
-                        href={`/admin/registrations/${d.id}`}
-                        className="text-primary-600 hover:text-primary-900 font-medium"
+                      <button
+                        type="button"
+                        onClick={() => setViewRegistrationId(String(d.id))}
+                        className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-800 font-medium"
                       >
-                        View Details
-                      </a>
+                        <FiEye className="w-4 h-4" />
+                        View
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -337,6 +341,11 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
           </div>
         </>
       )}
+
+      <RegistrationViewModal
+        registrationId={viewRegistrationId}
+        onClose={() => setViewRegistrationId(null)}
+      />
     </div>
   )
 }

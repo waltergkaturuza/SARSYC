@@ -8,11 +8,13 @@ import { showToast } from '@/lib/toast'
 type Props = {
   registrationPayloadId: string
   paymentStatus?: string | null
+  variant?: 'light' | 'dark'
 }
 
 export default function RegistrationPaymentSync({
   registrationPayloadId,
   paymentStatus,
+  variant = 'light',
 }: Props) {
   const router = useRouter()
   const [syncing, setSyncing] = useState(false)
@@ -52,7 +54,11 @@ export default function RegistrationPaymentSync({
       type="button"
       onClick={handleSync}
       disabled={syncing}
-      className="inline-flex items-center gap-2 px-4 py-2 border border-primary-200 text-primary-700 rounded-lg hover:bg-primary-50 disabled:opacity-60 text-sm font-medium"
+      className={
+        variant === 'dark'
+          ? 'inline-flex items-center gap-2 px-4 py-2 border border-amber-500/40 text-amber-300 rounded-lg hover:bg-amber-500/10 disabled:opacity-60 text-sm font-medium w-full justify-center mt-1'
+          : 'inline-flex items-center gap-2 px-4 py-2 border border-primary-200 text-primary-700 rounded-lg hover:bg-primary-50 disabled:opacity-60 text-sm font-medium'
+      }
     >
       {syncing ? <FiLoader className="animate-spin" /> : <FiRefreshCw />}
       Sync with Stanbic
