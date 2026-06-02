@@ -182,7 +182,7 @@ export default async function HomePage() {
           sizes="100vw"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/85 via-primary-800/70 to-secondary-900/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
 
         <div className="relative container-custom py-20 md:py-32">
           <div className="relative">
