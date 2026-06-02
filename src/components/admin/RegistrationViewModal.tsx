@@ -7,12 +7,10 @@ import {
   FiX,
   FiMail,
   FiPhone,
-  FiGlobe,
   FiCheck,
   FiLoader,
   FiEdit2,
-  FiAlertTriangle,
-  FiShield,
+  FiPaperclip,
 } from 'react-icons/fi'
 import { showToast } from '@/lib/toast'
 import {
@@ -24,7 +22,15 @@ import {
 } from '@/lib/registrationPackages'
 import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTransfer'
 import RegistrationPaymentSync from '@/components/admin/RegistrationPaymentSync'
-import { buildAdminRegistrationPatch } from '@/lib/admin/registrationAdminEdit'
+import { countries } from '@/lib/countries'
+import {
+  BLOOD_TYPE_OPTIONS,
+  DIETARY_OPTIONS,
+  EMERGENCY_RELATIONSHIP_OPTIONS,
+  NATIONAL_ID_TYPE_OPTIONS,
+  VISA_STATUS_OPTIONS,
+  buildAdminRegistrationPatch,
+} from '@/lib/admin/registrationAdminEdit'
 
 type RegistrationDoc = Record<string, unknown>
 
@@ -48,6 +54,22 @@ const PAYMENT_OPTIONS = [
   { value: 'waived', label: 'Waived' },
 ] as const
 
+const COUNTRY_LABELS = Object.fromEntries(countries.map((c) => [c.value, c.label]))
+
+const GENDER_LABELS: Record<string, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+  'prefer-not-to-say': 'Prefer not to say',
+}
+
+const SECURITY_STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  'in-progress': 'In Progress',
+  cleared: 'Cleared',
+  flagged: 'Flagged',
+}
+
 type Props = {
   registrationId: string | null
   onClose: () => void
@@ -59,13 +81,51 @@ function initials(first?: string, last?: string): string {
   return a + b || '?'
 }
 
+function countryLabel(value: unknown): string {
+  if (!value) return '—'
+  return COUNTRY_LABELS[String(value)] || String(value)
+}
+
+function optionLabel(
+  value: unknown,
+  options: readonly { value: string; label: string }[],
+): string {
+  if (!value) return '—'
+  const found = options.find((o) => o.value === String(value))
+  return found?.label || String(value)
+}
+
+function formatDate(value: unknown): string {
+  if (!value) return '—'
+  const d = new Date(String(value))
+  if (Number.isNaN(d.getTime())) return String(value)
+  return d.toLocaleDateString('en-GB')
+}
+
+function formatDateTime(value: unknown): string {
+  if (!value) return '—'
+  const d = new Date(String(value))
+  if (Number.isNaN(d.getTime())) return String(value)
+  return d.toLocaleString('en-GB')
+}
+
+function formatYesNo(value: unknown): string {
+  if (value === true) return 'Yes'
+  if (value === false) return 'No'
+  return '—'
+}
+
 function formatDietary(value: unknown): string {
-  if (!value) return 'No special requirements'
-  if (Array.isArray(value)) {
-    const items = value.map(String).filter(Boolean)
-    return items.length ? items.join(', ') : 'No special requirements'
-  }
-  return String(value)
+  if (!value) return 'None'
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === 'string' && value
+      ? [value]
+      : []
+  const items = raw
+    .map((v) => optionLabel(v, DIETARY_OPTIONS))
+    .filter((label) => label !== '—')
+  return items.length ? items.join(', ') : 'None'
 }
 
 function registrationFeeUsd(reg: RegistrationDoc): number {
@@ -84,6 +144,16 @@ function paymentMethodLabel(reg: RegistrationDoc): string {
     return 'Credit / Debit Card (Stanbic)'
   }
   return 'Credit / Debit Card (Stanbic)'
+}
+
+function passportScanUrl(value: unknown): string | null {
+  if (!value) return null
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  if (typeof value === 'object' && value !== null && 'url' in value) {
+    const url = (value as { url?: unknown }).url
+    if (typeof url === 'string' && url.trim()) return url.trim()
+  }
+  return null
 }
 
 export default function RegistrationViewModal({ registrationId, onClose }: Props) {
@@ -252,107 +322,194 @@ export default function RegistrationViewModal({ registrationId, onClose }: Props
         ) : doc ? (
           <>
             <div className="overflow-y-auto flex-1 px-6 py-5">
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid lg:grid-cols-2 gap-6">
                 {/* Left column */}
                 <div className="space-y-6">
-                  <section>
-                    <SectionLabel>Contact information</SectionLabel>
-                    <div className="space-y-2.5">
-                      <ContactRow icon={FiMail} label={String(doc.email || '—')} />
-                      <ContactRow icon={FiPhone} label={String(doc.phone || '—')} />
-                      <ContactRow
-                        icon={FiGlobe}
-                        label={[doc.city, doc.country].filter(Boolean).join(', ') || '—'}
-                      />
-                    </div>
-                  </section>
+                  <DetailCard title="Personal information">
+                    <DetailRow icon={FiMail} label="Email" value={doc.email} />
+                    <DetailRow icon={FiPhone} label="Phone" value={doc.phone} />
+                    <DetailRow label="Date of birth" value={formatDate(doc.dateOfBirth)} />
+                    <DetailRow
+                      label="Gender"
+                      value={doc.gender ? GENDER_LABELS[String(doc.gender)] || doc.gender : '—'}
+                    />
+                    <DetailRow label="Country of residence" value={countryLabel(doc.country)} />
+                    <DetailRow label="Nationality" value={countryLabel(doc.nationality)} />
+                    <DetailRow label="City" value={doc.city} />
+                    <DetailRow label="Address" value={doc.address} multiline />
+                    <DetailRow label="Organization" value={doc.organization} />
+                    <DetailRow label="Position / title" value={doc.organizationPosition} />
+                  </DetailCard>
 
-                  <section>
-                    <SectionLabel>Registration details</SectionLabel>
-                    <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 space-y-0">
-                      <DetailRow label="Category" value={CATEGORY_LABELS[String(doc.category)] || doc.category} />
-                      <DetailRow
-                        label="Package"
-                        value={registrationPackageDisplayName(
-                          typeof doc.registrationPackage === 'string' ? doc.registrationPackage : undefined,
-                        )}
-                      />
-                      <DetailRow label="Nationality" value={doc.nationality || doc.country} />
-                      <DetailRow label="Dietary" value={formatDietary(doc.dietaryRestrictions)} />
-                      <DetailRow
-                        label="Accommodation"
-                        value={
-                          doc.accommodationRequired
-                            ? doc.accommodationPreferences || 'Assistance requested'
-                            : 'Self-arranged'
-                        }
-                      />
-                      <DetailRow label="T-shirt" value={doc.tshirtSize ? String(doc.tshirtSize).toUpperCase() : '—'} />
-                      <DetailRow
-                        label="International"
-                        value={doc.isInternational ? 'Yes' : 'No'}
-                      />
-                      <DetailRow
-                        label="Safeguarding"
-                        value={
-                          doc.safeguardingAcknowledgedAt
-                            ? 'Complete'
-                            : doc.paymentStatus === 'paid' || doc.paymentStatus === 'waived'
-                              ? 'Pending'
-                              : 'N/A until paid'
-                        }
-                      />
-                      <DetailRow
-                        label="Registered"
-                        value={
-                          doc.createdAt
-                            ? new Date(String(doc.createdAt)).toLocaleDateString('en-GB')
-                            : '—'
-                        }
-                      />
-                    </div>
-                  </section>
+                  <DetailCard title="Conference registration">
+                    <DetailRow label="Package" value={registrationPackageDisplayName(
+                      typeof doc.registrationPackage === 'string' ? doc.registrationPackage : undefined,
+                    )} />
+                    <DetailRow
+                      label="Category"
+                      value={CATEGORY_LABELS[String(doc.category)] || doc.category}
+                    />
+                    <DetailRow
+                      label="T-shirt size"
+                      value={doc.tshirtSize ? String(doc.tshirtSize).toUpperCase() : '—'}
+                    />
+                    <DetailRow label="Dietary restrictions" value={formatDietary(doc.dietaryRestrictions)} />
+                    <DetailRow label="Accessibility requirements" value={doc.accessibilityNeeds} multiline />
+                    <DetailRow
+                      label="Registered"
+                      value={doc.createdAt ? formatDate(doc.createdAt) : '—'}
+                    />
+                  </DetailCard>
 
-                  <section>
-                    <SectionLabel>Payment</SectionLabel>
-                    <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4">
-                      <p className="text-2xl font-bold text-white mb-1">
-                        {doc.paymentStatus === 'waived'
-                          ? 'Waived'
-                          : feeUsd > 0
-                            ? `USD ${feeUsd.toLocaleString('en-US')}`
-                            : '—'}
-                      </p>
-                      <p className="text-sm text-slate-400 mb-4">{paymentMethodLabel(doc)}</p>
-                      <label className="block text-xs uppercase tracking-wider text-slate-500 mb-1.5">
-                        Payment status
-                      </label>
-                      <select
-                        value={paymentStatus}
-                        onChange={(e) => setPaymentStatus(e.target.value)}
-                        className="w-full rounded-lg border border-slate-600 bg-slate-800 text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                      >
-                        {PAYMENT_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                      {(paymentStatus === 'pending' || paymentStatus === 'failed') && (
-                        <div className="mt-3">
-                          <RegistrationPaymentSync
-                            registrationPayloadId={registrationId}
-                            paymentStatus={paymentStatus}
-                            variant="dark"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </section>
+                  <DetailCard title="International / ID">
+                    <DetailRow label="International attendee" value={formatYesNo(doc.isInternational)} />
+                    {doc.isInternational ? (
+                      <>
+                        <DetailRow label="Passport number" value={doc.passportNumber} />
+                        <DetailRow label="Passport expiry" value={formatDate(doc.passportExpiry)} />
+                        <DetailRow
+                          label="Passport issuing country"
+                          value={countryLabel(doc.passportIssuingCountry)}
+                        />
+                        <DetailRow label="Visa required" value={formatYesNo(doc.visaRequired)} />
+                        <DetailRow
+                          label="Visa status"
+                          value={optionLabel(doc.visaStatus, VISA_STATUS_OPTIONS)}
+                        />
+                        <DetailRow
+                          label="Visa application date"
+                          value={formatDate(doc.visaApplicationDate)}
+                        />
+                        <DetailRow label="Visa number" value={doc.visaNumber} />
+                        <DetailRow
+                          label="Visa invitation letter"
+                          value={formatYesNo(doc.visaInvitationLetterRequired !== false)}
+                        />
+                        {passportScanUrl(doc.passportScan) ? (
+                          <div className="flex justify-between gap-4 py-2 text-sm border-b border-slate-700/40">
+                            <span className="text-slate-500 shrink-0">Passport scan</span>
+                            <a
+                              href={passportScanUrl(doc.passportScan)!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-right"
+                            >
+                              <FiPaperclip size={14} />
+                              View file
+                            </a>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <DetailRow label="National ID number" value={doc.nationalIdNumber} />
+                        <DetailRow
+                          label="ID type"
+                          value={optionLabel(doc.nationalIdType, NATIONAL_ID_TYPE_OPTIONS)}
+                        />
+                      </>
+                    )}
+                  </DetailCard>
+
+                  <DetailCard title="Emergency contact">
+                    <DetailRow label="Full name" value={doc.emergencyContactName} />
+                    <DetailRow
+                      label="Relationship"
+                      value={optionLabel(doc.emergencyContactRelationship, EMERGENCY_RELATIONSHIP_OPTIONS)}
+                    />
+                    <DetailRow label="Phone" value={doc.emergencyContactPhone} />
+                    <DetailRow label="Email" value={doc.emergencyContactEmail} />
+                    <DetailRow label="Home address" value={doc.emergencyContactAddress} multiline />
+                    <DetailRow label="Country" value={countryLabel(doc.emergencyContactCountry)} />
+                    <DetailRow label="City" value={doc.emergencyContactCity} />
+                    <DetailRow label="Postal / ZIP" value={doc.emergencyContactPostalCode} />
+                  </DetailCard>
                 </div>
 
                 {/* Right column */}
                 <div className="space-y-6">
+                  <DetailCard title="Travel & accommodation">
+                    <DetailRow label="Arrival date" value={formatDate(doc.arrivalDate)} />
+                    <DetailRow label="Departure date" value={formatDate(doc.departureDate)} />
+                    <DetailRow label="Flight number" value={doc.flightNumber} />
+                    {doc.isInternational ? (
+                      <>
+                        <DetailRow label="Travel insurance provider" value={doc.travelInsuranceProvider} />
+                        <DetailRow
+                          label="Travel insurance policy"
+                          value={doc.travelInsurancePolicyNumber}
+                        />
+                        <DetailRow
+                          label="Travel insurance expiry"
+                          value={formatDate(doc.travelInsuranceExpiry)}
+                        />
+                      </>
+                    ) : null}
+                    <DetailRow
+                      label="Accommodation assistance"
+                      value={
+                        doc.accommodationRequired
+                          ? doc.accommodationPreferences || 'Requested'
+                          : 'Self-arranged'
+                      }
+                      multiline={Boolean(doc.accommodationRequired && doc.accommodationPreferences)}
+                    />
+                  </DetailCard>
+
+                  <DetailCard title="Health & medical">
+                    <DetailRow label="Has health insurance" value={formatYesNo(doc.hasHealthInsurance)} />
+                    {doc.hasHealthInsurance ? (
+                      <>
+                        <DetailRow label="Insurance provider" value={doc.insuranceProvider} />
+                        <DetailRow label="Policy number" value={doc.insurancePolicyNumber} />
+                      </>
+                    ) : null}
+                    <DetailRow
+                      label="Blood type"
+                      value={optionLabel(doc.bloodType, BLOOD_TYPE_OPTIONS)}
+                    />
+                    <DetailRow label="Medical conditions / allergies" value={doc.medicalConditions} multiline />
+                  </DetailCard>
+
+                  <DetailCard title="Payment">
+                    <p className="text-2xl font-bold text-white mb-1">
+                      {doc.paymentStatus === 'waived'
+                        ? 'Waived'
+                        : feeUsd > 0
+                          ? `USD ${feeUsd.toLocaleString('en-US')}`
+                          : '—'}
+                    </p>
+                    <p className="text-sm text-slate-400 mb-3">{paymentMethodLabel(doc)}</p>
+                    {typeof doc.stanbicPaymentOrderRef === 'string' && doc.stanbicPaymentOrderRef.trim() ? (
+                      <p className="text-xs font-mono text-slate-500 mb-4 break-all">
+                        Order ref: {doc.stanbicPaymentOrderRef}
+                      </p>
+                    ) : null}
+                    <label className="block text-xs uppercase tracking-wider text-slate-500 mb-1.5">
+                      Payment status
+                    </label>
+                    <select
+                      value={paymentStatus}
+                      onChange={(e) => setPaymentStatus(e.target.value)}
+                      className="w-full rounded-lg border border-slate-600 bg-slate-800 text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                    >
+                      {PAYMENT_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                    {(paymentStatus === 'pending' || paymentStatus === 'failed') && (
+                      <div className="mt-3">
+                        <RegistrationPaymentSync
+                          registrationPayloadId={registrationId}
+                          paymentStatus={paymentStatus}
+                          variant="dark"
+                        />
+                      </div>
+                    )}
+                  </DetailCard>
+
                   <section>
                     <SectionLabel>Registration status</SectionLabel>
                     <div className="flex flex-wrap gap-2">
@@ -373,41 +530,28 @@ export default function RegistrationViewModal({ registrationId, onClose }: Props
                     </div>
                   </section>
 
-                  {Boolean(doc.accessibilityNeeds || doc.medicalConditions) && (
-                    <section className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-4">
-                      <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                        <FiAlertTriangle size={14} />
-                        Special requirements
-                      </div>
-                      {doc.accessibilityNeeds ? (
-                        <p className="text-sm text-slate-300 mb-2">
-                          <span className="text-slate-500">Accessibility: </span>
-                          {String(doc.accessibilityNeeds)}
-                        </p>
-                      ) : null}
-                      {doc.medicalConditions ? (
-                        <p className="text-sm text-slate-300">
-                          <span className="text-slate-500">Medical: </span>
-                          {String(doc.medicalConditions)}
-                        </p>
-                      ) : null}
-                    </section>
-                  )}
-
-                  {doc.securityCheckStatus ? (
-                    <section className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4">
-                      <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                        <FiShield size={14} />
-                        Security check
-                      </div>
-                      <p className="text-sm text-white capitalize">
-                        {String(doc.securityCheckStatus).replace(/-/g, ' ')}
-                      </p>
-                      {doc.securityCheckNotes ? (
-                        <p className="text-sm text-slate-400 mt-2">{String(doc.securityCheckNotes)}</p>
-                      ) : null}
-                    </section>
-                  ) : null}
+                  <DetailCard title="Safeguarding & security">
+                    <DetailRow
+                      label="Safeguarding"
+                      value={
+                        doc.safeguardingAcknowledgedAt
+                          ? `Complete (${formatDateTime(doc.safeguardingAcknowledgedAt)})`
+                          : doc.paymentStatus === 'paid' || doc.paymentStatus === 'waived'
+                            ? 'Pending'
+                            : 'N/A until paid'
+                      }
+                    />
+                    <DetailRow
+                      label="Security check"
+                      value={
+                        doc.securityCheckStatus
+                          ? SECURITY_STATUS_LABELS[String(doc.securityCheckStatus)] ||
+                            String(doc.securityCheckStatus).replace(/-/g, ' ')
+                          : '—'
+                      }
+                    />
+                    <DetailRow label="Security check notes" value={doc.securityCheckNotes} multiline />
+                  </DetailCard>
 
                   <section>
                     <SectionLabel>Admin notes</SectionLabel>
@@ -426,7 +570,7 @@ export default function RegistrationViewModal({ registrationId, onClose }: Props
                     onClick={onClose}
                   >
                     <FiEdit2 size={16} />
-                    Open full edit form (all fields)
+                    Open full edit form
                   </Link>
                 </div>
               </div>
@@ -468,28 +612,39 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function DetailRow({ label, value }: { label: string; value: unknown }) {
+function DetailCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4">
+      <SectionLabel>{title}</SectionLabel>
+      <div className="space-y-0">{children}</div>
+    </section>
+  )
+}
+
+function DetailRow({
+  label,
+  value,
+  icon: Icon,
+  multiline,
+}: {
+  label: string
+  value: unknown
+  icon?: React.ComponentType<{ className?: string; size?: number }>
+  multiline?: boolean
+}) {
   const display =
     value === null || value === undefined || value === '' ? '—' : String(value)
   return (
     <div className="flex justify-between gap-4 py-2 text-sm border-b border-slate-700/40 last:border-0">
-      <span className="text-slate-500 shrink-0">{label}</span>
-      <span className="text-slate-100 text-right">{display}</span>
-    </div>
-  )
-}
-
-function ContactRow({
-  icon: Icon,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string; size?: number }>
-  label: string
-}) {
-  return (
-    <div className="flex items-center gap-3 text-sm text-slate-200">
-      <Icon className="text-amber-400/80 shrink-0" size={16} />
-      <span className="break-all">{label}</span>
+      <span className="text-slate-500 shrink-0 flex items-center gap-2">
+        {Icon ? <Icon className="text-amber-400/80 shrink-0" size={14} /> : null}
+        {label}
+      </span>
+      <span
+        className={`text-slate-100 text-right ${multiline ? 'whitespace-pre-wrap max-w-[60%]' : ''}`}
+      >
+        {display}
+      </span>
     </div>
   )
 }
