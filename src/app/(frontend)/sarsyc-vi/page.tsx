@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
 import dynamic from 'next/dynamic'
@@ -248,31 +249,37 @@ export default function SarsycVIPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
-        </div>
+      <section className="relative overflow-hidden text-white">
+        <Image
+          src="/Sponsership_1.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
 
-        <div className="relative container-custom py-20 md:py-32">
+        <div className="relative container-custom py-10 md:py-14">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4">
               <span className="text-sm font-medium">6th Edition</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               SARSYC VI
             </h1>
             
-            <h2 className="text-2xl md:text-4xl text-white/95 font-semibold mb-4">
+            <h2 className="text-2xl md:text-4xl text-[#1877F2] font-semibold mb-4 [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               Align for Action
             </h2>
             
-            <p className="text-lg md:text-xl text-white/90 mb-12 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
               Sustaining Progress in Youth Health and Education
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
+            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
                 <FiCalendar className="w-6 h-6 mx-auto mb-2" />
                 <div className="font-semibold">August 5-8, 2026</div>
@@ -283,16 +290,16 @@ export default function SarsycVIPage() {
               </div>
             </div>
 
-            <div className="mb-12">
-              <h3 className="text-xl font-semibold text-white mb-6">Countdown to Conference</h3>
+            <div className="mb-10">
+              <h3 className="text-xl font-semibold text-white mb-4">Countdown to Conference</h3>
               <CountdownTimer targetDate="2026-08-05T09:00:00" />
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
                 Register Now
               </Link>
-              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
+              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
                 Submit Abstract
               </Link>
               <DownloadConceptNoteButton />
