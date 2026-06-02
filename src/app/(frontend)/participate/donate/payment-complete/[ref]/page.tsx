@@ -1,9 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiCheckCircle, FiAlertCircle, FiLoader, FiArrowRight } from 'react-icons/fi'
+
+async function verifyDonationPayment(donationId: string, orderRef: string) {
+  const res = await fetch('/api/payments/donate/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      donationId,
+      orderRef: orderRef || undefined,
+    }),
+  })
+  const data = await res.json().catch(() => ({}))
+  return { ok: res.ok, data }
+}
 
 export default function DonatePaymentCompletePage() {
   const params = useParams()
@@ -11,31 +24,51 @@ export default function DonatePaymentCompletePage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'pending' | 'failed'>('loading')
   const [orderRef, setOrderRef] = useState('')
 
-  useEffect(() => {
-    if (!ref) { setStatus('pending'); return }
-    // Extract order ref from query string (N-Genius appends ?ref=<order-ref>)
-    const searchParams = new URLSearchParams(window.location.search)
-    const nRef = searchParams.get('ref') ?? searchParams.get('order-ref') ?? ''
-    setOrderRef(nRef)
-
-    if (!nRef) {
+  const runVerification = useCallback(async () => {
+    if (!ref) {
       setStatus('pending')
       return
     }
 
-    fetch('/api/payments/donate/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderRef: nRef, donationId: ref }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.paid) setStatus('success')
-        else if (data.failed) setStatus('failed')
-        else setStatus('pending')
-      })
-      .catch(() => setStatus('pending'))
+    const searchParams = new URLSearchParams(window.location.search)
+    const nRef = searchParams.get('ref') ?? searchParams.get('order-ref') ?? ''
+    setOrderRef(nRef)
+
+    let result = await verifyDonationPayment(ref, nRef)
+    if (!result.ok && result.data?.error) {
+      setStatus('failed')
+      return
+    }
+
+    if (result.data?.paid) {
+      setStatus('success')
+      return
+    }
+    if (result.data?.failed) {
+      setStatus('failed')
+      return
+    }
+
+    // Gateway can lag a few seconds after bank success — retry with stored order ref.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 2500 : 3000))
+      result = await verifyDonationPayment(ref, nRef)
+      if (result.data?.paid) {
+        setStatus('success')
+        return
+      }
+      if (result.data?.failed) {
+        setStatus('failed')
+        return
+      }
+    }
+
+    setStatus('pending')
   }, [ref])
+
+  useEffect(() => {
+    void runVerification()
+  }, [runVerification])
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
@@ -76,7 +109,20 @@ export default function DonatePaymentCompletePage() {
               minutes. Please check your email, or contact us with reference{' '}
               <span className="font-mono text-gray-200">{ref}</span>.
             </p>
+            {orderRef ? (
+              <p className="text-xs text-gray-500 mb-4 font-mono">Gateway ref: {orderRef}</p>
+            ) : null}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setStatus('loading')
+                  void runVerification()
+                }}
+                className="px-5 py-2.5 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-medium text-sm transition-colors"
+              >
+                Check again
+              </button>
               <Link href="/participate/donate" className="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-medium text-sm transition-colors">
                 Try Again
               </Link>

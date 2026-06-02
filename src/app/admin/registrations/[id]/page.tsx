@@ -11,6 +11,7 @@ import {
 import Image from 'next/image'
 import { format } from 'date-fns'
 import RegistrationActionButtons from '@/components/admin/RegistrationActionButtons'
+import RegistrationPaymentSync from '@/components/admin/RegistrationPaymentSync'
 import { registrationPackageDisplayName } from '@/lib/registrationPackages'
 
 export const revalidate = 0
@@ -709,6 +710,18 @@ export default async function RegistrationDetailPage({ params }: RegistrationDet
                     status={registration.status || 'pending'}
                   />
                 </div>
+
+                {(registration.paymentStatus === 'pending' || registration.paymentStatus === 'failed') && (
+                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-blue-100">
+                    <p className="text-sm text-gray-600">
+                      Card payment not showing as paid? Re-check with Stanbic using the stored order reference.
+                    </p>
+                    <RegistrationPaymentSync
+                      registrationPayloadId={String(registration.id)}
+                      paymentStatus={registration.paymentStatus}
+                    />
+                  </div>
+                )}
 
                 {registration.notes && (
                   <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">

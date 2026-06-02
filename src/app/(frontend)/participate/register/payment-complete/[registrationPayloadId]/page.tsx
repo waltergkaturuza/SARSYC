@@ -1,90 +1,83 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiCheck, FiLoader, FiAlertCircle } from 'react-icons/fi'
 import { showToast } from '@/lib/toast'
 
+async function verifyRegistrationPayment(registrationPayloadId: string, ref: string) {
+  const res = await fetch('/api/payments/stanbic/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      registrationPayloadId,
+      ref: ref || undefined,
+    }),
+  })
+  const data = await res.json().catch(() => ({}))
+  return { ok: res.ok, data }
+}
+
 function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId: string }) {
   const searchParams = useSearchParams()
-  const ref = searchParams.get('ref')
+  const gatewayRef = searchParams.get('ref') ?? searchParams.get('order-ref') ?? ''
 
   const [phase, setPhase] = useState<'loading' | 'success' | 'pending' | 'error'>('loading')
   const [message, setMessage] = useState('')
   const [registrationIdDisplay, setRegistrationIdDisplay] = useState('')
 
-  useEffect(() => {
-    if (!ref) {
+  const runVerification = useCallback(async () => {
+    let result = await verifyRegistrationPayment(registrationPayloadId, gatewayRef)
+
+    if (!result.ok && result.data?.error && !result.data?.pending) {
       setPhase('error')
-      setMessage(
-        'Missing payment reference from Stanbic/N-Genius. Return here from the bank page after paying, or contact sarsyc@saywhat.org.zw.',
-      )
-      showToast.error('Missing payment reference. Open the link from the bank page or contact support.')
+      setMessage(result.data.error || 'Could not verify payment. Please contact sarsyc@saywhat.org.zw.')
+      showToast.error(result.data.error || 'Could not verify payment.')
       return
     }
 
-    let cancelled = false
-    ;(async () => {
-      const verifyOnce = async () =>
-        fetch('/api/payments/stanbic/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ref,
-            registrationPayloadId,
-          }),
-        })
-
-      try {
-        let res = await verifyOnce()
-        // One delayed retry — gateway / cold starts sometimes fail right after bank redirect.
-        if (!cancelled && !res.ok && res.status >= 502) {
-          await new Promise((r) => setTimeout(r, 2800))
-          if (!cancelled) res = await verifyOnce()
-        }
-
-        const data = await res.json().catch(() => ({}))
-
-        if (cancelled) return
-
-        if (!res.ok) {
-          setPhase('error')
-          setMessage(data.error || 'Could not verify payment. Please contact sarsyc@saywhat.org.zw.')
-          showToast.error(data.error || 'Could not verify payment.')
-          return
-        }
-
-        if (data.registrationId) setRegistrationIdDisplay(String(data.registrationId))
-
-        if (data.paid) {
-          setPhase('success')
-          setMessage(
-            'Your payment was received. Check your email for the mandatory safeguarding training link — you must complete that acknowledgment before you are fully registered.',
-          )
-          showToast.success('Payment received — complete safeguarding training from your email.')
-        } else {
-          setPhase('pending')
-          setMessage(
-            'Payment is not confirmed yet or was unsuccessful. If you completed payment, wait a minute and refresh, or email sarsyc@saywhat.org.zw with your registration ID.',
-          )
-          showToast.info(
-            'Payment not confirmed yet. If you paid, wait a moment and refresh — or check your email.',
-          )
-        }
-      } catch {
-        if (!cancelled) {
-          setPhase('error')
-          setMessage('Something went wrong. Please try again or contact sarsyc@saywhat.org.zw.')
-          showToast.error('Something went wrong while verifying payment.')
-        }
-      }
-    })()
-
-    return () => {
-      cancelled = true
+    if (result.data.registrationId) {
+      setRegistrationIdDisplay(String(result.data.registrationId))
     }
-  }, [registrationPayloadId, ref])
+
+    if (result.data.paid) {
+      setPhase('success')
+      setMessage(
+        'Your payment was received. Check your email for the mandatory safeguarding training link — you must complete that acknowledgment before you are fully registered.',
+      )
+      showToast.success('Payment received — complete safeguarding training from your email.')
+      return
+    }
+
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 2500 : 3000))
+      result = await verifyRegistrationPayment(registrationPayloadId, gatewayRef)
+      if (result.data.registrationId) {
+        setRegistrationIdDisplay(String(result.data.registrationId))
+      }
+      if (result.data.paid) {
+        setPhase('success')
+        setMessage(
+          'Your payment was received. Check your email for the mandatory safeguarding training link — you must complete that acknowledgment before you are fully registered.',
+        )
+        showToast.success('Payment received — complete safeguarding training from your email.')
+        return
+      }
+    }
+
+    setPhase('pending')
+    setMessage(
+      'Payment is not confirmed yet or was unsuccessful. If you completed payment, wait a minute and refresh, or email sarsyc@saywhat.org.zw with your registration ID.',
+    )
+    showToast.info(
+      'Payment not confirmed yet. If you paid, wait a moment and refresh — or check your email.',
+    )
+  }, [gatewayRef, registrationPayloadId])
+
+  useEffect(() => {
+    void runVerification()
+  }, [runVerification])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -134,6 +127,16 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
               <p className="text-xs text-gray-400 mb-4 font-mono">ID: {registrationIdDisplay}</p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('loading')
+                  void runVerification()
+                }}
+                className="btn-outline"
+              >
+                Check again
+              </button>
               <Link href="/" className="btn-outline">
                 Home
               </Link>
@@ -151,9 +154,21 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-3">Could not verify payment</h1>
             <p className="text-gray-600 text-sm mb-6">{message}</p>
-            <Link href="/participate/register" className="btn-primary inline-block">
-              Back to registration
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('loading')
+                  void runVerification()
+                }}
+                className="btn-outline"
+              >
+                Try again
+              </button>
+              <Link href="/participate/register" className="btn-primary inline-block">
+                Back to registration
+              </Link>
+            </div>
           </>
         )}
       </div>

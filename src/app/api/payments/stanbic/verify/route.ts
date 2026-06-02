@@ -32,7 +32,8 @@ type VerifyInput = {
 }
 
 async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextResponse> {
-  const { ref, registrationPayloadId: regId, method } = input
+  const { registrationPayloadId: regId, method } = input
+  let ref = input.ref.trim()
 
   if (!stanbicHostedPaymentsConfigured()) {
     logStanbicPaymentEvent(
@@ -69,26 +70,11 @@ async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextRes
     )
   }
 
-  if (!ref) {
-    logStanbicPaymentEvent({
-      event: 'stanbic_return',
-      method,
-      registrationPayloadId: regId || undefined,
-      returnKind: 'error',
-      success: false,
-      paid: false,
-      dbPaymentStatusUpdated: false,
-      verificationHttp: null,
-      verificationApproved: false,
-      verificationError: 'missing_gateway_order_ref_query',
-    })
-    return NextResponse.json({ error: 'ref (gateway order reference) is required' }, { status: 400 })
-  }
   if (!regId) {
     logStanbicPaymentEvent({
       event: 'stanbic_return',
       method,
-      orderReference: ref,
+      orderReference: ref || undefined,
       returnKind: 'error',
       success: false,
       paid: false,
@@ -111,7 +97,7 @@ async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextRes
       event: 'stanbic_return',
       method,
       registrationPayloadId: regId,
-      orderReference: ref,
+      orderReference: ref || undefined,
       returnKind: 'error',
       success: false,
       paid: false,
@@ -140,7 +126,7 @@ async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextRes
       event: 'stanbic_return',
       method,
       registrationPayloadId: regId,
-      orderReference: ref,
+      orderReference: ref || undefined,
       returnKind: 'error',
       success: false,
       paid: false,
@@ -159,6 +145,70 @@ async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextRes
     typeof registration.stanbicPaymentOrderRef === 'string'
       ? registration.stanbicPaymentOrderRef.trim()
       : ''
+
+  if (!ref && storedRef) {
+    ref = storedRef
+  }
+
+  if (!ref) {
+    logStanbicPaymentEvent({
+      event: 'stanbic_return',
+      method,
+      registrationRef,
+      registrationPayloadId: regId,
+      returnKind: 'error',
+      success: false,
+      paid: false,
+      dbPaymentStatusUpdated: false,
+      verificationHttp: null,
+      verificationApproved: false,
+      verificationError: 'missing_gateway_order_ref',
+      email: registration.email,
+      itemDescription: ITEM_DESCRIPTION,
+    })
+    return NextResponse.json({
+      ok: true,
+      paid: false,
+      pending: true,
+      registrationId: registration.registrationId,
+    })
+  }
+
+  if (registration.paymentStatus === 'paid' || registration.paymentStatus === 'waived') {
+    logStanbicPaymentEvent(
+      buildStanbicReturnLogPayload({
+        method,
+        registrationRef,
+        registrationPayloadId: regId,
+        orderReference: ref,
+        itemDescription: ITEM_DESCRIPTION,
+        category: registration.category,
+        email: registration.email,
+        verificationHttp: null,
+        parsed: {
+          paymentStates: ['CAPTURED'],
+          primaryPaymentState: 'CAPTURED',
+          paymentStatus: 'SUCCESS',
+          dbPaymentStatus: 'paid',
+          verificationApproved: true,
+          verificationError: null,
+          description: 'already_paid_in_db',
+          threeDSecure: null,
+          returnKind: 'success',
+          amount: null,
+          currency: null,
+        },
+        dbPaymentStatusUpdated: false,
+      }),
+    )
+    return NextResponse.json({
+      ok: true,
+      paid: true,
+      paymentState: 'CAPTURED',
+      paymentStatus: 'SUCCESS',
+      registrationId: registration.registrationId,
+    })
+  }
 
   if (storedRef && storedRef !== ref) {
     logStanbicPaymentEvent({
