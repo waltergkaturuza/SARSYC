@@ -11,11 +11,11 @@ export default function DonateFAB() {
     pathname?.startsWith('/participate/donate') || pathname?.startsWith('/admin')
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
       <button
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        className="pointer-events-auto bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         aria-label="Back to top"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,7 +26,7 @@ export default function DonateFAB() {
       {!hideDonate && (
         <Link
           href="/participate/donate"
-          className="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-4 py-3 rounded-full shadow-2xl shadow-primary-900/50 transition-all hover:scale-105 active:scale-95 group"
+          className="pointer-events-auto flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-4 py-3 rounded-full shadow-2xl shadow-primary-900/50 transition-all hover:scale-105 active:scale-95 group"
           aria-label="Donate or Sponsor SARSYC VI"
         >
           <FiHeart

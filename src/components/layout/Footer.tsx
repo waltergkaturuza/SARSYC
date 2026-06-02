@@ -234,8 +234,8 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-800">
-        <div className="container-custom py-6">
+      <div className="border-t border-gray-800 relative z-50">
+        <div className="container-custom py-6 pb-28 md:pb-6 pr-48 lg:pr-56">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
             <div className="text-sm text-gray-400 text-center md:text-left">
@@ -262,7 +262,7 @@ export default function Footer() {
             </div>
 
             {/* Legal Links + Admin (low-key, like TNF site) */}
-            <div className="flex items-center gap-4 text-sm">
+            <div className="relative z-50 flex flex-wrap items-center justify-center gap-4 text-sm">
               {footerLinks.legal.slice(0, 2).map((link) => (
                 <Link
                   key={link.name}
@@ -273,8 +273,8 @@ export default function Footer() {
                 </Link>
               ))}
               <Link
-                href="/login"
-                className="text-gray-500 hover:text-gray-400 transition-colors duration-200"
+                href="/login?type=admin"
+                className="text-gray-400 hover:text-white transition-colors duration-200"
                 aria-label="Admin login"
               >
                 Admin

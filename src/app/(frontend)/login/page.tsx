@@ -1,19 +1,33 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiUser, FiAlertCircle, FiArrowRight, FiFileText } from 'react-icons/fi'
 
-export default function LoginPage() {
+type UserType = 'participant' | 'speaker' | 'reviewer' | 'admin'
+
+function parseUserType(value: string | null): UserType {
+  if (value === 'admin' || value === 'speaker' || value === 'reviewer' || value === 'participant') {
+    return value
+  }
+  return 'participant'
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [userType, setUserType] = useState<'participant' | 'speaker' | 'reviewer' | 'admin'>('participant')
+  const [userType, setUserType] = useState<UserType>(() => parseUserType(searchParams.get('type')))
+
+  useEffect(() => {
+    setUserType(parseUserType(searchParams.get('type')))
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -243,5 +257,21 @@ export default function LoginPage() {
         </div>
       </section>
     </>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="section bg-gray-50">
+          <div className="container-custom">
+            <div className="max-w-lg mx-auto card p-10 text-center text-gray-600">Loading login…</div>
+          </div>
+        </section>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }
