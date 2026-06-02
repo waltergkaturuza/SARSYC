@@ -70,33 +70,28 @@ function flagImageUrl(countryCode: string, width = 160) {
   return `https://flagcdn.com/w${width}/${countryCode.toLowerCase()}.png`
 }
 
-function MilestoneFlag({ country, countryCode }: { country: string; countryCode: string }) {
-  return (
-    <div className="flex flex-col items-center mb-3">
-      <img
-        src={flagImageUrl(countryCode)}
-        srcSet={`${flagImageUrl(countryCode, 320)} 2x`}
-        alt={`${country} flag`}
-        width={64}
-        height={48}
-        className="h-12 w-16 rounded object-cover shadow-lg border border-gray-200 bg-white"
-        loading="lazy"
-        decoding="async"
-      />
-      <div className="mt-1 w-1.5 h-12 md:h-20 bg-gray-500 rounded-full shadow-md" />
-    </div>
-  )
-}
-
 function MilestoneCard({ milestone }: { milestone: JourneyMilestone }) {
   return (
     <div className="w-full max-w-md mx-auto">
-      <MilestoneFlag country={milestone.country} countryCode={milestone.countryCode} />
-      <div className="bg-white rounded-xl shadow-xl p-6 border-l-4 border-primary-600 mt-2">
-        <div className="inline-block px-4 py-1.5 bg-primary-600 text-white text-sm font-bold rounded-full mb-3 shadow-md">
-          {milestone.year}
+      <div className="bg-white rounded-xl shadow-xl p-6 border-l-4 border-primary-600">
+        <div className="flex items-start gap-4 mb-4">
+          <img
+            src={flagImageUrl(milestone.countryCode)}
+            srcSet={`${flagImageUrl(milestone.countryCode, 320)} 2x`}
+            alt={`${milestone.country} flag`}
+            width={56}
+            height={42}
+            className="h-10 w-14 shrink-0 rounded object-cover shadow-md border border-gray-200 bg-white"
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="min-w-0">
+            <div className="inline-block px-4 py-1.5 bg-primary-600 text-white text-sm font-bold rounded-full mb-2 shadow-md">
+              {milestone.year}
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">{milestone.country}</h3>
+          </div>
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-3">{milestone.country}</h3>
         <p className="text-gray-700 leading-relaxed text-sm mb-4">{milestone.description}</p>
         <div className="mt-4 pt-4">
           <svg width="100%" height="4" viewBox="0 0 300 4" preserveAspectRatio="none" className="text-blue-400">
