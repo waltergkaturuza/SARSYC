@@ -274,7 +274,7 @@ export default function Footer() {
               ))}
               <Link
                 href="/login?type=admin"
-                className="text-gray-400 hover:text-white transition-colors duration-200"
+                className="text-gray-700 hover:text-white transition-colors duration-200"
                 aria-label="Admin login"
               >
                 Admin
