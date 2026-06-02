@@ -77,6 +77,15 @@
   .section-subtitle {
     @apply text-lg md:text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto;
   }
+
+  .about-page p {
+    @apply text-justify leading-relaxed;
+  }
+
+  .about-page .about-hero p,
+  .about-page .about-cta p {
+    @apply text-center leading-normal;
+  }
 }
 
 @layer utilities {

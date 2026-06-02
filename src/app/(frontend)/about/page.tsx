@@ -38,7 +38,7 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="about-hero bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -144,7 +144,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="section bg-primary-600 text-white">
+      <section className="about-cta section bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
