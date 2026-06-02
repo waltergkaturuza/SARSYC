@@ -1,31 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
 import { registrationPaymentSettled } from '@/lib/safeguarding'
+import { pickAdminRegistrationUpdate } from '@/lib/admin/registrationAdminEdit'
+import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
+async function requireAdmin(req: NextRequest) {
+  const acting = await getCurrentUserFromRequest(req)
+  if (!acting) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+  if (!['admin', 'super-admin', 'editor'].includes(String(acting.role))) {
+    return { error: NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 }) }
+  }
+  return { acting }
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin(request)
+  if ('error' in auth) return auth.error
+
   try {
     const payload = await getPayloadClient()
-    
+    await ensureRegistrationsLatestColumns(payload)
+
     const registration = await payload.findByID({
       collection: 'registrations',
       id: params.id,
       depth: 2,
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true, doc: registration })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to fetch registration'
     console.error('Get registration error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch registration' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 
@@ -33,20 +50,31 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin(request)
+  if ('error' in auth) return auth.error
+
   try {
     const payload = await getPayloadClient()
+    await ensureRegistrationsLatestColumns(payload)
     const body = await request.json()
+    const data = pickAdminRegistrationUpdate(body)
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
 
     const before = await payload.findByID({
       collection: 'registrations',
       id: params.id,
       depth: 0,
+      overrideAccess: true,
     })
 
     const registration = await payload.update({
       collection: 'registrations',
       id: params.id,
-      data: body,
+      data,
+      overrideAccess: true,
     })
 
     const paymentNowSettled =
@@ -61,14 +89,9 @@ export async function PATCH(
     }
 
     return NextResponse.json({ success: true, doc: registration })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to update registration'
     console.error('Update registration error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to update registration' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
-
-
-

@@ -23,6 +23,7 @@ import type {
 } from '@/lib/admin/paymentsDashboard'
 import { formatUsd } from '@/lib/admin/paymentsDashboard'
 import { STANBIC_CERTIFICATION_MATRIX } from '@/lib/stanbic/stanbicCertificationMatrix'
+import { showToast } from '@/lib/toast'
 
 type TabId = 'overview' | 'payments' | 'card-activity' | 'certification' | 'invoices'
 
@@ -77,6 +78,47 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [cardSearch, setCardSearch] = useState('')
+  const [bulkSyncing, setBulkSyncing] = useState(false)
+
+  const handleBulkSyncStanbic = async (references?: string[]) => {
+    setBulkSyncing(true)
+    try {
+      const res = await fetch('/api/admin/payments/sync-stanbic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(references?.length ? { references } : {}),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Bulk sync failed')
+      }
+
+      const parts = [
+        `${data.scanned} checked`,
+        `${data.newlyPaid} newly paid`,
+        `${data.stillPending} still pending`,
+      ]
+      if (data.failed) parts.push(`${data.failed} failed at bank`)
+      if (data.skipped) parts.push(`${data.skipped} skipped`)
+
+      if (data.newlyPaid > 0) {
+        showToast.success(`Bank sync complete: ${parts.join(', ')}`)
+      } else {
+        showToast.info(`Bank sync complete: ${parts.join(', ')}`)
+      }
+
+      if (data.truncated) {
+        showToast.info('Only the first 40 pending card payments were synced. Run again if needed.')
+      }
+
+      router.refresh()
+    } catch (e: unknown) {
+      showToast.error(e instanceof Error ? e.message : 'Could not sync with bank')
+    } finally {
+      setBulkSyncing(false)
+    }
+  }
 
   const setTab = (tab: TabId) => {
     const p = new URLSearchParams(searchParams.toString())
@@ -127,14 +169,25 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
             <h1 className="text-2xl font-bold text-white">Payments &amp; Invoices</h1>
           </div>
           <p className="text-slate-400 text-sm">
-            Track registration and donation payments — Stanbic N-Genius hosted card flow
+            Track registration, donation &amp; sponsorship card payments — Stanbic N-Genius hosted flow
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => handleBulkSyncStanbic()}
+            disabled={bulkSyncing}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-medium hover:bg-amber-500/25 disabled:opacity-60 transition-colors"
+            title="Re-check all pending card payments with Stanbic (registrations, donations & sponsorships)"
+          >
+            <FiRefreshCw size={16} className={bulkSyncing ? 'animate-spin' : ''} />
+            {bulkSyncing ? 'Syncing…' : 'Bulk sync with bank'}
+          </button>
           <button
             type="button"
             onClick={() => router.refresh()}
-            className="p-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
+            disabled={bulkSyncing}
+            className="p-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-60"
             title="Refresh"
           >
             <FiRefreshCw size={18} />
@@ -232,6 +285,10 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
 
         {activeTab === 'payments' && (
           <>
+            <p className="text-xs text-slate-500 mb-4">
+              Bulk sync re-checks Stanbic for unpaid card registrations, donations, and sponsorships that have a
+              stored gateway order reference (up to 40 per run).
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <div className="relative flex-1">
                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
