@@ -202,27 +202,27 @@ export default function PartnershipsPage() {
       </section>
 
       {/* Why Partner */}
-      <section className="section bg-white">
+      <section className="py-8 md:py-10 bg-white">
         <div className="container-custom">
           <h2 className="section-title">Why Partner with SARSYC VI?</h2>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="card p-8 text-center">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-8">
+            <div className="card p-6 text-center">
               <div className="text-4xl font-bold text-primary-600 mb-2">500+</div>
               <div className="text-gray-600">Young leaders & decision-makers</div>
             </div>
-            <div className="card p-8 text-center">
+            <div className="card p-6 text-center">
               <div className="text-4xl font-bold text-primary-600 mb-2">14+</div>
               <div className="text-gray-600">Countries represented</div>
             </div>
-            <div className="card p-8 text-center">
+            <div className="card p-6 text-center">
               <div className="text-4xl font-bold text-primary-600 mb-2">100K+</div>
               <div className="text-gray-600">Social media impressions</div>
             </div>
           </div>
 
           <div className="max-w-3xl mx-auto text-center">
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-gray-600">
               Partnering with SARSYC provides your organization with unparalleled access to Southern Africa's
               most dynamic youth health and education network, while demonstrating commitment to youth empowerment
               and regional development.
