@@ -213,7 +213,7 @@ export default async function HomePage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-6 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               The 6th Southern African Regional Students and Youth Conference
             </h1>
             <p className="text-xl md:text-2xl lg:text-3xl text-white/95 font-medium mb-4">
