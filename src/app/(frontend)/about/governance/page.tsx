@@ -1,7 +1,7 @@
 import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
-import Image from 'next/image'
-import CountryFlag, { resolveCountryCode } from '@/components/ui/CountryFlag'
+import CountryFlag from '@/components/ui/CountryFlag'
+import SteeringCommitteeMemberPhoto from '@/components/about/SteeringCommitteeMemberPhoto'
 import { youthSteeringCommitteeMembers } from '@/lib/youthSteeringCommitteeMembers'
 
 // Helper function to get initials
@@ -46,30 +46,20 @@ export default function GovernancePage() {
                 <div key={member.name} className="card p-6 hover:shadow-lg transition-shadow">
                   <div className="flex items-center gap-2 mb-4">
                     <CountryFlag countryOrCode={member.country} size="sm" />
-                    <span className="text-sm font-semibold text-gray-700">
-                      <span className="text-gray-500 font-medium mr-1.5">
-                        {resolveCountryCode(member.country)}
-                      </span>
-                      {member.country}
-                    </span>
+                    <span className="text-sm font-semibold text-gray-700">{member.country}</span>
                   </div>
                   
-                  {/* Photo */}
-                  <div className="relative w-full h-48 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-lg mb-4 overflow-hidden">
-                    {member.photo ? (
-                      <Image
-                        src={member.photo}
-                        alt={member.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white text-4xl font-bold">
-                        {getInitials(member.name)}
-                      </div>
-                    )}
-                  </div>
+                  {member.photo ? (
+                    <SteeringCommitteeMemberPhoto
+                      src={member.photo}
+                      alt={member.name}
+                      variant="card"
+                    />
+                  ) : (
+                    <div className="relative w-full aspect-[4/5] max-h-80 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-lg mb-4 flex items-center justify-center text-white text-4xl font-bold">
+                      {getInitials(member.name)}
+                    </div>
+                  )}
                   
                   {/* Member Info */}
                   <div>

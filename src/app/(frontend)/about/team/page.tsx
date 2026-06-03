@@ -23,12 +23,12 @@ export default function TeamPage() {
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="section-title">About SAYWHAT</h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="profile-description">
               <strong>SAYWHAT (Student and Youth Working on Reproductive Health Action Team)</strong> is a regional
               youth-led network advancing sexual and reproductive health and rights (SRHR) and education advocacy
               across Southern Africa.
             </p>
-            <p className="text-lg text-gray-600 leading-relaxed mt-4">
+            <p className="profile-description mt-4">
               Founded in 2003, SAYWHAT works across 11 SADC member states, mobilizing students and young people to
               advocate for evidence-based policies and programs that improve youth health and education outcomes.
             </p>
@@ -70,7 +70,7 @@ export default function TeamPage() {
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="section-title">About UNAM</h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="profile-description">
               The <strong>University of Namibia (UNAM)</strong> is Namibia&apos;s premier public university.
               Established in 1992, it provides undergraduate and postgraduate education across a wide range of
               disciplines, with a strong focus on national development, research, and community engagement. UNAM has

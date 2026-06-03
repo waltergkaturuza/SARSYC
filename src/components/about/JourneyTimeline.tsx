@@ -1,6 +1,6 @@
 'use client'
 
-import { flagImageUrl } from '@/lib/flagImage'
+import { flagImageUrl, flagImageUrlRetina } from '@/lib/flagImage'
 
 interface JourneyMilestone {
   year: number
@@ -74,11 +74,11 @@ function MilestoneCard({ milestone }: { milestone: JourneyMilestone }) {
       <div className="bg-white rounded-xl shadow-xl p-6 border-l-4 border-primary-600">
         <div className="flex items-start gap-4 mb-4">
           <img
-            src={flagImageUrl(milestone.countryCode)}
-            srcSet={`${flagImageUrl(milestone.countryCode, 320)} 2x`}
+            src={flagImageUrl(milestone.countryCode, 'lg')}
+            srcSet={`${flagImageUrlRetina(milestone.countryCode, 'lg')} 2x`}
             alt={`${milestone.country} flag`}
-            width={56}
-            height={42}
+            width={64}
+            height={48}
             className="h-10 w-14 shrink-0 rounded object-cover shadow-md border border-gray-200 bg-white"
             loading="lazy"
             decoding="async"

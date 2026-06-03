@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { FiArrowLeft } from 'react-icons/fi'
-import Image from 'next/image'
-import CountryFlag, { resolveCountryCode } from '@/components/ui/CountryFlag'
+import CountryFlag from '@/components/ui/CountryFlag'
+import SteeringCommitteeMemberPhoto from '@/components/about/SteeringCommitteeMemberPhoto'
 import {
   getSteeringCountriesWithoutMembers,
   youthSteeringCommitteeMembers,
@@ -58,12 +58,7 @@ export default function YouthSteeringCommitteePage() {
               <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <CountryFlag countryOrCode={country} size="lg" />
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    <span className="text-gray-500 font-medium text-lg mr-2">
-                      {resolveCountryCode(country)}
-                    </span>
-                    {country}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
                 </div>
 
                 <div className="space-y-8">
@@ -73,21 +68,17 @@ export default function YouthSteeringCommitteePage() {
                       className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
                     >
                       <div className="flex flex-col md:flex-row">
-                        <div className="relative w-full md:w-80 h-80 md:min-h-[320px] bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0">
-                          {member.photo ? (
-                            <Image
-                              src={member.photo}
-                              alt={member.name}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 100vw, 320px"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
-                              {getInitials(member.name)}
-                            </div>
-                          )}
-                        </div>
+                        {member.photo ? (
+                          <SteeringCommitteeMemberPhoto
+                            src={member.photo}
+                            alt={member.name}
+                            variant="profile"
+                          />
+                        ) : (
+                          <div className="relative w-full md:w-80 aspect-[3/4] bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0 flex items-center justify-center text-white text-6xl font-bold">
+                            {getInitials(member.name)}
+                          </div>
+                        )}
 
                         <div className="flex-1 p-8">
                           <div className="mb-4">
@@ -97,7 +88,7 @@ export default function YouthSteeringCommitteePage() {
                           </div>
 
                           {member.bio ? (
-                            <p className="text-gray-700 leading-relaxed text-base font-light">{member.bio}</p>
+                            <p className="profile-description">{member.bio}</p>
                           ) : null}
                         </div>
                       </div>
