@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { FiCalendar, FiMapPin, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiArrowRight, FiMic, FiUser } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
+import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import { getPayloadClient } from '@/lib/payload'
 
 // This will be fetched from Payload CMS in production
@@ -212,19 +212,9 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Team photo + date/location caption — right column */}
+            {/* Team photo slider + date/location caption — right column */}
             <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 min-w-0 flex flex-col gap-3">
-              <div className="relative w-full min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden shadow-2xl lg:shadow-md lg:rounded-l-3xl ring-1 ring-gray-200/80 lg:ring-gray-200 bg-white">
-                <Image
-                  src="/homepage-hero-team.jpg"
-                  alt="SARSYC VI participants at a regional conference"
-                  fill
-                  priority
-                  quality={95}
-                  className="object-contain object-center lg:object-left"
-                  sizes="(max-width: 1024px) 100vw, 56vw"
-                />
-              </div>
+              <HeroImageSlider />
               <div className="flex justify-center lg:justify-start">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-900 ring-1 ring-gray-200 shadow-sm">
                   <FiCalendar className="w-4 h-4 shrink-0" />
