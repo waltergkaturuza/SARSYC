@@ -344,8 +344,14 @@ export default async function HomePage() {
       </section>
 
       {/* Conference Tracks */}
-      <section className="section bg-white">
-        <div className="container-custom">
+      <section className="section relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/SARSYC%20Homepage3.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-[#FFF9F0]/80" aria-hidden />
+        <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2 className="section-title">Conference Tracks</h2>
             <p className="section-subtitle">
