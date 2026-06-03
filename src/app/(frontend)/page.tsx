@@ -172,35 +172,10 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative overflow-hidden text-white">
-        <Image
-          src="/Sponsership_1.png"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-          aria-hidden
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
-
-        <div className="relative container-custom py-10 md:py-14 lg:py-16">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            {/* Column 1: Logo + copy */}
-            <div className="text-center lg:text-left">
-              <div className="flex justify-center lg:justify-start mb-5 md:mb-6">
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden shadow-2xl ring-4 ring-white/30 shrink-0">
-                  <Image
-                    src="/logo.jpeg"
-                    alt="SARSYC Logo"
-                    fill
-                    className="object-cover scale-110"
-                    priority
-                    sizes="(max-width: 640px) 80px, 112px"
-                  />
-                </div>
-              </div>
-
+      <section className="relative overflow-hidden text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600">
+        <div className="relative w-full flex flex-col lg:flex-row lg:items-stretch lg:min-h-[min(88vh,820px)]">
+          {/* Text — ~42% width, inset from left edge */}
+          <div className="flex flex-col justify-center text-center lg:text-left w-full lg:w-[42%] xl:w-[40%] shrink-0 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 py-10 md:py-12 lg:py-14">
             {/* Conference Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4">
               <FiCalendar className="w-4 h-4" />
@@ -268,20 +243,19 @@ export default async function HomePage() {
               </h2>
               <CountdownTimer targetDate={conferenceDate} />
             </div>
-            </div>
+          </div>
 
-            {/* Column 2: Team photo */}
-            <div>
-              <div className="relative w-full aspect-[16/10] sm:aspect-[5/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20 bg-white/10">
-                <Image
-                  src="/homepage-hero-team.png"
-                  alt="SARSYC VI participants at a regional conference"
-                  fill
-                  priority
-                  className="object-contain object-center"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
+          {/* Team photo — ~58% width, edge-to-edge on the right */}
+          <div className="relative w-full lg:w-[58%] xl:w-[60%] flex-1 min-h-[280px] sm:min-h-[360px] lg:min-h-0">
+            <div className="relative w-full h-full min-h-[280px] sm:min-h-[360px] lg:absolute lg:inset-0 lg:min-h-full overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0">
+              <Image
+                src="/homepage-hero-team.png"
+                alt="SARSYC VI participants at a regional conference"
+                fill
+                priority
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 60vw"
+              />
             </div>
           </div>
         </div>

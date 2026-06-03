@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { FiTarget, FiEye, FiHeart, FiUsers, FiGlobe, FiAward } from 'react-icons/fi'
 import Link from 'next/link'
 import JourneyTimeline from '@/components/about/JourneyTimeline'
@@ -54,28 +55,42 @@ export default function AboutPage() {
       {/* What is SARSYC */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="section-title">What is SARSYC?</h2>
-            <div className="prose prose-lg max-w-none">
-              <p className="text-gray-600 leading-relaxed mb-4">
-                The <strong>Southern African Regional Students and Youth Conference (SARSYC)</strong> is a biennial
-                regional youth conference founded in <strong>2015</strong> by SAYWHAT (Student and Youth Working on 
-                Reproductive Health Action Team). SARSYC VI is convened by SAYWHAT in partnership with{' '}
-                <a href="https://www.unam.edu.na" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-semibold">
-                  University of Namibia (UNAM)
-                </a>.
-                It originated from SAYWHAT's National Students' Conference in Zimbabwe.
-              </p>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                SARSYC focuses on <strong>SRHR, HIV/AIDS, education rights, youth well-being, and integrated advocacy</strong>. 
-                It is designed as a feeder platform to major regional forums such as ICASA, the SADC Summit, World Conference on Lung Health, and International Conference on Family Planning.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Since 2015, SARSYC has brought together students, young researchers, policymakers, civil society, 
-                development partners, and the private sector from across Southern Africa to share knowledge, build 
-                networks, and develop actionable strategies to improve youth sexual and reproductive health and 
-                education outcomes.
-              </p>
+          <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-center lg:items-start">
+            <div className="w-full lg:w-[30%] shrink-0 flex justify-center lg:justify-start">
+              <div className="relative w-full max-w-[280px] sm:max-w-xs lg:max-w-none aspect-square">
+                <Image
+                  src="/logo.jpeg"
+                  alt="SARSYC conference logo"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 280px, 30vw"
+                  priority
+                />
+              </div>
+            </div>
+            <div className="w-full lg:w-[70%] min-w-0">
+              <h2 className="section-title text-left mb-6">What is SARSYC?</h2>
+              <div className="prose prose-lg max-w-none text-left">
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  The <strong>Southern African Regional Students and Youth Conference (SARSYC)</strong> is a biennial
+                  regional youth conference founded in <strong>2015</strong> by SAYWHAT (Student and Youth Working on
+                  Reproductive Health Action Team). SARSYC VI is convened by SAYWHAT in partnership with{' '}
+                  <a href="https://www.unam.edu.na" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-semibold">
+                    University of Namibia (UNAM)
+                  </a>.
+                  It originated from SAYWHAT&apos;s National Students&apos; Conference in Zimbabwe.
+                </p>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  SARSYC focuses on <strong>SRHR, HIV/AIDS, education rights, youth well-being, and integrated advocacy</strong>.
+                  It is designed as a feeder platform to major regional forums such as ICASA, the SADC Summit, World Conference on Lung Health, and International Conference on Family Planning.
+                </p>
+                <p className="text-gray-600 leading-relaxed">
+                  Since 2015, SARSYC has brought together students, young researchers, policymakers, civil society,
+                  development partners, and the private sector from across Southern Africa to share knowledge, build
+                  networks, and develop actionable strategies to improve youth sexual and reproductive health and
+                  education outcomes.
+                </p>
+              </div>
             </div>
           </div>
         </div>
