@@ -174,28 +174,19 @@ export default async function HomePage() {
       {/* Hero Section — headline, photo, intro copy */}
       <section className="relative overflow-hidden text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600">
         <div className="relative w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4 mx-auto lg:mx-0">
-            <FiCalendar className="w-4 h-4" />
-            <span className="text-sm font-medium">August 5-8, 2026</span>
-            <span className="w-1 h-1 bg-white/60 rounded-full"></span>
-            <FiMapPin className="w-4 h-4" />
-            <span className="text-sm font-medium">Windhoek, Namibia</span>
-          </div>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:gap-y-5">
+            {/* Headline — left column on desktop */}
+            <h1 className="order-1 lg:col-start-1 lg:row-start-1 text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] leading-tight text-center lg:text-left [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+              The 6th Southern African Regional Students and Youth Conference
+            </h1>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] mb-8 lg:mb-10 leading-tight text-center lg:text-left max-w-4xl [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
-            The 6th Southern African Regional Students and Youth Conference
-          </h1>
-
-          <div className="grid lg:grid-cols-[42fr_58fr] xl:grid-cols-[40fr_60fr] gap-8 lg:gap-10 lg:items-stretch">
-            {/* Intro — same height as image, justified */}
-            <div className="flex flex-col justify-between gap-4 text-justify order-2 lg:order-1 min-h-0">
-              <div>
-                <p className="text-lg md:text-xl font-semibold mb-2">SARSYC VI</p>
-                <p className="text-sm md:text-base font-medium text-white/95 mb-2">
-                  Align for Action: Sustaining Progress in Youth Health and Education
-                </p>
-                <p className="text-sm md:text-base text-white/85 mb-0">#DrivingRegionalSolidarity</p>
-              </div>
+            {/* Intro — left column only, wraps within column bounds */}
+            <div className="order-3 lg:col-start-1 lg:row-start-2 min-w-0 flex flex-col gap-4 text-justify break-words">
+              <p className="text-lg md:text-xl font-semibold">SARSYC VI</p>
+              <p className="text-sm md:text-base font-medium text-white/95">
+                Align for Action: Sustaining Progress in Youth Health and Education
+              </p>
+              <p className="text-sm md:text-base text-white/85">#DrivingRegionalSolidarity</p>
               <p className="text-xs sm:text-sm md:text-[15px] text-white/90 leading-relaxed">
                 A flagship, youth-led regional conference convened by{' '}
                 <a
@@ -221,17 +212,28 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Team photo — height defines the row */}
-            <div className="relative w-full min-h-[260px] sm:min-h-[320px] lg:min-h-[380px] h-full order-1 lg:order-2 overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0 bg-primary-900/30">
-              <Image
-                src="/homepage-hero-team.jpg"
-                alt="SARSYC VI participants at a regional conference"
-                fill
-                priority
-                quality={95}
-                className="object-contain object-center"
-                sizes="(max-width: 1024px) 100vw, 58vw"
-              />
+            {/* Team photo + date/location caption — right column */}
+            <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 min-w-0 flex flex-col gap-3">
+              <div className="relative w-full min-h-[260px] sm:min-h-[320px] lg:min-h-[380px] overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0 bg-primary-900/30">
+                <Image
+                  src="/homepage-hero-team.jpg"
+                  alt="SARSYC VI participants at a regional conference"
+                  fill
+                  priority
+                  quality={95}
+                  className="object-contain object-center lg:object-left"
+                  sizes="(max-width: 1024px) 100vw, 56vw"
+                />
+              </div>
+              <div className="flex justify-center lg:justify-start">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white">
+                  <FiCalendar className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-medium">August 5-8, 2026</span>
+                  <span className="w-1 h-1 bg-white/60 rounded-full shrink-0"></span>
+                  <FiMapPin className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-medium">Windhoek, Namibia</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
