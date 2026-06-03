@@ -1,53 +1,8 @@
 import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
 import Image from 'next/image'
-
-// Country flag emojis mapping
-const countryFlags: Record<string, string> = {
-  'Botswana': '🇧🇼',
-  'Malawi': '🇲🇼',
-  'Namibia': '🇳🇦',
-  'Zambia': '🇿🇲',
-  'Angola': '🇦🇴',
-  'Mozambique': '🇲🇿',
-  'South Africa': '🇿🇦',
-  'Zimbabwe': '🇿🇼',
-  'Eswatini': '🇸🇿',
-  'Lesotho': '🇱🇸',
-  'Regional': '🌍',
-}
-
-// Hardcoded Youth Steering Committee members (matching the dedicated page)
-const committeeMembers = [
-  {
-    name: 'Trevor Oahile',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Botswana',
-    country: 'Botswana',
-    photo: '/youth-steering-committee/trevor-oahile-botswana.jpg',
-  },
-  {
-    name: 'Sylvester G Chiweza',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Malawi',
-    country: 'Malawi',
-    photo: '/youth-steering-committee/sylvester-chiweza-malawi.jpg',
-  },
-  {
-    name: 'Fadzai Nyamarebvu',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Namibia',
-    country: 'Namibia',
-    photo: '/youth-steering-committee/fadzai-nyamarebvu-namibia.jpg',
-  },
-  {
-    name: 'Wankumbu Simukonda',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Zambia',
-    country: 'Zambia',
-    photo: '/youth-steering-committee/wankumbu-simukonda-zambia.jpg',
-  },
-]
+import CountryFlag, { resolveCountryCode } from '@/components/ui/CountryFlag'
+import { youthSteeringCommitteeMembers } from '@/lib/youthSteeringCommitteeMembers'
 
 // Helper function to get initials
 function getInitials(name: string): string {
@@ -82,31 +37,21 @@ export default function GovernancePage() {
           <div className="w-full">
             <h2 className="section-title">Youth Steering Committee</h2>
             <p className="section-subtitle">
-              10 youth leaders from SADC countries who co-plan and execute SARSYC VI, champion post-conference 
-              implementation, and ensure continuity & accountability.
+              Youth leaders from across SADC who co-plan and execute SARSYC VI, champion post-conference
+              implementation, and ensure continuity and accountability.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {committeeMembers.map((member, index) => (
-                <div key={index} className="card p-6 hover:shadow-lg transition-shadow">
-                  {/* Country Flag */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {youthSteeringCommitteeMembers.map((member) => (
+                <div key={member.name} className="card p-6 hover:shadow-lg transition-shadow">
                   <div className="flex items-center gap-2 mb-4">
-                    <span 
-                      className="text-3xl" 
-                      style={{ 
-                        fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif',
-                        fontSize: '2rem',
-                        lineHeight: '1',
-                        display: 'inline-block',
-                        minWidth: '2rem',
-                        textAlign: 'center'
-                      }}
-                      role="img"
-                      aria-label={`${member.country} flag`}
-                    >
-                      {countryFlags[member.country] || '🌍'}
+                    <CountryFlag countryOrCode={member.country} size="sm" />
+                    <span className="text-sm font-semibold text-gray-700">
+                      <span className="text-gray-500 font-medium mr-1.5">
+                        {resolveCountryCode(member.country)}
+                      </span>
+                      {member.country}
                     </span>
-                    <span className="text-sm font-semibold text-gray-700">{member.country}</span>
                   </div>
                   
                   {/* Photo */}

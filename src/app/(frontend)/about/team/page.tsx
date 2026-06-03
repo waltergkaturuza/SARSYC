@@ -1,29 +1,5 @@
-import { FiMail, FiLinkedin, FiUsers, FiArrowRight } from 'react-icons/fi'
+import { FiUsers, FiArrowRight, FiExternalLink } from 'react-icons/fi'
 import Link from 'next/link'
-
-const teamMembers = [
-  {
-    name: 'Executive Director',
-    organization: 'SAYWHAT',
-    role: 'Leadership',
-    photo: '/team/placeholder.jpg',
-    bio: 'Leading SAYWHAT\'s regional advocacy and youth empowerment programs.',
-  },
-  {
-    name: 'Advocacy Director',
-    organization: 'SAYWHAT',
-    role: 'Advocacy',
-    photo: '/team/placeholder.jpg',
-    bio: 'Coordinating regional youth health and education policy advocacy.',
-  },
-  {
-    name: 'Communications Director',
-    organization: 'SAYWHAT',
-    role: 'Communications',
-    photo: '/team/placeholder.jpg',
-    bio: 'Managing SARSYC communications, media, and digital engagement.',
-  },
-]
 
 export default function TeamPage() {
   return (
@@ -36,10 +12,7 @@ export default function TeamPage() {
               Who We Are
             </h1>
             <p className="text-xl text-white/90">
-              Meet the team behind SARSYC VI
-            </p>
-            <p className="text-lg text-white/80 mt-4">
-              Convened by SAYWHAT in partnership with University of Namibia (UNAM)
+              Convened by SAYWHAT in partnership with the University of Namibia (UNAM)
             </p>
           </div>
         </div>
@@ -56,20 +29,30 @@ export default function TeamPage() {
               across Southern Africa.
             </p>
             <p className="text-lg text-gray-600 leading-relaxed mt-4">
-              Founded in 2002, SAYWHAT works across 14 SADC member states, mobilizing students and young people to
+              Founded in 2003, SAYWHAT works across 11 SADC member states, mobilizing students and young people to
               advocate for evidence-based policies and programs that improve youth health and education outcomes.
+            </p>
+            <p className="mt-6">
+              <a
+                href="https://saywhat.org.zw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+              >
+                Read more about SAYWHAT
+                <FiExternalLink className="w-4 h-4" />
+              </a>
             </p>
           </div>
 
-          {/* What We Do */}
           <div className="grid md:grid-cols-3 gap-8">
             <div className="card p-8 text-center">
-              <div className="text-4xl font-bold text-primary-600 mb-4">14</div>
+              <div className="text-4xl font-bold text-primary-600 mb-4">11</div>
               <h3 className="font-bold text-gray-900 mb-2">SADC Countries</h3>
               <p className="text-sm text-gray-600">Working across Southern Africa</p>
             </div>
             <div className="card p-8 text-center">
-              <div className="text-4xl font-bold text-primary-600 mb-4">2002</div>
+              <div className="text-4xl font-bold text-primary-600 mb-4">2003</div>
               <h3 className="font-bold text-gray-900 mb-2">Established</h3>
               <p className="text-sm text-gray-600">Over 20 years of impact</p>
             </div>
@@ -82,38 +65,28 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* About UNAM */}
       <section className="section bg-gray-50">
         <div className="container-custom">
-          <h2 className="section-title">Our Team</h2>
-          <p className="section-subtitle">
-            The dedicated professionals driving SARSYC and youth advocacy
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="card overflow-hidden">
-                <div className="aspect-square bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
-                  <div className="text-white text-4xl font-bold opacity-50">
-                    {member.name.split(' ')[0][0]}{member.name.split(' ').slice(-1)[0]?.[0]}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="text-sm font-semibold text-primary-600 mb-1">{member.role}</div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                  <p className="text-sm text-gray-600 mb-4">{member.organization}</p>
-                  <p className="text-sm text-gray-600 mb-4">{member.bio}</p>
-                  <div className="flex gap-3">
-                    <button className="text-gray-400 hover:text-primary-600">
-                      <FiMail className="w-5 h-5" />
-                    </button>
-                    <button className="text-gray-400 hover:text-blue-600">
-                      <FiLinkedin className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="section-title">About UNAM</h2>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              The <strong>University of Namibia (UNAM)</strong> is Namibia&apos;s premier public university.
+              Established in 1992, it provides undergraduate and postgraduate education across a wide range of
+              disciplines, with a strong focus on national development, research, and community engagement. UNAM has
+              multiple campuses across the country, with its main campus in Windhoek.
+            </p>
+            <p className="mt-6">
+              <a
+                href="https://www.unam.edu.na"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+              >
+                Visit the UNAM website
+                <FiExternalLink className="w-4 h-4" />
+              </a>
+            </p>
           </div>
 
           <div className="text-center mt-12">
@@ -131,6 +104,3 @@ export default function TeamPage() {
     </>
   )
 }
-
-
-

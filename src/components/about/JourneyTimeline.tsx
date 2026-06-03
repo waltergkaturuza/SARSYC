@@ -1,5 +1,7 @@
 'use client'
 
+import { flagImageUrl } from '@/lib/flagImage'
+
 interface JourneyMilestone {
   year: number
   country: string
@@ -65,10 +67,6 @@ const milestones: JourneyMilestone[] = [
     y: 85,
   },
 ]
-
-function flagImageUrl(countryCode: string, width = 160) {
-  return `https://flagcdn.com/w${width}/${countryCode.toLowerCase()}.png`
-}
 
 function MilestoneCard({ milestone }: { milestone: JourneyMilestone }) {
   return (

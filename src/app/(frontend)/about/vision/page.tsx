@@ -67,7 +67,7 @@ export default function VisionPage() {
               </p>
               <p className="text-gray-600 leading-relaxed">
                 We envision a region where youth-led advocacy drives evidence-based policies and programs that create
-                lasting positive change in the lives of young people across all 14 SADC member states.
+                lasting positive change in the lives of young people across all 16 SADC member states.
               </p>
             </div>
 

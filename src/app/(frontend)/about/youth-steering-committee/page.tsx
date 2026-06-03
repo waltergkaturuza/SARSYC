@@ -1,101 +1,39 @@
 import Link from 'next/link'
-import { FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe } from 'react-icons/fi'
+import { FiArrowLeft } from 'react-icons/fi'
 import Image from 'next/image'
+import CountryFlag, { resolveCountryCode } from '@/components/ui/CountryFlag'
+import {
+  getSteeringCountriesWithoutMembers,
+  youthSteeringCommitteeMembers,
+} from '@/lib/youthSteeringCommitteeMembers'
 
-// Country flag emojis mapping
-const countryFlags: Record<string, string> = {
-  'Botswana': '🇧🇼',
-  'Malawi': '🇲🇼',
-  'Namibia': '🇳🇦',
-  'Zambia': '🇿🇲',
-  'Angola': '🇦🇴',
-  'Mozambique': '🇲🇿',
-  'South Africa': '🇿🇦',
-  'Zimbabwe': '🇿🇼',
-  'Eswatini': '🇸🇿',
-  'Lesotho': '🇱🇸',
-  'Regional': '🌍',
-}
-
-// Hardcoded Youth Steering Committee members
-const committeeMembers = [
-  {
-    name: 'Trevor Oahile',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Botswana',
-    country: 'Botswana',
-    bio: 'Trevor Oahile is a data scientist, human rights advocate, and youth leader with extensive experience in SRHR, youth development, and governance in Botswana. He currently serves as the Country Coordinator for SAYWHAT Botswana, where he leads youth focused programmes, national engagement, and initiatives that strengthen young people\'s access to information and participation in policy processes. Trevor also chairs the Commonwealth Youth Peace Ambassadors Network (CYPAN) and serves as a Youth Delegate for the Commonwealth Youth Council. His experience includes work with UNFPA, UNICEF, AMREF Health Africa, and SRHR Africa Trust. He is a former co host of the SRHR radio show Don\'t Get It Twisted and a Board Member of the Botswana National Youth Council.',
-    photo: '/youth-steering-committee/trevor-oahile-botswana.jpg',
-  },
-  {
-    name: 'Sylvester G Chiweza',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Malawi',
-    country: 'Malawi',
-    bio: 'Sylvester G. Chiweza is a dedicated youth leadership and SRHR advocate with over 11 years of experience advancing health access, community development, and meaningful youth participation in Malawi. He currently serves as the Country Coordinator for SAYWHAT Malawi, leading strategic coordination, stakeholder engagement, and youth focused policy initiatives that strengthen access to quality health information and services. Sylvester has professional training from Kasungu Teachers Training College and the Malawi College of Health Sciences, and also studied Business Management at Mubarack Complex College. He is pursuing a Bachelor\'s degree in Human Resource Management at the University of Malawi and applies strong skills in climate resilience and community based adaptation.',
-    photo: '/youth-steering-committee/sylvester-chiweza-malawi.jpg',
-  },
-  {
-    name: 'Fadzai Nyamarebvu',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Namibia',
-    country: 'Namibia',
-    bio: 'Fadzai Nyamarebvu is a lawyer and seasoned project manager with strong expertise in business and human rights, regional integration, and youth empowerment. She has coordinated international and regional initiatives, contributing legal insight, strategic support, and high level reporting as a facilitator and professional rapporteur in global policy processes. She currently serves as the SAYWHAT Country Coordinator for Namibia, where she leads national level planning, stakeholder engagement, and youth focused programmes that advance meaningful participation and access to opportunities. Fadzai is recognised for her ability to bridge legal analysis, project leadership, and rights based advocacy across diverse regional platforms.',
-    photo: '/youth-steering-committee/fadzai-nyamarebvu-namibia.jpg',
-  },
-  {
-    name: 'Wankumbu Simukonda',
-    role: 'Country Coordinator',
-    organization: 'SAYWHAT Zambia',
-    country: 'Zambia',
-    bio: 'Wankumbu Simukonda is a Zambian advocacy and health promotion specialist with over eight years\' experience advancing adolescent sexual and reproductive health, HIV prevention, and social and behaviour change. He serves as Country Coordinator for SAYWHAT Zambia and Field Technical Advisor for PATA, leading youth focused policy engagement, quality improvement in health services, and community-driven SRHR initiatives. Wankumbu also mentors young advocates through PATA\'s Youth Advisory Panel and lectures communication skills at Greenfield College. He holds a BA in Mass Communication and an MA in Development Studies from the University of Zambia and is currently pursuing a Master of Mass Communication.',
-    photo: '/youth-steering-committee/wankumbu-simukonda-zambia.jpg',
-  },
-]
-
-// All SADC countries (for countries without members)
-const allSADCCountries = [
-  'Angola',
-  'Botswana',
-  'Eswatini',
-  'Lesotho',
-  'Malawi',
-  'Mozambique',
-  'Namibia',
-  'South Africa',
-  'Zambia',
-  'Zimbabwe',
-]
-
-// Get countries that have members
-const countriesWithMembers = new Set(committeeMembers.map(m => m.country))
-
-// Get countries without members
-const countriesWithoutMembers = allSADCCountries.filter(country => !countriesWithMembers.has(country))
-
-// Helper function to get initials
 function getInitials(name: string): string {
   return name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 3)
 }
 
 export default function YouthSteeringCommitteePage() {
-  // Group members by country
-  const membersByCountry = committeeMembers.reduce((acc, member) => {
-    if (!acc[member.country]) {
-      acc[member.country] = []
-    }
-    acc[member.country].push(member)
-    return acc
-  }, {} as Record<string, typeof committeeMembers>)
+  const countriesWithoutMembers = getSteeringCountriesWithoutMembers()
+
+  const membersByCountry = youthSteeringCommitteeMembers.reduce(
+    (acc, member) => {
+      if (!acc[member.country]) {
+        acc[member.country] = []
+      }
+      acc[member.country].push(member)
+      return acc
+    },
+    {} as Record<string, typeof youthSteeringCommitteeMembers>,
+  )
+
+  const sortedCountries = Object.keys(membersByCountry).sort((a, b) => a.localeCompare(b))
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
       <div className="about-hero bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-16">
         <div className="container-custom">
           <Link
@@ -112,96 +50,81 @@ export default function YouthSteeringCommitteePage() {
         </div>
       </div>
 
-      {/* Committee Members by Country */}
       <div className="container-custom py-16">
-        {/* Countries with Members */}
         <div className="space-y-12">
-          {Object.entries(membersByCountry).map(([country, members]) => (
-            <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <span 
-                  className="text-4xl" 
-                  style={{ 
-                    fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif',
-                    fontSize: '2.5rem',
-                    lineHeight: '1',
-                    display: 'inline-block',
-                    minWidth: '2.5rem',
-                    textAlign: 'center'
-                  }}
-                  role="img"
-                  aria-label={`${country} flag`}
-                >
-                  {countryFlags[country] || '🌍'}
-                </span>
-                <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
-              </div>
-              
-              <div className="space-y-8">
-                {members.map((member, index) => (
-                  <div
-                    key={`${country}-${index}`}
-                    className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex flex-col md:flex-row">
-                      {/* Photo - Left Side */}
-                      <div className="relative w-full md:w-80 h-80 md:h-auto bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0">
-                        {member.photo ? (
-                          <Image
-                            src={member.photo}
-                            alt={member.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 320px"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
-                            {getInitials(member.name)}
-                          </div>
-                        )}
-                      </div>
+          {sortedCountries.map((country) => {
+            const members = membersByCountry[country]
+            return (
+              <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <CountryFlag countryOrCode={country} size="lg" />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    <span className="text-gray-500 font-medium text-lg mr-2">
+                      {resolveCountryCode(country)}
+                    </span>
+                    {country}
+                  </h2>
+                </div>
 
-                      {/* Bio Content - Right Side */}
-                      <div className="flex-1 p-8">
-                        <div className="mb-4">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                          <p className="text-primary-600 font-semibold text-lg mb-1">{member.role}</p>
-                          <p className="text-gray-600">{member.organization}</p>
+                <div className="space-y-8">
+                  {members.map((member) => (
+                    <div
+                      key={member.name}
+                      className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+                    >
+                      <div className="flex flex-col md:flex-row">
+                        <div className="relative w-full md:w-80 h-80 md:min-h-[320px] bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0">
+                          {member.photo ? (
+                            <Image
+                              src={member.photo}
+                              alt={member.name}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 320px"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold">
+                              {getInitials(member.name)}
+                            </div>
+                          )}
                         </div>
 
-                        {member.bio && (
-                          <div className="prose prose-gray max-w-none">
-                            <p className="text-gray-700 leading-relaxed text-base font-light">
-                              {member.bio}
-                            </p>
+                        <div className="flex-1 p-8">
+                          <div className="mb-4">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                            <p className="text-primary-600 font-semibold text-lg mb-1">{member.role}</p>
+                            <p className="text-gray-600">{member.organization}</p>
                           </div>
-                        )}
+
+                          {member.bio ? (
+                            <p className="text-gray-700 leading-relaxed text-base font-light">{member.bio}</p>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
-        {/* Countries without Members */}
-        {countriesWithoutMembers.length > 0 && (
+        {countriesWithoutMembers.length > 0 ? (
           <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Other SADC Countries</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {countriesWithoutMembers.map((country) => (
                 <div
                   key={country}
-                  className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 text-center"
+                  className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 text-center gap-2"
                 >
-                  <span className="text-3xl mb-2">{countryFlags[country] || '🌍'}</span>
+                  <CountryFlag countryOrCode={country} size="md" />
                   <span className="text-sm font-medium text-gray-700">{country}</span>
                 </div>
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
