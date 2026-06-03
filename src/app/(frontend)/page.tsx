@@ -249,12 +249,13 @@ export default async function HomePage() {
           <div className="relative w-full lg:w-[58%] xl:w-[60%] flex-1 min-h-[280px] sm:min-h-[360px] lg:min-h-0">
             <div className="relative w-full h-full min-h-[280px] sm:min-h-[360px] lg:absolute lg:inset-0 lg:min-h-full overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0">
               <Image
-                src="/homepage-hero-team.png"
+                src="/homepage-hero-team.jpg"
                 alt="SARSYC VI participants at a regional conference"
                 fill
                 priority
+                quality={95}
                 className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 60vw"
+                sizes="(max-width: 1024px) 100vw, 65vw"
               />
             </div>
           </div>
