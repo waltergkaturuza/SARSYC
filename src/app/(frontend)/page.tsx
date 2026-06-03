@@ -184,24 +184,22 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
 
-        <div className="relative container-custom py-10 md:py-14">
-          <div className="relative">
-            {/* Logo - Floating at Left Corner (Circular, Reduced by Half) */}
-            <div className="hidden sm:block absolute -left-4 -top-4 md:-left-8 md:-top-8 w-32 h-32 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 z-10 animate-float">
-              <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
-                <Image
-                  src="/logo.jpeg"
-                  alt="SARSYC Logo"
-                  fill
-                  className="object-cover scale-110"
-                  priority
-                  sizes="(max-width: 768px) 128px, (max-width: 1024px) 224px, (max-width: 1280px) 288px, 320px"
-                />
+        <div className="relative container-custom py-10 md:py-14 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+            {/* Column 1: Logo + copy */}
+            <div className="text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-5 md:mb-6">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden shadow-2xl ring-4 ring-white/30 shrink-0">
+                  <Image
+                    src="/logo.jpeg"
+                    alt="SARSYC Logo"
+                    fill
+                    className="object-cover scale-110"
+                    priority
+                    sizes="(max-width: 640px) 80px, 112px"
+                  />
+                </div>
               </div>
-            </div>
-
-            {/* Content - Adjusted for Logo */}
-            <div className="max-w-4xl sm:ml-40 md:ml-48 lg:ml-64 xl:ml-72 text-center">
 
             {/* Conference Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4">
@@ -225,7 +223,7 @@ export default async function HomePage() {
             <p className="text-base md:text-lg text-white/80 mb-2">
               #DrivingRegionalSolidarity
             </p>
-            <p className="text-sm md:text-base text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-base text-white/90 mb-8 max-w-3xl mx-auto lg:mx-0 leading-relaxed">
               A flagship, youth-led regional conference convened by{' '}
               <a 
                 href="https://www.saywhat.org.zw" 
@@ -250,7 +248,7 @@ export default async function HomePage() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
               <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
                 Register for SARSYC VI
                 <FiArrowRight className="w-5 h-5 ml-2" />
@@ -264,12 +262,26 @@ export default async function HomePage() {
             </div>
 
             {/* Countdown Timer */}
-            <div className="mb-4">
+            <div className="mb-4 flex flex-col items-center lg:items-start">
               <h2 className="text-xl md:text-2xl font-semibold text-white mb-4">
                 Conference Countdown
               </h2>
               <CountdownTimer targetDate={conferenceDate} />
             </div>
+            </div>
+
+            {/* Column 2: Team photo */}
+            <div>
+              <div className="relative w-full aspect-[16/10] sm:aspect-[5/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/20 bg-white/10">
+                <Image
+                  src="/homepage-hero-team.png"
+                  alt="SARSYC VI participants at a regional conference"
+                  fill
+                  priority
+                  className="object-contain object-center"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
             </div>
           </div>
         </div>
