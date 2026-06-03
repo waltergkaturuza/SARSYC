@@ -172,28 +172,28 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero Section — headline, photo, intro copy */}
-      <section className="relative overflow-hidden text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600">
+      <section className="relative overflow-hidden text-gray-900 bg-[#FFF9F0]">
         <div className="relative w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:gap-y-5">
             {/* Headline — left column on desktop */}
-            <h1 className="order-1 lg:col-start-1 lg:row-start-1 text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] leading-tight text-center lg:text-left [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h1 className="order-1 lg:col-start-1 lg:row-start-1 text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] leading-tight text-center lg:text-left">
               The 6th Southern African Regional Students and Youth Conference
             </h1>
 
             {/* Intro — left column only, wraps within column bounds */}
             <div className="order-3 lg:col-start-1 lg:row-start-2 min-w-0 flex flex-col gap-4 text-justify break-words">
-              <p className="text-lg md:text-xl font-semibold">SARSYC VI</p>
-              <p className="text-sm md:text-base font-medium text-white/95">
+              <p className="text-lg md:text-xl font-semibold text-gray-900">SARSYC VI</p>
+              <p className="text-sm md:text-base font-medium text-gray-900">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </p>
-              <p className="text-sm md:text-base text-white/85">#DrivingRegionalSolidarity</p>
-              <p className="text-xs sm:text-sm md:text-[15px] text-white/90 leading-relaxed">
+              <p className="text-sm md:text-base text-gray-800">#DrivingRegionalSolidarity</p>
+              <p className="text-xs sm:text-sm md:text-[15px] text-gray-800 leading-relaxed">
                 A flagship, youth-led regional conference convened by{' '}
                 <a
                   href="https://www.saywhat.org.zw"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white font-semibold underline hover:text-white/80 transition-colors"
+                  className="text-gray-900 font-semibold underline hover:text-primary-700 transition-colors"
                 >
                   SAYWHAT
                 </a>
@@ -202,7 +202,7 @@ export default async function HomePage() {
                   href="https://www.unam.edu.na"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white font-semibold underline hover:text-white/80 transition-colors"
+                  className="text-gray-900 font-semibold underline hover:text-primary-700 transition-colors"
                 >
                   University of Namibia (UNAM)
                 </a>
@@ -214,7 +214,7 @@ export default async function HomePage() {
 
             {/* Team photo + date/location caption — right column */}
             <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 min-w-0 flex flex-col gap-3">
-              <div className="relative w-full min-h-[260px] sm:min-h-[320px] lg:min-h-[380px] overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0 bg-primary-900/30">
+              <div className="relative w-full min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden shadow-2xl lg:shadow-md lg:rounded-l-3xl ring-1 ring-gray-200/80 lg:ring-gray-200 bg-white">
                 <Image
                   src="/homepage-hero-team.jpg"
                   alt="SARSYC VI participants at a regional conference"
@@ -226,10 +226,10 @@ export default async function HomePage() {
                 />
               </div>
               <div className="flex justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-900 ring-1 ring-gray-200 shadow-sm">
                   <FiCalendar className="w-4 h-4 shrink-0" />
                   <span className="text-sm font-medium">August 5-8, 2026</span>
-                  <span className="w-1 h-1 bg-white/60 rounded-full shrink-0"></span>
+                  <span className="w-1 h-1 bg-gray-400 rounded-full shrink-0"></span>
                   <FiMapPin className="w-4 h-4 shrink-0" />
                   <span className="text-sm font-medium">Windhoek, Namibia</span>
                 </div>
