@@ -173,25 +173,56 @@ export default async function HomePage() {
     <>
       {/* Hero Section — headline, photo, intro copy */}
       <section className="relative overflow-hidden text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600">
-        <div className="relative w-full flex flex-col lg:flex-row lg:items-stretch lg:min-h-[min(72vh,680px)]">
-          {/* Headline */}
-          <div className="flex flex-col justify-center text-center lg:text-left w-full lg:w-[42%] xl:w-[40%] shrink-0 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 py-10 md:py-12 lg:py-14">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4 mx-auto lg:mx-0">
-              <FiCalendar className="w-4 h-4" />
-              <span className="text-sm font-medium">August 5-8, 2026</span>
-              <span className="w-1 h-1 bg-white/60 rounded-full"></span>
-              <FiMapPin className="w-4 h-4" />
-              <span className="text-sm font-medium">Windhoek, Namibia</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] mb-0 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
-              The 6th Southern African Regional Students and Youth Conference
-            </h1>
+        <div className="relative w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4 mx-auto lg:mx-0">
+            <FiCalendar className="w-4 h-4" />
+            <span className="text-sm font-medium">August 5-8, 2026</span>
+            <span className="w-1 h-1 bg-white/60 rounded-full"></span>
+            <FiMapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">Windhoek, Namibia</span>
           </div>
 
-          {/* Team photo */}
-          <div className="relative w-full lg:w-[58%] xl:w-[60%] flex-1 min-h-[280px] sm:min-h-[360px] lg:min-h-0">
-            <div className="relative w-full h-full min-h-[280px] sm:min-h-[360px] lg:absolute lg:inset-0 lg:min-h-full overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0 bg-primary-900/30">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] mb-8 lg:mb-10 leading-tight text-center lg:text-left max-w-4xl [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            The 6th Southern African Regional Students and Youth Conference
+          </h1>
+
+          <div className="grid lg:grid-cols-[42fr_58fr] xl:grid-cols-[40fr_60fr] gap-8 lg:gap-10 lg:items-stretch">
+            {/* Intro — same height as image, justified */}
+            <div className="flex flex-col justify-between gap-4 text-justify order-2 lg:order-1 min-h-0">
+              <div>
+                <p className="text-lg md:text-xl font-semibold mb-2">SARSYC VI</p>
+                <p className="text-sm md:text-base font-medium text-white/95 mb-2">
+                  Align for Action: Sustaining Progress in Youth Health and Education
+                </p>
+                <p className="text-sm md:text-base text-white/85 mb-0">#DrivingRegionalSolidarity</p>
+              </div>
+              <p className="text-xs sm:text-sm md:text-[15px] text-white/90 leading-relaxed">
+                A flagship, youth-led regional conference convened by{' '}
+                <a
+                  href="https://www.saywhat.org.zw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white font-semibold underline hover:text-white/80 transition-colors"
+                >
+                  SAYWHAT
+                </a>
+                {' '}in partnership with{' '}
+                <a
+                  href="https://www.unam.edu.na"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white font-semibold underline hover:text-white/80 transition-colors"
+                >
+                  University of Namibia (UNAM)
+                </a>
+                , bringing together students, youth leaders, policymakers, civil society, development
+                partners, and the private sector from across Southern Africa to drive transnational advocacy
+                on youth health and education.
+              </p>
+            </div>
+
+            {/* Team photo — height defines the row */}
+            <div className="relative w-full min-h-[260px] sm:min-h-[320px] lg:min-h-[380px] h-full order-1 lg:order-2 overflow-hidden shadow-2xl lg:shadow-none lg:rounded-l-3xl ring-1 ring-white/15 lg:ring-0 bg-primary-900/30">
               <Image
                 src="/homepage-hero-team.jpg"
                 alt="SARSYC VI participants at a regional conference"
@@ -199,47 +230,9 @@ export default async function HomePage() {
                 priority
                 quality={95}
                 className="object-contain object-center"
-                sizes="(max-width: 1024px) 100vw, 65vw"
+                sizes="(max-width: 1024px) 100vw, 58vw"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Intro copy — full width below headline + image */}
-        <div className="relative px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pb-10 md:pb-12 lg:pb-14 pt-2 lg:pt-0">
-          <div className="max-w-4xl mx-auto lg:mx-0 text-center lg:text-left">
-            <p className="text-lg md:text-xl lg:text-2xl text-white/95 font-medium mb-3">
-              SARSYC VI
-            </p>
-            <p className="text-base md:text-lg text-white/90 font-semibold mb-2">
-              Align for Action: Sustaining Progress in Youth Health and Education
-            </p>
-            <p className="text-base md:text-lg text-white/80 mb-4">
-              #DrivingRegionalSolidarity
-            </p>
-            <p className="text-sm md:text-base text-white/90 leading-relaxed">
-              A flagship, youth-led regional conference convened by{' '}
-              <a
-                href="https://www.saywhat.org.zw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white font-semibold underline hover:text-white/80 transition-colors"
-              >
-                SAYWHAT
-              </a>
-              {' '}in partnership with{' '}
-              <a
-                href="https://www.unam.edu.na"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white font-semibold underline hover:text-white/80 transition-colors"
-              >
-                University of Namibia (UNAM)
-              </a>
-              , bringing together students, youth leaders, policymakers, civil society, development
-              partners, and the private sector from across Southern Africa to drive transnational advocacy
-              on youth health and education.
-            </p>
           </div>
         </div>
       </section>
