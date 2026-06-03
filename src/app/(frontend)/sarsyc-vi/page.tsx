@@ -5,6 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
+import {
+  REGISTRATION_PACKAGES,
+  REGISTRATION_SCHEDULE,
+  currencyForPayments,
+} from '@/lib/registrationPackages'
 import dynamic from 'next/dynamic'
 
 const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
@@ -117,9 +122,10 @@ const objectives = [
 const importantDates = [
   { date: 'February 1, 2026', event: 'Call for Abstracts Opens', status: 'upcoming' },
   { date: 'April 15, 2026', event: 'Abstract Submission Deadline', status: 'critical' },
-  { date: 'May 1, 2026', event: 'Notification of Acceptance', status: 'critical' },
-  { date: 'May 1 - October 31, 2026', event: 'Mentorship – Publication Period', status: 'upcoming' },
-  { date: 'July 31, 2026', event: 'Regular Registration Closes', status: 'critical' },
+  { date: 'June 5, 2026', event: 'Notification of Acceptance', status: 'critical' },
+  { date: 'June 1 – November 30, 2026', event: 'Mentorship – Publication Period', status: 'upcoming' },
+  { date: `${REGISTRATION_SCHEDULE.earlyOpens} – ${REGISTRATION_SCHEDULE.earlyCloses}`, event: 'Early Bird Registration', status: 'upcoming' },
+  { date: `${REGISTRATION_SCHEDULE.lateOpens} – ${REGISTRATION_SCHEDULE.lateCloses}`, event: 'Late Registration', status: 'critical' },
   { date: 'August 5-8, 2026', event: 'SARSYC VI Conference (Days 1-3) + Orathon (Day 4)', status: 'conference' },
 ]
 
@@ -271,13 +277,9 @@ export default function SarsycVIPage() {
               SARSYC VI
             </h1>
             
-            <h2 className="text-2xl md:text-4xl text-[#1877F2] font-semibold mb-4 [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
-              Align for Action
+            <h2 className="text-2xl md:text-3xl text-[#1877F2] font-semibold mb-4 leading-snug [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+              Align for Action: Sustaining Progress in Youth Health and Education
             </h2>
-            
-            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              Sustaining Progress in Youth Health and Education
-            </p>
 
             <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
@@ -317,15 +319,26 @@ export default function SarsycVIPage() {
       {/* Conference Theme */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="section-title">Conference Theme</h2>
-            <div className="text-gradient text-3xl md:text-4xl font-bold mb-6">
-              "Align for Action"
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center mb-12">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-200">
+              <Image
+                src="/SARSYC Homepage3.jpg"
+                alt="SARSYC youth delegates at a regional conference"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
-            <p className="section-subtitle">
-              SARSYC VI focuses on translating commitments into concrete actions that sustain and accelerate progress
-              in youth sexual and reproductive health and education across Southern Africa.
-            </p>
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Conference Theme</h2>
+              <div className="text-gradient text-2xl md:text-3xl font-bold mb-6 leading-snug">
+                Align for Action: Sustaining Progress in Youth Health and Education
+              </div>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                SARSYC VI focuses on translating commitments into concrete actions that sustain and accelerate progress
+                in youth sexual and reproductive health and education across Southern Africa.
+              </p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -431,6 +444,56 @@ export default function SarsycVIPage() {
           <div className="text-center mt-12">
             <Link href="/participate/register" className="btn-primary text-lg px-8 py-4">
               Register Now - Don't Miss Out!
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Registration Packages */}
+      <section className="section bg-gray-50">
+        <div className="container-custom">
+          <h2 className="section-title">Registration Dates & Packages</h2>
+          <p className="section-subtitle">
+            Register during the early-bird window for lower rates. Packages and pricing match the online registration form.
+          </p>
+
+          <div className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-4 mb-10">
+            <div className="card p-6 border-2 border-primary-200 bg-primary-50/60">
+              <h3 className="font-bold text-gray-900 mb-2">Early Bird Registration</h3>
+              <p className="text-sm text-gray-600">
+                Opens <strong>{REGISTRATION_SCHEDULE.earlyOpens}</strong>
+                <br />
+                Closes <strong>{REGISTRATION_SCHEDULE.earlyCloses}</strong>
+              </p>
+            </div>
+            <div className="card p-6 border-2 border-red-200 bg-red-50/60">
+              <h3 className="font-bold text-gray-900 mb-2">Late Registration</h3>
+              <p className="text-sm text-gray-600">
+                Opens <strong>{REGISTRATION_SCHEDULE.lateOpens}</strong>
+                <br />
+                Closes <strong>{REGISTRATION_SCHEDULE.lateCloses}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-4">
+            {REGISTRATION_PACKAGES.map((pkg) => (
+              <div key={pkg.id} className="card p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                  <h3 className="text-lg font-bold text-gray-900">{pkg.name}</h3>
+                  <div className="text-sm font-semibold text-primary-700 shrink-0">
+                    Early: {currencyForPayments()} {pkg.earlyUsd} · Late: {currencyForPayments()} {pkg.lateUsd}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">{pkg.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link href="/participate/register" className="btn-primary text-lg px-8 py-4">
+              Register Online
+              <FiArrowRight className="w-5 h-5 ml-2 inline" />
             </Link>
           </div>
         </div>

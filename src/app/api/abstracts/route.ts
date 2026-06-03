@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Submission ID:</strong> ${abstract.submissionId || abstract.id}</p>
           <p><strong>Track:</strong> ${abstract.track}</p>
           <p><strong>Status:</strong> Received - Under Review</p>
-          <p>Our review committee will evaluate your submission and notify you of the outcome by <strong>1 May 2026</strong>.</p>
+          <p>Our review committee will evaluate your submission and notify you of the outcome by <strong>5 June 2026</strong>.</p>
           <p>We appreciate your contribution to SARSYC VI and look forward to potentially featuring your work.</p>
           <p>Best regards,<br>The SARSYC VI Steering Committee</p>
         </div>
@@ -218,7 +218,7 @@ Submission ID: ${abstract.submissionId || abstract.id}
 Track: ${abstract.track}
 Status: Received - Under Review
 
-Our review committee will evaluate your submission and notify you of the outcome by 1 May 2026.
+Our review committee will evaluate your submission and notify you of the outcome by 5 June 2026.
 
 Best regards,
 The SARSYC VI Steering Committee

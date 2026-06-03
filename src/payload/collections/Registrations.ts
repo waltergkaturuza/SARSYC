@@ -529,7 +529,7 @@ const Registrations: CollectionConfig = {
         },
       ],
       admin: {
-        description: '2026 tiers: Early bird 1 May–30 Jun; Late 1–31 Jul (USD incl. VAT where applicable — confirm with organisers).',
+        description: '2026 tiers: Early bird 15 May–15 Jul; Late 16–31 Jul (USD incl. VAT where applicable — confirm with organisers).',
       },
     },
     {

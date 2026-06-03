@@ -349,7 +349,7 @@ export default function SubmitAbstractPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Notification by: 1 May 2026</span>
+                    <span>Notification by: 5 June 2026</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -436,7 +436,7 @@ export default function SubmitAbstractPage() {
               <li>• Select the most appropriate conference track</li>
               <li>• Provide 3-5 keywords</li>
               <li>• Include all co-authors (optional)</li>
-              <li>• Decisions communicated by 1 May 2026</li>
+              <li>• Decisions communicated by 5 June 2026</li>
             </ul>
           </div>
 
@@ -997,7 +997,7 @@ export default function SubmitAbstractPage() {
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-sm text-yellow-800">
                       <strong>Note:</strong> After submission, you'll receive a confirmation email with your submission ID.
-                      Decisions will be communicated by 1 May 2026.
+                      Decisions will be communicated by 5 June 2026.
                     </p>
                   </div>
                 </div>

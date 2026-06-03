@@ -9,6 +9,7 @@ import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 import {
   REGISTRATION_PACKAGES,
+  REGISTRATION_SCHEDULE,
   currencyForPayments,
   getRegistrationPackage,
   getRegistrationPricingTier,
@@ -1710,12 +1711,12 @@ export default function RegisterPage() {
                     <p className="font-semibold text-primary-900 mb-1">Pricing period</p>
                     {getRegistrationPricingTier() === 'early' && (
                       <p>
-                        <strong>Early bird</strong> (1 May–30 June 2026). Before 1 May we still show early-bird rates so you can register ahead of the official opening date.
+                        <strong>Early bird</strong> ({REGISTRATION_SCHEDULE.earlyWindowLabel}). Before {REGISTRATION_SCHEDULE.earlyOpens} we still show early-bird rates so you can register ahead of the official opening date.
                       </p>
                     )}
                     {getRegistrationPricingTier() === 'late' && (
                       <p>
-                        <strong>Late registration</strong> (1–31 July 2026). Listed prices are late rates.
+                        <strong>Late registration</strong> ({REGISTRATION_SCHEDULE.lateWindowLabel}). Listed prices are late rates.
                       </p>
                     )}
                     <p className="mt-2 text-xs text-gray-600">

@@ -444,7 +444,7 @@ With ${total} abstracts received from 12 Southern African countries — a substa
 
 Please email researchunit@saywhat.org.zw to confirm your ability to attend and present in person at SARSYC VI. Note that confirmation does not constitute registration. You must still register for the conference at ${registerUrl}.
 
-We encourage you to take advantage of the Early Bird registration period (until 15 July 2026) for lower rates. The registration fee will increase from 16 – 30 July 2026.
+We encourage you to take advantage of the Early Bird registration period (until 15 July 2026) for lower rates. The registration fee will increase from 16 – 31 July 2026.
 
 Please indicate in your confirmation email if you are unable to secure funding for your registration and travel for consideration on the limited sponsorships available.
 
@@ -495,7 +495,7 @@ E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +26
       </p>
       <p style="margin:0 0 14px;">
         We encourage you to take advantage of the <strong>Early Bird registration period (until 15 July 2026)</strong>
-        for lower rates. The registration fee will increase from 16 – 30 July 2026.
+        for lower rates. The registration fee will increase from 16 – 31 July 2026.
       </p>
       <p style="margin:0 0 14px;">
         Please indicate in your confirmation email if you are unable to secure funding for your registration

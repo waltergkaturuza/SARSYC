@@ -13,7 +13,7 @@ const faqData = [
       },
       {
         question: 'What is the registration fee?',
-        answer: 'Early Bird (by May 31): $50 for students, $100 for professionals. Regular (after May 31): $75 for students, $150 for professionals. The fee covers conference materials, meals, and certificate of participation.',
+        answer: 'Early bird registration runs from 15 May to 15 July 2026; late registration runs from 16 to 31 July 2026. Package rates are listed on the registration form and SARSYC VI overview page.',
       },
       {
         question: 'Can I get a registration waiver or scholarship?',
@@ -21,7 +21,7 @@ const faqData = [
       },
       {
         question: 'What is the registration deadline?',
-        answer: 'Regular registration closes on July 31, 2026. However, we encourage early registration to secure your spot and benefit from early bird rates.',
+        answer: 'Late registration closes on 31 July 2026. We encourage early registration to secure your spot and benefit from early bird rates (15 May – 15 July 2026).',
       },
     ],
   },
@@ -42,7 +42,7 @@ const faqData = [
       },
       {
         question: 'When will I know if my abstract is accepted?',
-        answer: 'All submitters will be notified of decisions by 1 May 2026. You\'ll receive an email with the review outcome and next steps.',
+        answer: 'All submitters will be notified of decisions by 5 June 2026. You\'ll receive an email with the review outcome and next steps.',
       },
     ],
   },

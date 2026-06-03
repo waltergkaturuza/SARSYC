@@ -500,7 +500,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-white/80">Notification of Acceptance</p>
-                    <p className="font-bold">1 May 2026</p>
+                    <p className="font-bold">5 June 2026</p>
                   </div>
                   <div>
                     <p className="text-white/80">Conference Dates</p>

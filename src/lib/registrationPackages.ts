@@ -1,8 +1,17 @@
 /**
  * SARSYC VI registration packages — amounts in USD (whole dollars in source; minor units are cents).
- * Early bird: opens 1 May 2026, closes 30 June 2026. Late: 1 July – 31 July 2026.
+ * Early bird: opens 15 May 2026, closes 15 July 2026. Late: 16 July – 31 July 2026.
  * Before early-bird officially opens we still bill the early rate so the form can open earlier.
  */
+
+export const REGISTRATION_SCHEDULE = {
+  earlyOpens: '15 May 2026',
+  earlyCloses: '15 July 2026',
+  lateOpens: '16 July 2026',
+  lateCloses: '31 July 2026',
+  earlyWindowLabel: '15 May – 15 July 2026',
+  lateWindowLabel: '16 – 31 July 2026',
+} as const
 
 export type RegistrationPricingTier = 'early' | 'late' | 'closed'
 
@@ -97,27 +106,22 @@ export function getRegistrationPricingTier(now: Date = new Date()): Registration
   const y = now.getUTCFullYear()
   const m = now.getUTCMonth()
   const d = now.getUTCDate()
+  const ts = Date.UTC(y, m, d)
 
-  const asDay = () => ({
-    ts: Date.UTC(y, m, d),
-    julyDone: Date.UTC(y, 6, 31),
-    afterLate: Date.UTC(y, 7, 1), // Aug 1
-  })
-  const { ts, afterLate } = asDay()
+  const earlyStart = Date.UTC(2026, 4, 15) // 15 May 2026
+  const earlyEnd = Date.UTC(2026, 6, 15) // 15 July 2026
+  const lateStart = Date.UTC(2026, 6, 16) // 16 July 2026
+  const lateEnd = Date.UTC(2026, 6, 31) // 31 July 2026
+  const afterLate = Date.UTC(2026, 7, 1) // 1 Aug 2026
 
-  // Late window: July 1 – July 31 (UTC calendar day granularity)
-  if (y === 2026 && m === 6 && d >= 1 && d <= 31) return 'late'
-  if (y > 2026 || (y === 2026 && ts >= afterLate)) return 'closed'
+  if (y > 2026 || ts >= afterLate) return 'closed'
+  if (ts >= lateStart && ts <= lateEnd) return 'late'
+  if (ts >= earlyStart && ts <= earlyEnd) return 'early'
 
-  // Early window official: May 1 – June 30, 2026
-  const may1 = Date.UTC(2026, 4, 1)
-  const june30 = Date.UTC(2026, 5, 30)
-  if (ts >= may1 && ts <= june30) return 'early'
+  // Before 15 May 2026 — same as early pricing so registration can open early
+  if (y < 2026 || ts < earlyStart) return 'early'
 
-  // Before May 2026 — same as early pricing so registration can open early
-  if (ts < may1 && y <= 2026) return 'early'
-
-  return 'early'
+  return 'closed'
 }
 
 export function packageUsdForTier(pkg: RegistrationPackageDef, tier: RegistrationPricingTier): number {
