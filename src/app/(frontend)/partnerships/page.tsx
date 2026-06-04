@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiDownload, FiMail, FiZap, FiTarget, FiLoader } from 'react-icons/fi'
+import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiMail, FiZap, FiTarget, FiLoader } from 'react-icons/fi'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -297,13 +297,6 @@ export default function PartnershipsPage() {
               })}
             </div>
           )}
-
-          <div className="text-center mt-8">
-            <button className="btn-outline flex items-center gap-2 mx-auto">
-              <FiDownload />
-              Download Full Sponsorship Prospectus (PDF)
-            </button>
-          </div>
         </div>
       </section>
 

@@ -5,6 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiCheck, FiUsers, FiAward, FiHeart, FiCalendar, FiChevronRight, FiChevronLeft, FiUpload, FiX, FiFileText } from 'react-icons/fi'
+import VolunteerImageSlider from '@/components/ui/VolunteerImageSlider'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 import { trackEvent } from '@/components/analytics/AnalyticsTracker'
@@ -332,13 +333,13 @@ export default function VolunteerPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-10 md:py-12">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-3">
               Volunteer at SARSYC VI
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-lg md:text-xl text-white/90">
               Be part of the team that makes SARSYC VI an unforgettable experience for 500+ participants
             </p>
           </div>
@@ -348,20 +349,30 @@ export default function VolunteerPage() {
       {/* Benefits */}
       <section className="section bg-white">
         <div className="container-custom">
-          <h2 className="section-title">Why Volunteer?</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((benefit) => {
-              const Icon = benefit.icon
-              return (
-                <div key={benefit.title} className="card p-6 text-center">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{benefit.title}</h3>
-                  <p className="text-sm text-gray-600">{benefit.description}</p>
-                </div>
-              )
-            })}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            <div className="min-w-0 flex flex-col">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 lg:mb-8 text-center lg:text-left">
+                Why Volunteer?
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
+                {benefits.map((benefit) => {
+                  const Icon = benefit.icon
+                  return (
+                    <div key={benefit.title} className="card p-6 text-center h-full">
+                      <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon className="w-6 h-6 text-primary-600" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-2">{benefit.title}</h3>
+                      <p className="text-sm text-gray-600">{benefit.description}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="min-w-0 lg:min-h-[420px]">
+              <VolunteerImageSlider />
+            </div>
           </div>
         </div>
       </section>
