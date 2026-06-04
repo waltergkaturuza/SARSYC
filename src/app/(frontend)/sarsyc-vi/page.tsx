@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import CountdownTimer from '@/components/ui/CountdownTimer'
-import ProgrammeSessionsSection from '@/components/programme/ProgrammeSessionsSection'
+import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgrammeSchedule'
 import {
   REGISTRATION_PACKAGES,
   REGISTRATION_SCHEDULE,
@@ -511,7 +511,7 @@ export default function SarsycVIPage() {
       {/* Program Schedule */}
       <section className="section bg-gray-50">
         <div className="container-custom">
-          <ProgrammeSessionsSection
+          <ConferenceProgrammeSchedule
             variant="embed"
             title="Program Schedule"
             subtitle="A comprehensive three-day program of learning, engagement, and action in Windhoek."

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { FiDownload } from 'react-icons/fi'
-import ProgrammeSessionsSection from '@/components/programme/ProgrammeSessionsSection'
+import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgrammeSchedule'
 
 export default function ProgrammePage() {
   return (
@@ -12,7 +12,8 @@ export default function ProgrammePage() {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Conference Programme</h1>
             <p className="text-xl text-white/90 mb-6">
-              Explore sessions, speakers, and schedule for SARSYC VI
+              Three days in Windhoek (August 5–7, 2026): Research Indaba, forums & engagements, and
+              official opening, closing & culture night
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="/api/programme/pdf" download className="btn-accent flex items-center gap-2">
@@ -33,7 +34,7 @@ export default function ProgrammePage() {
         </div>
       </section>
 
-      <ProgrammeSessionsSection variant="page" />
+      <ConferenceProgrammeSchedule variant="page" />
     </>
   )
 }
