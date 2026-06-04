@@ -27,6 +27,10 @@
 export const STANBIC_PAYMENT_SUPPORT_HINT =
   'Use api-gateway URL (not portal), matching realm + API key + outlet. Allow-list return URL https://www.sarsyc.org/participate/register/payment-complete/return (and /participate/register/payment-complete/* for registrations). Env: STANBIC_GATEWAY_URL, STANBIC_REALM, STANBIC_API_KEY, STANBIC_OUTLET_REF. Redeploy after env changes.'
 
+/** When Stanbic sets a per-transaction USD cap, set this to match so the form blocks card checkout earlier. */
+export const STANBIC_AMOUNT_LIMIT_HINT =
+  'Ask Stanbic/N-Genius to raise the per-transaction USD limit for your merchant outlet in the live portal (Organisational hierarchy → outlet → risk/limits), or pay by bank transfer on the donate page.'
+
 export const STANBIC_ENV_FALLBACK = {
   /**
    * LIVE production gateway — no "sandbox." prefix.

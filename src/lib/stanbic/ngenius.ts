@@ -10,7 +10,7 @@ import {
   minorAmountForPackage,
 } from '@/lib/registrationPackages'
 import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTransfer'
-import { STANBIC_ENV_FALLBACK } from '@/lib/stanbic/stanbicEnvFallback'
+import { STANBIC_ENV_FALLBACK, STANBIC_AMOUNT_LIMIT_HINT, STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 
 /** When `STANBIC_DISABLE_CODE_FALLBACK` is true, `stanbicEnvFallback.ts` values are not used (forces explicit Vercel/local env). */
 function useStanbicCodeFallback(): boolean {
@@ -131,10 +131,31 @@ function stanbicFetchInit(extra?: RequestInit): RequestInit {
   }
 }
 
+/** Optional cap (whole USD) when Stanbic outlet risk rules limit card amounts — set STANBIC_MAX_ORDER_USD on Vercel. */
+export function stanbicMaxOrderUsd(): number | null {
+  const raw = process.env.STANBIC_MAX_ORDER_USD?.trim()
+  if (!raw) return null
+  const n = parseFloat(raw)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+function stanbicRawErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message || ''
+  return typeof err === 'string' ? err : ''
+}
+
+export function isStanbicAmountLimitExceeded(message: string): boolean {
+  return /amountLimitExceeded|Amount Limit Exceeded|amount limit exceeded/i.test(message)
+}
+
 /** User-facing message for failed outbound calls to N-Genius (timeouts, DNS, etc.). */
 export function formatStanbicOutboundError(err: unknown): string {
   if (!(err instanceof Error)) {
-    return typeof err === 'string' ? err : 'Payment gateway request failed'
+    const s = typeof err === 'string' ? err : 'Payment gateway request failed'
+    if (isStanbicAmountLimitExceeded(s)) {
+      return userMessageForAmountLimit()
+    }
+    return s
   }
   const msg = err.message || ''
   const name = err.name || ''
@@ -145,16 +166,58 @@ export function formatStanbicOutboundError(err: unknown): string {
   ) {
     return `Stanbic/N-Genius did not respond within ${stanbicOutboundTimeoutMs()}ms. Please try again shortly.`
   }
+  if (isStanbicAmountLimitExceeded(msg)) {
+    return userMessageForAmountLimit()
+  }
   return msg
+}
+
+function userMessageForAmountLimit(): string {
+  const max = stanbicMaxOrderUsd()
+  if (max) {
+    return `This amount exceeds the USD ${max} per-transaction limit on the Stanbic card payment gateway. Try a smaller amount or use bank transfer on this page.`
+  }
+  return 'This amount exceeds the USD per-transaction limit on the Stanbic card payment gateway for this outlet. Try a smaller amount or use bank transfer on this page.'
+}
+
+/** Optional second line for API JSON responses (toast). */
+export function stanbicPaymentFailureHint(err: unknown): string | undefined {
+  const raw = stanbicRawErrorMessage(err)
+  if (isStanbicAmountLimitExceeded(raw)) {
+    return STANBIC_AMOUNT_LIMIT_HINT
+  }
+  if (/Create order failed \(422\)/i.test(raw) && /redirect|Unprocessable/i.test(raw)) {
+    return STANBIC_PAYMENT_SUPPORT_HINT
+  }
+  return undefined
+}
+
+export type StanbicCreateOrderFailure = {
+  error: string
+  hint?: string
+  httpStatus: number
+}
+
+export function stanbicCreateOrderFailureResponse(err: unknown): StanbicCreateOrderFailure {
+  const raw = stanbicRawErrorMessage(err)
+  const error = formatStanbicOutboundError(err)
+  const hint = stanbicPaymentFailureHint(err)
+  let httpStatus = httpStatusForStanbicOutboundFailure(raw || error)
+  if (isStanbicAmountLimitExceeded(raw)) {
+    httpStatus = 422
+  }
+  return { error, hint, httpStatus }
 }
 
 /**
  * Pick route HTTP status when N-Genius outbound fails.
- * 502 = upstream responded with a client error (credentials, validation, redirect URL block).
+ * 422 = amount limit or similar gateway validation.
+ * 502 = upstream responded with other client errors (credentials, redirect URL block).
  * 503 = timeout, DNS, connectivity, or upstream 5xx.
  */
 export function httpStatusForStanbicOutboundFailure(message: string): number {
   const m = message.trim()
+  if (isStanbicAmountLimitExceeded(m)) return 422
   if (/did not respond within/i.test(m) || /^Stanbic\/N-Genius did not respond/i.test(m)) return 503
   if (/abort|timed out|timeout|fetch failed|ENOTFOUND|ECONNREFUSED|EAI_AGAIN/i.test(m)) return 503
   const match = m.match(/\((\d{3})\)/)

@@ -8,7 +8,7 @@ import {
   registrationFeeCurrency,
   resolveHostedPaymentMinorUnits,
   formatStanbicOutboundError,
-  httpStatusForStanbicOutboundFailure,
+  stanbicCreateOrderFailureResponse,
 } from '@/lib/stanbic/ngenius'
 import {
   getRegistrationPricingTier,
@@ -22,7 +22,6 @@ import {
   logStanbicDuplicatePaymentAttempt,
 } from '@/lib/stanbic/stanbicCertification'
 import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
-import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -195,8 +194,7 @@ export async function POST(req: NextRequest) {
       orderReference,
     })
   } catch (e: unknown) {
-    const msg = formatStanbicOutboundError(e)
-    const httpStatus = httpStatusForStanbicOutboundFailure(msg)
+    const { error: msg, hint, httpStatus } = stanbicCreateOrderFailureResponse(e)
     console.error('[stanbic create-order]', e)
     console.error('[stanbic create-order] payment return URL (allow-list):', redirectUrl)
     logStanbicPaymentEvent(
@@ -242,11 +240,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json(
-      httpStatus === 502
-        ? { error: msg, hint: STANBIC_PAYMENT_SUPPORT_HINT }
-        : { error: msg },
-      { status: httpStatus },
-    )
+    return NextResponse.json(hint ? { error: msg, hint } : { error: msg }, { status: httpStatus })
   }
 }

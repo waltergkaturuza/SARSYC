@@ -4,10 +4,10 @@ import {
   stanbicAccessToken,
   stanbicCreateHostedOrder,
   stanbicDonatePaymentReturnUrl,
-  formatStanbicOutboundError,
-  httpStatusForStanbicOutboundFailure,
+  stanbicCreateOrderFailureResponse,
+  stanbicMaxOrderUsd,
 } from '@/lib/stanbic/ngenius'
-import { STANBIC_PAYMENT_SUPPORT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
+import { STANBIC_AMOUNT_LIMIT_HINT } from '@/lib/stanbic/stanbicEnvFallback'
 import { logStanbicPaymentEvent } from '@/lib/stanbic/paymentJsonLog'
 import { buildStanbicStartLogPayload } from '@/lib/stanbic/stanbicCertification'
 import { isConferenceTrackId, conferenceTrackLabel } from '@/lib/conferenceTracks'
@@ -101,6 +101,17 @@ export async function POST(req: NextRequest) {
 
   if (!amountUsd || amountUsd < 1) {
     return NextResponse.json({ error: 'Minimum amount is USD 1.' }, { status: 400 })
+  }
+
+  const maxCardUsd = stanbicMaxOrderUsd()
+  if (maxCardUsd != null && amountUsd > maxCardUsd) {
+    return NextResponse.json(
+      {
+        error: `Card payments above USD ${maxCardUsd} are not available online. Use bank transfer below or contact the organisers.`,
+        hint: STANBIC_AMOUNT_LIMIT_HINT,
+      },
+      { status: 400 },
+    )
   }
 
   const donorName =
@@ -245,8 +256,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ redirectUrl: paymentHref, orderReference, donationId })
   } catch (e: unknown) {
-    const msg = formatStanbicOutboundError(e)
-    const httpStatus = httpStatusForStanbicOutboundFailure(msg)
+    const { error: msg, hint, httpStatus } = stanbicCreateOrderFailureResponse(e)
     console.error('[donate create-order]', e)
 
     logStanbicPaymentEvent(
@@ -264,11 +274,6 @@ export async function POST(req: NextRequest) {
       }),
     )
 
-    return NextResponse.json(
-      httpStatus === 502
-        ? { error: msg, hint: STANBIC_PAYMENT_SUPPORT_HINT }
-        : { error: msg },
-      { status: httpStatus },
-    )
+    return NextResponse.json(hint ? { error: msg, hint } : { error: msg }, { status: httpStatus })
   }
 }
