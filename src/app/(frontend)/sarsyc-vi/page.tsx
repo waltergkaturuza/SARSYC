@@ -318,30 +318,31 @@ export default function SarsycVIPage() {
 
       {/* Conference Theme */}
       <section className="section bg-white">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center mb-12">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-200">
+        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 2xl:px-20">
+          <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] gap-8 lg:gap-10 xl:gap-14 items-center mb-12 lg:mb-16">
+            <div className="relative w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[440px] xl:min-h-[520px] overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-200">
               <Image
                 src="/SARSYC Homepage3.jpg"
                 alt="SARSYC youth delegates at a regional conference"
                 fill
                 className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 1024px) 100vw, 65vw"
+                priority
               />
             </div>
-            <div className="text-center lg:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Conference Theme</h2>
-              <div className="text-gradient text-2xl md:text-3xl font-bold mb-6 leading-snug">
+            <div className="min-w-0 text-center lg:text-left lg:py-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Conference Theme</h2>
+              <div className="text-gradient text-xl md:text-2xl lg:text-3xl font-bold mb-6 leading-snug">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </div>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed text-justify">
                 SARSYC VI focuses on translating commitments into concrete actions that sustain and accelerate progress
                 in youth sexual and reproductive health and education across Southern Africa.
               </p>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
             {objectives.map((objective) => {
               const Icon = objective.icon
               return (
@@ -359,8 +360,14 @@ export default function SarsycVIPage() {
       </section>
 
       {/* Conference Tracks */}
-      <section className="section bg-gray-50">
-        <div className="container-custom">
+      <section className="section relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/SARSYC%20Homepage3.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-[#FFF9F0]/45" aria-hidden />
+        <div className="container-custom relative z-10">
           <h2 className="section-title">Conference Tracks</h2>
           <p className="section-subtitle">
             SARSYC VI features five thematic tracks addressing critical priorities in youth development.
