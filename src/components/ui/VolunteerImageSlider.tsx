@@ -12,7 +12,11 @@ const slides = [
 
 const INTERVAL_MS = 5000
 
-export default function VolunteerImageSlider() {
+type VolunteerImageSliderProps = {
+  className?: string
+}
+
+export default function VolunteerImageSlider({ className = '' }: VolunteerImageSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -24,7 +28,9 @@ export default function VolunteerImageSlider() {
   }, [])
 
   return (
-    <div className="relative w-full min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] lg:h-full rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200 bg-gray-100">
+    <div
+      className={`relative w-full h-full min-h-[280px] sm:min-h-[360px] lg:min-h-[480px] xl:min-h-[540px] rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200 bg-gray-100 ${className}`.trim()}
+    >
       {slides.map((slide, index) => (
         <div
           key={slide.src}
@@ -40,7 +46,7 @@ export default function VolunteerImageSlider() {
             priority={index === 0}
             quality={90}
             className="object-cover object-center"
-            sizes="(max-width: 1024px) 100vw, 45vw"
+            sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 58vw, 720px"
           />
         </div>
       ))}

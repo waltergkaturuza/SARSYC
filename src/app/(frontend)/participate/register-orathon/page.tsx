@@ -100,7 +100,7 @@ export default function RegisterOrathonPage() {
               Register for Orathon
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              Join us for the Post-Conference Marathon Activity - Day 4
+              Post-conference activity — November 2026 across Namibia, Malawi, Zambia, and Zimbabwe
             </p>
           </div>
         </div>
@@ -116,8 +116,9 @@ export default function RegisterOrathonPage() {
                   Orathon Registration Form
                 </h2>
                 <p className="text-gray-600">
-                  Please fill in all required fields to register for the Orathon Marathon Activity. 
-                  This is a post-conference activity taking place on Day 4.
+                  Please fill in all required fields to register for the Orathon. This post-conference activity
+                  takes place in November 2026 across Namibia, Malawi, Zambia, and Zimbabwe (separate from the
+                  SARSYC VI conference in Windhoek, 5-7 August 2026).
                 </p>
               </div>
 

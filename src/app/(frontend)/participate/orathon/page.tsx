@@ -151,20 +151,18 @@ export default function OrathonRegistrationPage() {
               SARSYC VI Orathon
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              Post-Conference Activity - Day 4
+              Post-conference activity — November 2026
             </p>
-            <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <FiCalendar className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">August 8, 2026</div>
+                <div className="font-semibold">November 2026</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:col-span-2">
                 <FiMapPin className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">Windhoek, Namibia</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <FiUsers className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">Open to All</div>
+                <div className="font-semibold text-sm leading-snug">
+                  Namibia · Malawi · Zambia · Zimbabwe
+                </div>
               </div>
             </div>
           </div>
@@ -177,14 +175,14 @@ export default function OrathonRegistrationPage() {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2 className="section-title">Join the Orathon</h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Continue the momentum from SARSYC VI with our post-conference Orathon. This unique event provides 
-              an opportunity to extend engagement, build deeper connections, and take action beyond the formal 
-              conference sessions.
+              Continue the momentum from SARSYC VI with the regional Orathon — a post-conference activity in{' '}
+              <strong>November 2026</strong> across <strong>Namibia, Malawi, Zambia, and Zimbabwe</strong>. It is
+              separate from the main conference in Windhoek (5-7 August 2026).
             </p>
             <p className="text-gray-600 mt-4">
-              <strong>Date:</strong> August 8, 2026 (Day 4)<br />
-              <strong>Location:</strong> Windhoek, Namibia<br />
-              <strong>Registration Required:</strong> Yes
+              <strong>When:</strong> November 2026<br />
+              <strong>Where:</strong> Namibia, Malawi, Zambia, and Zimbabwe<br />
+              <strong>Registration:</strong> Required (open now)
             </p>
           </div>
         </div>
