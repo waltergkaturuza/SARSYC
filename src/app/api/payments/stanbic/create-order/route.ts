@@ -3,7 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 import {
   stanbicAccessToken,
   stanbicCreateHostedOrder,
-  publicSiteOrigin,
+  stanbicRegistrationPaymentReturnUrl,
   registrationRequiresHostedPayment,
   registrationFeeCurrency,
   resolveHostedPaymentMinorUnits,
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No payment amount is due for this registration.' }, { status: 400 })
   }
 
-  const redirectUrl = `${publicSiteOrigin()}/participate/register/payment-complete/${encodeURIComponent(idStr)}`
+  const redirectUrl = stanbicRegistrationPaymentReturnUrl(idStr)
 
   const tier = getRegistrationPricingTier()
 

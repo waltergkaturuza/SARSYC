@@ -216,6 +216,31 @@ export function publicSiteOrigin(): string {
   return 'http://localhost:3000'
 }
 
+/**
+ * N-Genius return URL for card payments. Stanbic often allow-lists only the registration
+ * payment-complete path — donations use `/participate/register/payment-complete/return` then
+ * forward to the donate completion page.
+ */
+export function stanbicDonatePaymentReturnUrl(donationId: string): string {
+  const template = process.env.STANBIC_DONATE_REDIRECT_URL?.trim()
+  if (template) {
+    return template.replaceAll('{donationId}', encodeURIComponent(donationId))
+  }
+  const origin = publicSiteOrigin()
+  const id = encodeURIComponent(donationId)
+  return `${origin}/participate/register/payment-complete/return?flow=donate&donationId=${id}`
+}
+
+export function stanbicRegistrationPaymentReturnUrl(registrationPayloadId: string): string {
+  const template = process.env.STANBIC_REGISTRATION_REDIRECT_URL?.trim()
+  if (template) {
+    return template.replaceAll('{registrationPayloadId}', encodeURIComponent(registrationPayloadId))
+  }
+  const origin = publicSiteOrigin()
+  const id = encodeURIComponent(registrationPayloadId)
+  return `${origin}/participate/register/payment-complete/${id}`
+}
+
 /** Env wins when set (`true` / `false`); otherwise use fallback file (unless code fallback disabled). */
 function resolvedRawAuthorizationFlag(): boolean {
   const e = process.env.STANBIC_API_KEY_AUTHORIZATION_RAW?.trim().toLowerCase()
@@ -423,7 +448,11 @@ export async function stanbicCreateHostedOrder(params: {
       typeof data.message === 'string' && data.message.trim()
         ? data.message.trim()
         : text.slice(0, 300)
-    throw new Error(`Create order failed (${res.status}): ${detail}`)
+    const validation =
+      Array.isArray(data.errors) && data.errors.length > 0
+        ? ` — ${JSON.stringify(data.errors).slice(0, 400)}`
+        : ''
+    throw new Error(`Create order failed (${res.status}): ${detail}${validation}`)
   }
 
   const links = data._links as Record<string, { href?: string }> | undefined

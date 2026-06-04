@@ -3,7 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 import {
   stanbicAccessToken,
   stanbicCreateHostedOrder,
-  publicSiteOrigin,
+  stanbicDonatePaymentReturnUrl,
   formatStanbicOutboundError,
   httpStatusForStanbicOutboundFailure,
 } from '@/lib/stanbic/ngenius'
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not record donation. Please try again.' }, { status: 500 })
   }
 
-  const redirectUrl = `${publicSiteOrigin()}/participate/donate/payment-complete/${encodeURIComponent(donationId)}`
+  const redirectUrl = stanbicDonatePaymentReturnUrl(donationId)
   const amountMinorUnits = Math.round(amountUsd * 100) // cents
 
   try {
@@ -217,6 +217,8 @@ export async function POST(req: NextRequest) {
       redirectUrl,
       merchantOrderReference: donationId,
     })
+
+    console.info('[donate create-order] payment return URL (allow-list):', redirectUrl)
 
     await payload.update({
       collection: 'donations',

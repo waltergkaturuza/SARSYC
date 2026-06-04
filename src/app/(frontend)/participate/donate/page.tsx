@@ -225,7 +225,10 @@ export default function DonatePage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        showToast.error(data.error || 'Payment could not be started. Please try again.')
+        const detail =
+          typeof data.error === 'string' ? data.error : 'Payment could not be started. Please try again.'
+        const hint = typeof data.hint === 'string' ? data.hint : ''
+        showToast.error(hint ? `${detail} ${hint}` : detail)
         return
       }
       window.location.href = data.redirectUrl

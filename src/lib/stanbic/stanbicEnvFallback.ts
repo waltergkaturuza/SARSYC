@@ -25,7 +25,7 @@
 
 /** Short hint on create-order failures; alignment details are in the file header & Vercel function logs. */
 export const STANBIC_PAYMENT_SUPPORT_HINT =
-  'Use api-gateway URL (not portal), matching realm + API key + outlet. Env aliases: STANBIC_GATEWAY_URL, STANBIC_REALM, STANBIC_API_KEY, STANBIC_OUTLET_REF. Set STANBIC_DISABLE_CODE_FALLBACK=true to require all values on Vercel (no repo defaults). Redeploy after env changes.'
+  'Use api-gateway URL (not portal), matching realm + API key + outlet. Allow-list return URL https://www.sarsyc.org/participate/register/payment-complete/return (and /participate/register/payment-complete/* for registrations). Env: STANBIC_GATEWAY_URL, STANBIC_REALM, STANBIC_API_KEY, STANBIC_OUTLET_REF. Redeploy after env changes.'
 
 export const STANBIC_ENV_FALLBACK = {
   /**
