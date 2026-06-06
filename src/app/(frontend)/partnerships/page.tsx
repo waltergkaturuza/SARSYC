@@ -93,6 +93,61 @@ const partners = [
     logo: '/partners/NAQEZ-Logo.png',
     alt: 'NAQEZ Logo',
   },
+  {
+    name: 'SADC Parliamentary Forum',
+    logo: '/partners/sadc-pf.png',
+    alt: 'SADC Parliamentary Forum Logo',
+  },
+  {
+    name: 'NUST',
+    logo: '/partners/nust-namibia.png',
+    alt: 'Namibia University of Science and Technology Logo',
+  },
+  {
+    name: 'Welwitschia University',
+    logo: '/partners/welwitschia-university.png',
+    alt: 'Welwitschia University Logo',
+  },
+  {
+    name: 'Zimbabwe Youth Council',
+    logo: '/partners/zimbabwe-youth-council.jpg',
+    alt: 'Zimbabwe Youth Council Logo',
+  },
+  {
+    name: 'CARE',
+    logo: '/partners/care-org.png',
+    alt: 'CARE Logo',
+  },
+  {
+    name: 'UNFPA',
+    logo: '/partners/unfpa.svg',
+    alt: 'UNFPA Logo',
+  },
+  {
+    name: 'Tukwatha',
+    logo: '/partners/tukwatha.jpg',
+    alt: 'Tukwatha Namibian Organization Logo',
+  },
+  {
+    name: 'Pangea Zimbabwe AIDS Trust',
+    logo: '/partners/pangea.jpg',
+    alt: 'Pangea Zimbabwe AIDS Trust Logo',
+  },
+  {
+    name: 'University of Pretoria CSA&G',
+    logo: '/partners/up-csag.jpg',
+    alt: 'University of Pretoria Centre for Sexuality AIDS and Gender Logo',
+  },
+  {
+    name: 'MEYIASC',
+    logo: '/partners/meyiasc-namibia.jpg',
+    alt: 'Ministry of Education, Innovation, Youth, Sport, Arts and Culture Namibia Logo',
+  },
+  {
+    name: 'MoHSS',
+    logo: '/partners/mohss-namibia.jpg',
+    alt: 'Ministry of Health and Social Services Namibia Logo',
+  },
 ]
 
 const partnershipInquirySchema = z.object({
