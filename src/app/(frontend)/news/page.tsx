@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiMapPin, FiSearch, FiArrowRight, FiFolder } from 'react-icons/fi'
+import { FiCalendar, FiMapPin, FiSearch, FiArrowRight, FiFolder, FiExternalLink } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
 import { NEWS_CATEGORY_LABELS } from '@/lib/newsContent'
+import { SARSYC_MEDIA_PUBLICATIONS } from '@/lib/mediaPublications'
 
 export const revalidate = 60
 
@@ -307,6 +308,30 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                   )
                 })}
               </div>
+            </div>
+
+            {/* SARSYC in the media */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <h3 className="font-bold text-gray-900 mb-1">News</h3>
+              <p className="text-sm text-gray-500 mb-4">SARSYC publications in the media</p>
+              <ul className="space-y-3">
+                {SARSYC_MEDIA_PUBLICATIONS.map((item) => (
+                  <li key={item.url}>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block text-sm text-gray-700 hover:text-primary-600 transition-colors"
+                    >
+                      <span className="font-medium line-clamp-3 group-hover:underline">{item.title}</span>
+                      <span className="mt-1 flex items-center gap-1 text-xs text-gray-500 group-hover:text-primary-500">
+                        {item.source}
+                        <FiExternalLink className="w-3 h-3 shrink-0" />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </aside>
         </div>
