@@ -3,6 +3,7 @@ import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTran
 import {
   paymentDueEmailAmount,
   registrationFeeUsd,
+  registrationInactiveReason,
   registrationIsActive,
 } from '@/lib/registrationResumePayment'
 
@@ -276,9 +277,10 @@ export async function loadPaymentsDashboardData(
 
     let canSend = true
     let ineligibleReason: string | null = null
-    if (!registrationIsActive(reg)) {
+    const inactiveReason = registrationInactiveReason(reg)
+    if (inactiveReason) {
       canSend = false
-      ineligibleReason = 'Cancelled or soft-deleted'
+      ineligibleReason = inactiveReason
     } else if (!email.trim()) {
       canSend = false
       ineligibleReason = 'No email'

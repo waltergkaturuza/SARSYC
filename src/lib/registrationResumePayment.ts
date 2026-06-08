@@ -56,15 +56,31 @@ export function suggestedPackageForCategory(category: unknown): RegistrationPack
   }
 }
 
+function hasDeletedAt(reg: { deletedAt?: unknown }): boolean {
+  const deletedAt = reg.deletedAt
+  return deletedAt != null && deletedAt !== ''
+}
+
+/** Why a registration is inactive, if applicable. */
+export function registrationInactiveReason(reg: {
+  status?: unknown
+  deletedAt?: unknown
+}): string | null {
+  if (reg.status === 'cancelled') {
+    return hasDeletedAt(reg)
+      ? 'Soft-deleted (status: Cancelled)'
+      : 'Registration status is Cancelled'
+  }
+  if (hasDeletedAt(reg)) return 'Soft-deleted'
+  return null
+}
+
 /** Active registrations eligible for outreach (not cancelled or soft-deleted). */
 export function registrationIsActive(reg: {
   status?: unknown
   deletedAt?: unknown
 }): boolean {
-  if (reg.status === 'cancelled') return false
-  const deletedAt = reg.deletedAt
-  if (deletedAt != null && deletedAt !== '') return false
-  return true
+  return registrationInactiveReason(reg) == null
 }
 
 export function registrationNeedsPayment(reg: {

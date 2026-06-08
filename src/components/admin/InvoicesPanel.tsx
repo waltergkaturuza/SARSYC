@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiMail, FiSearch, FiEdit2, FiLoader } from 'react-icons/fi'
+import { FiMail, FiSearch, FiEdit2, FiLoader, FiRotateCcw } from 'react-icons/fi'
 import type { InvoiceCandidate } from '@/lib/admin/paymentsDashboard'
 import { formatUsd } from '@/lib/admin/paymentsDashboard'
 import { showToast } from '@/lib/toast'
@@ -19,11 +19,25 @@ function paymentBadge(status: string): string {
   return 'text-amber-400'
 }
 
+function registrationStatusBadge(status: string): string {
+  if (status === 'cancelled') return 'text-red-400'
+  if (status === 'confirmed') return 'text-emerald-400'
+  return 'text-slate-300'
+}
+
+function canRestore(row: InvoiceCandidate): boolean {
+  return (
+    row.registrationStatus === 'cancelled' ||
+    Boolean(row.ineligibleReason?.toLowerCase().includes('soft-deleted'))
+  )
+}
+
 export default function InvoicesPanel({ candidates }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [sending, setSending] = useState(false)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -53,6 +67,28 @@ export default function InvoicesPanel({ candidates }: Props) {
       next[c.payloadId] = !allOn
     })
     setSelected(next)
+  }
+
+  async function restoreRegistration(row: InvoiceCandidate) {
+    setRestoringId(row.payloadId)
+    try {
+      const res = await fetch(`/api/admin/registrations/${row.payloadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'pending' }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Could not restore registration')
+      }
+      showToast.success(`${row.delegate} restored — you can now select and send an invoice`)
+      router.refresh()
+    } catch (e: unknown) {
+      showToast.error(e instanceof Error ? e.message : 'Restore failed')
+    } finally {
+      setRestoringId(null)
+    }
   }
 
   async function sendInvoices() {
@@ -103,8 +139,9 @@ export default function InvoicesPanel({ candidates }: Props) {
     <>
       <p className="text-xs text-slate-500 mb-4">
         Select delegates and send a branded invoice email with SARSYC letterhead, fee breakdown, and
-        bank transfer details (same style as abstract decision letters). Cancelled or soft-deleted
-        registrations cannot be invoiced.
+        bank transfer details. Checkboxes are only enabled for <strong className="text-slate-400">active</strong>{' '}
+        registrations (not Cancelled or soft-deleted). If a row is greyed out, use{' '}
+        <strong className="text-slate-400">Restore</strong> to set status back to Pending, then invoice.
       </p>
 
       <div className="flex flex-col lg:flex-row gap-3 mb-4">
@@ -144,17 +181,18 @@ export default function InvoicesPanel({ candidates }: Props) {
                 />
               </th>
               <th className="px-4 py-3">Delegate</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Package</th>
               <th className="px-4 py-3">Fee</th>
               <th className="px-4 py-3">Payment</th>
               <th className="px-4 py-3">Invoice sent</th>
-              <th className="px-4 py-3 w-10" />
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                   No registrations match your search.
                 </td>
               </tr>
@@ -162,7 +200,7 @@ export default function InvoicesPanel({ candidates }: Props) {
               filtered.map((row) => (
                 <tr
                   key={row.payloadId}
-                  className={`hover:bg-slate-800/40 ${!row.canSend ? 'opacity-60' : ''}`}
+                  className={`hover:bg-slate-800/40 ${!row.canSend ? 'opacity-75' : ''}`}
                 >
                   <td className="px-4 py-3">
                     <input
@@ -170,8 +208,12 @@ export default function InvoicesPanel({ candidates }: Props) {
                       checked={!!selected[row.payloadId]}
                       onChange={() => toggle(row.payloadId)}
                       disabled={!row.canSend}
-                      title={row.ineligibleReason ?? undefined}
-                      className="rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500/50 disabled:opacity-40"
+                      title={
+                        row.canSend
+                          ? 'Select to send invoice'
+                          : row.ineligibleReason ?? 'Not eligible'
+                      }
+                      className="rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500/50 disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -179,8 +221,11 @@ export default function InvoicesPanel({ candidates }: Props) {
                     <div className="text-xs text-slate-500">{row.email}</div>
                     <div className="text-xs text-slate-600 font-mono mt-0.5">{row.registrationId}</div>
                     {!row.canSend && row.ineligibleReason ? (
-                      <div className="text-xs text-slate-500 mt-1">{row.ineligibleReason}</div>
+                      <div className="text-xs text-amber-200/80 mt-1">{row.ineligibleReason}</div>
                     ) : null}
+                  </td>
+                  <td className={`px-4 py-3 capitalize font-medium ${registrationStatusBadge(row.registrationStatus)}`}>
+                    {row.registrationStatus}
                   </td>
                   <td className="px-4 py-3 text-slate-300 max-w-[200px] text-xs">
                     {row.packageName ?? '—'}
@@ -195,12 +240,31 @@ export default function InvoicesPanel({ candidates }: Props) {
                     {row.invoiceSentAt ?? '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/registrations/${row.payloadId}`}
-                      className="p-1.5 inline-flex rounded text-slate-400 hover:text-amber-400 hover:bg-slate-700"
-                    >
-                      <FiEdit2 size={16} />
-                    </Link>
+                    <div className="flex items-center gap-1">
+                      {canRestore(row) ? (
+                        <button
+                          type="button"
+                          onClick={() => void restoreRegistration(row)}
+                          disabled={restoringId === row.payloadId}
+                          title="Set status to Pending and clear soft-delete"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-amber-400 hover:bg-slate-700 disabled:opacity-50"
+                        >
+                          {restoringId === row.payloadId ? (
+                            <FiLoader className="animate-spin" size={14} />
+                          ) : (
+                            <FiRotateCcw size={14} />
+                          )}
+                          Restore
+                        </button>
+                      ) : null}
+                      <Link
+                        href={`/admin/registrations/${row.payloadId}`}
+                        className="p-1.5 inline-flex rounded text-slate-400 hover:text-amber-400 hover:bg-slate-700"
+                        title="View registration"
+                      >
+                        <FiEdit2 size={16} />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

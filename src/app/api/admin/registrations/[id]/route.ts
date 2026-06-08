@@ -70,10 +70,15 @@ export async function PATCH(
       overrideAccess: true,
     })
 
+    const patchData = { ...data }
+    if (patchData.status === 'pending' || patchData.status === 'confirmed') {
+      patchData.deletedAt = null
+    }
+
     const registration = await payload.update({
       collection: 'registrations',
       id: params.id,
-      data,
+      data: patchData,
       overrideAccess: true,
     })
 
