@@ -24,6 +24,7 @@ import type {
 import { formatUsd } from '@/lib/admin/paymentsDashboard'
 import { STANBIC_CERTIFICATION_MATRIX } from '@/lib/stanbic/stanbicCertificationMatrix'
 import { showToast } from '@/lib/toast'
+import InvoicesPanel from '@/components/admin/InvoicesPanel'
 
 type TabId = 'overview' | 'payments' | 'card-activity' | 'certification' | 'invoices'
 
@@ -40,6 +41,7 @@ function statusClass(status: PaymentRow['status']): string {
   if (status === 'failed') return 'text-red-400'
   if (status === 'waived') return 'text-sky-400'
   if (status === 'bank-transfer') return 'text-amber-400'
+  if (status === 'cancelled') return 'text-slate-500'
   return 'text-red-400'
 }
 
@@ -155,6 +157,8 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
   }, [data.cardActivity, cardSearch])
 
   const { stats } = data
+  const invoiceEligible = data.invoiceCandidates.filter((c) => c.canSend).length
+  const invoicesSent = data.invoiceCandidates.filter((c) => c.invoiceSentAt).length
   const totalItems = stats.registrationCount + stats.donationCount
   const paidPct = totalItems ? (stats.paidCount / totalItems) * 100 : 0
   const unpaidPct = totalItems ? (stats.unpaidCount / totalItems) * 100 : 0
@@ -226,9 +230,9 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
         />
         <SummaryCard
           icon={<FiFileText className="text-amber-400" size={22} />}
-          value="0"
+          value={String(invoiceEligible)}
           label="Invoices"
-          sub="0 overdue"
+          sub={`${invoicesSent} sent · open tab to email`}
         />
       </div>
 
@@ -457,13 +461,7 @@ export default function PaymentsDashboard({ data }: { data: PaymentsDashboardDat
         )}
 
         {activeTab === 'invoices' && (
-          <div className="rounded-xl border border-slate-700 bg-slate-800/40 py-16 text-center">
-            <FiFileText className="mx-auto text-slate-600 mb-4" size={48} />
-            <p className="text-slate-400 font-medium">No invoices yet</p>
-            <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-              Invoice generation with PDF export can be added when registration invoicing is required.
-            </p>
-          </div>
+          <InvoicesPanel candidates={data.invoiceCandidates} />
         )}
       </div>
     </div>

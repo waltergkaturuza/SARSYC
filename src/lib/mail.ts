@@ -10,6 +10,8 @@ import {
   formatSafeguardingPolicyText,
   safeguardingAcknowledgeUrl,
 } from '@/lib/safeguarding'
+import { completePaymentPageUrl } from '@/lib/registrationResumePayment'
+import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
 
 /** Trim and strip one pair of surrounding quotes (common .env mistake). */
 function readEnvRaw(key: string): string | undefined {
@@ -353,6 +355,175 @@ ${bankHtml}
   return sendMail({ to, subject, text, html })
 }
 
+function registrationInvoiceLetter({
+  fullName,
+  email,
+  organisation,
+  registrationId,
+  packageName,
+  amountUsd,
+  invoiceDate,
+}: {
+  fullName: string
+  email: string
+  organisation?: string | null
+  registrationId: string
+  packageName: string
+  amountUsd: number
+  invoiceDate: string
+}): { subject: string; text: string; html: string } {
+  const subject = `SARSYC VI Registration Invoice — ${registrationId}`
+  const cleanPackage = packageName.replace(/ \(confirm on payment page\)$/, '')
+  const hostedPayment = registrationRequiresHostedPayment()
+  const completePaymentUrl = completePaymentPageUrl(registrationId)
+  const supportText = formatRegistrationSupportContactsText()
+  const supportHtml = formatRegistrationSupportContactsHtml()
+
+  const bankText = formatRegistrationBankTransferText({
+    registrationId,
+    packageName: cleanPackage,
+    amountUsd,
+  })
+
+  const cardText = hostedPayment
+    ? `\n\nPAY BY CARD\nComplete payment online: ${completePaymentUrl}\nUse registration ID ${registrationId} and email ${email}.`
+    : ''
+
+  const text = `SARSYC VI — REGISTRATION INVOICE
+
+Invoice number: ${registrationId}
+Invoice date: ${invoiceDate}
+
+Bill to:
+${fullName}
+${email}
+${organisation?.trim() ? organisation.trim() : ''}
+
+Description: SARSYC VI Conference Registration — ${cleanPackage}
+Amount due: USD ${amountUsd.toFixed(2)}
+
+${bankText}
+${cardText}
+
+Questions: ${supportText}
+
+SARSYC Secretariat
+Organising Secretariat: SAYWHAT  •  Host Partner: University of Namibia
+E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +264 81 627 9224
+`
+
+  const bankHtml = formatRegistrationBankTransferHtml({
+    registrationId,
+    packageName: cleanPackage,
+    amountUsd,
+  })
+
+  const cardHtml = hostedPayment
+    ? `<h3 style="margin:1.5em 0 0.5em;font-size:16px;color:#1e3a8a;">Pay by card</h3>
+<p style="margin:0 0 12px;">Use registration ID <strong>${escapeHtml(registrationId)}</strong> and <strong>${escapeHtml(email)}</strong>.</p>
+<p style="margin:0 0 16px;"><a href="${completePaymentUrl}" style="display:inline-block;background:#0284c7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Complete payment online</a></p>`
+    : ''
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <div style="max-width:640px;margin:0 auto;background:#ffffff;">
+
+    <img src="https://www.sarsyc.org/email-letterhead.png"
+         alt="SARSYC VI — Align for Action: Sustaining Progress in Youth Health and Education | 5–7 August 2026, Windhoek, Namibia"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+    <div style="padding:28px 32px;font-size:15px;line-height:1.75;color:#1f2937;">
+      <h1 style="margin:0 0 8px;font-size:22px;color:#1e3a8a;">Registration Invoice</h1>
+      <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">
+        Invoice <strong>${escapeHtml(registrationId)}</strong> · Date <strong>${escapeHtml(invoiceDate)}</strong>
+      </p>
+
+      <div style="margin:0 0 20px;padding:16px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;">
+        <p style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;">Bill to</p>
+        <p style="margin:0;font-weight:600;">${escapeHtml(fullName)}</p>
+        <p style="margin:4px 0 0;">${escapeHtml(email)}</p>
+        ${organisation?.trim() ? `<p style="margin:4px 0 0;color:#4b5563;">${escapeHtml(organisation.trim())}</p>` : ''}
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin:0 0 16px;font-size:14px;">
+        <thead>
+          <tr style="background:#1e3a8a;color:#ffffff;">
+            <th style="padding:10px 12px;text-align:left;">Description</th>
+            <th style="padding:10px 12px;text-align:right;width:120px;">Amount (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:12px;vertical-align:top;">
+              <strong>SARSYC VI Conference Registration</strong><br/>
+              <span style="color:#6b7280;font-size:13px;">${escapeHtml(cleanPackage)} · Windhoek, 5–7 August 2026</span>
+            </td>
+            <td style="padding:12px;text-align:right;font-weight:700;vertical-align:top;">${amountUsd.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px;text-align:right;font-weight:700;">Total due</td>
+            <td style="padding:12px;text-align:right;font-weight:700;font-size:18px;color:#1e3a8a;">${amountUsd.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin:0 0 16px;">Please settle this invoice using one of the payment options below. Use registration ID <strong>${escapeHtml(registrationId)}</strong> as your payment reference.</p>
+
+      ${bankHtml}
+      ${cardHtml}
+
+      <p style="margin:1.5em 0 0;font-size:14px;color:#4b5563;">Questions: ${supportHtml}</p>
+      <p style="margin:1em 0 0;">Yours sincerely,<br/><strong>SARSYC Secretariat</strong></p>
+    </div>
+
+    <img src="https://www.sarsyc.org/email-footer.png"
+         alt="Organising Secretariat: SAYWHAT | Host Partner: University of Namibia | sarsyc@saywhat.org.zw | www.sarsyc.org | +263 782 702 887 | +264 81 627 9224"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+  </div>
+</body>
+</html>`
+
+  return { subject, text, html }
+}
+
+export async function sendRegistrationInvoice({
+  to,
+  fullName,
+  organisation,
+  registrationId,
+  packageName,
+  amountUsd,
+  invoiceDate,
+}: {
+  to: string
+  fullName: string
+  organisation?: string | null
+  registrationId: string
+  packageName: string
+  amountUsd: number
+  invoiceDate?: string
+}) {
+  const date =
+    invoiceDate ||
+    new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  const { subject, text, html } = registrationInvoiceLetter({
+    fullName,
+    email: to,
+    organisation,
+    registrationId,
+    packageName,
+    amountUsd,
+    invoiceDate: date,
+  })
+  return sendMail({ to, subject, text, html })
+}
 
 /** After returning from the gateway without a successful capture (one email per registration, deduped via Payload). */
 export async function sendRegistrationPaymentNotConfirmed({

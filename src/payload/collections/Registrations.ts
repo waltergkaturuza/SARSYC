@@ -752,6 +752,23 @@ const Registrations: CollectionConfig = {
       },
     },
     {
+      name: 'invoiceSentAt',
+      type: 'date',
+      label: 'Invoice sent',
+      admin: {
+        description: 'Set when admin sends a registration invoice email from Payments → Invoices.',
+        position: 'sidebar',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+      access: {
+        create: () => false,
+        read: (args: any) => Boolean(args.req?.user),
+        update: () => false,
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
       label: 'Admin Notes',

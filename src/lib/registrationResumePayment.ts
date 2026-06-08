@@ -56,15 +56,45 @@ export function suggestedPackageForCategory(category: unknown): RegistrationPack
   }
 }
 
+/** Active registrations eligible for outreach (not cancelled or soft-deleted). */
+export function registrationIsActive(reg: {
+  status?: unknown
+  deletedAt?: unknown
+}): boolean {
+  if (reg.status === 'cancelled') return false
+  const deletedAt = reg.deletedAt
+  if (deletedAt != null && deletedAt !== '') return false
+  return true
+}
+
 export function registrationNeedsPayment(reg: {
   paymentStatus?: unknown
   status?: unknown
+  deletedAt?: unknown
 }): boolean {
-  if (reg.status === 'cancelled') return false
+  if (!registrationIsActive(reg)) return false
   const ps = reg.paymentStatus
   if (ps === 'paid' || ps === 'waived') return false
   if (!registrationFeePaymentDue()) return false
   return true
+}
+
+/** Billable registration fee for reporting (0 when cancelled or soft-deleted). */
+export function registrationFeeUsd(reg: {
+  registrationPackage?: unknown
+  paymentStatus?: unknown
+  createdAt?: unknown
+  status?: unknown
+  deletedAt?: unknown
+}): number {
+  if (!registrationIsActive(reg)) return 0
+  if (reg.paymentStatus === 'waived') return 0
+  const pkg = reg.registrationPackage
+  if (!isRegistrationPackageId(pkg)) return 0
+  const tier = getRegistrationPricingTier(
+    reg.createdAt ? new Date(String(reg.createdAt)) : new Date(),
+  )
+  return packageUsdForTier(getRegistrationPackage(pkg), tier)
 }
 
 function feeForRegistration(reg: {
@@ -106,7 +136,7 @@ export async function findRegistrationForResumePayment(
   })
 
   const doc = found.docs[0] as Record<string, unknown> | undefined
-  if (!doc) return null
+  if (!doc || !registrationIsActive(doc)) return null
 
   const humanId =
     typeof doc.registrationId === 'string' ? doc.registrationId : registrationId

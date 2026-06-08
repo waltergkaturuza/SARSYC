@@ -3,26 +3,12 @@
 import React, { useState } from 'react'
 import { FiDownload, FiFileText, FiEye } from 'react-icons/fi'
 import RegistrationViewModal from '@/components/admin/RegistrationViewModal'
+import { isRegistrationPackageId } from '@/lib/registrationPackages'
 import {
-  getRegistrationPackage,
-  getRegistrationPricingTier,
-  isRegistrationPackageId,
-  packageUsdForTier,
-} from '@/lib/registrationPackages'
-
-function registrationFeeUsd(reg: {
-  registrationPackage?: unknown
-  paymentStatus?: unknown
-  createdAt?: unknown
-}): number {
-  if (reg.paymentStatus === 'waived') return 0
-  const pkg = reg.registrationPackage
-  if (!isRegistrationPackageId(pkg)) return 0
-  const tier = getRegistrationPricingTier(
-    reg.createdAt ? new Date(String(reg.createdAt)) : new Date(),
-  )
-  return packageUsdForTier(getRegistrationPackage(pkg), tier)
-}
+  registrationFeeUsd,
+  registrationIsActive,
+  registrationNeedsPayment,
+} from '@/lib/registrationResumePayment'
 
 function formatFeeUsd(amount: number): string {
   return `$${amount.toLocaleString('en-US')}`
@@ -96,11 +82,30 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
   }
 
   async function handleBulk(action: string) {
-    const ids = selectedIds()
+    let ids = selectedIds()
     if (ids.length === 0) {
       setMessage('No rows selected')
       return
     }
+
+    let skippedPaymentDue = 0
+    if (action === 'sendPaymentDue') {
+      const eligible = ids.filter((id) => {
+        const doc = docs.find((d) => String(d.id) === id)
+        return doc && registrationNeedsPayment(doc)
+      })
+      skippedPaymentDue = ids.length - eligible.length
+      ids = eligible
+      if (ids.length === 0) {
+        setMessage(
+          skippedPaymentDue > 0
+            ? 'No eligible registrations to email — cancelled, soft-deleted, paid, and waived registrations are excluded.'
+            : 'No rows selected',
+        )
+        return
+      }
+    }
+
     setLoading(true)
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -122,10 +127,14 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
         setLoading(false)
         return
       }
+      const skipNote =
+        action === 'sendPaymentDue' && skippedPaymentDue > 0
+          ? `, skipped (ineligible): ${skippedPaymentDue}`
+          : ''
       setMessage(
         `Bulk action ${action} completed. Updated: ${json.results.updated.length}${
           json.results.failed?.length ? `, failed: ${json.results.failed.length}` : ''
-        }`,
+        }${skipNote}`,
       )
       // clear selection
       setSelected({})
@@ -295,6 +304,9 @@ export default function RegistrationsTable({ docs = [], total = 0, page = 1, per
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {(() => {
+                        if (!registrationIsActive(d)) {
+                          return <span className="text-sm text-gray-400">—</span>
+                        }
                         const fee = registrationFeeUsd(d)
                         const ps = d.paymentStatus || 'pending'
                         if (ps === 'waived') {

@@ -18,6 +18,7 @@ import {
   sendRegistrationPaymentNotConfirmed,
 } from '@/lib/mail'
 import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
+import { registrationIsActive } from '@/lib/registrationResumePayment'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -326,6 +327,7 @@ async function runStanbicRegistrationVerify(input: VerifyInput): Promise<NextRes
     )
 
     const followUpEligible =
+      registrationIsActive(registration) &&
       registration.paymentStatus === 'pending' &&
       !registration.paymentFollowUpSentAt &&
       typeof registration.email === 'string' &&

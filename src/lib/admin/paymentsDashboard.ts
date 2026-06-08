@@ -1,13 +1,19 @@
 import type { Payload } from 'payload'
-import {
-  getRegistrationPackage,
-  getRegistrationPricingTier,
-  isRegistrationPackageId,
-  packageUsdForTier,
-} from '@/lib/registrationPackages'
 import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTransfer'
+import {
+  paymentDueEmailAmount,
+  registrationFeeUsd,
+  registrationIsActive,
+} from '@/lib/registrationResumePayment'
 
-export type PaymentRowStatus = 'paid' | 'unpaid' | 'waived' | 'failed' | 'bank-transfer' | 'pending'
+export type PaymentRowStatus =
+  | 'paid'
+  | 'unpaid'
+  | 'waived'
+  | 'failed'
+  | 'bank-transfer'
+  | 'pending'
+  | 'cancelled'
 
 export type PaymentRow = {
   id: string
@@ -34,6 +40,21 @@ export type CardActivityRow = {
   note: string
 }
 
+export type InvoiceCandidate = {
+  payloadId: string
+  registrationId: string
+  delegate: string
+  email: string
+  organisation: string
+  packageName: string | null
+  feeUsd: number
+  paymentStatus: string
+  registrationStatus: string
+  invoiceSentAt: string | null
+  canSend: boolean
+  ineligibleReason: string | null
+}
+
 export type PaymentsDashboardData = {
   stats: {
     totalExpectedUsd: number
@@ -48,16 +69,9 @@ export type PaymentsDashboardData = {
     partialCount: number
   }
   payments: PaymentRow[]
+  invoiceCandidates: InvoiceCandidate[]
   cardActivity: CardActivityRow[]
   cardActivityNote: string | null
-}
-
-function registrationFeeUsd(reg: Record<string, unknown>): number {
-  if (reg.paymentStatus === 'waived') return 0
-  const pkg = reg.registrationPackage
-  if (!isRegistrationPackageId(pkg)) return 0
-  const tier = getRegistrationPricingTier()
-  return packageUsdForTier(getRegistrationPackage(pkg), tier)
 }
 
 function registrationMethod(reg: Record<string, unknown>): string {
@@ -74,6 +88,9 @@ function mapRegistrationStatus(reg: Record<string, unknown>): {
   status: PaymentRowStatus
   label: string
 } {
+  if (!registrationIsActive(reg)) {
+    return { status: 'cancelled', label: 'Cancelled / deleted' }
+  }
   const ps = reg.paymentStatus
   if (ps === 'paid') return { status: 'paid', label: 'Paid' }
   if (ps === 'waived') return { status: 'waived', label: 'Waived' }
@@ -227,6 +244,9 @@ export async function loadPaymentsDashboardData(
       waivedCount++
       continue
     }
+    if (p.kind === 'registration' && p.status === 'cancelled') {
+      continue
+    }
     totalExpectedUsd += p.feeUsd
     if (p.status === 'paid') {
       collectedUsd += p.feeUsd
@@ -241,12 +261,58 @@ export async function loadPaymentsDashboardData(
 
   const outstandingUsd = Math.max(0, totalExpectedUsd - collectedUsd)
 
+  const invoiceCandidates: InvoiceCandidate[] = registrations.map((reg) => {
+    const first = typeof reg.firstName === 'string' ? reg.firstName : ''
+    const last = typeof reg.lastName === 'string' ? reg.lastName : ''
+    const { packageName, amountUsd } = paymentDueEmailAmount(reg)
+    const feeUsd = registrationFeeUsd(reg)
+    const paymentStatus = typeof reg.paymentStatus === 'string' ? reg.paymentStatus : 'pending'
+    const registrationStatus = typeof reg.status === 'string' ? reg.status : 'pending'
+    const email = typeof reg.email === 'string' ? reg.email : ''
+    const invoiceSentAt =
+      reg.invoiceSentAt != null && reg.invoiceSentAt !== ''
+        ? new Date(String(reg.invoiceSentAt)).toLocaleString()
+        : null
+
+    let canSend = true
+    let ineligibleReason: string | null = null
+    if (!registrationIsActive(reg)) {
+      canSend = false
+      ineligibleReason = 'Cancelled or soft-deleted'
+    } else if (!email.trim()) {
+      canSend = false
+      ineligibleReason = 'No email'
+    } else if (paymentStatus === 'waived') {
+      canSend = false
+      ineligibleReason = 'Fee waived'
+    } else if (!packageName || amountUsd == null || amountUsd <= 0) {
+      canSend = false
+      ineligibleReason = 'No package or fee'
+    }
+
+    return {
+      payloadId: String(reg.id),
+      registrationId:
+        typeof reg.registrationId === 'string' ? reg.registrationId : String(reg.id),
+      delegate: `${first} ${last}`.trim() || '—',
+      email: email || '—',
+      organisation: typeof reg.organization === 'string' ? reg.organization : '—',
+      packageName,
+      feeUsd: feeUsd > 0 ? feeUsd : amountUsd ?? 0,
+      paymentStatus,
+      registrationStatus,
+      invoiceSentAt,
+      canSend,
+      ineligibleReason,
+    }
+  })
+
   return {
     stats: {
       totalExpectedUsd,
       collectedUsd,
       outstandingUsd,
-      registrationCount: registrations.length,
+      registrationCount: registrations.filter((r) => registrationIsActive(r)).length,
       donationCount: donations.length,
       paidCount,
       unpaidCount,
@@ -255,6 +321,7 @@ export async function loadPaymentsDashboardData(
       partialCount: 0,
     },
     payments,
+    invoiceCandidates,
     cardActivity,
     cardActivityNote,
   }

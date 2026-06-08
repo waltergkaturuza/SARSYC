@@ -22,6 +22,7 @@ import {
   logStanbicDuplicatePaymentAttempt,
 } from '@/lib/stanbic/stanbicCertification'
 import { sendRegistrationPaymentSessionFailed } from '@/lib/mail'
+import { registrationIsActive } from '@/lib/registrationResumePayment'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -223,7 +224,7 @@ export async function POST(req: NextRequest) {
         : ''
     const emailTo =
       typeof registration.email === 'string' ? registration.email.trim() : ''
-    if (emailTo && !stanbicRef) {
+    if (emailTo && !stanbicRef && registrationIsActive(registration)) {
       try {
         await sendRegistrationPaymentSessionFailed({
           to: emailTo,

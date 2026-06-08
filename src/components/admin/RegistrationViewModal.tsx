@@ -13,14 +13,9 @@ import {
   FiPaperclip,
 } from 'react-icons/fi'
 import { showToast } from '@/lib/toast'
-import {
-  getRegistrationPackage,
-  getRegistrationPricingTier,
-  isRegistrationPackageId,
-  packageUsdForTier,
-  registrationPackageDisplayName,
-} from '@/lib/registrationPackages'
+import { isRegistrationPackageId, registrationPackageDisplayName } from '@/lib/registrationPackages'
 import { registrationManualBankPaymentEnabled } from '@/lib/registrationBankTransfer'
+import { registrationFeeUsd, registrationIsActive } from '@/lib/registrationResumePayment'
 import RegistrationPaymentSync from '@/components/admin/RegistrationPaymentSync'
 import { countries } from '@/lib/countries'
 import {
@@ -126,16 +121,6 @@ function formatDietary(value: unknown): string {
     .map((v) => optionLabel(v, DIETARY_OPTIONS))
     .filter((label) => label !== '—')
   return items.length ? items.join(', ') : 'None'
-}
-
-function registrationFeeUsd(reg: RegistrationDoc): number {
-  if (reg.paymentStatus === 'waived') return 0
-  const pkg = reg.registrationPackage
-  if (!isRegistrationPackageId(pkg)) return 0
-  const tier = getRegistrationPricingTier(
-    reg.createdAt ? new Date(String(reg.createdAt)) : new Date(),
-  )
-  return packageUsdForTier(getRegistrationPackage(pkg), tier)
 }
 
 function paymentMethodLabel(reg: RegistrationDoc): string {
@@ -473,12 +458,19 @@ export default function RegistrationViewModal({ registrationId, onClose }: Props
 
                   <DetailCard title="Payment">
                     <p className="text-2xl font-bold text-white mb-1">
-                      {doc.paymentStatus === 'waived'
-                        ? 'Waived'
-                        : feeUsd > 0
-                          ? `USD ${feeUsd.toLocaleString('en-US')}`
-                          : '—'}
+                      {!registrationIsActive(doc)
+                        ? 'Excluded'
+                        : doc.paymentStatus === 'waived'
+                          ? 'Waived'
+                          : feeUsd > 0
+                            ? `USD ${feeUsd.toLocaleString('en-US')}`
+                            : '—'}
                     </p>
+                    {!registrationIsActive(doc) ? (
+                      <p className="text-xs text-slate-500 mb-3">
+                        Cancelled or soft-deleted registrations are excluded from fee totals.
+                      </p>
+                    ) : null}
                     <p className="text-sm text-slate-400 mb-3">{paymentMethodLabel(doc)}</p>
                     {typeof doc.stanbicPaymentOrderRef === 'string' && doc.stanbicPaymentOrderRef.trim() ? (
                       <p className="text-xs font-mono text-slate-500 mb-4 break-all">

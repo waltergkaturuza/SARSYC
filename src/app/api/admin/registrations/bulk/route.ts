@@ -83,7 +83,15 @@ export async function POST(req: Request) {
             continue
           }
           if (!registrationNeedsPayment(doc)) {
-            results.failed.push({ id, reason: 'payment not due or already paid/waived' })
+            const inactive =
+              doc.status === 'cancelled' ||
+              (doc.deletedAt != null && doc.deletedAt !== '')
+            results.failed.push({
+              id,
+              reason: inactive
+                ? 'cancelled or soft-deleted'
+                : 'payment not due or already paid/waived',
+            })
             continue
           }
           const to = typeof doc.email === 'string' ? doc.email.trim() : ''
