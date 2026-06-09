@@ -38,11 +38,12 @@ function LoginForm() {
   )
 
   const groups = useMemo(() => {
-    const map = new Map<string, typeof LOGIN_PORTAL_TYPES>()
+    type PortalEntry = (typeof LOGIN_PORTAL_TYPES)[number]
+    const map = new Map<string, PortalEntry[]>()
     for (const t of LOGIN_PORTAL_TYPES) {
-      const list = map.get(t.group) ?? []
-      list.push(t)
-      map.set(t.group, list)
+      const list = map.get(t.group)
+      if (list) list.push(t)
+      else map.set(t.group, [t])
     }
     return Array.from(map.entries())
   }, [])
