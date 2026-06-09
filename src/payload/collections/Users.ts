@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload/types'
-import { addAuditHooks } from '@/lib/auditHooks'
 
 const Users: CollectionConfig = {
   slug: 'users',

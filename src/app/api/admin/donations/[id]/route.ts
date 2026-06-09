@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
-import { isFinanceRole } from '@/lib/admin/adminAccess'
+import { isAdminRole, isFinanceRole } from '@/lib/admin/adminAccess'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -57,5 +57,33 @@ export async function PATCH(
   } catch (err: unknown) {
     console.error('[admin/donations PATCH]', err)
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const acting = await getCurrentUserFromRequest(req)
+    if (!acting) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!isAdminRole(acting.role)) {
+      return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 })
+    }
+
+    const payload = await getPayloadClient()
+    await payload.delete({
+      collection: 'donations',
+      id: params.id,
+      overrideAccess: true,
+    })
+
+    return NextResponse.json({ success: true, message: 'Donation deleted successfully' })
+  } catch (err: unknown) {
+    console.error('[admin/donations DELETE]', err)
+    const message = err instanceof Error ? err.message : 'Delete failed'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

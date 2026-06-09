@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isAdminRole } from '@/lib/admin/adminAccess'
 import { FiAlertCircle, FiCheck, FiDollarSign, FiHeart } from 'react-icons/fi'
 import DonationsFilters from '@/components/admin/DonationsFilters'
 import DonationsTable from '@/components/admin/DonationsTable'
@@ -22,6 +24,8 @@ interface DonationsPageProps {
 
 export default async function AdminDonationsPage({ searchParams }: DonationsPageProps) {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const canDelete = isAdminRole(currentUser?.role)
   const page = Number(searchParams.page || '1')
   const limit = 25
   const searchQuery = searchParams.search?.trim() || ''
@@ -186,7 +190,7 @@ export default async function AdminDonationsPage({ searchParams }: DonationsPage
           </Suspense>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <DonationsTable docs={docs as any} />
+            <DonationsTable docs={docs as any} canDelete={canDelete} />
           </div>
 
           {totalPages > 1 && (

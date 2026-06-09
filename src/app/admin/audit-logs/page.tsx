@@ -18,6 +18,8 @@ const actionIcons: Record<string, any> = {
   password_reset: FiShield,
   account_locked: FiLock,
   account_unlocked: FiUnlock,
+  export: FiDownload,
+  download: FiDownload,
 }
 
 const actionColors: Record<string, string> = {
@@ -29,6 +31,8 @@ const actionColors: Record<string, string> = {
   password_reset: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   account_locked: 'bg-orange-100 text-orange-700 border-orange-200',
   account_unlocked: 'bg-green-100 text-green-700 border-green-200',
+  export: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  download: 'bg-teal-100 text-teal-700 border-teal-200',
 }
 
 export default async function AuditLogsPage({

@@ -2,6 +2,7 @@ import { getPayloadClient } from './payload'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { getProcessedSecret } from './getSecret'
+import { setAuditContext } from './auditContext'
 
 /**
  * Get the current authenticated user from the request
@@ -104,6 +105,16 @@ export async function getCurrentUserFromRequest(req: Request) {
       if (process.env.NODE_ENV === 'development') {
         console.log('[getCurrentUserFromRequest] ✅ User authenticated:', userResult.email, 'Role:', userResult.role)
       }
+
+      setAuditContext({
+        user: {
+          id: userResult.id,
+          email: userResult.email,
+          role: userResult.role as string | undefined,
+        },
+        request: req,
+      })
+
       return userResult
     } catch (authError: any) {
       // User not found or other error

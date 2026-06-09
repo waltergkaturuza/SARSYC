@@ -4,6 +4,7 @@ import {
   rolesAllowedForAdminPanelLogin,
   usesAdminPanelPrivilegedLogin,
 } from '@/lib/admin/adminAccess'
+import { logAuthentication } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -138,6 +139,18 @@ export async function POST(request: NextRequest) {
         response.headers.set('Pragma', 'no-cache')
         
         console.log('[Login API] Admin login successful, cookie set for:', result.user.email)
+
+        await logAuthentication(
+          payloadClient,
+          request,
+          {
+            id: result.user.id,
+            email: result.user.email,
+            role: String(userRole),
+          },
+          'login',
+          { portalType: type },
+        )
         
         return response
       }
@@ -173,6 +186,18 @@ export async function POST(request: NextRequest) {
       response.headers.append('Set-Cookie', cookieHeader)
       
       console.log('[Login API] User login successful, cookie set for:', result.user.email, 'Role:', userRole)
+
+      await logAuthentication(
+        payloadClient,
+        request,
+        {
+          id: result.user.id,
+          email: result.user.email,
+          role: String(userRole),
+        },
+        'login',
+        { portalType: type },
+      )
       
       return response
     } catch (authError: any) {

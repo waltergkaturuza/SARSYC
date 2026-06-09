@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import postgres from 'postgres'
 import { getProcessedSecret } from '@/lib/getSecret'
+import { logAuthentication } from '@/lib/audit'
 
 /**
  * Direct Database Authentication Bypass
@@ -292,6 +293,18 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('[Direct Login] ✅ Direct authentication successful for:', user.email)
+
+    await logAuthentication(
+      payload,
+      request,
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role as string | undefined,
+      },
+      'login',
+      { method: 'direct-database-auth' },
+    )
     
     return addCorsHeaders(response, request)
 

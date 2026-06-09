@@ -31,6 +31,8 @@ const AuditLogs: CollectionConfig = {
         { label: 'Password Reset', value: 'password_reset' },
         { label: 'Account Locked', value: 'account_locked' },
         { label: 'Account Unlocked', value: 'account_unlocked' },
+        { label: 'Export', value: 'export' },
+        { label: 'Download', value: 'download' },
       ],
     },
     {

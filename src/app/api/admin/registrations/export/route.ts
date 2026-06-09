@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { logExport, incrementFallback } from '@/lib/telemetry'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 import { isFinanceRole } from '@/lib/admin/adminAccess'
+import { logDataExport } from '@/lib/audit'
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const RATE_LIMIT_MAX = 3 // max exports per window
@@ -111,9 +112,15 @@ export async function GET(req: Request) {
 
     const csv = toCsv(rows, columns)
 
-    // Audit log
     await incrementFallback('exports.registrations')
     await logExport('registrations', { user: { id: foundUser.id, email: foundUser.email }, count: rows.length })
+    await logDataExport(
+      payload,
+      req,
+      { id: foundUser.id, email: foundUser.email, role: foundUser.role },
+      'registrations',
+      { count: rows.length },
+    )
 
     const filename = `registrations-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`
     return new NextResponse(csv, {

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { FiEdit2 } from 'react-icons/fi'
+import DonationDeleteButton from '@/components/admin/DonationDeleteButton'
 
 type DonationDoc = {
   id: string | number
@@ -60,7 +61,13 @@ function formatDate(value?: string): string {
   })
 }
 
-export default function DonationsTable({ docs = [] }: { docs: DonationDoc[] }) {
+export default function DonationsTable({
+  docs = [],
+  canDelete = false,
+}: {
+  docs?: DonationDoc[]
+  canDelete?: boolean
+}) {
   if (docs.length === 0) {
     return (
       <div className="p-12 text-center text-gray-500">
@@ -133,13 +140,21 @@ export default function DonationsTable({ docs = [] }: { docs: DonationDoc[] }) {
                   {doc.donationId || '—'}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <Link
-                    href={`/admin/donations/${doc.id}`}
-                    className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  >
-                    <FiEdit2 size={14} />
-                    Edit
-                  </Link>
+                  <div className="inline-flex items-center justify-end gap-2">
+                    <Link
+                      href={`/admin/donations/${doc.id}`}
+                      className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-700 text-sm font-medium"
+                    >
+                      <FiEdit2 size={14} />
+                      Edit
+                    </Link>
+                    {canDelete && (
+                      <DonationDeleteButton
+                        donationId={String(doc.id)}
+                        label={doc.donationId || donorLabel(doc)}
+                      />
+                    )}
+                  </div>
                 </td>
               </tr>
             )

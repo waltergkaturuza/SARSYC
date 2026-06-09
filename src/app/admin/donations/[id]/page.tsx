@@ -3,13 +3,18 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FiArrowLeft, FiMail, FiPhone } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isAdminRole } from '@/lib/admin/adminAccess'
 import { conferenceTrackLabel } from '@/lib/conferenceTracks'
 import DonationEditForm from '@/components/admin/DonationEditForm'
+import DonationDeleteButton from '@/components/admin/DonationDeleteButton'
 
 export const revalidate = 0
 
 export default async function AdminDonationDetailPage({ params }: { params: { id: string } }) {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const canDelete = isAdminRole(currentUser?.role)
 
   let donation: Record<string, unknown> | null = null
   try {
@@ -111,7 +116,7 @@ export default async function AdminDonationDetailPage({ params }: { params: { id
           </div>
         </div>
 
-        <div>
+        <div className="space-y-4">
           <DonationEditForm
             donation={{
               id: donation.id as string | number,
@@ -120,6 +125,14 @@ export default async function AdminDonationDetailPage({ params }: { params: { id
               notes: donation.notes as string | undefined,
             }}
           />
+          {canDelete && (
+            <DonationDeleteButton
+              donationId={String(donation.id)}
+              label={String(donation.donationId || donorName)}
+              redirectTo="/admin/donations"
+              variant="button"
+            />
+          )}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import path from 'path'
 
 // Postgres migrations — run via `payload migrate` (CI/build) or `prodMigrations` at runtime in production
 import { migrations } from '../migrations'
+import { addAuditHooks } from '../lib/auditHooks'
 
 // Collections
 import Users from './collections/Users'
@@ -168,7 +169,7 @@ export default buildConfig({
     SiteEvents,
     Donations,
     StanbicPaymentEvents,
-  ],
+  ].map((collection) => addAuditHooks(collection as Parameters<typeof addAuditHooks>[0])),
   globals: [
     SiteSettings,
     Header,
