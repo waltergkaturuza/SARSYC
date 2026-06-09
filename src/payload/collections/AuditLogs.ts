@@ -4,7 +4,7 @@ const AuditLogs: CollectionConfig = {
   slug: 'audit-logs',
   admin: {
     useAsTitle: 'action',
-    defaultColumns: ['action', 'collection', 'user', 'createdAt'],
+    defaultColumns: ['action', 'collection', 'user', 'ipAddress', 'createdAt'],
     description: 'System audit trail - tracks all changes made in the admin panel',
     group: 'System',
   },
@@ -27,6 +27,7 @@ const AuditLogs: CollectionConfig = {
         { label: 'Update', value: 'update' },
         { label: 'Delete', value: 'delete' },
         { label: 'Login', value: 'login' },
+        { label: 'Login Failed', value: 'login_failed' },
         { label: 'Logout', value: 'logout' },
         { label: 'Password Reset', value: 'password_reset' },
         { label: 'Account Locked', value: 'account_locked' },
@@ -55,9 +56,8 @@ const AuditLogs: CollectionConfig = {
       name: 'user',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
       admin: {
-        description: 'User who performed the action',
+        description: 'User who performed the action (empty for unknown failed logins)',
       },
     },
     {

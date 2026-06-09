@@ -4,8 +4,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { 
   FiSearch, FiFilter, FiDownload, FiEye, FiClock, FiUser, 
-  FiFileText, FiTrash2, FiEdit, FiPlus, FiShield, FiLock, FiUnlock
+  FiFileText, FiTrash2, FiEdit, FiPlus, FiShield, FiLock, FiUnlock,
+  FiGlobe, FiAlertCircle,
 } from 'react-icons/fi'
+import { formatDeviceLabel } from '@/lib/clientIp'
 
 export const revalidate = 0
 
@@ -14,6 +16,7 @@ const actionIcons: Record<string, any> = {
   update: FiEdit,
   delete: FiTrash2,
   login: FiUser,
+  login_failed: FiAlertCircle,
   logout: FiUser,
   password_reset: FiShield,
   account_locked: FiLock,
@@ -27,6 +30,7 @@ const actionColors: Record<string, string> = {
   update: 'bg-blue-100 text-blue-700 border-blue-200',
   delete: 'bg-red-100 text-red-700 border-red-200',
   login: 'bg-purple-100 text-purple-700 border-purple-200',
+  login_failed: 'bg-rose-100 text-rose-700 border-rose-200',
   logout: 'bg-gray-100 text-gray-700 border-gray-200',
   password_reset: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   account_locked: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -77,6 +81,8 @@ export default async function AuditLogsPage({
       { description: { contains: search } },
       { userEmail: { contains: search } },
       { documentId: { contains: search } },
+      { ipAddress: { contains: search } },
+      { userAgent: { contains: search } },
     ]
   }
 
@@ -145,7 +151,7 @@ export default async function AuditLogsPage({
                 type="text"
                 name="search"
                 defaultValue={search}
-                placeholder="Search logs..."
+                placeholder="Search email, IP, device..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
@@ -269,6 +275,9 @@ export default async function AuditLogsPage({
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  IP / Device
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Description
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -282,7 +291,7 @@ export default async function AuditLogsPage({
             <tbody className="bg-white divide-y divide-gray-200">
               {auditLogs.docs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     No audit logs found
                   </td>
                 </tr>
@@ -315,6 +324,19 @@ export default async function AuditLogsPage({
                             </p>
                             <p className="text-xs text-gray-500">
                               {log.userRole || '-'} {log.userEmail ? `• ${log.userEmail}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-start gap-2">
+                          <FiGlobe className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-mono text-gray-900">
+                              {log.ipAddress || '—'}
+                            </p>
+                            <p className="text-xs text-gray-500 max-w-[180px] truncate" title={log.userAgent || ''}>
+                              {formatDeviceLabel(log.userAgent || '')}
                             </p>
                           </div>
                         </div>

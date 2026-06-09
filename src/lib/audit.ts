@@ -1,11 +1,13 @@
 import type { Payload } from 'payload'
 import { getAuditContext } from './auditContext'
+import { getClientIpFromRequest, getUserAgentFromRequest } from './clientIp'
 
 export type AuditAction =
   | 'create'
   | 'update'
   | 'delete'
   | 'login'
+  | 'login_failed'
   | 'logout'
   | 'password_reset'
   | 'account_locked'
@@ -13,11 +15,18 @@ export type AuditAction =
   | 'export'
   | 'download'
 
+export type LoginFailureReason =
+  | 'user_not_found'
+  | 'wrong_password'
+  | 'no_password'
+  | 'invalid_credentials'
+  | 'account_locked_attempt'
+
 export interface AuditLogData {
   action: AuditAction
   collection: string
   documentId: string | number
-  userId: string | number
+  userId?: string | number
   userEmail?: string
   userRole?: string
   changes?: Record<string, { before: unknown; after: unknown }>
@@ -31,17 +40,12 @@ export interface AuditLogData {
 
 function requestMeta(request?: Request): { ipAddress: string; userAgent: string } {
   if (!request) {
-    const ctx = getAuditContext()
-    request = ctx?.request
+    request = getAuditContext()?.request
   }
-  const forwarded = request?.headers.get('x-forwarded-for')
-  const realIp = request?.headers.get('x-real-ip')
-  const ip =
-    (forwarded && forwarded.split(',')[0].trim()) ||
-    realIp ||
-    'unknown'
-  const userAgent = request?.headers.get('user-agent') || 'unknown'
-  return { ipAddress: ip, userAgent }
+  return {
+    ipAddress: getClientIpFromRequest(request),
+    userAgent: getUserAgentFromRequest(request),
+  }
 }
 
 /**
@@ -61,7 +65,7 @@ export async function createAuditLog(
         action: data.action,
         collection: data.collection,
         documentId: String(data.documentId),
-        user: data.userId,
+        ...(data.userId != null ? { user: data.userId } : {}),
         userEmail: data.userEmail,
         userRole: data.userRole,
         changes: data.changes || null,
@@ -86,6 +90,7 @@ export async function logAuthentication(
   action: 'login' | 'logout',
   metadata?: Record<string, unknown>,
 ): Promise<void> {
+  const { ipAddress, userAgent } = requestMeta(request)
   await createAuditLog(
     payload,
     {
@@ -96,7 +101,76 @@ export async function logAuthentication(
       userEmail: user.email,
       userRole: user.role,
       description: createAuditDescription(action, 'users', user.id),
-      metadata,
+      metadata: { ...metadata, ipAddress, userAgent },
+    },
+    request,
+  )
+}
+
+const LOGIN_FAILURE_LABELS: Record<LoginFailureReason, string> = {
+  user_not_found: 'email not registered',
+  wrong_password: 'incorrect password',
+  no_password: 'no password set on account',
+  invalid_credentials: 'invalid credentials',
+  account_locked_attempt: 'account locked',
+}
+
+export async function logFailedAuthentication(
+  payload: Payload,
+  request: Request,
+  info: {
+    email: string
+    reason: LoginFailureReason
+    userId?: string | number
+    userRole?: string
+    portalType?: string
+    method?: string
+  },
+): Promise<void> {
+  const { ipAddress, userAgent } = requestMeta(request)
+  const normalizedEmail = info.email.toLowerCase().trim()
+
+  await createAuditLog(
+    payload,
+    {
+      action: 'login_failed',
+      collection: 'users',
+      documentId: info.userId ?? normalizedEmail,
+      userId: info.userId,
+      userEmail: normalizedEmail,
+      userRole: info.userRole,
+      description: `Failed login for ${normalizedEmail} (${LOGIN_FAILURE_LABELS[info.reason]}) from ${ipAddress}`,
+      metadata: {
+        reason: info.reason,
+        portalType: info.portalType,
+        method: info.method,
+        ipAddress,
+        userAgent,
+      },
+    },
+    request,
+  )
+}
+
+export async function logAccountLocked(
+  payload: Payload,
+  request: Request,
+  user: { id: string | number; email?: string; role?: string },
+  lockUntil: Date,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const { ipAddress, userAgent } = requestMeta(request)
+  await createAuditLog(
+    payload,
+    {
+      action: 'account_locked',
+      collection: 'users',
+      documentId: user.id,
+      userId: user.id,
+      userEmail: user.email,
+      userRole: user.role,
+      description: `Account locked for ${user.email} until ${lockUntil.toLocaleString()} after failed login attempts from ${ipAddress}`,
+      metadata: { lockUntil: lockUntil.toISOString(), ipAddress, userAgent, ...metadata },
     },
     request,
   )
@@ -188,6 +262,8 @@ export function createAuditDescription(
       return `Deleted ${collectionName} (ID: ${documentId})`
     case 'login':
       return `User logged in (${documentId})`
+    case 'login_failed':
+      return `Failed login attempt (${documentId})`
     case 'logout':
       return `User logged out (${documentId})`
     case 'password_reset':

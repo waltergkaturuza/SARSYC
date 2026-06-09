@@ -4,7 +4,7 @@ import {
   rolesAllowedForAdminPanelLogin,
   usesAdminPanelPrivilegedLogin,
 } from '@/lib/admin/adminAccess'
-import { logAuthentication } from '@/lib/audit'
+import { logAuthentication, logFailedAuthentication } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,6 +54,14 @@ export async function POST(request: NextRequest) {
       if (foundUser && (foundUser as any).lockUntil) {
         const lockUntil = new Date((foundUser as any).lockUntil)
         if (lockUntil > new Date()) {
+          await logFailedAuthentication(payloadClient, request, {
+            email,
+            reason: 'account_locked_attempt',
+            userId: foundUser.id,
+            userRole: (foundUser as any).role,
+            portalType: type,
+            method: 'payload-login',
+          })
           return NextResponse.json(
             { 
               error: `Account is locked due to too many failed login attempts. Please try again after ${lockUntil.toLocaleString()}`,
@@ -201,6 +209,31 @@ export async function POST(request: NextRequest) {
       
       return response
     } catch (authError: any) {
+      let failureUser: { id: string | number; email?: string; role?: string } | null = null
+      try {
+        const users = await payloadClient.find({
+          collection: 'users',
+          where: { email: { equals: email.toLowerCase().trim() } },
+          limit: 1,
+          overrideAccess: true,
+        })
+        if (users.docs[0]) {
+          const u = users.docs[0] as { id: string | number; email?: string; role?: string }
+          failureUser = { id: u.id, email: u.email, role: u.role }
+        }
+      } catch {
+        // ignore lookup errors
+      }
+
+      await logFailedAuthentication(payloadClient, request, {
+        email,
+        reason: failureUser ? 'invalid_credentials' : 'user_not_found',
+        userId: failureUser?.id,
+        userRole: failureUser?.role,
+        portalType: type,
+        method: 'payload-login',
+      })
+
       // Provide more detailed error messages
       const errorMessage = authError?.message || 'Invalid email or password'
       console.error('[Login API] ❌ Step 4: payload.login() FAILED')

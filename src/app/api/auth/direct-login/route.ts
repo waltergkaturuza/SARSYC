@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import postgres from 'postgres'
 import { getProcessedSecret } from '@/lib/getSecret'
-import { logAuthentication } from '@/lib/audit'
+import { logAccountLocked, logAuthentication, logFailedAuthentication } from '@/lib/audit'
 
 /**
  * Direct Database Authentication Bypass
@@ -78,6 +78,11 @@ export async function POST(request: NextRequest) {
 
     if (!users.docs || users.docs.length === 0) {
       console.log('[Direct Login] ❌ User not found:', email)
+      await logFailedAuthentication(payload, request, {
+        email,
+        reason: 'user_not_found',
+        method: 'direct-database-auth',
+      })
       const response = NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -129,6 +134,13 @@ export async function POST(request: NextRequest) {
       const lockUntil = new Date(user.lockUntil)
       if (lockUntil > new Date()) {
         console.log('[Direct Login] ❌ Account locked until:', lockUntil)
+        await logFailedAuthentication(payload, request, {
+          email: user.email ?? email,
+          reason: 'account_locked_attempt',
+          userId: user.id,
+          userRole: userBasic.role,
+          method: 'direct-database-auth',
+        })
         const response = NextResponse.json(
           { 
             error: `Account is locked. Try again after ${lockUntil.toLocaleString()}`,
@@ -150,6 +162,13 @@ export async function POST(request: NextRequest) {
     
     if (!user.hash) {
       console.log('[Direct Login] ❌ User has no password hash!')
+      await logFailedAuthentication(payload, request, {
+        email: user.email,
+        reason: 'no_password',
+        userId: user.id,
+        userRole: user.role,
+        method: 'direct-database-auth',
+      })
       const response = NextResponse.json(
         { 
           error: 'User account has no password set',
@@ -173,18 +192,36 @@ export async function POST(request: NextRequest) {
       console.log('[Direct Login] ❌ Password mismatch')
       console.log('[Direct Login] Expected hash:', user.hash)
       console.log('[Direct Login] Password provided:', password.substring(0, 3) + '***')
+      await logFailedAuthentication(payload, request, {
+        email: user.email,
+        reason: 'wrong_password',
+        userId: user.id,
+        userRole: user.role,
+        method: 'direct-database-auth',
+      })
       // Increment login attempts
       try {
         const currentAttempts = (user.loginAttempts || 0) + 1
+        const lockUntil =
+          currentAttempts >= 5 ? new Date(Date.now() + 10 * 60 * 1000) : null
         await payload.update({
           collection: 'users',
           id: user.id,
           data: {
             loginAttempts: currentAttempts,
-            lockUntil: currentAttempts >= 5 ? new Date(Date.now() + 10 * 60 * 1000).toISOString() : null,
+            lockUntil: lockUntil ? lockUntil.toISOString() : null,
           },
           overrideAccess: true,
         })
+        if (lockUntil) {
+          await logAccountLocked(
+            payload,
+            request,
+            { id: user.id, email: user.email, role: user.role },
+            lockUntil,
+            { method: 'direct-database-auth', failedAttempts: currentAttempts },
+          )
+        }
       } catch (updateError) {
         console.error('[Direct Login] Failed to update login attempts:', updateError)
       }

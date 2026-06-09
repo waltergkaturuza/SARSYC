@@ -71,18 +71,24 @@ export function createAfterChangeHook(collectionSlug: string) {
       const action = operation === 'create' ? 'create' : 'update'
       const description = createAuditDescription(action, collectionSlug, doc.id as string | number, changes)
 
-      await createAuditLog(req.payload as Parameters<typeof createAuditLog>[0], {
-        action,
-        collection: collectionSlug,
-        documentId: doc.id as string | number,
-        userId: user.id,
-        userEmail: user.email,
-        userRole: user.role,
-        changes: Object.keys(changes).length > 0 ? changes : undefined,
-        before: operation === 'update' ? originalDoc : undefined,
-        after: doc,
-        description,
-      })
+      const auditRequest = getAuditContext()?.request
+
+      await createAuditLog(
+        req.payload as Parameters<typeof createAuditLog>[0],
+        {
+          action,
+          collection: collectionSlug,
+          documentId: doc.id as string | number,
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role,
+          changes: Object.keys(changes).length > 0 ? changes : undefined,
+          before: operation === 'update' ? originalDoc : undefined,
+          after: doc,
+          description,
+        },
+        auditRequest,
+      )
     } catch (error) {
       console.error(`[Audit] Failed to log ${operation} for ${collectionSlug}:`, error)
     }
@@ -114,16 +120,22 @@ export function createAfterDeleteHook(collectionSlug: string) {
     try {
       const description = createAuditDescription('delete', collectionSlug, doc.id as string | number)
 
-      await createAuditLog(req.payload as Parameters<typeof createAuditLog>[0], {
-        action: 'delete',
-        collection: collectionSlug,
-        documentId: doc.id as string | number,
-        userId: user.id,
-        userEmail: user.email,
-        userRole: user.role,
-        before: doc,
-        description,
-      })
+      const auditRequest = getAuditContext()?.request
+
+      await createAuditLog(
+        req.payload as Parameters<typeof createAuditLog>[0],
+        {
+          action: 'delete',
+          collection: collectionSlug,
+          documentId: doc.id as string | number,
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role,
+          before: doc,
+          description,
+        },
+        auditRequest,
+      )
     } catch (error) {
       console.error(`[Audit] Failed to log delete for ${collectionSlug}:`, error)
     }

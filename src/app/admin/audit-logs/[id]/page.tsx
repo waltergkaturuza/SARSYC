@@ -2,7 +2,8 @@ import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiClock, FiUser, FiFileText, FiShield } from 'react-icons/fi'
+import { FiArrowLeft, FiClock, FiGlobe, FiMonitor } from 'react-icons/fi'
+import { formatDeviceLabel } from '@/lib/clientIp'
 
 export const revalidate = 0
 
@@ -37,6 +38,7 @@ export default async function AuditLogDetailPage({
     update: 'bg-blue-100 text-blue-700 border-blue-200',
     delete: 'bg-red-100 text-red-700 border-red-200',
     login: 'bg-purple-100 text-purple-700 border-purple-200',
+    login_failed: 'bg-rose-100 text-rose-700 border-rose-200',
     logout: 'bg-gray-100 text-gray-700 border-gray-200',
     password_reset: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     account_locked: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -106,6 +108,36 @@ export default async function AuditLogDetailPage({
           </div>
         </div>
 
+        {/* Client / device */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <h2 className="text-xl font-bold text-gray-900">Client &amp; Device</h2>
+
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-gray-500">IP Address</label>
+              <p className="text-gray-900 font-mono flex items-center gap-2">
+                <FiGlobe className="w-4 h-4 text-gray-400" />
+                {auditLog.ipAddress || '—'}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-500">Device / Browser</label>
+              <p className="text-gray-900 flex items-center gap-2">
+                <FiMonitor className="w-4 h-4 text-gray-400" />
+                {formatDeviceLabel(auditLog.userAgent || '')}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-500">User Agent (full)</label>
+              <p className="text-gray-900 text-sm break-all bg-gray-50 p-3 rounded-lg">
+                {auditLog.userAgent || '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* User Information */}
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
           <h2 className="text-xl font-bold text-gray-900">User Information</h2>
@@ -128,16 +160,6 @@ export default async function AuditLogDetailPage({
             <div>
               <label className="text-sm font-medium text-gray-500">Role</label>
               <p className="text-gray-900 capitalize">{auditLog.userRole || '-'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">IP Address</label>
-              <p className="text-gray-900 font-mono">{auditLog.ipAddress || '-'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">User Agent</label>
-              <p className="text-gray-900 text-sm break-all">{auditLog.userAgent || '-'}</p>
             </div>
           </div>
         </div>
