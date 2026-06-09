@@ -1,9 +1,14 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payload'
-import { FiHeart } from 'react-icons/fi'
+import { FiAlertCircle, FiCheck, FiDollarSign, FiHeart } from 'react-icons/fi'
 import DonationsFilters from '@/components/admin/DonationsFilters'
 import DonationsTable from '@/components/admin/DonationsTable'
+import {
+  fetchDonationsForSummary,
+  formatUsd,
+  summarizeDonations,
+} from '@/lib/admin/donationsSummary'
 
 export const revalidate = 0
 
@@ -44,20 +49,25 @@ export default async function AdminDonationsPage({ searchParams }: DonationsPage
   let docs: Record<string, unknown>[] = []
   let total = 0
   let totalPages = 1
+  let breakdown = summarizeDonations([])
   let dbError: string | null = null
 
   try {
-    const results = await payload.find({
-      collection: 'donations',
-      where,
-      limit,
-      page,
-      sort: '-createdAt',
-      overrideAccess: true,
-    })
+    const [results, summaryDocs] = await Promise.all([
+      payload.find({
+        collection: 'donations',
+        where,
+        limit,
+        page,
+        sort: '-createdAt',
+        overrideAccess: true,
+      }),
+      fetchDonationsForSummary(payload, where),
+    ])
     docs = results.docs || []
     total = results.totalDocs || 0
     totalPages = results.totalPages || 1
+    breakdown = summarizeDonations(summaryDocs)
   } catch (err: unknown) {
     console.error('[admin/donations]', err)
     dbError =
@@ -68,9 +78,6 @@ export default async function AdminDonationsPage({ searchParams }: DonationsPage
       dbError += ' Run GET /api/admin/fix-locked-docs-table once, then redeploy or refresh.'
     }
   }
-
-  const paidCount = docs.filter((d) => d.paymentStatus === 'paid').length
-  const pendingCount = docs.filter((d) => d.paymentStatus === 'pending').length
 
   return (
     <div className="w-full">
@@ -98,18 +105,79 @@ export default async function AdminDonationsPage({ searchParams }: DonationsPage
         </div>
       ) : (
         <>
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <p className="text-sm text-gray-500">Total (this page filter)</p>
-              <p className="text-2xl font-bold text-gray-900">{total}</p>
+          <div className="mb-6 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                Payments breakdown
+                {paymentStatusFilter !== 'all' || searchQuery ? ' (filtered)' : ''}
+              </h2>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <div className="flex items-center gap-2 text-gray-500 mb-1">
+                    <FiDollarSign size={18} />
+                    <p className="text-sm">Total expected</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatUsd(breakdown.totalExpectedUsd)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {breakdown.recordCount} pledge{breakdown.recordCount === 1 ? '' : 's'}
+                  </p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <div className="flex items-center gap-2 text-gray-500 mb-1">
+                    <FiCheck size={18} className="text-green-600" />
+                    <p className="text-sm">Total paid</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatUsd(breakdown.collectedUsd)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {breakdown.paidCount} paid record{breakdown.paidCount === 1 ? '' : 's'}
+                  </p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <div className="flex items-center gap-2 text-gray-500 mb-1">
+                    <FiAlertCircle size={18} className="text-amber-600" />
+                    <p className="text-sm">Outstanding</p>
+                  </div>
+                  <p className="text-2xl font-bold text-amber-600">
+                    {formatUsd(breakdown.outstandingUsd)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {breakdown.unpaidCount} unpaid record{breakdown.unpaidCount === 1 ? '' : 's'}
+                  </p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <div className="flex items-center gap-2 text-gray-500 mb-1">
+                    <FiAlertCircle size={18} className="text-red-500" />
+                    <p className="text-sm">Failed</p>
+                  </div>
+                  <p className="text-2xl font-bold text-red-600">
+                    {formatUsd(breakdown.failedUsd)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {breakdown.failedCount} failed
+                    {breakdown.bankTransferCount > 0
+                      ? ` · ${breakdown.bankTransferCount} bank transfer (${formatUsd(breakdown.bankTransferUsd)})`
+                      : ''}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <p className="text-sm text-gray-500">Paid on page</p>
-              <p className="text-2xl font-bold text-green-600">{paidCount}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <p className="text-sm text-gray-500">Unpaid on page</p>
-              <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Records</p>
+                <p className="text-lg font-semibold text-gray-900">{total}</p>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Paid</p>
+                <p className="text-lg font-semibold text-green-600">{breakdown.paidCount}</p>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Unpaid</p>
+                <p className="text-lg font-semibold text-amber-600">{breakdown.unpaidCount}</p>
+              </div>
             </div>
           </div>
 

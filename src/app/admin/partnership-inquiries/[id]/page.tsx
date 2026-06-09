@@ -1,13 +1,18 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isAdminRole } from '@/lib/admin/adminAccess'
 import Link from 'next/link'
 import { FiArrowLeft, FiMail, FiPhone, FiCalendar } from 'react-icons/fi'
 import { notFound } from 'next/navigation'
+import PartnershipInquiryDeleteButton from '@/components/admin/PartnershipInquiryDeleteButton'
 
 export const revalidate = 0
 
 export default async function PartnershipInquiryDetailPage({ params }: { params: { id: string } }) {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const canDelete = isAdminRole(currentUser?.role)
   
   let inquiry: any = null
 
@@ -155,6 +160,16 @@ export default async function PartnershipInquiryDetailPage({ params }: { params:
                 >
                   Call Partner
                 </a>
+              )}
+              {canDelete && (
+                <div className="pt-2 border-t border-gray-200">
+                  <PartnershipInquiryDeleteButton
+                    inquiryId={String(inquiry.id)}
+                    organizationName={inquiry.organizationName || 'this organization'}
+                    redirectTo="/admin/partnership-inquiries"
+                    variant="button"
+                  />
+                </div>
               )}
             </div>
           </div>

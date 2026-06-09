@@ -24,7 +24,8 @@
     "backup:database": "node scripts/backup_database.mjs",
     "mail:demographics-reminders": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/send_demographics_reminders.ts",
     "mail:demographics-reminders:send": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/send_demographics_reminders.ts --send",
-    "mail:verify-smtp": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/verify_smtp.ts"
+    "mail:verify-smtp": "cross-env NODE_OPTIONS=--no-deprecation npx tsx scripts/verify_smtp.ts",
+    "migrate:accountant-role": "node scripts/add_accountant_role.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",

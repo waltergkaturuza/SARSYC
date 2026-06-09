@@ -1,12 +1,17 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isAdminRole } from '@/lib/admin/adminAccess'
 import Link from 'next/link'
 import { FiEye, FiMail, FiPhone } from 'react-icons/fi'
+import PartnershipInquiryDeleteButton from '@/components/admin/PartnershipInquiryDeleteButton'
 
 export const revalidate = 0
 
 export default async function PartnershipInquiriesPage() {
   const payload = await getPayloadClient()
+  const currentUser = await getCurrentUserFromCookies()
+  const canDelete = isAdminRole(currentUser?.role)
   
   let inquiries: any[] = []
   let totalDocs = 0
@@ -151,13 +156,21 @@ export default async function PartnershipInquiriesPage() {
                         {new Date(inquiry.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/admin/partnership-inquiries/${inquiry.id}`}
-                          className="text-primary-600 hover:text-primary-700"
-                          title="View Details"
-                        >
-                          <FiEye className="w-5 h-5 inline" />
-                        </Link>
+                        <div className="inline-flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/partnership-inquiries/${inquiry.id}`}
+                            className="p-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                            title="View details"
+                          >
+                            <FiEye className="w-5 h-5" />
+                          </Link>
+                          {canDelete && (
+                            <PartnershipInquiryDeleteButton
+                              inquiryId={String(inquiry.id)}
+                              organizationName={inquiry.organizationName || 'this organization'}
+                            />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
