@@ -10,6 +10,12 @@ import {
   FiAward, FiActivity, FiMail, FiInbox, FiTrendingUp, FiCreditCard
 } from 'react-icons/fi'
 import { adminSearchRouteForPath, pushAdminSearch } from '@/lib/admin/registrationSearchWhere'
+import {
+  ACCOUNTANT_ADMIN_PREFIXES,
+  EDITOR_ADMIN_PREFIXES,
+  accountantMayAccessPath,
+  editorMayAccessPath,
+} from '@/lib/admin/adminAccess'
 
 const navigation = [
   {
@@ -196,11 +202,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [])
 
   useEffect(() => {
-    if (!loadingUser && currentUser?.role === 'reviewer') {
-      const allowedPrefixes = ['/admin/abstracts']
-      if (!allowedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+    if (loadingUser || !currentUser) return
+
+    if (currentUser.role === 'reviewer') {
+      if (!pathname.startsWith('/admin/abstracts')) {
         router.replace('/admin/abstracts')
       }
+      return
+    }
+
+    if (currentUser.role === 'editor' && !editorMayAccessPath(pathname)) {
+      router.replace('/admin/abstracts')
+      return
+    }
+
+    if (currentUser.role === 'accountant' && !accountantMayAccessPath(pathname)) {
+      router.replace('/admin/payments')
     }
   }, [loadingUser, currentUser, pathname, router])
 
@@ -217,6 +234,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     if (currentUser.role === 'reviewer') {
       return navigation.filter((item) => item.href === '/admin/abstracts')
+    }
+    if (currentUser.role === 'editor') {
+      return navigation.filter((item) =>
+        EDITOR_ADMIN_PREFIXES.includes(item.href as (typeof EDITOR_ADMIN_PREFIXES)[number]),
+      )
+    }
+    if (currentUser.role === 'accountant') {
+      return navigation.filter((item) =>
+        ACCOUNTANT_ADMIN_PREFIXES.includes(item.href as (typeof ACCOUNTANT_ADMIN_PREFIXES)[number]),
+      )
     }
     return navigation
   }, [currentUser])

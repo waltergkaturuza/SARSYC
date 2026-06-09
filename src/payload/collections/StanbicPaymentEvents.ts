@@ -10,7 +10,10 @@ const StanbicPaymentEvents: CollectionConfig = {
     hidden: true,
   },
   access: {
-    read: (args: any) => args.req?.user?.role === 'admin',
+    read: (args: any) => {
+      const role = args.req?.user?.role
+      return role === 'admin' || role === 'accountant'
+    },
     create: () => true,
     update: () => false,
     delete: (args: any) => args.req?.user?.role === 'admin',

@@ -224,7 +224,7 @@ function LoginForm() {
                 </Link>
               </p>
 
-              {(userType === 'admin' || userType === 'editor') && (
+              {(userType === 'admin' || userType === 'editor' || userType === 'accountant') && (
                 <p className="mt-3 text-center">
                   <Link href="/admin" className="text-xs text-gray-500 hover:text-primary-600">
                     Go to admin panel →

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 import { bulkSyncStanbicPayments } from '@/lib/stanbic/syncStanbicPayments'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -12,8 +13,8 @@ export async function POST(req: NextRequest) {
   if (!acting) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  if (!['admin', 'super-admin', 'editor'].includes(String(acting.role))) {
-    return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 })
+  if (!isFinanceRole(String(acting.role))) {
+    return NextResponse.json({ error: 'Forbidden. Finance access required.' }, { status: 403 })
   }
 
   let body: { references?: unknown; limit?: unknown } = {}

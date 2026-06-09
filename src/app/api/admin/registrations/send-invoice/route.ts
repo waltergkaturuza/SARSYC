@@ -8,6 +8,7 @@ import {
   paymentDueEmailAmount,
   registrationIsActive,
 } from '@/lib/registrationResumePayment'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 
 export async function POST(req: Request) {
   try {
@@ -22,8 +23,8 @@ export async function POST(req: Request) {
     if (!acting) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 })
     }
-    if (!['admin', 'super-admin'].includes(acting.role)) {
-      return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 })
+    if (!isFinanceRole(acting.role)) {
+      return NextResponse.json({ error: 'Forbidden. Finance access required.' }, { status: 403 })
     }
 
     const payload = await getPayloadClient()

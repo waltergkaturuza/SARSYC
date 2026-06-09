@@ -11,6 +11,7 @@ import {
   registrationNeedsPayment,
 } from '@/lib/registrationResumePayment'
 import { registrationRequiresHostedPayment } from '@/lib/stanbic/ngenius'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 
 export async function POST(req: Request) {
   try {
@@ -31,9 +32,9 @@ export async function POST(req: Request) {
       }, { status: 401 })
     }
     
-    if (!['admin', 'super-admin'].includes(acting.role)) {
-      return NextResponse.json({ 
-        error: 'Forbidden. Admin access required.' 
+    if (!isFinanceRole(acting.role)) {
+      return NextResponse.json({
+        error: 'Forbidden. Finance access required.',
       }, { status: 403 })
     }
 

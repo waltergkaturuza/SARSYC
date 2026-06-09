@@ -48,6 +48,10 @@ const Users: CollectionConfig = {
           value: 'editor',
         },
         {
+          label: 'Accountant',
+          value: 'accountant',
+        },
+        {
           label: 'Contributor',
           value: 'contributor',
         },

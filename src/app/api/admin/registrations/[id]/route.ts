@@ -4,6 +4,7 @@ import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
 import { ensureSafeguardingTrainingEmailSent } from '@/lib/safeguardingNotifications'
 import { registrationPaymentSettled } from '@/lib/safeguarding'
 import { pickAdminRegistrationUpdate } from '@/lib/admin/registrationAdminEdit'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 
 export const dynamic = 'force-dynamic'
@@ -14,8 +15,8 @@ async function requireAdmin(req: NextRequest) {
   if (!acting) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
-  if (!['admin', 'super-admin', 'editor'].includes(String(acting.role))) {
-    return { error: NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 }) }
+  if (!isFinanceRole(String(acting.role))) {
+    return { error: NextResponse.json({ error: 'Forbidden. Finance access required.' }, { status: 403 }) }
   }
   return { acting }
 }

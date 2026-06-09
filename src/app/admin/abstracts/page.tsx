@@ -108,7 +108,8 @@ export default async function AbstractsManagementPage({
   }
   const isAdmin = currentUser.role === 'admin'
   const isReviewerRole = currentUser.role === 'reviewer'
-  if (!isAdmin && !isReviewerRole) {
+  const isEditor = currentUser.role === 'editor'
+  if (!isAdmin && !isReviewerRole && !isEditor) {
     redirect('/login?type=reviewer&redirect=/admin/abstracts')
   }
 

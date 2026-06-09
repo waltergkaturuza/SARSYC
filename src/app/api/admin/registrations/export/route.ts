@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { logExport, incrementFallback } from '@/lib/telemetry'
 import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const RATE_LIMIT_MAX = 3 // max exports per window
@@ -41,8 +42,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized. Please log in to access this resource.' }, { status: 401 })
     }
     
-    if (!['admin', 'super-admin'].includes(foundUser.role)) {
-      return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 })
+    if (!isFinanceRole(foundUser.role)) {
+      return NextResponse.json({ error: 'Forbidden. Finance access required.' }, { status: 403 })
     }
 
     const payload = await getPayloadClient()

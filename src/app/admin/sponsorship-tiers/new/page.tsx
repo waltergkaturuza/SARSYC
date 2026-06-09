@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 import { getPayloadClient } from '@/lib/payload'
 import SponsorshipTierForm from '@/components/admin/forms/SponsorshipTierForm'
 
@@ -10,8 +11,8 @@ export default async function NewSponsorshipTierPage() {
   // Check authentication
   const user = await getCurrentUserFromCookies()
   
-  if (!user || user.role !== 'admin') {
-    redirect('/login?type=admin&redirect=/admin/sponsorship-tiers/new')
+  if (!user || !isFinanceRole(user.role)) {
+    redirect('/login?type=accountant&redirect=/admin/sponsorship-tiers/new')
   }
 
   const payload = await getPayloadClient()

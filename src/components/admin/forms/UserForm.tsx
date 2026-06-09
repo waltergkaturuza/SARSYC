@@ -13,7 +13,7 @@ const createUserSchema = (isEditMode: boolean) => z.object({
   email: z.string().email('Please enter a valid email address'),
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  role: z.enum(['admin', 'editor', 'contributor', 'reviewer', 'speaker', 'presenter', 'volunteer'], {
+  role: z.enum(['admin', 'editor', 'accountant', 'contributor', 'reviewer', 'speaker', 'presenter', 'volunteer'], {
     required_error: 'Please select a role',
   }),
   organization: z.string().optional(),
@@ -223,6 +223,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
               >
                 <option value="admin">Admin</option>
                 <option value="editor">Editor</option>
+                <option value="accountant">Accountant</option>
                 <option value="contributor">Contributor</option>
                 <option value="reviewer">Reviewer</option>
                 <option value="speaker">Speaker</option>
@@ -235,6 +236,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
               <p className="mt-1 text-xs text-gray-500">
                 <strong>Admin:</strong> Full access<br />
                 <strong>Editor:</strong> Create and edit content<br />
+                <strong>Accountant:</strong> Registrations, payments &amp; donations<br />
                 <strong>Contributor:</strong> Limited editing<br />
                 <strong>Reviewer:</strong> Abstract evaluation only
               </p>

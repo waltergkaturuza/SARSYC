@@ -166,6 +166,12 @@ export default async function DashboardPage() {
       icon: FiEdit,
       color: 'green',
     },
+    'accountant': {
+      title: 'Accountant Dashboard',
+      description: 'Registrations, payments, and donations',
+      icon: FiEdit,
+      color: 'emerald',
+    },
     'admin': {
       title: 'Admin Dashboard',
       description: 'Full system access and management',
@@ -185,6 +191,7 @@ export default async function DashboardPage() {
         roleInfo.color === 'indigo' ? 'from-indigo-600 to-purple-600' :
         roleInfo.color === 'red' ? 'from-red-600 to-pink-600' :
         roleInfo.color === 'green' ? 'from-green-600 to-emerald-600' :
+        roleInfo.color === 'emerald' ? 'from-emerald-600 to-teal-600' :
         'from-blue-600 to-cyan-600'
       } text-white py-12`}>
         <div className="container-custom">

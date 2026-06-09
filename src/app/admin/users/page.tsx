@@ -69,6 +69,7 @@ export default async function UsersManagementPage({
   const roleConfig: Record<string, { color: string, label: string, icon: any }> = {
     'admin': { color: 'bg-red-100 text-red-700', label: 'Admin', icon: FiShield },
     'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor', icon: FiEdit },
+    'accountant': { color: 'bg-emerald-100 text-emerald-700', label: 'Accountant', icon: FiUser },
     'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor', icon: FiUser },
     'reviewer': { color: 'bg-yellow-100 text-yellow-700', label: 'Reviewer', icon: FiUser },
     'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker', icon: FiUser },
@@ -124,6 +125,7 @@ export default async function UsersManagementPage({
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
               <option value="editor">Editor</option>
+              <option value="accountant">Accountant</option>
               <option value="contributor">Contributor</option>
               <option value="reviewer">Reviewer</option>
               <option value="speaker">Speaker</option>

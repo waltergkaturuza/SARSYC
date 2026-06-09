@@ -34,6 +34,7 @@ export default async function UserDetailPage({
     const roleConfig: Record<string, { color: string, label: string }> = {
       'admin': { color: 'bg-red-100 text-red-700', label: 'Admin' },
       'editor': { color: 'bg-blue-100 text-blue-700', label: 'Editor' },
+      'accountant': { color: 'bg-emerald-100 text-emerald-700', label: 'Accountant' },
       'contributor': { color: 'bg-green-100 text-green-700', label: 'Contributor' },
       'reviewer': { color: 'bg-amber-100 text-amber-700', label: 'Reviewer' },
       'speaker': { color: 'bg-purple-100 text-purple-700', label: 'Speaker' },
@@ -200,6 +201,16 @@ export default async function UserDetailPage({
                   <li>• Can create and edit content in all collections</li>
                   <li>• Can publish and manage content</li>
                   <li>• Cannot manage users or system settings</li>
+                </ul>
+              </div>
+            )}
+            {user.role === 'accountant' && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p className="font-medium text-emerald-900 mb-2">Accountant Role</p>
+                <ul className="text-sm text-emerald-700 space-y-1">
+                  <li>• Registrations, Orathon registrations, payments, and donations</li>
+                  <li>• Sponsorship tiers and partnership inquiries</li>
+                  <li>• Cannot manage users, content, or system settings</li>
                 </ul>
               </div>
             )}

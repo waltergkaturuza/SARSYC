@@ -17,11 +17,10 @@ const PartnershipInquiries: CollectionConfig = {
     },
     create: () => true, // Public can submit inquiries
     update: (args: any) => {
-      return args.req?.user?.role === 'admin'
+      const role = args.req?.user?.role
+      return role === 'admin' || role === 'accountant'
     },
-    delete: (args: any) => {
-      return args.req?.user?.role === 'admin'
-    },
+    delete: (args: any) => args.req?.user?.role === 'admin',
   },
   fields: [
     {

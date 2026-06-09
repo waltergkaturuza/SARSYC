@@ -20,9 +20,15 @@ const Donations: CollectionConfig = {
     description: 'Donations and sponsorships received for SARSYC VI.',
   },
   access: {
-    read: (args: any) => args.req?.user?.role === 'admin',
+    read: (args: any) => {
+      const role = args.req?.user?.role
+      return role === 'admin' || role === 'accountant'
+    },
     create: () => true, // Created via API
-    update: (args: any) => args.req?.user?.role === 'admin',
+    update: (args: any) => {
+      const role = args.req?.user?.role
+      return role === 'admin' || role === 'accountant'
+    },
     delete: (args: any) => args.req?.user?.role === 'admin',
   },
   fields: [

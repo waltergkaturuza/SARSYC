@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import {
+  rolesAllowedForAdminPanelLogin,
+  usesAdminPanelPrivilegedLogin,
+} from '@/lib/admin/adminAccess'
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,11 +91,12 @@ export async function POST(request: NextRequest) {
       // Note: Users collection uses 'role' (singular), not 'roles' (plural)
       const userRole = (result.user as any).role || (result.user as any).roles?.[0]
       
-      if (type === 'admin' || type === 'editor') {
+      if (usesAdminPanelPrivilegedLogin(String(type))) {
         const role = String(userRole)
-        if (!['admin', 'editor'].includes(role)) {
+        const allowedRoles = rolesAllowedForAdminPanelLogin(String(type))
+        if (!allowedRoles.includes(role)) {
           return NextResponse.json(
-            { error: 'Access denied. Admin or Editor role required.' },
+            { error: `Access denied. ${String(type).charAt(0).toUpperCase()}${String(type).slice(1)} role required.` },
             { status: 403 }
           )
         }

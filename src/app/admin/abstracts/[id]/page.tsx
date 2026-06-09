@@ -34,7 +34,13 @@ const statusColors: Record<string, string> = {
 export default async function AbstractDetailPage({ params }: AbstractDetailPageProps) {
   const currentUser = await getCurrentUserFromCookies()
   if (!currentUser) redirect('/login?type=reviewer&redirect=/admin/abstracts')
-  if (currentUser.role !== 'admin' && currentUser.role !== 'reviewer') redirect('/login?type=reviewer&redirect=/admin/abstracts')
+  if (
+    currentUser.role !== 'admin' &&
+    currentUser.role !== 'reviewer' &&
+    currentUser.role !== 'editor'
+  ) {
+    redirect('/login?type=reviewer&redirect=/admin/abstracts')
+  }
 
   const payload = await getPayloadClient()
   const reviewerIdValue =

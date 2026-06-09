@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -26,6 +28,14 @@ export async function PATCH(
   }
 
   try {
+    const acting = await getCurrentUserFromRequest(req)
+    if (!acting) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!isFinanceRole(acting.role)) {
+      return NextResponse.json({ error: 'Forbidden. Finance access required.' }, { status: 403 })
+    }
+
     const payload = await getPayloadClient()
     const data: Record<string, unknown> = {}
     if (paymentStatus) {

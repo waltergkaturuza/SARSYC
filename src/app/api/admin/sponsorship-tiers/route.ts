@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { getCurrentUserFromCookies } from '@/lib/getCurrentUser'
+import { isFinanceRole } from '@/lib/admin/adminAccess'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
@@ -22,11 +23,8 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUserFromCookies()
     
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    if (!user || !isFinanceRole(user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()

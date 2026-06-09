@@ -71,6 +71,7 @@ const AuditLogs: CollectionConfig = {
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'Editor', value: 'editor' },
+        { label: 'Accountant', value: 'accountant' },
         { label: 'Contributor', value: 'contributor' },
         { label: 'Speaker', value: 'speaker' },
         { label: 'Presenter', value: 'presenter' },

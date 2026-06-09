@@ -83,7 +83,7 @@ export async function PUT(
     const updateData: any = {
       firstName,
       lastName,
-      role: role as 'admin' | 'editor' | 'contributor' | 'reviewer' | 'speaker' | 'presenter' | 'volunteer',
+      role: role as 'admin' | 'editor' | 'accountant' | 'contributor' | 'reviewer' | 'speaker' | 'presenter' | 'volunteer',
       organization: organization || undefined,
       phone: phone || undefined,
     }
