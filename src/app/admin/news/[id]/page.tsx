@@ -6,7 +6,6 @@ import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import Image from 'next/image'
 import { FiEdit, FiArrowLeft, FiCalendar, FiUser, FiTag, FiStar } from 'react-icons/fi'
 import { format } from 'date-fns'
-import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 export const revalidate = 0
 
