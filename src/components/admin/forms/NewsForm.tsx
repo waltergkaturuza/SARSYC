@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import FormField from './FormField'
-import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
+import { FiUpload, FiX, FiPlus, FiSave, FiLoader, FiMail, FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
 import Image from 'next/image'
 import { slateToPlainText } from '@/lib/newsContent'
 
@@ -30,7 +30,9 @@ interface NewsFormProps {
 export default function NewsForm({ initialData, mode, users = [] }: NewsFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [broadcasting, setBroadcasting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [broadcastMessage, setBroadcastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   // Auto-generate slug from title
@@ -116,6 +118,55 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
+  }
+
+  const handleEmailSubscribers = async () => {
+    if (!initialData?.id) return
+
+    if (formData.status !== 'published') {
+      setBroadcastMessage({
+        type: 'error',
+        text: 'Publish this article first before emailing subscribers.',
+      })
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Send this article to all active newsletter subscribers? This will email everyone on the subscription list.',
+    )
+    if (!confirmed) return
+
+    setBroadcasting(true)
+    setBroadcastMessage(null)
+
+    try {
+      const response = await fetch(
+        `/api/admin/news/${initialData.id}/broadcast-newsletter`,
+        { method: 'POST', credentials: 'include' },
+      )
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to email subscribers')
+      }
+
+      const sent = result.newsletterBroadcast?.sent ?? 0
+      const failed = result.newsletterBroadcast?.failed ?? 0
+      setBroadcastMessage({
+        type: 'success',
+        text:
+          failed > 0
+            ? `Newsletter sent to ${sent} subscriber(s). ${failed} failed.`
+            : `Newsletter sent to ${sent} subscriber(s).`,
+      })
+    } catch (err: unknown) {
+      setBroadcastMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to email subscribers',
+      })
+    } finally {
+      setBroadcasting(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -400,32 +451,79 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
         </div>
       )}
 
-      {/* Submit Button */}
-      <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+      {broadcastMessage && (
+        <div
+          className={`rounded-lg p-4 border flex items-start gap-3 ${
+            broadcastMessage.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
         >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? (
-            <>
-              <FiLoader className="w-5 h-5 animate-spin" />
-              Saving...
-            </>
+          {broadcastMessage.type === 'success' ? (
+            <FiCheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           ) : (
-            <>
-              <FiSave className="w-5 h-5" />
-              {mode === 'create' ? 'Create Article' : 'Save Changes'}
-            </>
+            <FiAlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           )}
-        </button>
+          <p className="text-sm">{broadcastMessage.text}</p>
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-gray-200">
+        {mode === 'edit' ? (
+          <button
+            type="button"
+            onClick={handleEmailSubscribers}
+            disabled={broadcasting || loading || formData.status !== 'published'}
+            title={
+              formData.status !== 'published'
+                ? 'Set status to Published to email subscribers'
+                : 'Email all newsletter subscribers about this article'
+            }
+            className="flex items-center justify-center gap-2 px-6 py-2 border border-primary-600 text-primary-700 rounded-lg hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {broadcasting ? (
+              <>
+                <FiLoader className="w-5 h-5 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <FiMail className="w-5 h-5" />
+                Email subscribers
+              </>
+            )}
+          </button>
+        ) : (
+          <div />
+        )}
+
+        <div className="flex items-center justify-end gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading || broadcasting}
+            className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? (
+              <>
+                <FiLoader className="w-5 h-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <FiSave className="w-5 h-5" />
+                {mode === 'create' ? 'Create Article' : 'Save Changes'}
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </form>
   )
