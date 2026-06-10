@@ -7,6 +7,7 @@ import {
   mediaIdForPayload,
 } from '@/lib/newsFeaturedMediaUpload'
 import { formatPayloadError } from '@/lib/payloadErrors'
+import { notifyNewsletterSubscribersOfArticle } from '@/lib/newsletterBroadcast'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -103,7 +104,27 @@ export async function POST(request: NextRequest) {
       overrideAccess: true,
     })
 
-    return NextResponse.json({ success: true, doc: news })
+    let newsletterBroadcast: { sent: number; failed: number } | undefined
+    if (status === 'published') {
+      try {
+        const fullArticle = await payload.findByID({
+          collection: 'news',
+          id: news.id,
+          depth: 2,
+          overrideAccess: true,
+        })
+        newsletterBroadcast = await notifyNewsletterSubscribersOfArticle(payload, {
+          title: fullArticle.title,
+          slug: fullArticle.slug,
+          excerpt: fullArticle.excerpt,
+          featuredImage: fullArticle.featuredImage,
+        })
+      } catch (broadcastError) {
+        console.error('Newsletter broadcast error (create):', broadcastError)
+      }
+    }
+
+    return NextResponse.json({ success: true, doc: news, newsletterBroadcast })
   } catch (error: unknown) {
     console.error('Create news error:', error)
     return NextResponse.json({ error: formatPayloadError(error) }, { status: 500 })

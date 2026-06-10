@@ -1176,6 +1176,109 @@ export async function sendNewsletterWelcomeEmail({
   return sendMail({ to, subject, text, html })
 }
 
+function newsArticleLetter({
+  firstName,
+  title,
+  excerpt,
+  articleUrl,
+  imageUrl,
+}: {
+  firstName?: string | null
+  title: string
+  excerpt: string
+  articleUrl: string
+  imageUrl?: string | null
+}): { subject: string; text: string; html: string } {
+  const greeting = firstName?.trim() ? escapeHtml(firstName.trim()) : 'there'
+  const subject = `SARSYC VI News: ${title}`
+
+  const text = `Hello ${firstName?.trim() || 'there'},
+
+A new article has been published on SARSYC VI:
+
+${title}
+
+${excerpt}
+
+Read the full article: ${articleUrl}
+
+You are receiving this because you subscribed to the SARSYC VI newsletter.
+
+SARSYC Secretariat
+Organising Secretariat: SAYWHAT  •  Host Partner: University of Namibia
+E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org
+`
+
+  const imageBlock = imageUrl
+    ? `<a href="${escapeHtml(articleUrl)}" style="display:block;margin:0 0 20px;">
+         <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(title)}"
+              width="576" style="display:block;width:100%;max-width:576px;border-radius:8px;" />
+       </a>`
+    : ''
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <div style="max-width:640px;margin:0 auto;background:#ffffff;">
+
+    <img src="https://www.sarsyc.org/email-letterhead.png"
+         alt="SARSYC VI"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+    <div style="padding:28px 32px;font-size:15px;line-height:1.75;color:#1f2937;">
+      <p style="margin:0 0 14px;">Hello ${greeting},</p>
+      <p style="margin:0 0 16px;">A new article has been published:</p>
+      ${imageBlock}
+      <h1 style="margin:0 0 12px;font-size:22px;line-height:1.35;color:#1e3a8a;">${escapeHtml(title)}</h1>
+      <p style="margin:0 0 20px;color:#4b5563;">${escapeHtml(excerpt)}</p>
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(articleUrl)}"
+           style="display:inline-block;background:#1e3a8a;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">
+          Read full article
+        </a>
+      </p>
+      <p style="margin:0;font-size:13px;color:#6b7280;">
+        You are receiving this because you subscribed to the SARSYC VI newsletter.
+      </p>
+    </div>
+
+    <img src="https://www.sarsyc.org/email-footer.png"
+         alt="SARSYC VI footer"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+  </div>
+</body>
+</html>`
+
+  return { subject, text, html }
+}
+
+export async function sendNewsArticleEmail({
+  to,
+  firstName,
+  title,
+  excerpt,
+  articleUrl,
+  imageUrl,
+}: {
+  to: string
+  firstName?: string | null
+  title: string
+  excerpt: string
+  articleUrl: string
+  imageUrl?: string | null
+}) {
+  const { subject, text, html } = newsArticleLetter({
+    firstName,
+    title,
+    excerpt,
+    articleUrl,
+    imageUrl,
+  })
+  return sendMail({ to, subject, text, html })
+}
+
 export type DemographicsReminderItem = {
   submissionId: string | null
   title: string

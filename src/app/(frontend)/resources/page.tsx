@@ -131,13 +131,13 @@ export default function ResourcesPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-10 md:py-12">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl md:text-5xl font-bold mb-3">
               Resource Library
             </h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-lg md:text-xl text-white/90 mb-5">
               Access conference reports, research papers, policy briefs, and more
             </p>
             
