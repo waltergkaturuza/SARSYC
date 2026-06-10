@@ -16,10 +16,19 @@ async function resolveFeaturedImageId(
   formData: FormData,
   title: string,
 ): Promise<string | undefined> {
-  const featuredImageFile = formData.get('featuredImage') as File | null
+  const featuredImageFile = formData.get('featuredImage')
 
-  if (featuredImageFile && featuredImageFile.size > 0) {
-    return createNewsFeaturedMedia(payload, featuredImageFile, `Featured image: ${title}`)
+  if (
+    featuredImageFile &&
+    typeof featuredImageFile === 'object' &&
+    'arrayBuffer' in featuredImageFile &&
+    featuredImageFile.size > 0
+  ) {
+    return createNewsFeaturedMedia(
+      payload,
+      featuredImageFile as File,
+      `Featured image: ${title}`,
+    )
   }
 
   const featuredImageUrl = formData.get('featuredImageUrl') as string | null

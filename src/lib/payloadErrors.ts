@@ -10,6 +10,10 @@ export function formatPayloadError(error: unknown): string {
     errors?: Array<{ message?: string; field?: string }>
   }
 
+  if (err.message?.toLowerCase().includes('no files were uploaded')) {
+    return 'Featured image upload failed. Please choose an image file and try again.'
+  }
+
   const fieldErrors = err.data ?? err.errors
   if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
     return fieldErrors

@@ -49,14 +49,17 @@ export async function createNewsFeaturedMedia(
     })
 
     const mimeType = inferMimeType(file, ext)
+    const filename = blob.pathname?.split('/').pop() || file.name || `featured-${Date.now()}.${ext}`
 
-    // Do not set filename — Payload turns it into /api/media/file/... which 404s on Vercel Blob storage.
+    // filename is required for Payload upload validation; force blob URL after create.
     const doc = await payload.create({
       collection: 'media',
       data: {
         alt,
         url: blob.url,
+        filename,
         mimeType,
+        filesize: file.size,
       },
       overrideAccess: true,
     })
@@ -65,6 +68,20 @@ export async function createNewsFeaturedMedia(
     if (!id) {
       throw new Error('Failed to create media record for featured asset')
     }
+
+    const storedUrl =
+      typeof doc === 'object' && doc !== null && 'url' in doc
+        ? String((doc as { url?: string }).url || '')
+        : ''
+    if (!storedUrl.includes('blob.vercel-storage.com')) {
+      await payload.update({
+        collection: 'media',
+        id,
+        data: { url: blob.url },
+        overrideAccess: true,
+      })
+    }
+
     return String(id)
   }
 

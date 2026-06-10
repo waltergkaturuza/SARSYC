@@ -142,8 +142,8 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
         submitData.append('publishedDate', new Date(formData.publishedDate).toISOString())
       }
       
-      if (formData.featuredImage instanceof File) {
-        submitData.append('featuredImage', formData.featuredImage)
+      if (formData.featuredImage instanceof File && formData.featuredImage.size > 0) {
+        submitData.append('featuredImage', formData.featuredImage, formData.featuredImage.name)
       } else if (typeof formData.featuredImage === 'string' && formData.featuredImage.startsWith('https://')) {
         submitData.append('featuredImageUrl', formData.featuredImage)
       } else if (initialData?.featuredImage?.id) {

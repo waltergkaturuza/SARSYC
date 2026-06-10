@@ -45,17 +45,22 @@ export async function PATCH(
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
-    const featuredImageFile = formData.get('featuredImage') as File | null
+    const featuredImageFile = formData.get('featuredImage')
     const featuredImageUrl = formData.get('featuredImageUrl') as string | null
     const featuredImageIdField = formData.get('featuredImageId') as string | null
 
     let featuredImageId: string | undefined
 
-    if (featuredImageFile && featuredImageFile.size > 0) {
+    if (
+      featuredImageFile &&
+      typeof featuredImageFile === 'object' &&
+      'arrayBuffer' in featuredImageFile &&
+      featuredImageFile.size > 0
+    ) {
       try {
         featuredImageId = await createNewsFeaturedMedia(
           payload,
-          featuredImageFile,
+          featuredImageFile as File,
           `Featured image: ${title}`,
         )
       } catch (uploadError: unknown) {
