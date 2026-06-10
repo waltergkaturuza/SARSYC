@@ -6,6 +6,7 @@ import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader, FiMail, FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
 import Image from 'next/image'
 import { slateToPlainText } from '@/lib/newsContent'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 interface NewsData {
   title: string
@@ -55,9 +56,8 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
   })
 
   useEffect(() => {
-    if (initialData?.featuredImage?.url) {
-      setPreviewImage(initialData.featuredImage.url)
-    }
+    const preview = getMediaDisplayUrl(initialData?.featuredImage)
+    if (preview) setPreviewImage(preview)
   }, [initialData])
 
   // Auto-generate slug when title changes (only if slug is empty or matches old title)
@@ -195,10 +195,14 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
       
       if (formData.featuredImage instanceof File && formData.featuredImage.size > 0) {
         submitData.append('featuredImage', formData.featuredImage, formData.featuredImage.name)
-      } else if (typeof formData.featuredImage === 'string' && formData.featuredImage.startsWith('https://')) {
-        submitData.append('featuredImageUrl', formData.featuredImage)
       } else if (initialData?.featuredImage?.id) {
         submitData.append('featuredImageId', String(initialData.featuredImage.id))
+      } else if (
+        typeof formData.featuredImage === 'string' &&
+        formData.featuredImage.startsWith('https://') &&
+        !formData.featuredImage.includes('/api/media/file/')
+      ) {
+        submitData.append('featuredImageUrl', formData.featuredImage)
       }
 
       const url = mode === 'create' 
@@ -210,9 +214,19 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
       const response = await fetch(url, {
         method,
         body: submitData,
+        credentials: 'include',
       })
 
-      const result = await response.json()
+      let result: { error?: string } = {}
+      try {
+        result = await response.json()
+      } catch {
+        throw new Error(
+          response.ok
+            ? 'Invalid response from server'
+            : `Save failed (${response.status}). Please try again.`,
+        )
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to save news article')

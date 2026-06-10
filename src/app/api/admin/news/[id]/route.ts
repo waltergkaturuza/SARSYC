@@ -72,7 +72,10 @@ export async function PATCH(
       }
     } else if (featuredImageIdField) {
       featuredImageId = featuredImageIdField
-    } else if (featuredImageUrl?.startsWith('https://')) {
+    } else if (
+      featuredImageUrl?.startsWith('https://') &&
+      !featuredImageUrl.includes('/api/media/file/')
+    ) {
       try {
         featuredImageId = await createNewsFeaturedMediaFromUrl(
           payload,
@@ -81,9 +84,12 @@ export async function PATCH(
         )
       } catch (uploadError: unknown) {
         console.error('Featured media URL error:', uploadError)
-        const message =
-          uploadError instanceof Error ? uploadError.message : 'Failed to process featured image'
-        return NextResponse.json({ error: message }, { status: 500 })
+        featuredImageId = extractMediaId(existing?.featuredImage)
+        if (!featuredImageId) {
+          const message =
+            uploadError instanceof Error ? uploadError.message : 'Failed to process featured image'
+          return NextResponse.json({ error: message }, { status: 500 })
+        }
       }
     } else {
       featuredImageId = extractMediaId(existing?.featuredImage)
