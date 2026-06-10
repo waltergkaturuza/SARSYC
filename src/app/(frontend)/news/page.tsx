@@ -72,7 +72,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
     <div className="min-h-screen bg-white">
       {/* Page header */}
       <div className="bg-primary-700 text-white py-10">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 xl:px-10">
           <div className="flex items-center gap-2 text-primary-200 text-sm mb-3">
             <FiFolder className="w-4 h-4" />
             <span>Updates & News</span>
@@ -82,7 +82,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 xl:px-10 py-10">
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200 pb-4">
           {FILTER_CATEGORIES.map((cat) => {
@@ -108,9 +108,9 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
         </div>
 
         {/* Main 2-column layout */}
-        <div className="flex gap-10 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 xl:gap-10 items-start">
           {/* Articles */}
-          <div className="flex-1 min-w-0">
+          <div className="lg:col-span-8 xl:col-span-9 min-w-0">
             {articles.length === 0 ? (
               <EmptyState
                 icon="file"
@@ -134,7 +134,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                       >
                         <div className="flex flex-col lg:flex-row gap-0 rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow bg-white">
                           {/* Image */}
-                          <div className="relative lg:w-[55%] aspect-[16/9] lg:aspect-auto bg-gray-100 flex-shrink-0">
+                          <div className="relative lg:w-[52%] xl:w-[50%] aspect-[16/9] lg:aspect-auto lg:min-h-[280px] bg-gray-100 flex-shrink-0">
                             {img ? (
                               <Image
                                 src={img}
@@ -159,7 +159,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                             </div>
                           </div>
                           {/* Content */}
-                          <div className="p-8 flex flex-col justify-center">
+                          <div className="p-6 lg:p-8 xl:p-10 flex flex-col justify-center flex-1">
                             <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
                               <span className="flex items-center gap-1">
                                 <FiCalendar className="w-4 h-4" />
@@ -169,7 +169,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                             <h2 className="text-2xl font-bold text-primary-700 group-hover:text-primary-500 transition-colors mb-4 leading-snug">
                               {article.title}
                             </h2>
-                            <p className="text-gray-600 line-clamp-4 mb-6">{article.excerpt}</p>
+                            <p className="text-gray-600 text-justify line-clamp-4 mb-6">{article.excerpt}</p>
                             <span className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm group-hover:gap-3 transition-all">
                               Read More <FiArrowRight className="w-4 h-4" />
                             </span>
@@ -225,7 +225,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
           </div>
 
           {/* Sidebar */}
-          <aside className="w-72 flex-shrink-0 space-y-8 hidden lg:block">
+          <aside className="lg:col-span-4 xl:col-span-3 space-y-8 hidden lg:block">
             {/* Search */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
