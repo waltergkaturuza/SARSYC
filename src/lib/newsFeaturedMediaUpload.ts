@@ -50,14 +50,13 @@ export async function createNewsFeaturedMedia(
 
     const mimeType = inferMimeType(file, ext)
 
+    // Do not set filename — Payload turns it into /api/media/file/... which 404s on Vercel Blob storage.
     const doc = await payload.create({
       collection: 'media',
       data: {
         alt,
         url: blob.url,
-        filename: blob.pathname?.split('/').pop() || file.name,
         mimeType,
-        filesize: file.size,
       },
       overrideAccess: true,
     })

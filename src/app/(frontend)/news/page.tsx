@@ -4,6 +4,7 @@ import { FiCalendar, FiMapPin, FiSearch, FiArrowRight, FiFolder, FiExternalLink 
 import EmptyState from '@/components/ui/EmptyState'
 import { getPayloadClient } from '@/lib/payload'
 import { NEWS_CATEGORY_LABELS } from '@/lib/newsContent'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import { SARSYC_MEDIA_PUBLICATIONS } from '@/lib/mediaPublications'
 
 export const revalidate = 60
@@ -119,10 +120,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
             ) : (
               <div className="space-y-8">
                 {articles.map((article, i) => {
-                  const img =
-                    typeof article.featuredImage === 'object' && article.featuredImage?.url
-                      ? article.featuredImage.url
-                      : null
+                  const img = getMediaDisplayUrl(article.featuredImage)
                   const date = formatDate(article.publishedDate || article.createdAt)
                   const cats: string[] = Array.isArray(article.category) ? article.category : []
                   const isFeatured = i === 0

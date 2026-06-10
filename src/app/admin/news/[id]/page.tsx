@@ -2,9 +2,11 @@ import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import Image from 'next/image'
 import { FiEdit, FiArrowLeft, FiCalendar, FiUser, FiTag, FiStar } from 'react-icons/fi'
 import { format } from 'date-fns'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 export const revalidate = 0
 
@@ -30,6 +32,8 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
       depth: 2,
     })
 
+    const featuredImageUrl = getMediaDisplayUrl(article.featuredImage)
+
     return (
       <div className="container-custom py-8">
         {/* Header */}
@@ -46,10 +50,10 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {/* Article Header */}
-          {article.featuredImage && typeof article.featuredImage !== 'string' && (
+          {featuredImageUrl && (
             <div className="relative h-96 w-full">
               <Image
-                src={article.featuredImage.url}
+                src={featuredImageUrl}
                 alt={article.title}
                 fill
                 className="object-cover"

@@ -1,6 +1,7 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import Image from 'next/image'
 import { 
   FiMessageSquare, FiFilter, FiPlus, FiEdit, FiEye, FiTrash2, FiImage 
@@ -162,6 +163,7 @@ export default async function NewsManagementPage({
           <div className="divide-y divide-gray-200">
             {news.map((article: any) => {
               const statusInfo = statusConfig[article.status] || statusConfig['draft']
+              const thumbUrl = getMediaDisplayUrl(article.featuredImage)
               
               return (
                 <div key={article.id} className="p-6 hover:bg-gray-50 transition-colors">
@@ -169,9 +171,9 @@ export default async function NewsManagementPage({
                     {/* Thumbnail */}
                     <div className="flex-shrink-0">
                       <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
-                        {article.featuredImage?.url ? (
+                        {thumbUrl ? (
                           <Image
-                            src={article.featuredImage.url}
+                            src={thumbUrl}
                             alt={article.title}
                             width={96}
                             height={96}

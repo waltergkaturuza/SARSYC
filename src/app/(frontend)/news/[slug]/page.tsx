@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { FiCalendar, FiUser, FiArrowLeft, FiShare2, FiFacebook, FiTwitter, FiLinkedin } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToSimpleHtml, NEWS_CATEGORY_LABELS } from '@/lib/newsContent'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 export const revalidate = 60
 
@@ -39,10 +40,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
   const related = await getRelatedArticles(article.id)
 
-  const imgUrl =
-    typeof article.featuredImage === 'object' && article.featuredImage?.url
-      ? article.featuredImage.url
-      : null
+  const imgUrl = getMediaDisplayUrl(article.featuredImage)
 
   const author = article.author
   const authorName =
