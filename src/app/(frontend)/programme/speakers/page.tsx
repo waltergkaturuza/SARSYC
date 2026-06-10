@@ -332,7 +332,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                       
                       {bioText && (
                         <div className="pt-2 border-t border-gray-100">
-                          <p className="text-sm text-gray-600 line-clamp-2">
+                          <p className="text-sm text-gray-600 line-clamp-2 text-justify">
                             {bioText}
                           </p>
                         </div>

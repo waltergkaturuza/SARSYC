@@ -68,7 +68,7 @@
 
   /** Steering / team profile bios — Poppins body text (matches SAYWHAT-style descriptions) */
   .profile-description {
-    @apply font-heading font-normal text-[#333333] text-base md:text-[17px] leading-[1.75] tracking-normal;
+    @apply font-heading font-normal text-[#333333] text-base md:text-[17px] leading-[1.75] tracking-normal text-justify;
   }
   
   .section {

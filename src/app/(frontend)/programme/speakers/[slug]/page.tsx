@@ -277,9 +277,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                 {bioText && (
                   <div className="mb-12">
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">Biography</h3>
-                    <div className="prose prose-lg max-w-none prose-p:text-gray-600">
-                      <p className="text-gray-600 whitespace-pre-line">{bioText}</p>
-                    </div>
+                    <p className="profile-description whitespace-pre-line">{bioText}</p>
                   </div>
                 )}
 
