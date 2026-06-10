@@ -86,3 +86,25 @@ export async function createNewsFeaturedMedia(
   }
   return String(id)
 }
+
+/** Re-upload an existing HTTPS image URL into media (used when editing without a new file). */
+export async function createNewsFeaturedMediaFromUrl(
+  payload: Payload,
+  imageUrl: string,
+  alt: string,
+): Promise<string> {
+  const fetched = await fetch(imageUrl)
+  if (!fetched.ok) {
+    throw new Error(`Could not fetch existing featured image (${fetched.status})`)
+  }
+  const blob = await fetched.blob()
+  const urlPath = new URL(imageUrl).pathname
+  const filename = decodeURIComponent(urlPath.split('/').pop() || 'featured.jpg')
+  const file = new File([blob], filename, { type: blob.type || 'image/jpeg' })
+  return createNewsFeaturedMedia(payload, file, alt)
+}
+
+export function mediaIdForPayload(id: string | number): string | number {
+  const n = Number(id)
+  return Number.isFinite(n) && String(n) === String(id) ? n : id
+}

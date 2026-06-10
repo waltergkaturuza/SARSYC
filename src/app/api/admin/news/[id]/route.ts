@@ -1,35 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { plainTextToSlate } from '@/lib/newsContent'
-import { createNewsFeaturedMedia } from '@/lib/newsFeaturedMediaUpload'
+import {
+  createNewsFeaturedMedia,
+  createNewsFeaturedMediaFromUrl,
+  mediaIdForPayload,
+} from '@/lib/newsFeaturedMediaUpload'
+import { formatPayloadError } from '@/lib/payloadErrors'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+function extractMediaId(value: unknown): string | undefined {
+  if (value == null) return undefined
+  if (typeof value === 'object' && value !== null && 'id' in value) {
+    return String((value as { id: string | number }).id)
+  }
+  return String(value)
+}
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const payload = await getPayloadClient()
     const formData = await request.formData()
-    
-    // Extract form fields
+
+    const existing = await payload.findByID({
+      collection: 'news',
+      id: params.id,
+      depth: 0,
+      overrideAccess: true,
+    })
+
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
     const excerpt = formData.get('excerpt') as string
     const content = formData.get('content') as string
-    const category = JSON.parse(formData.get('category') as string || '[]')
-    const tags = JSON.parse(formData.get('tags') as string || '[]')
+    const category = JSON.parse((formData.get('category') as string) || '[]')
+    const tags = JSON.parse((formData.get('tags') as string) || '[]')
     const authorRaw = formData.get('author') as string
     const author = Number(authorRaw)
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
     const featuredImageFile = formData.get('featuredImage') as File | null
-    
-    // Upload featured image if provided (Blob + URL media, or buffer fallback)
+    const featuredImageUrl = formData.get('featuredImageUrl') as string | null
+    const featuredImageIdField = formData.get('featuredImageId') as string | null
+
     let featuredImageId: string | undefined
+
     if (featuredImageFile && featuredImageFile.size > 0) {
       try {
         featuredImageId = await createNewsFeaturedMedia(
@@ -43,9 +64,33 @@ export async function PATCH(
           uploadError instanceof Error ? uploadError.message : 'Failed to upload featured image'
         return NextResponse.json({ error: message }, { status: 500 })
       }
+    } else if (featuredImageIdField) {
+      featuredImageId = featuredImageIdField
+    } else if (featuredImageUrl?.startsWith('https://')) {
+      try {
+        featuredImageId = await createNewsFeaturedMediaFromUrl(
+          payload,
+          featuredImageUrl,
+          `Featured image: ${title}`,
+        )
+      } catch (uploadError: unknown) {
+        console.error('Featured media URL error:', uploadError)
+        const message =
+          uploadError instanceof Error ? uploadError.message : 'Failed to process featured image'
+        return NextResponse.json({ error: message }, { status: 500 })
+      }
+    } else {
+      featuredImageId = extractMediaId(existing?.featuredImage)
     }
 
-    const updateData: any = {
+    if (!featuredImageId) {
+      return NextResponse.json(
+        { error: 'Featured image is required. Please upload an image before publishing.' },
+        { status: 400 },
+      )
+    }
+
+    const updateData: Record<string, unknown> = {
       title,
       slug,
       excerpt,
@@ -55,24 +100,13 @@ export async function PATCH(
       author,
       status,
       featured,
+      featuredImage: mediaIdForPayload(featuredImageId),
     }
 
     if (publishedDate && status === 'published') {
       updateData.publishedDate = new Date(publishedDate).toISOString()
-    } else if (status === 'published') {
-      const existing = await payload.findByID({
-        collection: 'news',
-        id: params.id,
-        depth: 0,
-        overrideAccess: true,
-      })
-      if (!existing?.publishedDate) {
-        updateData.publishedDate = new Date().toISOString()
-      }
-    }
-
-    if (featuredImageId) {
-      updateData.featuredImage = featuredImageId
+    } else if (status === 'published' && !existing?.publishedDate) {
+      updateData.publishedDate = new Date().toISOString()
     }
 
     const news = await payload.update({
@@ -83,22 +117,19 @@ export async function PATCH(
     })
 
     return NextResponse.json({ success: true, doc: news })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Update news error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to update news article' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: formatPayloadError(error) }, { status: 500 })
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const payload = await getPayloadClient()
-    
+
     await payload.delete({
       collection: 'news',
       id: params.id,
@@ -106,14 +137,11 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete news error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete news article' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : 'Failed to delete news article' },
+      { status: 500 },
     )
   }
 }
-
-
-

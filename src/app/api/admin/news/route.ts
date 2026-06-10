@@ -1,45 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { plainTextToSlate } from '@/lib/newsContent'
-import { createNewsFeaturedMedia } from '@/lib/newsFeaturedMediaUpload'
+import {
+  createNewsFeaturedMedia,
+  createNewsFeaturedMediaFromUrl,
+  mediaIdForPayload,
+} from '@/lib/newsFeaturedMediaUpload'
+import { formatPayloadError } from '@/lib/payloadErrors'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
+async function resolveFeaturedImageId(
+  payload: Awaited<ReturnType<typeof getPayloadClient>>,
+  formData: FormData,
+  title: string,
+): Promise<string | undefined> {
+  const featuredImageFile = formData.get('featuredImage') as File | null
+
+  if (featuredImageFile && featuredImageFile.size > 0) {
+    return createNewsFeaturedMedia(payload, featuredImageFile, `Featured image: ${title}`)
+  }
+
+  const featuredImageUrl = formData.get('featuredImageUrl') as string | null
+  if (featuredImageUrl?.startsWith('https://')) {
+    return createNewsFeaturedMediaFromUrl(payload, featuredImageUrl, `Featured image: ${title}`)
+  }
+
+  const featuredImageId = formData.get('featuredImageId') as string | null
+  if (featuredImageId) {
+    return featuredImageId
+  }
+
+  return undefined
+}
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
     const formData = await request.formData()
-    
-    // Extract form fields
+
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
     const excerpt = formData.get('excerpt') as string
     const content = formData.get('content') as string
-    const category = JSON.parse(formData.get('category') as string || '[]')
-    const tags = JSON.parse(formData.get('tags') as string || '[]')
+    const category = JSON.parse((formData.get('category') as string) || '[]')
+    const tags = JSON.parse((formData.get('tags') as string) || '[]')
     const authorRaw = formData.get('author') as string
     const author = Number(authorRaw)
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
-    const featuredImageFile = formData.get('featuredImage') as File | null
-    
-    // Upload featured image if provided (Blob + URL media, or buffer fallback)
+
     let featuredImageId: string | undefined
-    if (featuredImageFile && featuredImageFile.size > 0) {
-      try {
-        featuredImageId = await createNewsFeaturedMedia(
-          payload,
-          featuredImageFile,
-          `Featured image: ${title}`,
-        )
-      } catch (uploadError: unknown) {
-        console.error('Featured media upload error:', uploadError)
-        const message =
-          uploadError instanceof Error ? uploadError.message : 'Failed to upload featured image'
-        return NextResponse.json({ error: message }, { status: 500 })
-      }
+    try {
+      featuredImageId = await resolveFeaturedImageId(payload, formData, title)
+    } catch (uploadError: unknown) {
+      console.error('Featured media upload error:', uploadError)
+      const message =
+        uploadError instanceof Error ? uploadError.message : 'Failed to upload featured image'
+      return NextResponse.json({ error: message }, { status: 500 })
+    }
+
+    if (!featuredImageId) {
+      return NextResponse.json(
+        { error: 'Featured image is required. Please upload an image before publishing.' },
+        { status: 400 },
+      )
     }
 
     const publishedAt =
@@ -49,7 +76,6 @@ export async function POST(request: NextRequest) {
           ? new Date().toISOString()
           : undefined
 
-    // Create news article (content as Slate blocks from textarea)
     const news = await payload.create({
       collection: 'news',
       data: {
@@ -62,21 +88,15 @@ export async function POST(request: NextRequest) {
         author,
         status,
         featured,
+        featuredImage: mediaIdForPayload(featuredImageId),
         ...(publishedAt && { publishedDate: publishedAt }),
-        ...(featuredImageId && { featuredImage: featuredImageId }),
       },
       overrideAccess: true,
     })
 
     return NextResponse.json({ success: true, doc: news })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create news error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to create news article' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: formatPayloadError(error) }, { status: 500 })
   }
 }
-
-
-

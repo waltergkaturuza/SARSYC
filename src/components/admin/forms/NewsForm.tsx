@@ -144,6 +144,10 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
       
       if (formData.featuredImage instanceof File) {
         submitData.append('featuredImage', formData.featuredImage)
+      } else if (typeof formData.featuredImage === 'string' && formData.featuredImage.startsWith('https://')) {
+        submitData.append('featuredImageUrl', formData.featuredImage)
+      } else if (initialData?.featuredImage?.id) {
+        submitData.append('featuredImageId', String(initialData.featuredImage.id))
       }
 
       const url = mode === 'create' 
