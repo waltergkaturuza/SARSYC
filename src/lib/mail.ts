@@ -1086,6 +1086,96 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function newsletterWelcomeLetter({
+  firstName,
+}: {
+  firstName?: string | null
+}): { subject: string; text: string; html: string } {
+  const greeting = firstName?.trim() ? escapeHtml(firstName.trim()) : 'Subscriber'
+  const subject = 'Welcome to the SARSYC VI Newsletter'
+
+  const text = `Dear ${firstName?.trim() || 'Subscriber'},
+
+Thank you for subscribing to the SARSYC VI newsletter.
+
+You will receive:
+- Conference updates and announcements
+- Speaker announcements
+- Programme updates
+- Important deadlines and reminders
+- Youth health and education news
+
+We are excited to have you join our community as we prepare for SARSYC VI in Windhoek, Namibia (5–7 August 2026).
+
+If you did not subscribe, please ignore this email.
+
+Yours sincerely,
+SARSYC Secretariat
+
+Organising Secretariat: SAYWHAT  •  Host Partner: University of Namibia
+E: sarsyc@saywhat.org.zw  •  W: www.sarsyc.org  •  T: +263 782 702 887 / +264 81 627 9224
+`
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <div style="max-width:640px;margin:0 auto;background:#ffffff;">
+
+    <img src="https://www.sarsyc.org/email-letterhead.png"
+         alt="SARSYC VI — Align for Action: Sustaining Progress in Youth Health and Education | 5–7 August 2026, Windhoek, Namibia"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+    <div style="padding:28px 32px;font-size:15px;line-height:1.75;color:#1f2937;">
+      <h1 style="margin:0 0 16px;font-size:22px;color:#1e3a8a;">Thank You for Subscribing</h1>
+      <p style="margin:0 0 14px;">Dear ${greeting},</p>
+      <p style="margin:0 0 14px;">
+        You have successfully subscribed to the <strong>SARSYC VI newsletter</strong>.
+        We will keep you informed with the latest conference news and regional youth updates.
+      </p>
+      <div style="margin:0 0 20px;padding:16px 20px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;">
+        <p style="margin:0 0 10px;font-weight:600;color:#1e3a8a;">What you will receive:</p>
+        <ul style="margin:0;padding-left:20px;color:#374151;">
+          <li style="margin:0 0 6px;">Conference updates and announcements</li>
+          <li style="margin:0 0 6px;">Speaker announcements</li>
+          <li style="margin:0 0 6px;">Programme updates</li>
+          <li style="margin:0 0 6px;">Important deadlines and reminders</li>
+          <li style="margin:0;">Youth health and education news</li>
+        </ul>
+      </div>
+      <p style="margin:0 0 14px;">
+        We are excited to have you join our community as we prepare for
+        <strong>SARSYC VI in Windhoek, Namibia (5–7 August 2026)</strong>.
+      </p>
+      <p style="margin:0 0 20px;font-size:14px;color:#6b7280;">
+        If you did not subscribe, please ignore this email.
+      </p>
+      <p style="margin:0 0 4px;">Yours sincerely,</p>
+      <p style="margin:0;font-weight:bold;">SARSYC Secretariat</p>
+    </div>
+
+    <img src="https://www.sarsyc.org/email-footer.png"
+         alt="Organising Secretariat: SAYWHAT | Host Partner: University of Namibia | sarsyc@saywhat.org.zw | www.sarsyc.org | +263 782 702 887 | +264 81 627 9224"
+         width="640" style="display:block;width:100%;max-width:640px;" />
+
+  </div>
+</body>
+</html>`
+
+  return { subject, text, html }
+}
+
+export async function sendNewsletterWelcomeEmail({
+  to,
+  firstName,
+}: {
+  to: string
+  firstName?: string | null
+}) {
+  const { subject, text, html } = newsletterWelcomeLetter({ firstName })
+  return sendMail({ to, subject, text, html })
+}
+
 export type DemographicsReminderItem = {
   submissionId: string | null
   title: string

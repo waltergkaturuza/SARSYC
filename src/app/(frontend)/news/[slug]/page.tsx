@@ -121,11 +121,11 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid lg:grid-cols-4 gap-12">
-              <div className="lg:col-span-3">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-12 gap-10 xl:gap-12">
+              <div className="lg:col-span-8 xl:col-span-9">
                 <div
-                  className="prose prose-lg max-w-none prose-headings:font-bold prose-h2:text-3xl prose-h3:text-2xl prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-primary-600"
+                  className="prose prose-lg max-w-none text-justify prose-headings:text-left prose-headings:font-bold prose-h2:text-3xl prose-h3:text-2xl prose-p:text-gray-600 prose-p:text-justify prose-li:text-gray-600 prose-a:text-primary-600"
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
 
@@ -180,7 +180,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
                 </div>
               </div>
 
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-4 xl:col-span-3">
                 <div className="sticky top-24">
                   <div className="card p-6 bg-gradient-to-br from-primary-600 to-secondary-600 text-white mb-6">
                     <h3 className="font-bold text-xl mb-3">Attending SARSYC VI?</h3>
