@@ -3,20 +3,21 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiSave, FiLoader } from 'react-icons/fi'
+import { FiArrowLeft, FiSave, FiLoader, FiPaperclip } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 import {
   EditField,
+  EditReadOnly,
   EditSection,
   StatusPills,
   delegateInitials,
   editCheckLabel,
   editCheckbox,
   editInput,
+  editSelect,
 } from '@/components/admin/registrationAdminUi'
 import {
-  REGISTRATION_PACKAGE_OPTIONS,
   PARTICIPATION_CATEGORIES,
   TSHIRT_SIZES,
   DIETARY_OPTIONS,
@@ -25,8 +26,12 @@ import {
   NATIONAL_ID_TYPE_OPTIONS,
   VISA_STATUS_OPTIONS,
   buildAdminRegistrationPatch,
+  getRegistrationPackageOptionsForEdit,
   normalizeRegistrationForm,
+  participationCategoryLabel,
+  passportScanUrl,
 } from '@/lib/admin/registrationAdminEdit'
+import { registrationPackageDisplayName } from '@/lib/registrationPackages'
 
 type FormState = Record<string, unknown>
 
@@ -130,6 +135,8 @@ export default function EditRegistrationPage() {
     : []
   const firstName = String(form.firstName || '')
   const lastName = String(form.lastName || '')
+  const packageOptions = getRegistrationPackageOptionsForEdit(form.registrationPackage)
+  const passportScanHref = passportScanUrl(form.passportScan)
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 pb-28">
@@ -141,13 +148,13 @@ export default function EditRegistrationPage() {
         Back to Registrations
       </Link>
 
-      <div className="rounded-2xl border border-slate-700/80 bg-[#121c2e] shadow-2xl overflow-hidden">
+      <div className="rounded-2xl border border-slate-700/80 bg-[#121c2e] shadow-2xl">
         {/* Header */}
         <div className="flex items-start gap-4 border-b border-slate-700/80 px-6 py-5">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-[#121c2e] font-bold text-lg shrink-0 shadow-lg shadow-amber-900/30">
             {delegateInitials(firstName, lastName)}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-white">Edit Registration</h1>
             <p className="text-sm text-slate-400 mt-0.5">
               {String(form.firstName || '')} {String(form.lastName || '')}
@@ -155,94 +162,45 @@ export default function EditRegistrationPage() {
             {form.registrationId ? (
               <p className="text-xs font-mono text-amber-400/90 mt-2">{String(form.registrationId)}</p>
             ) : null}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">
+                Package: {registrationPackageDisplayName(
+                  typeof form.registrationPackage === 'string' ? form.registrationPackage : undefined,
+                )}
+              </span>
+              <span className="inline-flex items-center rounded-full border border-slate-600 bg-slate-800/80 px-3 py-1 text-xs font-medium text-slate-300">
+                Category: {participationCategoryLabel(form.category)}
+              </span>
+              <span className="inline-flex items-center rounded-full border border-slate-600 bg-slate-800/80 px-3 py-1 text-xs font-medium text-slate-300 capitalize">
+                Payment: {String(form.paymentStatus || 'pending')}
+              </span>
+            </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ colorScheme: 'dark' }}>
-        <EditSection title="Personal Information">
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="First Name *">
-              <input className={editInput} value={String(form.firstName || '')} onChange={(e) => set('firstName', e.target.value)} required />
-            </EditField>
-            <EditField label="Last Name *">
-              <input className={editInput} value={String(form.lastName || '')} onChange={(e) => set('lastName', e.target.value)} required />
-            </EditField>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="Email *">
-              <input className={editInput} type="email" value={String(form.email || '')} onChange={(e) => set('email', e.target.value)} required />
-            </EditField>
-            <EditField label="Phone">
-              <input className={editInput} value={String(form.phone || '')} onChange={(e) => set('phone', e.target.value)} />
-            </EditField>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="Date of Birth">
-              <input className={editInput} type="date" value={dateValue(form.dateOfBirth)} onChange={(e) => set('dateOfBirth', e.target.value)} />
-            </EditField>
-            <EditField label="Gender">
-              <select className={editInput} value={String(form.gender || '')} onChange={(e) => set('gender', e.target.value)}>
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer-not-to-say">Prefer not to say</option>
-              </select>
-            </EditField>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="Country of Residence">
-              <select className={editInput} value={String(form.country || '')} onChange={(e) => set('country', e.target.value)}>
-                <option value="">Select country</option>
-                {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </EditField>
-            <EditField label="Nationality">
-              <select className={editInput} value={String(form.nationality || '')} onChange={(e) => set('nationality', e.target.value)}>
-                <option value="">Select nationality</option>
-                {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </EditField>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="City">
-              <input className={editInput} value={String(form.city || '')} onChange={(e) => set('city', e.target.value)} />
-            </EditField>
-            <EditField label="Address">
-              <textarea className={editInput} rows={2} value={String(form.address || '')} onChange={(e) => set('address', e.target.value)} />
-            </EditField>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <EditField label="Organization / Institution">
-              <input className={editInput} value={String(form.organization || '')} onChange={(e) => set('organization', e.target.value)} />
-            </EditField>
-            <EditField label="Position / Title">
-              <input className={editInput} value={String(form.organizationPosition || '')} onChange={(e) => set('organizationPosition', e.target.value)} />
-            </EditField>
-          </div>
-        </EditSection>
-
         <EditSection title="Conference Registration">
+          {!form.registrationPackage ? (
+            <p className="text-sm text-amber-300/90 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+              No conference package is stored for this registration yet. Select the package the delegate opted for before saving.
+            </p>
+          ) : null}
           <div className="grid md:grid-cols-2 gap-4">
             <EditField label="Conference package *">
               <select
-                className={editInput}
+                className={editSelect}
                 value={String(form.registrationPackage || '')}
                 onChange={(e) => set('registrationPackage', e.target.value)}
                 required
               >
                 <option value="">Select package</option>
-                {REGISTRATION_PACKAGE_OPTIONS.map((p) => (
+                {packageOptions.map((p) => (
                   <option key={p.value} value={p.value}>{p.label}</option>
                 ))}
               </select>
             </EditField>
             <EditField label="Participation category *">
-              <select className={editInput} value={String(form.category || '')} onChange={(e) => set('category', e.target.value)} required>
+              <select className={editSelect} value={String(form.category || '')} onChange={(e) => set('category', e.target.value)} required>
                 <option value="">Select category</option>
                 {PARTICIPATION_CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -250,7 +208,7 @@ export default function EditRegistrationPage() {
               </select>
             </EditField>
             <EditField label="T-Shirt Size">
-              <select className={editInput} value={String(form.tshirtSize || '')} onChange={(e) => set('tshirtSize', e.target.value)}>
+              <select className={editSelect} value={String(form.tshirtSize || '')} onChange={(e) => set('tshirtSize', e.target.value)}>
                 <option value="">Select size</option>
                 {TSHIRT_SIZES.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -280,6 +238,73 @@ export default function EditRegistrationPage() {
           </EditField>
         </EditSection>
 
+        <EditSection title="Personal Information">
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="First Name *">
+              <input className={editInput} value={String(form.firstName || '')} onChange={(e) => set('firstName', e.target.value)} required />
+            </EditField>
+            <EditField label="Last Name *">
+              <input className={editInput} value={String(form.lastName || '')} onChange={(e) => set('lastName', e.target.value)} required />
+            </EditField>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="Email *">
+              <input className={editInput} type="email" value={String(form.email || '')} onChange={(e) => set('email', e.target.value)} required />
+            </EditField>
+            <EditField label="Phone">
+              <input className={editInput} value={String(form.phone || '')} onChange={(e) => set('phone', e.target.value)} />
+            </EditField>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="Date of Birth">
+              <input className={editInput} type="date" value={dateValue(form.dateOfBirth)} onChange={(e) => set('dateOfBirth', e.target.value)} />
+            </EditField>
+            <EditField label="Gender">
+              <select className={editSelect} value={String(form.gender || '')} onChange={(e) => set('gender', e.target.value)}>
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+              </select>
+            </EditField>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="Country of Residence">
+              <select className={editSelect} value={String(form.country || '')} onChange={(e) => set('country', e.target.value)}>
+                <option value="">Select country</option>
+                {countries.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </EditField>
+            <EditField label="Nationality">
+              <select className={editSelect} value={String(form.nationality || '')} onChange={(e) => set('nationality', e.target.value)}>
+                <option value="">Select nationality</option>
+                {countries.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </EditField>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="City">
+              <input className={editInput} value={String(form.city || '')} onChange={(e) => set('city', e.target.value)} />
+            </EditField>
+            <EditField label="Address">
+              <textarea className={editInput} rows={2} value={String(form.address || '')} onChange={(e) => set('address', e.target.value)} />
+            </EditField>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <EditField label="Organization / Institution">
+              <input className={editInput} value={String(form.organization || '')} onChange={(e) => set('organization', e.target.value)} />
+            </EditField>
+            <EditField label="Position / Title">
+              <input className={editInput} value={String(form.organizationPosition || '')} onChange={(e) => set('organizationPosition', e.target.value)} />
+            </EditField>
+          </div>
+        </EditSection>
+
         <EditSection title="International / ID">
           <label className={`${editCheckLabel} mb-4`}>
             <input
@@ -302,7 +327,7 @@ export default function EditRegistrationPage() {
                 </EditField>
               </div>
               <EditField label="Passport issuing country">
-                <select className={editInput} value={String(form.passportIssuingCountry || '')} onChange={(e) => set('passportIssuingCountry', e.target.value)}>
+                <select className={editSelect} value={String(form.passportIssuingCountry || '')} onChange={(e) => set('passportIssuingCountry', e.target.value)}>
                   <option value="">Select country</option>
                   {countries.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -315,7 +340,7 @@ export default function EditRegistrationPage() {
               </label>
               <div className="grid md:grid-cols-2 gap-4">
                 <EditField label="Visa status">
-                  <select className={editInput} value={String(form.visaStatus || '')} onChange={(e) => set('visaStatus', e.target.value)}>
+                  <select className={editSelect} value={String(form.visaStatus || '')} onChange={(e) => set('visaStatus', e.target.value)}>
                     <option value="">Select</option>
                     {VISA_STATUS_OPTIONS.map((v) => (
                       <option key={v.value} value={v.value}>{v.label}</option>
@@ -338,6 +363,19 @@ export default function EditRegistrationPage() {
                 />
                 Requires visa invitation letter
               </label>
+              {passportScanHref ? (
+                <EditField label="Passport scan">
+                  <a
+                    href={passportScanHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300"
+                  >
+                    <FiPaperclip className="w-4 h-4" />
+                    View uploaded passport scan
+                  </a>
+                </EditField>
+              ) : null}
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
@@ -345,7 +383,7 @@ export default function EditRegistrationPage() {
                 <input className={editInput} value={String(form.nationalIdNumber || '')} onChange={(e) => set('nationalIdNumber', e.target.value)} />
               </EditField>
               <EditField label="ID type">
-                <select className={editInput} value={String(form.nationalIdType || '')} onChange={(e) => set('nationalIdType', e.target.value)}>
+                <select className={editSelect} value={String(form.nationalIdType || '')} onChange={(e) => set('nationalIdType', e.target.value)}>
                   <option value="">Select</option>
                   {NATIONAL_ID_TYPE_OPTIONS.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -362,7 +400,7 @@ export default function EditRegistrationPage() {
               <input className={editInput} value={String(form.emergencyContactName || '')} onChange={(e) => set('emergencyContactName', e.target.value)} />
             </EditField>
             <EditField label="Relationship">
-              <select className={editInput} value={String(form.emergencyContactRelationship || '')} onChange={(e) => set('emergencyContactRelationship', e.target.value)}>
+              <select className={editSelect} value={String(form.emergencyContactRelationship || '')} onChange={(e) => set('emergencyContactRelationship', e.target.value)}>
                 <option value="">Select</option>
                 {EMERGENCY_RELATIONSHIP_OPTIONS.map((r) => (
                   <option key={r.value} value={r.value}>{r.label}</option>
@@ -381,7 +419,7 @@ export default function EditRegistrationPage() {
           </EditField>
           <div className="grid md:grid-cols-3 gap-4">
             <EditField label="Country">
-              <select className={editInput} value={String(form.emergencyContactCountry || '')} onChange={(e) => set('emergencyContactCountry', e.target.value)}>
+              <select className={editSelect} value={String(form.emergencyContactCountry || '')} onChange={(e) => set('emergencyContactCountry', e.target.value)}>
                 <option value="">Select</option>
                 {countries.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -450,7 +488,7 @@ export default function EditRegistrationPage() {
           )}
           <div className="grid md:grid-cols-2 gap-4">
             <EditField label="Blood type">
-              <select className={editInput} value={String(form.bloodType || '')} onChange={(e) => set('bloodType', e.target.value)}>
+              <select className={editSelect} value={String(form.bloodType || '')} onChange={(e) => set('bloodType', e.target.value)}>
                 <option value="">Not specified</option>
                 {BLOOD_TYPE_OPTIONS.map((b) => (
                   <option key={b.value} value={b.value}>{b.label}</option>
@@ -463,6 +501,25 @@ export default function EditRegistrationPage() {
           </EditField>
         </EditSection>
 
+        <EditSection title="Registration & payment (read-only)">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <EditReadOnly label="Registration ID" value={String(form.registrationId || '—')} />
+            <EditReadOnly label="Submitted" value={formatDateTime(form.createdAt)} />
+            <EditReadOnly label="Last updated" value={formatDateTime(form.updatedAt)} />
+            <EditReadOnly
+              label="Stanbic order reference"
+              value={
+                typeof form.stanbicPaymentOrderRef === 'string' && form.stanbicPaymentOrderRef.trim()
+                  ? form.stanbicPaymentOrderRef
+                  : '—'
+              }
+            />
+            <EditReadOnly label="Invoice sent" value={formatDateTime(form.invoiceSentAt)} />
+            <EditReadOnly label="Payment reminder sent" value={formatDateTime(form.paymentDueReminderSentAt)} />
+            <EditReadOnly label="Safeguarding email sent" value={formatDateTime(form.safeguardingTrainingEmailSentAt)} />
+          </div>
+        </EditSection>
+
         <EditSection title="Admin controls">
           <EditField label="Registration status">
             <StatusPills
@@ -472,14 +529,14 @@ export default function EditRegistrationPage() {
           </EditField>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             <EditField label="Payment status">
-              <select className={editInput} value={String(form.paymentStatus || 'pending')} onChange={(e) => set('paymentStatus', e.target.value)}>
+              <select className={editSelect} value={String(form.paymentStatus || 'pending')} onChange={(e) => set('paymentStatus', e.target.value)}>
                 <option value="pending">Unpaid</option>
                 <option value="paid">Paid</option>
                 <option value="waived">Waived</option>
               </select>
             </EditField>
             <EditField label="Security check">
-              <select className={editInput} value={String(form.securityCheckStatus || 'pending')} onChange={(e) => set('securityCheckStatus', e.target.value)}>
+              <select className={editSelect} value={String(form.securityCheckStatus || 'pending')} onChange={(e) => set('securityCheckStatus', e.target.value)}>
                 <option value="pending">Pending</option>
                 <option value="in-progress">In Progress</option>
                 <option value="cleared">Cleared</option>
@@ -531,4 +588,11 @@ function datetimeLocalValue(value: unknown): string {
   if (Number.isNaN(d.getTime())) return ''
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function formatDateTime(value: unknown): string {
+  if (!value) return '—'
+  const d = new Date(String(value))
+  if (Number.isNaN(d.getTime())) return String(value)
+  return d.toLocaleString('en-GB')
 }

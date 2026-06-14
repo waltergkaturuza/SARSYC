@@ -1,9 +1,38 @@
-import { REGISTRATION_PACKAGES } from '@/lib/registrationPackages'
+import {
+  REGISTRATION_PACKAGES,
+  registrationPackageDisplayName,
+} from '@/lib/registrationPackages'
 
 export const REGISTRATION_PACKAGE_OPTIONS = REGISTRATION_PACKAGES.map((p) => ({
   value: p.id,
   label: p.name,
 }))
+
+/** Package dropdown options, including a legacy/stored value not in the current catalog. */
+export function getRegistrationPackageOptionsForEdit(currentValue?: unknown): Array<{ value: string; label: string }> {
+  const current = typeof currentValue === 'string' ? currentValue.trim() : ''
+  const options: Array<{ value: string; label: string }> = REGISTRATION_PACKAGE_OPTIONS.map((o) => ({
+    value: o.value,
+    label: o.label,
+  }))
+  if (current && !options.some((o) => o.value === current)) {
+    options.unshift({
+      value: current,
+      label: `${registrationPackageDisplayName(current)} (stored value)`,
+    })
+  }
+  return options
+}
+
+export function passportScanUrl(value: unknown): string | null {
+  if (!value) return null
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  if (typeof value === 'object' && value !== null && 'url' in value) {
+    const url = (value as { url?: unknown }).url
+    if (typeof url === 'string' && url.trim()) return url.trim()
+  }
+  return null
+}
 
 export const PARTICIPATION_CATEGORIES = [
   { value: 'student', label: 'Student / Youth Delegate' },
@@ -12,6 +41,12 @@ export const PARTICIPATION_CATEGORIES = [
   { value: 'partner', label: 'Development Partner' },
   { value: 'observer', label: 'Observer' },
 ] as const
+
+export function participationCategoryLabel(value: unknown): string {
+  if (!value) return '—'
+  const found = PARTICIPATION_CATEGORIES.find((c) => c.value === String(value))
+  return found?.label || String(value)
+}
 
 export const TSHIRT_SIZES = [
   { value: 'xs', label: 'XS' },

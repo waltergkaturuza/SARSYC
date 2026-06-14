@@ -3,6 +3,8 @@
 export const editInput =
   'w-full px-3 py-2.5 rounded-lg border border-slate-600 bg-slate-800 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30'
 
+export const editSelect = `${editInput} cursor-pointer [&>option]:bg-slate-800 [&>option]:text-white`
+
 export const editCheckbox =
   'rounded border-slate-500 bg-slate-800 text-amber-500 focus:ring-amber-500/40'
 
@@ -36,6 +38,15 @@ export function EditField({ label, children }: { label: string; children: React.
     <div>
       <label className="block text-xs font-medium text-slate-400 mb-1.5">{label}</label>
       {children}
+    </div>
+  )
+}
+
+export function EditReadOnly({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-xs font-medium text-slate-500 mb-1">{label}</div>
+      <div className="text-sm text-slate-200">{value || '—'}</div>
     </div>
   )
 }
