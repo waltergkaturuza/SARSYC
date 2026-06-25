@@ -5,6 +5,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { getCountryLabel } from '@/lib/countries'
 import SocialLinks from '@/components/speakers/SocialLinks'
 import SpeakerFilters from '@/components/speakers/SpeakerFilters'
+import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 
 // Helper function to get speaker photo URL (Blob-safe)
 function getSpeakerPhotoUrl(photo: any): string | null {
@@ -132,7 +133,8 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
 
   try {
     const payload = await getPayloadClient()
-    
+    await ensureSpeakersLatestColumns(payload)
+
     // Build where clause for filtering (featured speakers only, excluding abstract-presenters)
     const where: any = {
       featured: { equals: true },

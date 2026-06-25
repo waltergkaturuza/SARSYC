@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { put } from '@vercel/blob'
+import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -11,6 +12,7 @@ export async function PATCH(
 ) {
   try {
     const payload = await getPayloadClient()
+    await ensureSpeakersLatestColumns(payload)
     const formData = await request.formData()
     
     // Get current speaker to find old photo ID
