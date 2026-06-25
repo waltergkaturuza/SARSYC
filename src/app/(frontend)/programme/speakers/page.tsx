@@ -180,7 +180,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-gradient-to-b from-primary-700 via-primary-600 to-slate-900 text-white py-20">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -193,16 +193,25 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
         </div>
       </section>
 
-      {/* Filters */}
-      <section className="bg-gray-50 py-8">
-        <div className="container-custom">
-          <SpeakerFilters />
-        </div>
-      </section>
+      {/* Filters + Speaker Grid — full-bleed background section */}
+      <section
+        className="relative py-16 md:py-24"
+        style={{
+          backgroundImage: "url('/sarsyc-group.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        {/* Dark overlay so cards float visually */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/85" />
 
-      {/* Speaker Grid */}
-      <section className="section bg-white">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          {/* Filters */}
+          <div className="mb-10">
+            <SpeakerFilters />
+          </div>
+
           {speakers.length === 0 ? (
             <EmptyState
               icon="users"
@@ -221,139 +230,135 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                 const twitterHandle = speaker.socialMedia?.twitter
                 const linkedinUrl = speaker.socialMedia?.linkedin
                 const websiteUrl = speaker.socialMedia?.website
-                
+
                 return (
                   <div
                     key={speaker.id}
-                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg relative flex flex-col sm:flex-row min-h-0"
+                    className="group relative flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/20 hover:border-amber-400/40 hover:bg-white/15"
                   >
-                    {/* Clickable overlay for card navigation */}
+                    {/* Clickable overlay */}
                     <Link
                       href={`/programme/speakers/${speaker.id}`}
                       className="absolute inset-0 z-0"
                       aria-label={`View ${speaker.name}'s profile`}
                     />
-                    
-                    {/* Photo Section */}
-                    <div className="relative z-10 w-full sm:w-52 flex-shrink-0 bg-gray-50 flex items-center justify-center sm:self-stretch" style={{ minHeight: '200px' }}>
+
+                    {/* Hover glow accent line */}
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+
+                    {/* Photo */}
+                    <div
+                      className="relative z-10 w-full sm:w-52 flex-shrink-0 bg-slate-800/60 flex items-center justify-center sm:self-stretch overflow-hidden"
+                      style={{ minHeight: '210px' }}
+                    >
                       {photoUrl ? (
                         <img
                           src={photoUrl}
                           alt={speaker.name}
-                          className="w-full h-full object-contain sm:object-cover sm:object-top"
+                          className="w-full h-full object-contain sm:object-cover sm:object-top transition-transform duration-500 group-hover:scale-[1.04]"
                           loading="lazy"
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-300 via-blue-400 to-purple-500 flex items-center justify-center">
-                          <div className="text-white text-7xl font-bold opacity-60">
-                            {initials}
-                          </div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
+                          <span className="text-white text-6xl font-bold opacity-60">{initials}</span>
                         </div>
                       )}
-                      {/* Badges overlaid on photo */}
+
+                      {/* Badges */}
                       {(isKeynote || isPlenary) && (
-                        <div className="absolute top-3 left-3 flex gap-2">
+                        <div className="absolute top-3 left-3 flex gap-2 z-20">
                           {isKeynote && (
-                            <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase shadow">
+                            <span className="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">
                               KEYNOTE
                             </span>
                           )}
                           {isPlenary && (
-                            <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase shadow">
+                            <span className="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">
                               PLENARY
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    
-                    {/* Info Section */}
-                    <div className="p-5 bg-white space-y-3 relative z-10 flex-1 min-w-0">
-                      {/* Speaker Name */}
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">
+
+                    {/* Info */}
+                    <div className="p-5 space-y-3 relative z-10 flex-1 min-w-0">
+                      {/* Name */}
+                      <h3 className="text-lg font-bold text-white leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
-                      
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {/* Position */}
+
+                      <div className="grid sm:grid-cols-2 gap-2">
                         {speaker.title && (
-                          <div className="flex items-start gap-3">
-                            <FiAward className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-gray-500 mb-1">Position</p>
-                              <p className="text-sm font-semibold text-gray-900 leading-tight">
+                          <div className="flex items-start gap-2">
+                            <FiAward className="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-[11px] text-white/50 mb-0.5">Position</p>
+                              <p className="text-sm font-semibold text-white/90 leading-tight">
                                 {speaker.title}
                               </p>
-                              {/* Show organization under position */}
                               {speaker.organization && (
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {speaker.organization}
-                                </p>
+                                <p className="text-xs text-white/60 mt-0.5">{speaker.organization}</p>
                               )}
                             </div>
                           </div>
                         )}
-                        
-                        {/* Country */}
+
                         {speaker.country && (
-                          <div className="flex items-start gap-3">
-                            <FiMapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-gray-500 mb-1">Country</p>
-                              <p className="text-sm font-semibold text-gray-900">
+                          <div className="flex items-start gap-2">
+                            <FiMapPin className="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-[11px] text-white/50 mb-0.5">Country</p>
+                              <p className="text-sm font-semibold text-white/90">
                                 {getCountryLabel(speaker.country)}
                               </p>
                             </div>
                           </div>
                         )}
                       </div>
-                      
-                      {/* Areas of Expertise */}
+
+                      {/* Expertise tags */}
                       {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <p className="text-xs text-gray-500 mb-2">Areas of Expertise</p>
-                          <div className="flex flex-wrap gap-2">
-                            {speaker.expertise.slice(0, 4).map((exp: any, idx: number) => (
+                        <div className="pt-2 border-t border-white/10">
+                          <div className="flex flex-wrap gap-1.5">
+                            {speaker.expertise.slice(0, 3).map((exp: any, idx: number) => (
                               <span
                                 key={idx}
-                                className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-full font-medium"
+                                className="px-2 py-0.5 bg-white/10 text-white/80 text-xs rounded-full border border-white/15 group-hover:bg-amber-500/20 group-hover:border-amber-400/30 transition-colors duration-300"
                               >
                                 {exp.area}
                               </span>
                             ))}
-                            {speaker.expertise.length > 4 && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-                                +{speaker.expertise.length - 4} more
+                            {speaker.expertise.length > 3 && (
+                              <span className="px-2 py-0.5 bg-white/10 text-white/60 text-xs rounded-full border border-white/15">
+                                +{speaker.expertise.length - 3} more
                               </span>
                             )}
                           </div>
                         </div>
                       )}
-                      
+
                       {bioText && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <p className="text-sm text-gray-600 line-clamp-2 text-justify">
+                        <div className="pt-2 border-t border-white/10">
+                          <p className="text-xs text-white/60 line-clamp-2 leading-relaxed">
                             {bioText}
                           </p>
                         </div>
                       )}
-                      
-                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100">
-                        {/* Social Links */}
+
+                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
                         <SocialLinks
                           twitter={twitterHandle}
                           linkedin={linkedinUrl}
                           website={websiteUrl}
                           variant="card"
                         />
-                        
-                        {/* Read More Button */}
                         <Link
                           href={`/programme/speakers/${speaker.id}`}
-                          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors relative z-20 flex-shrink-0"
+                          className="relative z-20 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors flex-shrink-0"
                         >
-                          Read More
-                          <FiArrowRight className="w-4 h-4" />
+                          View Profile
+                          <FiArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                         </Link>
                       </div>
                     </div>
@@ -364,12 +369,12 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
           )}
 
           {speakers.length > 0 && (
-            <div className="mt-12 text-center bg-gray-50 rounded-lg p-8">
-              <h3 className="font-semibold text-gray-900 mb-2">More Speakers Coming Soon!</h3>
-              <p className="text-gray-600 mb-4">
-                We're adding more amazing speakers daily. Check back regularly for updates.
+            <div className="mt-12 text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8">
+              <h3 className="font-semibold text-white mb-2">More Speakers Coming Soon!</h3>
+              <p className="text-white/70 mb-4">
+                We&apos;re adding more amazing speakers daily. Check back regularly for updates.
               </p>
-              <Link href="/news" className="text-primary-600 font-medium hover:underline">
+              <Link href="/news" className="text-amber-400 font-medium hover:text-amber-300 transition-colors">
                 Subscribe to updates →
               </Link>
             </div>
