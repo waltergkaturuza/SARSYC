@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
+import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -47,19 +48,14 @@ export async function PATCH(
     // Photo URL — already uploaded to Blob by the form on file select
     const photoUrl = formData.get('photoUrl') as string | null
 
-    // Create media record for new photo if a new URL was provided
+    // Create media record for new photo — insert directly to bypass upload validation
     let photoId: string | undefined
     if (photoUrl?.startsWith('https://')) {
       try {
-        const photoUpload = await payload.create({
-          collection: 'media',
-          data: { alt: `Speaker photo: ${name}`, url: photoUrl },
-          overrideAccess: true,
-        })
-        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+        photoId = await createMediaFromBlobUrl(payload, photoUrl, `Speaker photo: ${name}`)
         console.log(`✅ Media record created for speaker ${params.id}: ${photoId}`)
       } catch (uploadError: any) {
-        console.error('Media create error on update:', uploadError.message)
+        console.error('Media insert error on update:', uploadError.message)
       }
     }
 

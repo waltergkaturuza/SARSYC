@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
+import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -46,21 +47,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create media record — photo is already on Blob, store URL only
+    // Create media record — photo already on Blob, insert directly to bypass upload validation
     let photoId: string | undefined
     try {
-      const photoUpload = await payload.create({
-        collection: 'media',
-        data: { alt: `Speaker photo: ${name}`, url: photoUrl },
-        overrideAccess: true,
-      })
-      photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
-      if (!photoId) throw new Error('No ID returned from media create')
+      photoId = await createMediaFromBlobUrl(payload, photoUrl, `Speaker photo: ${name}`)
     } catch (uploadError: any) {
-      console.error('Media create error:', uploadError.message)
+      console.error('Media insert error:', uploadError.message)
       return NextResponse.json(
         { error: 'Failed to create media record', details: uploadError.message },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
