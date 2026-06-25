@@ -155,19 +155,21 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
   const websiteUrl = speaker.socialMedia?.website
 
   return (
-    <div
-      className="relative min-h-screen"
-      style={{
-        backgroundImage: "url('/sarsyc-group.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center top',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="relative min-h-screen bg-slate-900">
+      {/* Background image */}
+      <div
+        className="fixed inset-0"
+        style={{
+          backgroundImage: "url('/sarsyc-group.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          zIndex: 0,
+        }}
+      />
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" style={{ zIndex: 1 }} />
 
-      <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+      <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-10" style={{ zIndex: 2 }}>
         {/* Back link */}
         <Link
           href="/programme/speakers"

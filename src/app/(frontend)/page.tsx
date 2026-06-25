@@ -375,61 +375,71 @@ export default async function HomePage() {
 
       {/* Featured Speakers Section */}
       {featuredSpeakers.length > 0 && (
-        <section className="section bg-white">
-          <div className="container-custom">
+        <section className="relative py-16 md:py-24 bg-slate-900">
+          {/* Background image */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url('/sarsyc-group.jpg')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center top',
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/85" />
+
+          <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="section-title">Featured Speakers</h2>
-              <p className="section-subtitle">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Featured Speakers</h2>
+              <p className="text-white/70 text-lg">
                 Meet some of the distinguished speakers who will be sharing their expertise at SARSYC VI.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredSpeakers.map((speaker: any) => {
                 const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+                const isKeynote = speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote')
                 return (
                   <Link
                     key={speaker.id}
                     href={`/programme/speakers/${speaker.id}`}
-                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300"
+                    className="group relative flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/20 hover:border-amber-400/40 hover:bg-white/15"
                   >
-                    <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                    {/* Amber hover line */}
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    {/* Photo */}
+                    <div className="relative w-full sm:w-44 flex-shrink-0 bg-slate-800/60 overflow-hidden" style={{ minHeight: '180px' }}>
                       {photoUrl ? (
                         <img
                           src={photoUrl}
                           alt={speaker.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain sm:object-cover sm:object-top transition-transform duration-500 group-hover:scale-[1.04]"
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-400 to-secondary-400">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
                           <FiUser className="w-16 h-16 text-white opacity-50" />
                         </div>
                       )}
-                      {speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote') && (
-                        <div className="absolute top-2 right-2 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-xs font-bold uppercase">
-                          KEYNOTE
+                      {isKeynote && (
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">KEYNOTE</span>
                         </div>
                       )}
                     </div>
-                    
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
+
+                    {/* Info */}
+                    <div className="p-5 flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-white mb-1 leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
-                      <p className="text-sm text-primary-600 font-medium mb-2">
-                        {speaker.title}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-3">
-                        {speaker.organization}
-                      </p>
+                      <p className="text-xs text-amber-400/90 font-medium mb-0.5">{speaker.title}</p>
+                      <p className="text-xs text-white/55 mb-3">{speaker.organization}</p>
                       {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                        <div className="flex flex-wrap gap-1.5">
                           {speaker.expertise.slice(0, 2).map((exp: any, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-                            >
+                            <span key={idx} className="px-2 py-0.5 bg-white/10 border border-white/15 text-white/70 text-xs rounded-full group-hover:bg-amber-500/20 group-hover:border-amber-400/30 transition-colors duration-300">
                               {exp.area || exp}
                             </span>
                           ))}
@@ -442,9 +452,9 @@ export default async function HomePage() {
             </div>
 
             <div className="text-center mt-12">
-              <Link href="/programme/speakers" className="btn-primary">
+              <Link href="/programme/speakers" className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold transition-colors shadow-lg shadow-amber-900/30">
                 View All Speakers
-                <FiArrowRight className="w-5 h-5 ml-2" />
+                <FiArrowRight className="w-5 h-5" />
               </Link>
             </div>
           </div>

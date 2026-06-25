@@ -194,16 +194,17 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
       </section>
 
       {/* Filters + Speaker Grid — full-bleed background section */}
-      <section
-        className="relative py-16 md:py-24"
-        style={{
-          backgroundImage: "url('/sarsyc-group.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        {/* Dark overlay so cards float visually */}
+      <section className="relative py-16 md:py-24 bg-slate-900">
+        {/* Background image */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "url('/sarsyc-group.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+          }}
+        />
+        {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/85" />
 
         <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">

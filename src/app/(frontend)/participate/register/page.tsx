@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCallback, useMemo, useState } from 'react'
 import { useForm, type FieldErrors } from 'react-hook-form'
@@ -718,7 +718,7 @@ export default function RegisterPage() {
   // Registration suspended — show overlay instead of form
   if (REGISTRATION_SUSPENDED) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+      <div className="relative min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
         <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
           <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -753,7 +753,7 @@ export default function RegisterPage() {
 
   if (!REGISTRATION_SUSPENDED && registrationPeriodClosed) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+      <div className="relative min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
         <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
           <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -786,7 +786,7 @@ export default function RegisterPage() {
           ? `USD ${manualPaymentAmountUsd.toFixed(2)}`
           : '—'
       return (
-        <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
           <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
           <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
@@ -851,7 +851,7 @@ export default function RegisterPage() {
     if (paymentOutstanding) {
       const b = SARSYC_BANK_TRANSFER_DETAILS
       return (
-        <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
           <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
           <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
@@ -928,7 +928,7 @@ export default function RegisterPage() {
       )
     }
     return (
-      <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+      <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
         <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
         <div className="container-custom relative z-10">
           <div className="max-w-2xl mx-auto">
@@ -986,16 +986,15 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="min-h-screen py-12"
+      className="relative min-h-screen py-12"
       style={{
         backgroundImage: "url('/sarsyc-group.jpg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
-        backgroundAttachment: 'fixed',
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none fixed" />
-      <div className="container-custom relative z-10">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" style={{ zIndex: 0 }} />
+      <div className="container-custom relative" style={{ zIndex: 1 }}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -2547,3 +2546,4 @@ function RegistrationPreview({
     </div>
   )
 }
+
