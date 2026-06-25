@@ -202,7 +202,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
 
       {/* Speaker Grid */}
       <section className="section bg-white">
-        <div className="container-custom">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           {speakers.length === 0 ? (
             <EmptyState
               icon="users"
@@ -210,7 +210,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
               description="We're working on bringing you an amazing lineup of speakers. Check back soon for announcements about our keynote speakers, panelists, and workshop facilitators."
             />
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {speakers.map((speaker: any) => {
                 const photoUrl = getSpeakerPhotoUrl(speaker.photo)
                 const initials = getInitials(speaker.name)
@@ -225,7 +225,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                 return (
                   <div
                     key={speaker.id}
-                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg relative"
+                    className="card group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white rounded-lg relative flex flex-col sm:flex-row min-h-0"
                   >
                     {/* Clickable overlay for card navigation */}
                     <Link
@@ -235,7 +235,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     />
                     
                     {/* Photo Section with Gradient Background */}
-                    <div className="aspect-square relative overflow-hidden rounded-t-lg z-10">
+                    <div className="relative overflow-hidden z-10 w-full sm:w-44 flex-shrink-0 aspect-square sm:aspect-auto sm:self-stretch">
                       {photoUrl ? (
                         // Use a regular img tag to avoid any Next.js Image domain/config issues
                         <img
@@ -251,62 +251,63 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                           </div>
                         </div>
                       )}
+                      {/* Badges overlaid on photo */}
+                      {(isKeynote || isPlenary) && (
+                        <div className="absolute top-3 left-3 flex gap-2">
+                          {isKeynote && (
+                            <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase shadow">
+                              KEYNOTE
+                            </span>
+                          )}
+                          {isPlenary && (
+                            <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase shadow">
+                              PLENARY
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
-                    {/* Badges Section - Below Photo */}
-                    {(isKeynote || isPlenary) && (
-                      <div className="px-4 pt-3 pb-2 flex gap-2">
-                        {isKeynote && (
-                          <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
-                            KEYNOTE
-                          </span>
-                        )}
-                        {isPlenary && (
-                          <span className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
-                            PLENARY
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    
                     {/* Info Section */}
-                    <div className="p-6 bg-white space-y-4 relative z-10">
+                    <div className="p-4 bg-white space-y-2 relative z-10 flex-1 min-w-0">
                       {/* Speaker Name */}
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      <h3 className="text-base font-bold text-gray-900 mb-1 leading-snug">
                         {speaker.name}
                       </h3>
                       
-                      {/* Position */}
-                      {speaker.title && (
-                        <div className="flex items-start gap-3">
-                          <FiAward className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-xs text-gray-500 mb-1">Position</p>
-                            <p className="text-sm font-semibold text-gray-900 leading-tight">
-                              {speaker.title}
-                            </p>
-                            {/* Show organization under position */}
-                            {speaker.organization && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {speaker.organization}
+                      <div className="grid grid-cols-1 gap-2">
+                        {/* Position */}
+                        {speaker.title && (
+                          <div className="flex items-start gap-3">
+                            <FiAward className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-gray-500 mb-1">Position</p>
+                              <p className="text-sm font-semibold text-gray-900 leading-tight">
+                                {speaker.title}
                               </p>
-                            )}
+                              {/* Show organization under position */}
+                              {speaker.organization && (
+                                <p className="text-xs text-gray-600 mt-1">
+                                  {speaker.organization}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Country */}
-                      {speaker.country && (
-                        <div className="flex items-start gap-3">
-                          <FiMapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-xs text-gray-500 mb-1">Country</p>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {getCountryLabel(speaker.country)}
-                            </p>
+                        )}
+                        
+                        {/* Country */}
+                        {speaker.country && (
+                          <div className="flex items-start gap-3">
+                            <FiMapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-gray-500 mb-1">Country</p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                {getCountryLabel(speaker.country)}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                       
                       {/* Areas of Expertise */}
                       {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
@@ -338,19 +339,19 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                         </div>
                       )}
                       
-                      {/* Social Links */}
-                      <SocialLinks
-                        twitter={twitterHandle}
-                        linkedin={linkedinUrl}
-                        website={websiteUrl}
-                        variant="card"
-                      />
-                      
-                      {/* Read More Button */}
-                      <div className="pt-2 border-t border-gray-100 relative z-20">
+                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100">
+                        {/* Social Links */}
+                        <SocialLinks
+                          twitter={twitterHandle}
+                          linkedin={linkedinUrl}
+                          website={websiteUrl}
+                          variant="card"
+                        />
+                        
+                        {/* Read More Button */}
                         <Link
                           href={`/programme/speakers/${speaker.id}`}
-                          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors relative z-20"
+                          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors relative z-20 flex-shrink-0"
                         >
                           Read More
                           <FiArrowRight className="w-4 h-4" />
