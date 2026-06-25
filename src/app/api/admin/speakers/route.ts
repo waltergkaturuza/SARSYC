@@ -108,8 +108,6 @@ export async function POST(request: NextRequest) {
         data: {
           alt: `Speaker photo: ${name}`,
           url: blob.url,
-          filename: blob.pathname?.split('/').pop() || fileForUpload.name,
-          mimeType: fileForUpload.type || 'image/jpeg',
         },
         overrideAccess: true,
       })
