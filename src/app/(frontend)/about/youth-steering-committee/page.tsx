@@ -104,7 +104,7 @@ export default function YouthSteeringCommitteePage() {
 
                       {/* Info */}
                       <div className="flex-1 p-6 md:p-8">
-                        <h3 className="text-xl font-bold text-white mb-1 group-hover:text-amber-300 transition-colors duration-300">
+                        <h3 className="text-xl font-bold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">
                           {member.name}
                         </h3>
                         <p className="text-amber-400/90 font-semibold text-sm mb-0.5">{member.role}</p>

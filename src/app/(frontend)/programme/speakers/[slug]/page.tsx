@@ -258,7 +258,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
             {/* Right: Bio & Sessions */}
             <div className="lg:col-span-2 p-8">
               {/* Name */}
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 leading-tight">
+              <h1 className="text-3xl md:text-5xl font-bold text-primary-400 mb-2 leading-tight">
                 {speaker.name}
               </h1>
               {speaker.title && (

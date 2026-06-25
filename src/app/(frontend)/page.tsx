@@ -431,7 +431,7 @@ export default async function HomePage() {
 
                     {/* Info */}
                     <div className="p-5 flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-white mb-1 leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                      <h3 className="text-base font-bold text-primary-400 mb-1 leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
                       <p className="text-xs text-amber-400/90 font-medium mb-0.5">{speaker.title}</p>

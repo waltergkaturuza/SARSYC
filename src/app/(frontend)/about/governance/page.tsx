@@ -71,7 +71,7 @@ export default function GovernancePage() {
 
                 {/* Info */}
                 <div className="p-4">
-                  <h3 className="font-bold text-white mb-1 group-hover:text-amber-300 transition-colors duration-300">{member.name}</h3>
+                  <h3 className="font-bold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">{member.name}</h3>
                   <p className="text-xs font-semibold text-amber-400/90 mb-0.5">{member.role}</p>
                   <p className="text-xs text-white/50">{member.organization}</p>
                 </div>

@@ -285,7 +285,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     {/* Info */}
                     <div className="p-5 space-y-3 relative z-10 flex-1 min-w-0">
                       {/* Name */}
-                      <h3 className="text-lg font-bold text-white leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                      <h3 className="text-lg font-bold text-primary-400 leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
 
