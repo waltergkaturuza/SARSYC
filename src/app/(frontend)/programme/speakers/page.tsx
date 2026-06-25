@@ -127,54 +127,46 @@ interface SpeakersPageProps {
 export default async function SpeakersPage({ searchParams }: SpeakersPageProps) {
   const filterType = searchParams?.type || 'all'
   
-  // Fetch speakers from Payload CMS
   let speakers: any[] = []
+  let abstractPresenters: any[] = []
+
   try {
     const payload = await getPayloadClient()
     
-    // Build where clause for filtering
+    // Build where clause for filtering (featured speakers only, excluding abstract-presenters)
     const where: any = {
-      // Only show featured speakers on public page
-      featured: {
-        equals: true,
-      },
+      featured: { equals: true },
     }
     if (filterType && filterType !== 'all') {
-      // Type is a hasMany field (array), so use 'contains' to check if array includes the type
       where.type = { contains: filterType }
     }
     
-    // Fetch all speakers - no limit to ensure all are displayed
     const speakersResult = await payload.find({
       collection: 'speakers',
       where,
-      limit: 1000, // Increased limit to fetch all speakers
+      limit: 1000,
       sort: '-createdAt',
-      depth: 1, // Minimal depth - Blob URLs don't need deep population
-      overrideAccess: true, // Ensure all speakers are fetched regardless of access control
+      depth: 1,
+      overrideAccess: true,
     })
-    speakers = speakersResult.docs || []
-    
-    // Log for debugging
-    console.log(`✅ Fetched ${speakers.length} speakers`)
-    speakers.forEach((speaker: any) => {
-      const photoUrl = getSpeakerPhotoUrl(speaker.photo)
-      console.log(`📸 Speaker ${speaker.name}:`, {
-        photoType: typeof speaker.photo,
-        photoValue: speaker.photo,
-        extractedUrl: photoUrl,
-        hasPhoto: !!speaker.photo,
-      })
-      if (!photoUrl) {
-        console.warn(`⚠️  Speaker ${speaker.id} (${speaker.name}) has no photo URL`, {
-          photoType: typeof speaker.photo,
-          photoValue: speaker.photo,
-        })
-      }
+    // Keep non-abstract-presenters in main list
+    const allFeatured = speakersResult.docs || []
+    speakers = allFeatured.filter(
+      (s: any) => !(Array.isArray(s.type) && s.type.length === 1 && s.type[0] === 'abstract-presenter')
+    )
+
+    // Fetch abstract presenters separately (all, not just featured)
+    const abstractResult = await payload.find({
+      collection: 'speakers',
+      where: { type: { contains: 'abstract-presenter' } },
+      limit: 1000,
+      sort: 'name',
+      depth: 1,
+      overrideAccess: true,
     })
+    abstractPresenters = abstractResult.docs || []
   } catch (error) {
     console.error('Error fetching speakers:', error)
-    speakers = []
   }
 
   return (
@@ -378,6 +370,98 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
               <Link href="/news" className="text-amber-400 font-medium hover:text-amber-300 transition-colors">
                 Subscribe to updates →
               </Link>
+            </div>
+          )}
+
+          {/* Abstract Presenters */}
+          {abstractPresenters.length > 0 && (
+            <div className="mt-16">
+              <div className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Abstract Presenters</h2>
+                <p className="text-white/60 max-w-2xl">
+                  Researchers and practitioners sharing their work through peer-reviewed abstract presentations at SARSYC VI.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {abstractPresenters.map((speaker: any) => {
+                  const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+                  const initials = getInitials(speaker.name)
+                  const twitterHandle = speaker.socialMedia?.twitter
+                  const linkedinUrl = speaker.socialMedia?.linkedin
+                  const websiteUrl = speaker.socialMedia?.website
+                  return (
+                    <div
+                      key={speaker.id}
+                      className="group relative flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary-500/20 hover:border-primary-400/40 hover:bg-white/15"
+                    >
+                      {/* Hover accent line */}
+                      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                      <Link
+                        href={`/programme/speakers/${speaker.id}`}
+                        className="absolute inset-0 z-0"
+                        aria-label={`View ${speaker.name}'s profile`}
+                      />
+
+                      {/* Photo */}
+                      <div className="relative z-10 w-full sm:w-44 flex-shrink-0 bg-slate-800/60 overflow-hidden" style={{ minHeight: '180px' }}>
+                        {photoUrl ? (
+                          <img
+                            src={photoUrl}
+                            alt={speaker.name}
+                            className="w-full h-full object-contain sm:object-cover sm:object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary-700 to-primary-500 flex items-center justify-center">
+                            <span className="text-white text-5xl font-bold opacity-60">{initials}</span>
+                          </div>
+                        )}
+                        {/* Abstract presenter badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 bg-primary-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">
+                            ABSTRACT
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-5 space-y-2 relative z-10 flex-1 min-w-0">
+                        <h3 className="text-base font-bold text-primary-400 leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                          {speaker.name}
+                        </h3>
+                        {speaker.abstractTitle && (
+                          <p className="text-xs font-semibold text-amber-400/90 leading-snug italic">
+                            &ldquo;{speaker.abstractTitle}&rdquo;
+                          </p>
+                        )}
+                        {speaker.title && (
+                          <p className="text-xs text-white/60">{speaker.title}</p>
+                        )}
+                        {speaker.organization && (
+                          <p className="text-xs text-white/45">{speaker.organization}</p>
+                        )}
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
+                          <SocialLinks
+                            twitter={twitterHandle}
+                            linkedin={linkedinUrl}
+                            website={websiteUrl}
+                            variant="card"
+                          />
+                          <Link
+                            href={`/programme/speakers/${speaker.id}`}
+                            className="relative z-20 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-400 hover:text-amber-300 transition-colors flex-shrink-0"
+                          >
+                            View Profile
+                            <FiArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>

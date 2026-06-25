@@ -89,7 +89,18 @@ const Speakers: CollectionConfig = {
         { label: 'Panel Moderator', value: 'moderator' },
         { label: 'Workshop Facilitator', value: 'facilitator' },
         { label: 'Session Presenter', value: 'presenter' },
+        { label: 'Abstract Presenter', value: 'abstract-presenter' },
       ],
+    },
+    {
+      name: 'abstractTitle',
+      type: 'text',
+      label: 'Abstract Title',
+      admin: {
+        description: 'Title of the abstract being presented (for abstract presenters)',
+        condition: (data: any) =>
+          Array.isArray(data.type) && data.type.includes('abstract-presenter'),
+      },
     },
     {
       name: 'sessions',

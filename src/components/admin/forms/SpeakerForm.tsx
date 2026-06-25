@@ -16,6 +16,7 @@ interface SpeakerData {
   photo?: string | File
   bio: string
   type: string[]
+  abstractTitle: string
   featured: boolean
   socialMedia: {
     twitter?: string
@@ -46,6 +47,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     photo: initialData?.photo?.url || '',
     bio: initialData?.bio || '',
     type: initialData?.type || [],
+    abstractTitle: initialData?.abstractTitle || '',
     featured: initialData?.featured || false,
     socialMedia: initialData?.socialMedia || {
       twitter: '',
@@ -153,6 +155,9 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('country', formData.country)
       submitData.append('bio', formData.bio)
       submitData.append('type', JSON.stringify(formData.type))
+      if (formData.abstractTitle.trim()) {
+        submitData.append('abstractTitle', formData.abstractTitle.trim())
+      }
       submitData.append('featured', formData.featured.toString())
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
@@ -307,25 +312,47 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <FormField label="Speaker Type" required error={errors.type} hint="Select all that apply">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {['keynote', 'plenary', 'moderator', 'facilitator', 'presenter'].map((type) => (
-              <label key={type} className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+            {[
+              { value: 'keynote', label: 'Keynote Speaker' },
+              { value: 'plenary', label: 'Plenary Speaker' },
+              { value: 'moderator', label: 'Panel Moderator' },
+              { value: 'facilitator', label: 'Workshop Facilitator' },
+              { value: 'presenter', label: 'Session Presenter' },
+              { value: 'abstract-presenter', label: 'Abstract Presenter' },
+            ].map(({ value, label }) => (
+              <label key={value} className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
                   type="checkbox"
-                  checked={formData.type.includes(type)}
+                  checked={formData.type.includes(value)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      handleInputChange('type', [...formData.type, type])
+                      handleInputChange('type', [...formData.type, value])
                     } else {
-                      handleInputChange('type', formData.type.filter(t => t !== type))
+                      handleInputChange('type', formData.type.filter(t => t !== value))
                     }
                   }}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="capitalize">{type === 'plenary' ? 'Plenary' : type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                <span className="text-sm">{label}</span>
               </label>
             ))}
           </div>
         </FormField>
+
+        {/* Abstract title — shown only when abstract-presenter is selected */}
+        {formData.type.includes('abstract-presenter') && (
+          <div className="mt-4">
+            <FormField label="Abstract Title" hint="Title of the abstract being presented">
+              <input
+                type="text"
+                value={formData.abstractTitle}
+                onChange={(e) => handleInputChange('abstractTitle', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="e.g., Sexual and Reproductive Health outcomes in SADC youth…"
+              />
+            </FormField>
+          </div>
+        )}
       </div>
 
       {/* Expertise Areas */}
