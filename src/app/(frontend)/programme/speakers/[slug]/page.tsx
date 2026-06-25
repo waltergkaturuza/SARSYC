@@ -155,184 +155,198 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
   const websiteUrl = speaker.socialMedia?.website
 
   return (
-    <>
-      {/* Breadcrumb */}
-      <section className="bg-gray-50 py-6 border-b border-gray-200">
-        <div className="container-custom">
-          <Link href="/programme/speakers" className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors">
-            <FiArrowLeft />
-            Back to All Speakers
-          </Link>
-        </div>
-      </section>
+    <div
+      className="relative min-h-screen"
+      style={{
+        backgroundImage: "url('/sarsyc-group.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" />
 
-      {/* Speaker Profile */}
-      <section className="section bg-white">
-        <div className="container-custom">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-3 gap-12">
-              {/* Left: Photo & Quick Info */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-24">
-                  {/* Photo */}
-                  <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gradient-to-br from-blue-300 via-blue-400 to-purple-500">
-                    {photoUrl ? (
-                      // Use a regular img tag to avoid any Next.js Image domain/config issues
-                      <img
-                        src={photoUrl}
-                        alt={speaker.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white text-6xl font-bold opacity-60">
-                        {initials}
-                      </div>
-                    )}
-                  </div>
+      <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+        {/* Back link */}
+        <Link
+          href="/programme/speakers"
+          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 text-sm font-medium mb-8 transition-colors"
+        >
+          <FiArrowLeft className="w-4 h-4" />
+          Back to All Speakers
+        </Link>
 
-                  {/* Speaker Type Badges */}
-                  {speakerTypes.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {speakerTypes.map((type: string) => (
-                        <span key={type} className="px-3 py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-md uppercase">
-                          {type.toUpperCase()}
-                        </span>
-                      ))}
+        {/* Floating profile card */}
+        <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden">
+          {/* Amber top accent */}
+          <div className="h-[3px] w-full bg-gradient-to-r from-amber-400 via-amber-300 to-transparent" />
+
+          <div className="grid lg:grid-cols-3 gap-0">
+            {/* Left: Photo & Quick Info */}
+            <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/10">
+              <div className="p-8 lg:sticky lg:top-24">
+                {/* Photo */}
+                <div className="rounded-2xl overflow-hidden mb-6 bg-slate-800/60 shadow-xl shadow-black/30"
+                  style={{ aspectRatio: '1 / 1' }}>
+                  {photoUrl ? (
+                    <img
+                      src={photoUrl}
+                      alt={speaker.name}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-secondary-600">
+                      <span className="text-white text-6xl font-bold opacity-60">{initials}</span>
                     </div>
                   )}
-
-                  {/* Quick Info */}
-                  <div className="space-y-4 mb-6">
-                    {speaker.title && (
-                      <div className="flex items-start gap-3">
-                        <FiAward className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm text-gray-600">Position</p>
-                          <p className="font-medium text-gray-900">{speaker.title}</p>
-                        </div>
-                      </div>
-                    )}
-                    {speaker.country && (
-                      <div className="flex items-start gap-3">
-                        <FiMapPin className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm text-gray-600">Country</p>
-                          <p className="font-medium text-gray-900">{getCountryLabel(speaker.country)}</p>
-                        </div>
-                      </div>
-                    )}
-                    {speaker.organization && (
-                      <div className="flex items-start gap-3">
-                        <FiAward className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm text-gray-600">Organization</p>
-                          <p className="font-medium text-gray-900">{speaker.organization}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Social Links */}
-                  <SocialLinks
-                    twitter={twitterHandle}
-                    linkedin={linkedinUrl}
-                    website={websiteUrl}
-                    variant="profile"
-                  />
                 </div>
-              </div>
 
-              {/* Right: Bio & Sessions */}
-              <div className="lg:col-span-2">
-                {/* Name & Title */}
-                <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-                  {speaker.name}
-                </h1>
-                {speaker.title && (
-                  <p className="text-xl text-primary-600 font-medium mb-2">{speaker.title}</p>
-                )}
-                {speaker.organization && (
-                  <p className="text-lg text-gray-600 mb-8">{speaker.organization}</p>
+                {/* Badges */}
+                {speakerTypes.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {speakerTypes.map((type: string) => (
+                      <span key={type} className="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-md uppercase tracking-wide shadow">
+                        {type.toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
                 )}
 
-                {/* Expertise */}
-                {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Areas of Expertise</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {speaker.expertise.map((exp: any, index: number) => {
-                        const area = typeof exp === 'string' ? exp : exp.area
-                        return (
-                          <span key={index} className="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium">
-                            {area}
-                          </span>
-                        )
-                      })}
+                {/* Quick info */}
+                <div className="space-y-4 mb-6">
+                  {speaker.title && (
+                    <div className="flex items-start gap-3">
+                      <FiAward className="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] text-white/50 mb-0.5">Position</p>
+                        <p className="text-sm font-medium text-white/90">{speaker.title}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Biography */}
-                {bioText && (
-                  <div className="mb-12">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Biography</h3>
-                    <p className="profile-description whitespace-pre-line">{bioText}</p>
-                  </div>
-                )}
-
-                {/* Sessions */}
-                {speaker.sessions && Array.isArray(speaker.sessions) && speaker.sessions.length > 0 && (
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Speaking At</h3>
-                    <div className="space-y-4">
-                      {speaker.sessions.map((session: any, index: number) => {
-                        const sessionData = typeof session === 'object' ? session : null
-                        if (!sessionData) return null
-                        
-                        return (
-                          <div key={index} className="card p-6 hover:shadow-xl transition-shadow">
-                            <h4 className="font-bold text-gray-900 mb-3">{sessionData.title || 'Session'}</h4>
-                            {(sessionData.date || sessionData.time || sessionData.venue) && (
-                              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                                {sessionData.date && (
-                                  <div className="flex items-center gap-2">
-                                    <FiCalendar className="w-4 h-4 text-primary-600" />
-                                    <span>{sessionData.date}</span>
-                                  </div>
-                                )}
-                                {sessionData.time && (
-                                  <div className="flex items-center gap-2">
-                                    <FiClock className="w-4 h-4 text-primary-600" />
-                                    <span>{sessionData.time}</span>
-                                  </div>
-                                )}
-                                {sessionData.venue && (
-                                  <div className="flex items-center gap-2">
-                                    <FiMapPin className="w-4 h-4 text-primary-600" />
-                                    <span>{sessionData.venue}</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <Link href="/programme" className="inline-flex items-center gap-2 text-primary-600 font-medium text-sm mt-4 hover:gap-3 transition-all">
-                              View Full Schedule
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </Link>
-                          </div>
-                        )
-                      })}
+                  )}
+                  {speaker.organization && (
+                    <div className="flex items-start gap-3">
+                      <FiAward className="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] text-white/50 mb-0.5">Organization</p>
+                        <p className="text-sm font-medium text-white/90">{speaker.organization}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                  {speaker.country && (
+                    <div className="flex items-start gap-3">
+                      <FiMapPin className="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] text-white/50 mb-0.5">Country</p>
+                        <p className="text-sm font-medium text-white/90">{getCountryLabel(speaker.country)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <SocialLinks
+                  twitter={twitterHandle}
+                  linkedin={linkedinUrl}
+                  website={websiteUrl}
+                  variant="profile"
+                />
               </div>
+            </div>
+
+            {/* Right: Bio & Sessions */}
+            <div className="lg:col-span-2 p-8">
+              {/* Name */}
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 leading-tight">
+                {speaker.name}
+              </h1>
+              {speaker.title && (
+                <p className="text-lg text-amber-300 font-medium mb-1">{speaker.title}</p>
+              )}
+              {speaker.organization && (
+                <p className="text-base text-white/60 mb-8">{speaker.organization}</p>
+              )}
+
+              {/* Expertise */}
+              {speaker.expertise && Array.isArray(speaker.expertise) && speaker.expertise.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-amber-400/90 uppercase tracking-widest mb-3">Areas of Expertise</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {speaker.expertise.map((exp: any, index: number) => {
+                      const area = typeof exp === 'string' ? exp : exp.area
+                      return (
+                        <span key={index} className="px-3 py-1.5 bg-white/10 border border-white/15 text-white/80 rounded-lg text-sm font-medium">
+                          {area}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Divider */}
+              {bioText && <div className="border-t border-white/10 mb-8" />}
+
+              {/* Biography */}
+              {bioText && (
+                <div className="mb-10">
+                  <h3 className="text-sm font-semibold text-amber-400/90 uppercase tracking-widest mb-4">Biography</h3>
+                  <p className="text-white/75 leading-relaxed whitespace-pre-line text-justify text-base">
+                    {bioText}
+                  </p>
+                </div>
+              )}
+
+              {/* Sessions */}
+              {speaker.sessions && Array.isArray(speaker.sessions) && speaker.sessions.length > 0 && (
+                <div>
+                  <div className="border-t border-white/10 mb-8" />
+                  <h3 className="text-sm font-semibold text-amber-400/90 uppercase tracking-widest mb-4">Speaking At</h3>
+                  <div className="space-y-4">
+                    {speaker.sessions.map((session: any, index: number) => {
+                      const sessionData = typeof session === 'object' ? session : null
+                      if (!sessionData) return null
+                      return (
+                        <div key={index} className="rounded-xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-amber-400/30 transition-all duration-300">
+                          <h4 className="font-bold text-white mb-3">{sessionData.title || 'Session'}</h4>
+                          {(sessionData.date || sessionData.time || sessionData.venue) && (
+                            <div className="flex flex-wrap gap-4 text-sm text-white/60">
+                              {sessionData.date && (
+                                <div className="flex items-center gap-2">
+                                  <FiCalendar className="w-4 h-4 text-amber-400/70" />
+                                  <span>{sessionData.date}</span>
+                                </div>
+                              )}
+                              {sessionData.time && (
+                                <div className="flex items-center gap-2">
+                                  <FiClock className="w-4 h-4 text-amber-400/70" />
+                                  <span>{sessionData.time}</span>
+                                </div>
+                              )}
+                              {sessionData.venue && (
+                                <div className="flex items-center gap-2">
+                                  <FiMapPin className="w-4 h-4 text-amber-400/70" />
+                                  <span>{sessionData.venue}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <Link href="/programme" className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 font-medium text-sm mt-4 transition-colors">
+                            View Full Schedule
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   )
 }
 
