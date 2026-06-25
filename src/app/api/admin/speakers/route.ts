@@ -103,14 +103,29 @@ export async function POST(request: NextRequest) {
         allowOverwrite: true,
       })
 
+      const blobFilename = blob.pathname?.split('/').pop() || fileForUpload.name
+      const mimeType = fileForUpload.type || 'image/jpeg'
+
       const photoUpload = await payload.create({
         collection: 'media',
         data: {
           alt: `Speaker photo: ${name}`,
           url: blob.url,
+          filename: blobFilename,
+          mimeType,
+          filesize: fileForUpload.size,
         },
         overrideAccess: true,
       })
+
+      // Force the blob URL (Payload may overwrite url with a local path)
+      const mediaId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+      if (mediaId) {
+        const stored = typeof photoUpload === 'object' && 'url' in photoUpload ? String((photoUpload as any).url || '') : ''
+        if (!stored.includes('blob.vercel-storage.com')) {
+          await payload.update({ collection: 'media', id: mediaId, data: { url: blob.url }, overrideAccess: true })
+        }
+      }
       
       console.log('Media record created:', {
         type: typeof photoUpload,

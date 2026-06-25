@@ -87,14 +87,29 @@ export async function PATCH(
           allowOverwrite: true,
         })
 
+        const blobFilename = blob.pathname?.split('/').pop() || fileForUpload.name
+        const mimeType = fileForUpload.type || 'image/jpeg'
+
         const photoUpload = await payload.create({
           collection: 'media',
           data: {
             alt: `Speaker photo: ${name}`,
             url: blob.url,
+            filename: blobFilename,
+            mimeType,
+            filesize: fileForUpload.size,
           },
           overrideAccess: true,
         })
+
+        // Force the blob URL in case Payload overwrote it with a local path
+        const newMediaId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+        if (newMediaId) {
+          const stored = typeof photoUpload === 'object' && 'url' in photoUpload ? String((photoUpload as any).url || '') : ''
+          if (!stored.includes('blob.vercel-storage.com')) {
+            await payload.update({ collection: 'media', id: newMediaId, data: { url: blob.url }, overrideAccess: true })
+          }
+        }
         photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
         
         console.log(`✅ New photo uploaded for speaker ${params.id}: ${photoId}`)
