@@ -718,21 +718,21 @@ export default function RegisterPage() {
   // Registration suspended — show overlay instead of form
   if (REGISTRATION_SUSPENDED) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" aria-hidden />
-        <div className="relative z-50 bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border-2 border-primary-100">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
+        <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
           <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Registration Coming Soon
           </h1>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-lg text-white/70 mb-6">
             Online registration opens when organisers enable it in the configuration.
           </p>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-white/50 mb-8">
             In the meantime, you can submit an abstract or explore the programme. SARSYC VI — Windhoek, Namibia.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -753,13 +753,13 @@ export default function RegisterPage() {
 
   if (!REGISTRATION_SUSPENDED && registrationPeriodClosed) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" aria-hidden />
-        <div className="relative z-50 bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border-2 border-gray-200">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FiCalendar className="w-10 h-10 text-gray-600" />
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
+        <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
+          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FiCalendar className="w-10 h-10 text-amber-400" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Registration period has closed
           </h1>
           <p className="text-lg text-gray-600 mb-6">
@@ -786,17 +786,18 @@ export default function RegisterPage() {
           ? `USD ${manualPaymentAmountUsd.toFixed(2)}`
           : '—'
       return (
-        <div className="min-h-screen bg-gray-50 py-12">
-          <div className="container-custom">
+        <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+          <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
+          <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-amber-100">
-                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiAlertCircle className="w-10 h-10 text-amber-600" aria-hidden />
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-8 md:p-12">
+                <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiAlertCircle className="w-10 h-10 text-amber-400" aria-hidden />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
                   Registration saved — bank transfer required
                 </h1>
-                <p className="text-lg text-gray-600 mb-6 text-center">
+                <p className="text-lg text-white/70 mb-6 text-center">
                   Your details are on file. Your place is confirmed only after we receive your fee and verify proof
                   of payment.
                 </p>
@@ -850,17 +851,18 @@ export default function RegisterPage() {
     if (paymentOutstanding) {
       const b = SARSYC_BANK_TRANSFER_DETAILS
       return (
-        <div className="min-h-screen bg-gray-50 py-12">
-          <div className="container-custom">
+        <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+          <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
+          <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-amber-100">
-                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiAlertCircle className="w-10 h-10 text-amber-600" aria-hidden />
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-8 md:p-12">
+                <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FiAlertCircle className="w-10 h-10 text-amber-400" aria-hidden />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
                   Registration saved — payment required
                 </h1>
-                <p className="text-lg text-gray-600 mb-6 text-center">
+                <p className="text-lg text-white/70 mb-6 text-center">
                   Your details are on file. Your place is confirmed once payment is received.
                 </p>
                 <div className="bg-primary-50 rounded-lg p-6 mb-6 text-center">
@@ -926,17 +928,18 @@ export default function RegisterPage() {
       )
     }
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container-custom">
+      <div className="min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+        <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
+        <div className="container-custom relative z-10">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiCheck className="w-10 h-10 text-green-600" />
+            <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiCheck className="w-10 h-10 text-green-400" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Registration Successful!
               </h1>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-lg text-white/70 mb-6">
                 Thank you for registering for SARSYC VI!
               </p>
               <div className="bg-primary-50 rounded-lg p-6 mb-8">
@@ -982,15 +985,24 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container-custom">
+    <div
+      className="min-h-screen py-12"
+      style={{
+        backgroundImage: "url('/sarsyc-group.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none fixed" />
+      <div className="container-custom relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
               Register for SARSYC VI
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-white/70">
               Join us in Windhoek, Namibia • August 5-7, 2026
             </p>
           </div>
@@ -1009,17 +1021,17 @@ export default function RegisterPage() {
                       <div
                         className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-200 flex-shrink-0 ${
                           isComplete
-                            ? 'bg-primary-600 border-primary-600 text-white'
+                            ? 'bg-amber-500 border-amber-500 text-white'
                             : isActive
-                            ? 'bg-white border-primary-600 text-primary-600'
-                            : 'bg-white border-gray-300 text-gray-400'
+                            ? 'bg-white/10 border-amber-400 text-amber-300'
+                            : 'bg-white/5 border-white/20 text-white/40'
                         }`}
                       >
                         {isComplete ? <FiCheck className="w-5 h-5 md:w-6 md:h-6" /> : <Icon className="w-5 h-5 md:w-6 md:h-6" />}
                       </div>
                       <span
                         className={`text-xs md:text-sm mt-2 font-medium text-center ${
-                          isActive || isComplete ? 'text-primary-600' : 'text-gray-400'
+                          isActive ? 'text-amber-300' : isComplete ? 'text-amber-400/80' : 'text-white/40'
                         }`}
                       >
                         {step.name}
@@ -1028,7 +1040,7 @@ export default function RegisterPage() {
                     {index < steps.length - 1 && (
                       <div
                         className={`h-0.5 flex-1 mx-2 md:mx-4 transition-all duration-200 flex-shrink ${
-                          isComplete ? 'bg-primary-600' : 'bg-gray-300'
+                          isComplete ? 'bg-amber-500' : 'bg-white/15'
                         }`}
                       />
                     )}
@@ -1039,7 +1051,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+          <div className="rounded-2xl border border-white/10 bg-white/95 shadow-2xl shadow-black/40 p-8 md:p-12">
             {/* Error Message Display */}
             {submitError && (
               <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
