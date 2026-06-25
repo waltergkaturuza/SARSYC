@@ -37,6 +37,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
 
   const [formData, setFormData] = useState<SpeakerData>({
     name: initialData?.name || '',
@@ -81,15 +82,30 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     })
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setFormData(prev => ({ ...prev, photo: file }))
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    if (!file) return
+
+    // Show local preview immediately
+    const reader = new FileReader()
+    reader.onloadend = () => setPreviewImage(reader.result as string)
+    reader.readAsDataURL(file)
+
+    // Upload to Blob right away — store URL, not File
+    setPhotoUploading(true)
+    setErrors(prev => ({ ...prev, photo: '' }))
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('speakerName', formData.name || `speaker-${Date.now()}`)
+      const res = await fetch('/api/upload/speaker-photo', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data.url) throw new Error(data.error || 'Upload failed')
+      setFormData(prev => ({ ...prev, photo: data.url as string }))
+    } catch (err: any) {
+      setErrors(prev => ({ ...prev, photo: err.message || 'Photo upload failed' }))
+    } finally {
+      setPhotoUploading(false)
     }
   }
 
@@ -162,11 +178,8 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
-      // Prefer file upload for create/update when a new file is selected
-      if (formData.photo instanceof File) {
-        submitData.append('photoFile', formData.photo)
-      } else if (typeof formData.photo === 'string' && formData.photo) {
-        // Keep existing photo URL on edit when no new file selected
+      // Photo is always a URL (uploaded to Blob on file select)
+      if (typeof formData.photo === 'string' && formData.photo) {
         submitData.append('photoUrl', formData.photo)
       }
       
@@ -280,14 +293,15 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
                   />
                 </div>
               )}
-              <label className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors w-fit">
-                <FiUpload className="w-5 h-5" />
-                <span>{formData.photo ? 'Change Photo' : 'Upload Photo'}</span>
+              <label className={`flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors w-fit ${photoUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                {photoUploading ? <FiLoader className="w-5 h-5 animate-spin" /> : <FiUpload className="w-5 h-5" />}
+                <span>{photoUploading ? 'Uploading…' : formData.photo ? 'Change Photo' : 'Upload Photo'}</span>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
                   className="hidden"
+                  disabled={photoUploading}
                 />
               </label>
             </div>
@@ -468,7 +482,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || photoUploading}
           className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (

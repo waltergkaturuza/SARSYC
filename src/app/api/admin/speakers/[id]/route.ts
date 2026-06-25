@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
-import { put } from '@vercel/blob'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 
 export const dynamic = 'force-dynamic'
@@ -44,79 +43,22 @@ export async function PATCH(
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
-    const photoUrl = formData.get('photoUrl') as string | null // Existing URL fallback
-    const photoFile = formData.get('photoFile') as File | null
-    
-    // Create media record: upload to Vercel Blob, then create media with URL only.
-    // Bypasses Payload/Sharp file processing (avoids "Expected Uint8Array or ArrayBuffer").
+    // Photo URL — already uploaded to Blob by the form on file select
+    const photoUrl = formData.get('photoUrl') as string | null
+
+    // Create media record for new photo if a new URL was provided
     let photoId: string | undefined
-    if ((photoFile && photoFile.size > 0) || (photoUrl && photoUrl.startsWith('https://'))) {
+    if (photoUrl?.startsWith('https://')) {
       try {
-        let fileForUpload: File | null = photoFile && photoFile.size > 0 ? photoFile : null
-        if (!fileForUpload && photoUrl?.startsWith('https://')) {
-          const fetched = await fetch(photoUrl)
-          if (!fetched.ok) {
-            throw new Error(`Could not fetch existing photo URL (${fetched.status})`)
-          }
-          const fetchedBlob = await fetched.blob()
-          const urlPath = new URL(photoUrl).pathname
-          const fallbackFilename = decodeURIComponent(urlPath.split('/').pop() || `speaker-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`)
-          fileForUpload = new File([fetchedBlob], fallbackFilename, { type: fetchedBlob.type || 'image/jpeg' })
-        }
-
-        if (!fileForUpload) {
-          throw new Error('No photo file available for media upload')
-        }
-
-        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-        if (!blobToken) {
-          throw new Error('Blob storage not configured')
-        }
-
-        const nameHash = name
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, '-')
-          .replace(/-+/g, '-')
-          .substring(0, 50)
-        const fileExt = fileForUpload.name.split('.').pop()?.toLowerCase() || 'jpg'
-        const filename = `Speakers/photos/${nameHash}-${params.id}.${fileExt}`
-
-        const blob = await put(filename, fileForUpload, {
-          access: 'public',
-          token: blobToken,
-          allowOverwrite: true,
-        })
-
-        const blobFilename = blob.pathname?.split('/').pop() || fileForUpload.name
-        const mimeType = fileForUpload.type || 'image/jpeg'
-
         const photoUpload = await payload.create({
           collection: 'media',
-          data: {
-            alt: `Speaker photo: ${name}`,
-            url: blob.url,
-            filename: blobFilename,
-            mimeType,
-            filesize: fileForUpload.size,
-          },
+          data: { alt: `Speaker photo: ${name}`, url: photoUrl },
           overrideAccess: true,
         })
-
-        // Force the blob URL in case Payload overwrote it with a local path
-        const newMediaId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
-        if (newMediaId) {
-          const stored = typeof photoUpload === 'object' && 'url' in photoUpload ? String((photoUpload as any).url || '') : ''
-          if (!stored.includes('blob.vercel-storage.com')) {
-            await payload.update({ collection: 'media', id: newMediaId, data: { url: blob.url }, overrideAccess: true })
-          }
-        }
-        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload.id
-        
-        console.log(`✅ New photo uploaded for speaker ${params.id}: ${photoId}`)
+        photoId = typeof photoUpload === 'string' ? photoUpload : photoUpload?.id
+        console.log(`✅ Media record created for speaker ${params.id}: ${photoId}`)
       } catch (uploadError: any) {
-        console.error('Photo upload error:', uploadError)
-        // Continue without photo if upload fails
-        console.warn('Speaker update proceeding without photo')
+        console.error('Media create error on update:', uploadError.message)
       }
     }
 

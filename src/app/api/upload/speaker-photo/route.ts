@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(filename, fileBlob, {
       access: 'public',
       token: blobToken,
+      allowOverwrite: true,
     })
     
     // Extract filename from pathname for logging
