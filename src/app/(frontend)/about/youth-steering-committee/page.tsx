@@ -33,41 +33,61 @@ export default function YouthSteeringCommitteePage() {
   const sortedCountries = Object.keys(membersByCountry).sort((a, b) => a.localeCompare(b))
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="about-hero bg-slate-800 text-white py-8 md:py-10">
-        <div className="container-custom">
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
-          >
-            <FiArrowLeft className="w-4 h-4" />
-            Back to About
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Youth Steering Committee</h1>
-          <p className="text-xl text-white/90 max-w-3xl">
-            Meet the dedicated members of the Youth Steering Committee who guide and shape the vision of SARSYC VI.
+    <div
+      className="relative min-h-screen"
+      style={{
+        backgroundImage: "url('/sarsyc-group.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" />
+
+      <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+        {/* Back link */}
+        <Link
+          href="/about"
+          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 text-sm font-medium mb-6 transition-colors"
+        >
+          <FiArrowLeft className="w-4 h-4" />
+          Back to About
+        </Link>
+
+        {/* Page heading */}
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Youth Steering Committee</h1>
+          <p className="text-white/70 max-w-3xl text-lg">
+            Youth leaders from across SADC who co-plan and execute SARSYC VI, champion post-conference implementation, and ensure continuity and accountability.
           </p>
         </div>
-      </div>
 
-      <div className="container-custom py-16">
-        <div className="space-y-12">
+        {/* Members by country */}
+        <div className="space-y-8">
           {sortedCountries.map((country) => {
             const members = membersByCountry[country]
             return (
-              <div key={country} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <div className="flex items-center gap-3 mb-6">
+              <div
+                key={country}
+                className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl overflow-hidden"
+              >
+                {/* Country header */}
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/5">
                   <CountryFlag countryOrCode={country} size="lg" />
-                  <h2 className="text-2xl font-bold text-gray-900">{country}</h2>
+                  <h2 className="text-lg font-bold text-white">{country}</h2>
                 </div>
 
-                <div className="space-y-8">
+                <div className="divide-y divide-white/10">
                   {members.map((member) => (
                     <div
                       key={member.name}
-                      className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+                      className="group flex flex-col md:flex-row transition-all duration-300 hover:bg-white/5"
                     >
-                      <div className="flex flex-col md:flex-row">
+                      {/* Photo */}
+                      <div className="relative w-full md:w-56 flex-shrink-0 bg-slate-800/60 overflow-hidden" style={{ minHeight: '220px' }}>
+                        {/* Amber hover accent line */}
+                        <div className="absolute inset-y-0 left-0 w-[3px] bg-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                         {member.photo ? (
                           <SteeringCommitteeMemberPhoto
                             src={member.photo}
@@ -75,22 +95,23 @@ export default function YouthSteeringCommitteePage() {
                             variant="profile"
                           />
                         ) : (
-                          <div className="relative w-full md:w-80 aspect-[3/4] bg-gradient-to-br from-primary-400 to-secondary-400 flex-shrink-0 flex items-center justify-center text-white text-6xl font-bold">
-                            {getInitials(member.name)}
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
+                            <span className="text-white text-6xl font-bold opacity-60">{getInitials(member.name)}</span>
                           </div>
                         )}
+                      </div>
 
-                        <div className="flex-1 p-8">
-                          <div className="mb-4">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                            <p className="text-primary-600 font-semibold text-lg mb-1">{member.role}</p>
-                            <p className="text-gray-600">{member.organization}</p>
-                          </div>
+                      {/* Info */}
+                      <div className="flex-1 p-6 md:p-8">
+                        <h3 className="text-xl font-bold text-white mb-1 group-hover:text-amber-300 transition-colors duration-300">
+                          {member.name}
+                        </h3>
+                        <p className="text-amber-400/90 font-semibold text-sm mb-0.5">{member.role}</p>
+                        <p className="text-white/55 text-sm mb-4">{member.organization}</p>
 
-                          {member.bio ? (
-                            <p className="profile-description">{member.bio}</p>
-                          ) : null}
-                        </div>
+                        {member.bio ? (
+                          <p className="text-white/70 leading-relaxed text-sm text-justify">{member.bio}</p>
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -100,17 +121,18 @@ export default function YouthSteeringCommitteePage() {
           })}
         </div>
 
+        {/* Countries without members */}
         {countriesWithoutMembers.length > 0 ? (
-          <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Other SADC Countries</h2>
+          <div className="mt-8 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8">
+            <h2 className="text-lg font-bold text-white mb-6">Other SADC Countries</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {countriesWithoutMembers.map((country) => (
                 <div
                   key={country}
-                  className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 text-center gap-2"
+                  className="flex flex-col items-center justify-center p-4 rounded-xl border border-white/10 bg-white/5 text-center gap-2 hover:bg-white/10 hover:border-amber-400/30 transition-all duration-300"
                 >
                   <CountryFlag countryOrCode={country} size="md" />
-                  <span className="text-sm font-medium text-gray-700">{country}</span>
+                  <span className="text-sm font-medium text-white/70">{country}</span>
                 </div>
               ))}
             </div>
