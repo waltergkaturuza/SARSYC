@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { FiArrowLeft } from 'react-icons/fi'
 import CountryFlag from '@/components/ui/CountryFlag'
-import SteeringCommitteeMemberPhoto from '@/components/about/SteeringCommitteeMemberPhoto'
 import {
   getSteeringCountriesWithoutMembers,
   youthSteeringCommitteeMembers,
@@ -87,14 +86,14 @@ export default function YouthSteeringCommitteePage() {
                       className="group flex flex-col md:flex-row transition-all duration-300 hover:bg-white/5"
                     >
                       {/* Photo */}
-                      <div className="relative w-full md:w-56 flex-shrink-0 bg-slate-800/60 overflow-hidden" style={{ minHeight: '220px' }}>
+                      <div className="relative w-full md:w-56 flex-shrink-0 bg-slate-800 overflow-hidden self-stretch" style={{ minHeight: '220px' }}>
                         {/* Amber hover accent line */}
                         <div className="absolute inset-y-0 left-0 w-[3px] bg-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                         {member.photo ? (
-                          <SteeringCommitteeMemberPhoto
+                          <img
                             src={member.photo}
                             alt={member.name}
-                            variant="profile"
+                            className="absolute inset-0 w-full h-full object-cover object-top"
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
