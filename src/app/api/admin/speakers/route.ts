@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
+    const abstractTitle = formData.get('abstractTitle') as string | null
     // Photo URL — already uploaded to Blob by the form on file select
     const photoUrl = formData.get('photoUrl') as string | null
 
@@ -38,8 +39,11 @@ export async function POST(request: NextRequest) {
     if (!type || type.length === 0) {
       return NextResponse.json({ error: 'At least one speaker type is required' }, { status: 400 })
     }
-    if (!photoUrl?.startsWith('https://')) {
-      return NextResponse.json({ error: 'Professional photo is required. Please upload a photo.' }, { status: 400 })
+    if (!photoUrl || !photoUrl.startsWith('https://')) {
+      return NextResponse.json(
+        { error: photoUrl ? 'Photo URL must be a valid Blob URL (https://). Please re-upload the photo.' : 'Professional photo is required. Please upload a photo.' },
+        { status: 400 },
+      )
     }
 
     // Create media record — photo is already on Blob, store URL only
@@ -71,10 +75,11 @@ export async function POST(request: NextRequest) {
         country,
         bio,
         type,
+        ...(abstractTitle ? { abstractTitle } : {}),
         featured,
         socialMedia,
         expertise: expertise.map((area: string) => ({ area })),
-        photo: photoId, // Photo is required, so always include it
+        photo: photoId,
       },
       overrideAccess: true, // Ensure admin can create
     })

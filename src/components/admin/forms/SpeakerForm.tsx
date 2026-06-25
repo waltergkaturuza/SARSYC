@@ -141,7 +141,10 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     if (!formData.title.trim()) newErrors.title = 'Professional title is required'
     if (!formData.organization.trim()) newErrors.organization = 'Organization is required'
     if (!formData.country.trim()) newErrors.country = 'Country is required'
-    if (!formData.photo && !initialData?.photo) newErrors.photo = 'Photo is required'
+    const hasValidPhoto =
+      (typeof formData.photo === 'string' && formData.photo.startsWith('https://')) ||
+      (initialData?.photo && mode === 'edit')
+    if (!hasValidPhoto) newErrors.photo = mode === 'edit' ? 'Please upload a new photo' : 'Photo is required'
     if (!formData.bio.trim()) newErrors.bio = 'Biography is required'
     if (formData.type.length === 0) newErrors.type = 'At least one speaker type is required'
     if (formData.expertise.length > 0 && formData.expertise.some(e => !e.trim())) {
@@ -178,8 +181,8 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
-      // Photo is always a URL (uploaded to Blob on file select)
-      if (typeof formData.photo === 'string' && formData.photo) {
+      // Only send photoUrl when it's a real Blob/external URL
+      if (typeof formData.photo === 'string' && formData.photo.startsWith('https://')) {
         submitData.append('photoUrl', formData.photo)
       }
       

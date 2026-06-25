@@ -43,6 +43,7 @@ export async function PATCH(
     const featured = formData.get('featured') === 'true'
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
+    const abstractTitle = formData.get('abstractTitle') as string | null
     // Photo URL — already uploaded to Blob by the form on file select
     const photoUrl = formData.get('photoUrl') as string | null
 
@@ -70,6 +71,7 @@ export async function PATCH(
       country,
       bio,
       type,
+      ...(abstractTitle !== null ? { abstractTitle: abstractTitle || null } : {}),
       featured,
       socialMedia,
       expertise: expertise.map((area: string) => ({ area })),
