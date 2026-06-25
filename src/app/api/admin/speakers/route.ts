@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         featured,
         socialMedia,
         expertise: expertise.map((area: string) => ({ area })),
-        photo: photoId,
+        photo: /^\d+$/.test(photoId) ? Number(photoId) : photoId,
       },
       overrideAccess: true, // Ensure admin can create
     })

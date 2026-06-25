@@ -79,7 +79,7 @@ export async function PATCH(
     }
     
     if (photoId) {
-      updateData.photo = photoId
+      updateData.photo = /^\d+$/.test(photoId) ? Number(photoId) : photoId
     }
 
     // Update speaker
