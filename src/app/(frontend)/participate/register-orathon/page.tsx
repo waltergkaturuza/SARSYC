@@ -90,7 +90,7 @@ export default function RegisterOrathonPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-slate-800 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mb-6">

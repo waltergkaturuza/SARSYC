@@ -7,7 +7,7 @@ import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgra
 export default function ProgrammePage() {
   return (
     <>
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-10 md:py-12">
+      <section className="bg-slate-800 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Conference Programme</h1>

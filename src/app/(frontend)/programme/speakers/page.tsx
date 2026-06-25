@@ -180,7 +180,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-b from-primary-700 via-primary-600 to-slate-900 text-white py-20">
+      <section className="bg-gradient-to-b from-primary-700 via-primary-600 to-slate-900 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">

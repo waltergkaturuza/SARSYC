@@ -18,7 +18,7 @@ export default function GovernancePage() {
   return (
     <>
       {/* Hero */}
-      <section className="about-hero bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="about-hero bg-slate-800 text-white py-8 md:py-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="w-full text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">

@@ -84,7 +84,7 @@ export default function TrackPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-16 md:py-24">
+      <section className="bg-slate-800 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">

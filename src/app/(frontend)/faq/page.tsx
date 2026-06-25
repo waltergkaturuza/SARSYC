@@ -127,7 +127,7 @@ export default function FAQPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-20">
+      <section className="bg-slate-800 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <FiHelpCircle className="w-16 h-16 mx-auto mb-6 opacity-90" />
