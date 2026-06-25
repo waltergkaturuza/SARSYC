@@ -210,7 +210,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
               description="We're working on bringing you an amazing lineup of speakers. Check back soon for announcements about our keynote speakers, panelists, and workshop facilitators."
             />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {speakers.map((speaker: any) => {
                 const photoUrl = getSpeakerPhotoUrl(speaker.photo)
                 const initials = getInitials(speaker.name)
@@ -234,14 +234,13 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                       aria-label={`View ${speaker.name}'s profile`}
                     />
                     
-                    {/* Photo Section with Gradient Background */}
-                    <div className="relative overflow-hidden z-10 w-full sm:w-44 flex-shrink-0 aspect-square sm:aspect-auto sm:self-stretch">
+                    {/* Photo Section */}
+                    <div className="relative z-10 w-full sm:w-52 flex-shrink-0 bg-gray-50 flex items-center justify-center sm:self-stretch" style={{ minHeight: '200px' }}>
                       {photoUrl ? (
-                        // Use a regular img tag to avoid any Next.js Image domain/config issues
                         <img
                           src={photoUrl}
                           alt={speaker.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain sm:object-cover sm:object-top"
                           loading="lazy"
                         />
                       ) : (
@@ -269,13 +268,13 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     </div>
                     
                     {/* Info Section */}
-                    <div className="p-4 bg-white space-y-2 relative z-10 flex-1 min-w-0">
+                    <div className="p-5 bg-white space-y-3 relative z-10 flex-1 min-w-0">
                       {/* Speaker Name */}
-                      <h3 className="text-base font-bold text-gray-900 mb-1 leading-snug">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">
                         {speaker.name}
                       </h3>
                       
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid sm:grid-cols-2 gap-3">
                         {/* Position */}
                         {speaker.title && (
                           <div className="flex items-start gap-3">
