@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
       const blob = await put(filename, fileForUpload, {
         access: 'public',
         token: blobToken,
+        allowOverwrite: true,
       })
 
       const photoUpload = await payload.create({
