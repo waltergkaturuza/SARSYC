@@ -9,9 +9,28 @@ let patchedThisInstance = false
 export async function ensureSpeakersLatestColumns(payload: Payload): Promise<void> {
   if (patchedThisInstance) return
 
+  // Add abstract_title column if missing
   await (payload.db as any).drizzle.execute(
     `ALTER TABLE "speakers" ADD COLUMN IF NOT EXISTS "abstract_title" varchar`,
   )
+
+  // Add abstract-presenter to the speakers type enum if missing.
+  // ALTER TYPE ... ADD VALUE cannot run inside a transaction, so we check first.
+  await (payload.db as any).drizzle.execute(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_enum
+        WHERE enumlabel = 'abstract-presenter'
+          AND enumtypid = (
+            SELECT oid FROM pg_type WHERE typname = 'enum_speakers_type'
+          )
+      ) THEN
+        ALTER TYPE "enum_speakers_type" ADD VALUE 'abstract-presenter';
+      END IF;
+    END
+    $$;
+  `)
 
   patchedThisInstance = true
 }
