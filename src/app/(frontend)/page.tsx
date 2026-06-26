@@ -346,24 +346,24 @@ export default async function HomePage() {
       </section>
 
       {/* Conference Tracks */}
-      <section className="section relative overflow-hidden">
+      <section className="relative overflow-hidden py-8 md:py-10">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/SARSYC%20Homepage3.jpg')" }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-[#FFF9F0]/45" aria-hidden />
+        <div className="absolute inset-0 bg-[#FFF9F0]/18" aria-hidden />
         <div className="container-custom relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="section-title">Conference Tracks</h2>
-            <p className="section-subtitle">
+          <div className="max-w-3xl mx-auto text-center mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 text-gray-900 drop-shadow-sm">Conference Tracks</h2>
+            <p className="text-lg text-gray-700 text-center max-w-3xl mx-auto">
               SARSYC VI features five thematic tracks addressing critical issues in youth development.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-5">
             {tracks.map((track) => (
-              <div key={track.number} className="card p-6 hover:shadow-2xl transition-shadow duration-300">
+              <div key={track.number} className="card p-5 hover:shadow-2xl transition-shadow duration-300 bg-white/95 backdrop-blur-sm">
                 <div className={`inline-block bg-gradient-to-r ${track.color} text-white text-sm font-bold px-3 py-1 rounded-full mb-4`}>
                   Track {track.number}
                 </div>
@@ -377,7 +377,7 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-6">
             <Link href="/sarsyc-vi" className="btn-primary">
               Learn More About SARSYC VI
             </Link>
