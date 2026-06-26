@@ -76,7 +76,7 @@ export default function CountdownTimer({ targetDate }: CountdownTimerProps) {
               {unit.value.toString().padStart(2, '0')}
             </div>
           </div>
-          <div className="text-sm md:text-base font-medium text-white/90 mt-2">
+          <div className="text-sm md:text-base font-medium text-amber-300 mt-2">
             {unit.label}
           </div>
         </div>
