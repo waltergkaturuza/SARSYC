@@ -32,5 +32,15 @@ export async function ensureSpeakersLatestColumns(payload: Payload): Promise<voi
     $$;
   `)
 
+  // Backfill thumbnail_u_r_l for media records that have a Blob URL only in "url".
+  // Display helpers prefer a Blob thumbnailURL, so this repairs photos that broke
+  // when Payload regenerated "url" as a local /api/media/file path on read.
+  await (payload.db as any).drizzle.execute(`
+    UPDATE "media"
+    SET "thumbnail_u_r_l" = "url"
+    WHERE ("thumbnail_u_r_l" IS NULL OR "thumbnail_u_r_l" = '')
+      AND "url" LIKE '%blob.vercel-storage.com%'
+  `)
+
   patchedThisInstance = true
 }

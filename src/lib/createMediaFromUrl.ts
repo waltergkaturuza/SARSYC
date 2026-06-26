@@ -48,9 +48,12 @@ export async function createMediaFromBlobUrl(
     const ext = dot > 0 ? baseName.slice(dot) : ''
     const uniqueFilename = `${stem}-${Date.now()}${ext}`
 
+    // Store the Blob URL in both "url" and "thumbnail_u_r_l" so the display
+    // helpers (which prefer a Blob thumbnailURL) always find it, even if Payload
+    // regenerates "url" as a local /api/media/file path on read.
     const rows = await sql`
-      INSERT INTO "media" ("alt", "url", "filename", "mime_type", "filesize", "updated_at", "created_at")
-      VALUES (${alt}, ${url}, ${uniqueFilename}, ${mimeType}, ${0}, ${now}, ${now})
+      INSERT INTO "media" ("alt", "url", "thumbnail_u_r_l", "filename", "mime_type", "filesize", "updated_at", "created_at")
+      VALUES (${alt}, ${url}, ${url}, ${uniqueFilename}, ${mimeType}, ${0}, ${now}, ${now})
       RETURNING "id"
     `
     const id = (rows?.[0] as { id: string | number })?.id
