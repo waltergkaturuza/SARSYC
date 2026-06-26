@@ -80,11 +80,18 @@ export default function WhySarsycVIPage() {
       </section>
 
       {/* Key Challenges */}
-      <section className="section bg-gray-50">
-        <div className="container-custom">
+      <section className="relative overflow-hidden py-10 md:py-14 bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc%20vi%20why%20sarsyv%20vi.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-primary-900/75 to-slate-900/90" aria-hidden />
+
+        <div className="container-custom relative z-10">
           <div className="max-w-5xl mx-auto">
-            <h2 className="section-title">Key Challenges We Address</h2>
-            <p className="section-subtitle">
+            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3">Key Challenges We Address</h2>
+            <p className="text-lg text-white/70 text-center mb-10 max-w-3xl mx-auto">
               SARSYC VI responds to critical challenges facing youth in Southern Africa
             </p>
 
@@ -92,12 +99,15 @@ export default function WhySarsycVIPage() {
               {challenges.map((challenge) => {
                 const Icon = challenge.icon
                 return (
-                  <div key={challenge.title} className="card p-6 hover:shadow-xl transition-all">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${challenge.color} rounded-xl flex items-center justify-center text-white mb-4`}>
+                  <div
+                    key={challenge.title}
+                    className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10"
+                  >
+                    <div className={`w-14 h-14 bg-gradient-to-br ${challenge.color} rounded-xl flex items-center justify-center text-white mb-4 shadow-lg`}>
                       <Icon className="w-7 h-7" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{challenge.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{challenge.description}</p>
+                    <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">{challenge.title}</h3>
+                    <p className="text-white/75 leading-relaxed">{challenge.description}</p>
                   </div>
                 )
               })}
