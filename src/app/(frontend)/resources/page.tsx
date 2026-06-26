@@ -129,121 +129,139 @@ export default function ResourcesPage() {
   }
 
   return (
-    <>
-      {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">
-              Resource Library
-            </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-5">
-              Access conference reports, research papers, policy briefs, and more
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search resources..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
-                />
+    <div className="relative min-h-screen bg-slate-900">
+      {/* Background image */}
+      <div
+        className="fixed inset-0"
+        style={{
+          backgroundImage: "url('/sarsyc-group.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          zIndex: 0,
+        }}
+      />
+      {/* Dark blue overlay */}
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-primary-900/80 to-slate-900/90" style={{ zIndex: 1 }} />
+
+      <div className="relative" style={{ zIndex: 2 }}>
+        {/* Hero */}
+        <section className="py-10 md:py-14">
+          <div className="container-custom">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-3xl md:text-5xl font-bold mb-3 text-white">
+                Resource Library
+              </h1>
+              <p className="text-lg md:text-xl text-white/70 mb-6">
+                Access conference reports, research papers, policy briefs, and more
+              </p>
+
+              {/* Search Bar */}
+              <div className="max-w-2xl mx-auto">
+                <div className="relative">
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search resources..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 bg-white/95 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Filters */}
-      <section className="bg-gray-50 py-8 border-b border-gray-200">
-        <div className="container-custom max-w-screen-2xl">
-          <div className="flex items-center gap-4 mb-6">
-            <FiFilter className="w-5 h-5 text-gray-600" />
-            <h3 className="font-semibold text-gray-900">Filters</h3>
-          </div>
+        {/* Filters */}
+        <section className="pb-8">
+          <div className="container-custom max-w-screen-2xl">
+            <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <FiFilter className="w-5 h-5 text-primary-300" />
+                <h3 className="font-semibold text-white">Filters</h3>
+              </div>
 
-          {/* Type Filters */}
-          <div className="mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-3">Resource Type</p>
-            <div className="flex flex-wrap gap-2">
-              {resourceTypes.map((type) => {
-                const Icon = type.icon
-                return (
+              {/* Type Filters */}
+              <div className="mb-5">
+                <p className="text-sm font-medium text-white/60 mb-3">Resource Type</p>
+                <div className="flex flex-wrap gap-2">
+                  {resourceTypes.map((type) => {
+                    const Icon = type.icon
+                    const active = selectedType === type.value
+                    return (
+                      <button
+                        key={type.value}
+                        onClick={() => setSelectedType(type.value)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          active
+                            ? 'bg-primary-500 text-white border border-primary-400 shadow-lg shadow-primary-900/30'
+                            : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/15 backdrop-blur-sm'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {type.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Year Filter */}
+              <div>
+                <p className="text-sm font-medium text-white/60 mb-3">Year</p>
+                <div className="flex flex-wrap gap-2">
                   <button
-                    key={type.value}
-                    onClick={() => setSelectedType(type.value)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      selectedType === type.value
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                    onClick={() => setSelectedYear('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedYear === 'all'
+                        ? 'bg-primary-500 text-white border border-primary-400'
+                        : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/15 backdrop-blur-sm'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    {type.label}
+                    All Years
                   </button>
-                )
-              })}
+                  {availableYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setSelectedYear(year.toString())}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        selectedYear === year.toString()
+                          ? 'bg-primary-500 text-white border border-primary-400'
+                          : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/15 backdrop-blur-sm'
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          {/* Year Filter */}
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">Year</p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedYear('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  selectedYear === 'all'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                All Years
-              </button>
-              {availableYears.map((year) => (
-                <button
-                  key={year}
-                  onClick={() => setSelectedYear(year.toString())}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedYear === year.toString()
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  {year}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Resources Grid */}
-      <section className="section bg-white">
-        <div className="container-custom max-w-screen-2xl">
-          {loading ? (
-            <div className="text-center py-12">
-              <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-600" />
-              <p className="text-gray-600">Loading resources...</p>
-            </div>
-          ) : resources.length === 0 ? (
-            <EmptyState
-              icon="file"
-              title={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? "No Resources Found" : "No Resources Available Yet"}
-              description={searchQuery || selectedType !== 'all' || selectedYear !== 'all' 
-                ? "Try adjusting your filters or search query to find what you're looking for."
-                : "We're working on adding resources to the library. Check back soon for conference reports, research papers, and more."}
-              action={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? {
-                label: "Clear Filters",
-                onClick: () => { setSelectedType('all'); setSelectedYear('all'); setSearchQuery('') }
-              } : undefined}
-            />
-          ) : (
-            <>
+        {/* Resources Grid */}
+        <section className="pb-16">
+          <div className="container-custom max-w-screen-2xl">
+            {loading ? (
+              <div className="text-center py-12">
+                <FiLoader className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-300" />
+                <p className="text-white/70">Loading resources...</p>
+              </div>
+            ) : resources.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-10">
+                <EmptyState
+                  icon="file"
+                  title={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? "No Resources Found" : "No Resources Available Yet"}
+                  description={searchQuery || selectedType !== 'all' || selectedYear !== 'all'
+                    ? "Try adjusting your filters or search query to find what you're looking for."
+                    : "We're working on adding resources to the library. Check back soon for conference reports, research papers, and more."}
+                  action={searchQuery || selectedType !== 'all' || selectedYear !== 'all' ? {
+                    label: "Clear Filters",
+                    onClick: () => { setSelectedType('all'); setSelectedYear('all'); setSearchQuery('') }
+                  } : undefined}
+                />
+              </div>
+            ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {resources.map((resource) => {
                   const description = resource.description ?? ''
@@ -252,76 +270,75 @@ export default function ResourcesPage() {
                   const ResourceIcon = getResourceIcon(resource.type)
 
                   return (
-                    <div key={resource.id} className="card p-6 hover:shadow-2xl transition-all group">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <ResourceIcon className="w-6 h-6 text-primary-600" />
+                    <div
+                      key={resource.id}
+                      className="group flex flex-col rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary-500/20 hover:border-primary-400/40 hover:bg-white/15"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <ResourceIcon className="w-6 h-6 text-primary-300" />
+                        </div>
+                        <div className="text-right text-sm text-white/50">
+                          <div>{resource.year}</div>
+                          {resource.file?.filesize && (
+                            <div className="text-xs">{formatFileSize(resource.file.filesize)}</div>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right text-sm text-gray-500">
-                        <div>{resource.year}</div>
-                        {resource.file?.filesize && (
-                          <div className="text-xs">{formatFileSize(resource.file.filesize)}</div>
-                        )}
-                      </div>
-                    </div>
 
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
-                      {resource.title}
-                    </h3>
+                      <h3 className="text-lg font-bold text-primary-300 mb-2 group-hover:text-primary-200 transition-colors">
+                        {resource.title}
+                      </h3>
 
-                    {description ? (
-                      <>
-                        <p
-                          className={`text-sm text-gray-600 ${
-                            isExpanded ? '' : 'line-clamp-3'
-                          }`}
+                      {description ? (
+                        <>
+                          <p className={`text-sm text-white/65 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                            {description}
+                          </p>
+                          {hasLongDescription ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleDescription(resource.id)}
+                              className="text-sm font-medium text-primary-300 hover:text-primary-200 mb-4 text-left"
+                            >
+                              {isExpanded ? 'Read less' : 'Read more'}
+                            </button>
+                          ) : (
+                            <div className="mb-4" />
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-white/40 mb-4">No description available.</p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-4 mt-auto border-t border-white/10">
+                        <div className="flex items-center gap-1 text-sm text-white/50">
+                          <FiDownload className="w-4 h-4" />
+                          {resource.downloads || 0} downloads
+                        </div>
+                        <button
+                          onClick={() => handleDownload(resource)}
+                          disabled={downloading === resource.id || !resource.file?.url}
+                          className="inline-flex items-center gap-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white font-medium py-2 px-4 text-sm transition-colors disabled:opacity-50 shadow-lg shadow-primary-900/30"
                         >
-                          {description}
-                        </p>
-                        {hasLongDescription ? (
-                          <button
-                            type="button"
-                            onClick={() => toggleDescription(resource.id)}
-                            className="text-sm font-medium text-primary-600 hover:text-primary-700 mb-4"
-                          >
-                            {isExpanded ? 'Read less' : 'Read more'}
-                          </button>
-                        ) : (
-                          <div className="mb-4" />
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-sm text-gray-500 mb-4">No description available.</p>
-                    )}
-
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <FiDownload className="w-4 h-4" />
-                        {resource.downloads || 0} downloads
+                          {downloading === resource.id ? (
+                            <>
+                              <FiLoader className="w-4 h-4 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            'Download'
+                          )}
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => handleDownload(resource)}
-                        disabled={downloading === resource.id || !resource.file?.url}
-                        className="btn-primary py-2 px-4 text-sm disabled:opacity-50"
-                      >
-                        {downloading === resource.id ? (
-                          <>
-                            <FiLoader className="w-4 h-4 animate-spin inline mr-2" />
-                            Downloading...
-                          </>
-                        ) : (
-                          'Download'
-                        )}
-                      </button>
                     </div>
-                  </div>
                   )
                 })}
               </div>
-            </>
-          )}
-        </div>
-      </section>
-    </>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
   )
 }
