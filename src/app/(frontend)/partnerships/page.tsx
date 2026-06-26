@@ -278,21 +278,28 @@ export default function PartnershipsPage() {
       </section>
 
       {/* Sponsorship Tiers */}
-      <section className="section bg-gray-50">
-        <div className="container-custom">
-          <h2 className="section-title">Sponsorship Packages</h2>
-          <p className="section-subtitle">
+      <section className="relative overflow-hidden py-8 md:py-10 bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
+
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3">Sponsorship Packages</h2>
+          <p className="text-lg text-white/70 text-center mb-8 max-w-3xl mx-auto">
             Choose the partnership level that aligns with your organization's goals and budget.
           </p>
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <FiLoader className="w-8 h-8 animate-spin text-primary-600" />
+              <FiLoader className="w-8 h-8 animate-spin text-primary-300" />
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-red-600 mb-4">{error}</p>
-              <button onClick={fetchTiers} className="btn-outline">
+              <p className="text-red-300 mb-4">{error}</p>
+              <button onClick={fetchTiers} className="btn-outline border-white text-white hover:bg-white/10">
                 Try Again
               </button>
             </div>
@@ -303,7 +310,7 @@ export default function PartnershipsPage() {
               description="Sponsorship packages are being configured. Please check back soon or contact us for partnership opportunities."
             />
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {tiers.map((tier) => {
                 const IconComponent = iconMap[tier.icon] || FiStar
                 const colorClass = colorMap[tier.color] || colorMap.gray
@@ -312,38 +319,48 @@ export default function PartnershipsPage() {
                 return (
                   <div
                     key={tier.id || tier.name}
-                    className={`card overflow-hidden ${
-                      tier.isPopular ? 'ring-4 ring-accent-500 transform scale-105' : ''
+                    className={`group flex flex-col rounded-2xl border bg-white/10 backdrop-blur-md overflow-hidden shadow-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10 ${
+                      tier.isPopular
+                        ? 'border-amber-400/50 ring-1 ring-amber-400/30'
+                        : 'border-white/10 hover:border-primary-400/40'
                     }`}
                   >
                     {tier.isPopular && (
-                      <div className="bg-accent-500 text-gray-900 text-center py-2 px-4 font-bold text-sm">
+                      <div className="bg-amber-400 text-gray-900 text-center py-1.5 px-3 font-bold text-xs tracking-wide">
                         MOST POPULAR
                       </div>
                     )}
                     
-                    <div className="p-6">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${colorClass} rounded-xl flex items-center justify-center text-white mb-4`}>
-                        <IconComponent className="w-8 h-8" />
+                    <div className="p-4 md:p-5 flex flex-col flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-11 h-11 shrink-0 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center text-white shadow-lg`}>
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors leading-tight">
+                            {tier.name}
+                          </h3>
+                          <div className="text-xl font-bold text-white">{tier.price}</div>
+                        </div>
                       </div>
                       
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-                      <div className="text-3xl font-bold text-primary-600 mb-6">{tier.price}</div>
-                      
                       {tier.description && (
-                        <p className="text-sm text-gray-600 mb-4">{tier.description}</p>
+                        <p className="text-xs text-white/65 mb-3 line-clamp-2 leading-relaxed">{tier.description}</p>
                       )}
                       
-                      <ul className="space-y-3 mb-8">
+                      <ul className="space-y-1.5 mb-4 flex-1">
                         {benefits.map((benefit: any, index: number) => (
                           <li key={index} className="flex items-start gap-2 text-sm">
-                            <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-600">{benefit.benefit || benefit}</span>
+                            <FiCheck className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-white/75 leading-snug">{benefit.benefit || benefit}</span>
                           </li>
                         ))}
                       </ul>
 
-                      <button className="btn-primary w-full" onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}>
+                      <button
+                        className="btn-primary w-full py-2.5 text-sm"
+                        onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}
+                      >
                         Get Started
                       </button>
                     </div>
@@ -356,26 +373,33 @@ export default function PartnershipsPage() {
       </section>
 
       {/* Past Partners */}
-      <section className="section bg-white">
-        <div className="container-custom">
-          <h2 className="section-title">Our Partners</h2>
-          <p className="section-subtitle mb-12">
+      <section className="relative overflow-hidden py-6 md:py-8 bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
+
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-2">Our Partners</h2>
+          <p className="text-lg text-white/70 text-center mb-6 max-w-3xl mx-auto">
             Proud to partner with leading organizations committed to youth empowerment.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
             {partners.map((partner) => (
               <div
                 key={partner.name}
-                className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all hover:border-primary-300"
+                className="group flex items-center justify-center rounded-xl border border-white/10 bg-white/10 backdrop-blur-md p-3 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-xl hover:shadow-primary-500/10"
               >
-                <div className="relative w-full h-24 flex items-center justify-center">
+                <div className="relative w-full h-16 sm:h-[4.5rem] flex items-center justify-center">
                   <Image
                     src={partner.logo}
                     alt={partner.alt}
                     fill
-                    className="object-contain"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 200px"
+                    className="object-contain brightness-110 contrast-110 transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                   />
                 </div>
               </div>
@@ -383,7 +407,7 @@ export default function PartnershipsPage() {
           </div>
 
           <div className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-white/70 text-sm md:text-base">
               Join these esteemed organizations in supporting SARSYC VI
             </p>
           </div>
