@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -68,7 +68,15 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function DonatePage() {
+function DonatePageFallback() {
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <FiLoader className="animate-spin text-primary-400 w-8 h-8" aria-label="Loading" />
+    </div>
+  )
+}
+
+function DonatePageContent() {
   const searchParams = useSearchParams()
   const [mode, setMode] = useState<Mode>('donating')
   const [donorType, setDonorType] = useState<DonorType>('individual')
@@ -799,5 +807,13 @@ export default function DonatePage() {
       </div>
       </section>
     </div>
+  )
+}
+
+export default function DonatePage() {
+  return (
+    <Suspense fallback={<DonatePageFallback />}>
+      <DonatePageContent />
+    </Suspense>
   )
 }
