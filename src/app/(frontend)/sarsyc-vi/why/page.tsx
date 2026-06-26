@@ -47,13 +47,13 @@ export default function WhySarsycVIPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-5 md:py-6">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
               Why SARSYC VI?
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-lg text-white/90">
               Responding to shifting development landscapes with homegrown, sustainable solutions
             </p>
           </div>
@@ -86,12 +86,12 @@ export default function WhySarsycVIPage() {
           style={{ backgroundImage: "url('/sarsyc%20vi%20why%20sarsyv%20vi.jpg')" }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-primary-900/75 to-slate-900/90" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/45 via-primary-900/35 to-slate-900/50" aria-hidden />
 
         <div className="container-custom relative z-10">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3">Key Challenges We Address</h2>
-            <p className="text-lg text-white/70 text-center mb-10 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3 drop-shadow-lg">Key Challenges We Address</h2>
+            <p className="text-lg text-white/90 text-center mb-10 max-w-3xl mx-auto drop-shadow-md">
               SARSYC VI responds to critical challenges facing youth in Southern Africa
             </p>
 
@@ -101,7 +101,7 @@ export default function WhySarsycVIPage() {
                 return (
                   <div
                     key={challenge.title}
-                    className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10"
+                    className="group rounded-2xl border border-white/20 bg-white/15 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/20 hover:shadow-2xl hover:shadow-primary-500/10"
                   >
                     <div className={`w-14 h-14 bg-gradient-to-br ${challenge.color} rounded-xl flex items-center justify-center text-white mb-4 shadow-lg`}>
                       <Icon className="w-7 h-7" />
@@ -149,13 +149,13 @@ export default function WhySarsycVIPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="section bg-primary-600 text-white">
+      <section className="py-6 md:py-8 bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
               Be Part of the Solution
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-lg mb-5 text-white/90">
               Join us in Windhoek to align for action and sustain progress in youth health and education.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

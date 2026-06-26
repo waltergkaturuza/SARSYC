@@ -268,70 +268,75 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-8 md:py-10 bg-white">
-        <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      {/* Stats + About Section */}
+      <section className="relative overflow-hidden py-8 md:py-10 bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
+
+        <div className="container-custom relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-12">
             {stats.map((stat) => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className="text-center">
-                  <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 rounded-full mb-3">
-                    <Icon className="w-7 h-7 text-primary-600" />
+                <div
+                  key={stat.label}
+                  className="text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-4 md:p-5 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/30 hover:bg-white/15"
+                >
+                  <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-primary-500/30 rounded-full mb-2 md:mb-3 border border-primary-400/30">
+                    <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary-300" />
                   </div>
-                  <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">
+                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">
                     {stat.value}
                   </div>
-                  <div className="text-sm md:text-base text-gray-600">
+                  <div className="text-xs md:text-sm text-white/70">
                     {stat.label}
                   </div>
                 </div>
               )
             })}
           </div>
-        </div>
-      </section>
 
-      {/* About Section */}
-      <section className="py-8 md:py-10 bg-gray-50">
-        <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center mb-8">
-            <h2 className="section-title">What is SARSYC?</h2>
-            <p className="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">What is SARSYC?</h2>
+            <p className="text-lg md:text-xl text-white/70 text-center max-w-3xl mx-auto">
               The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
               for transnational advocacy on youth health and education.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-            <div className="card p-6">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
+            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
                 1
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Connect</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Connect</h3>
+              <p className="text-white/75">
                 Network with 500+ young leaders, researchers, policymakers, development partners, and the private sector from across
                 Southern Africa.
               </p>
             </div>
 
-            <div className="card p-6">
-              <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
+            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+              <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
                 2
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Learn</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Learn</h3>
+              <p className="text-white/75">
                 Engage with cutting-edge research, best practices, and innovative solutions in youth health and
                 education.
               </p>
             </div>
 
-            <div className="card p-6">
-              <div className="w-12 h-12 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-2xl font-bold mb-4">
+            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+              <div className="w-12 h-12 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-2xl font-bold mb-4 shadow-lg">
                 3
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Act</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Act</h3>
+              <p className="text-white/75">
                 Develop actionable strategies and commitments to drive real change in youth health and education
                 outcomes.
               </p>
