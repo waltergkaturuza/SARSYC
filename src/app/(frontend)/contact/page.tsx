@@ -72,99 +72,106 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-5 md:py-6">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
               Get in Touch
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-lg text-white/90">
               We'd love to hear from you. Reach out with any questions about SARSYC VI.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="section bg-gray-50">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-3 gap-8">
+      <section className="relative overflow-hidden py-8 md:py-10 bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
+
+        <div className="container-custom relative z-10">
+          <div className="grid lg:grid-cols-3 gap-6">
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-white mb-6">Send Us a Message</h2>
 
                 {isSuccess ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FiSend className="w-8 h-8 text-green-600" />
+                  <div className="text-center py-10">
+                    <div className="w-16 h-16 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FiSend className="w-8 h-8 text-green-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Message Sent!</h3>
-                    <p className="text-gray-600">We'll get back to you within 24-48 hours.</p>
+                    <h3 className="text-xl font-bold text-white mb-2">Message Sent!</h3>
+                    <p className="text-white/70">We'll get back to you within 24-48 hours.</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                    <div className="grid md:grid-cols-2 gap-5">
                       <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-white/80 mb-2">
                           First Name *
                         </label>
                         <input
                           {...register('firstName')}
                           type="text"
                           id="firstName"
-                          className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.firstName ? 'border-red-500' : 'border-gray-300'
-                          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                          className={`w-full px-4 py-3 rounded-lg border bg-white/95 text-gray-900 ${
+                            errors.firstName ? 'border-red-500' : 'border-white/20'
+                          } focus:outline-none focus:ring-2 focus:ring-primary-400`}
                         />
                         {errors.firstName && (
-                          <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                          <p className="mt-1 text-sm text-red-300">{errors.firstName.message}</p>
                         )}
                       </div>
                       <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-white/80 mb-2">
                           Last Name *
                         </label>
                         <input
                           {...register('lastName')}
                           type="text"
                           id="lastName"
-                          className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.lastName ? 'border-red-500' : 'border-gray-300'
-                          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                          className={`w-full px-4 py-3 rounded-lg border bg-white/95 text-gray-900 ${
+                            errors.lastName ? 'border-red-500' : 'border-white/20'
+                          } focus:outline-none focus:ring-2 focus:ring-primary-400`}
                         />
                         {errors.lastName && (
-                          <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                          <p className="mt-1 text-sm text-red-300">{errors.lastName.message}</p>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-2">
                         Email Address *
                       </label>
                       <input
                         {...register('email')}
                         type="email"
                         id="email"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border bg-white/95 text-gray-900 ${
+                          errors.email ? 'border-red-500' : 'border-white/20'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-400`}
                       />
                       {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                        <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="subject" className="block text-sm font-medium text-white/80 mb-2">
                         Subject *
                       </label>
                       <select
                         {...register('subject')}
                         id="subject"
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.subject ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border bg-white/95 text-gray-900 ${
+                          errors.subject ? 'border-red-500' : 'border-white/20'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-400`}
                       >
                         {subjectOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -173,25 +180,25 @@ export default function ContactPage() {
                         ))}
                       </select>
                       {errors.subject && (
-                        <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
+                        <p className="mt-1 text-sm text-red-300">{errors.subject.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-2">
                         Message *
                       </label>
                       <textarea
                         {...register('message')}
                         id="message"
                         rows={6}
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors.message ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                        className={`w-full px-4 py-3 rounded-lg border bg-white/95 text-gray-900 ${
+                          errors.message ? 'border-red-500' : 'border-white/20'
+                        } focus:outline-none focus:ring-2 focus:ring-primary-400`}
                         placeholder="How can we help you?"
                       />
                       {errors.message && (
-                        <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
+                        <p className="mt-1 text-sm text-red-300">{errors.message.message}</p>
                       )}
                     </div>
 
@@ -209,46 +216,46 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Information */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Contact Details */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h3 className="font-bold text-gray-900 mb-6">Contact Information</h3>
-                <div className="space-y-6">
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-6 md:p-8 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+                <h3 className="font-bold text-white mb-5">Contact Information</h3>
+                <div className="space-y-5">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FiMail className="w-6 h-6 text-primary-600" />
+                    <div className="w-11 h-11 bg-primary-500/30 border border-primary-400/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FiMail className="w-5 h-5 text-primary-300" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 mb-1">Registration Enquiries</p>
-                      <a href="mailto:sarsyc@saywhat.org.zw" className="text-primary-600 hover:underline">
+                      <p className="font-medium text-white mb-1">Registration Enquiries</p>
+                      <a href="mailto:sarsyc@saywhat.org.zw" className="text-primary-300 hover:text-amber-300 transition-colors">
                         sarsyc@saywhat.org.zw
                       </a>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FiMail className="w-6 h-6 text-primary-600" />
+                    <div className="w-11 h-11 bg-primary-500/30 border border-primary-400/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FiMail className="w-5 h-5 text-primary-300" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 mb-1">Research Inquiries</p>
-                      <a href="mailto:researchunit@saywhat.org.zw" className="text-primary-600 hover:underline">
+                      <p className="font-medium text-white mb-1">Research Inquiries</p>
+                      <a href="mailto:researchunit@saywhat.org.zw" className="text-primary-300 hover:text-amber-300 transition-colors">
                         researchunit@saywhat.org.zw
                       </a>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FiPhone className="w-6 h-6 text-primary-600" />
+                    <div className="w-11 h-11 bg-primary-500/30 border border-primary-400/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FiPhone className="w-5 h-5 text-primary-300" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 mb-1">Phone</p>
+                      <p className="font-medium text-white mb-1">Phone</p>
                       <div className="space-y-1">
-                        <a href="tel:+263782702887" className="block text-primary-600 hover:underline">
+                        <a href="tel:+263782702887" className="block text-primary-300 hover:text-amber-300 transition-colors">
                           +263 78 270 2887 (Zimbabwe)
                         </a>
-                        <a href="tel:+264816279224" className="block text-primary-600 hover:underline">
+                        <a href="tel:+264816279224" className="block text-primary-300 hover:text-amber-300 transition-colors">
                           +264 81 627 9224 (Namibia)
                         </a>
                       </div>
@@ -256,12 +263,12 @@ export default function ContactPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FiMapPin className="w-6 h-6 text-primary-600" />
+                    <div className="w-11 h-11 bg-primary-500/30 border border-primary-400/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FiMapPin className="w-5 h-5 text-primary-300" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 mb-1">Address</p>
-                      <p className="text-gray-600 text-sm">
+                      <p className="font-medium text-white mb-1">Address</p>
+                      <p className="text-white/70 text-sm">
                         SAYWHAT Secretariat<br />
                         Windhoek, Namibia
                       </p>
@@ -271,55 +278,55 @@ export default function ContactPage() {
               </div>
 
               {/* Social Media */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h3 className="font-bold text-gray-900 mb-6">Follow Us</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-6 md:p-8 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+                <h3 className="font-bold text-white mb-5">Follow Us</h3>
+                <div className="grid grid-cols-2 gap-3">
                   <a
                     href="https://facebook.com/saywhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center p-4 rounded-lg border-2 border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-all group"
+                    className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all group"
                   >
-                    <FiFacebook className="w-8 h-8 text-gray-400 group-hover:text-blue-600 mb-2" />
-                    <span className="text-sm font-medium">Facebook</span>
+                    <FiFacebook className="w-7 h-7 text-white/60 group-hover:text-blue-400 mb-2" />
+                    <span className="text-sm font-medium text-white/80">Facebook</span>
                   </a>
                   <a
                     href="https://twitter.com/saywhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center p-4 rounded-lg border-2 border-gray-200 hover:border-sky-500 hover:bg-sky-50 transition-all group"
+                    className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-sky-400/50 hover:bg-sky-500/10 transition-all group"
                   >
-                    <FiTwitter className="w-8 h-8 text-gray-400 group-hover:text-sky-500 mb-2" />
-                    <span className="text-sm font-medium">Twitter</span>
+                    <FiTwitter className="w-7 h-7 text-white/60 group-hover:text-sky-400 mb-2" />
+                    <span className="text-sm font-medium text-white/80">Twitter</span>
                   </a>
                   <a
                     href="https://instagram.com/saywhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center p-4 rounded-lg border-2 border-gray-200 hover:border-pink-600 hover:bg-pink-50 transition-all group"
+                    className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-pink-400/50 hover:bg-pink-500/10 transition-all group"
                   >
-                    <FiInstagram className="w-8 h-8 text-gray-400 group-hover:text-pink-600 mb-2" />
-                    <span className="text-sm font-medium">Instagram</span>
+                    <FiInstagram className="w-7 h-7 text-white/60 group-hover:text-pink-400 mb-2" />
+                    <span className="text-sm font-medium text-white/80">Instagram</span>
                   </a>
                   <a
                     href="https://linkedin.com/company/saywhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center p-4 rounded-lg border-2 border-gray-200 hover:border-blue-700 hover:bg-blue-50 transition-all group"
+                    className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all group"
                   >
-                    <FiLinkedin className="w-8 h-8 text-gray-400 group-hover:text-blue-700 mb-2" />
-                    <span className="text-sm font-medium">LinkedIn</span>
+                    <FiLinkedin className="w-7 h-7 text-white/60 group-hover:text-blue-400 mb-2" />
+                    <span className="text-sm font-medium text-white/80">LinkedIn</span>
                   </a>
                 </div>
               </div>
 
               {/* Office Hours */}
-              <div className="bg-primary-50 rounded-xl p-6">
-                <h4 className="font-semibold text-gray-900 mb-3">Office Hours</h4>
-                <p className="text-sm text-gray-700">
-                  <strong>Monday - Friday:</strong> 8:00 AM - 5:00 PM (GMT+2)<br />
-                  <strong>Saturday:</strong> Closed<br />
-                  <strong>Sunday:</strong> Closed
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 md:p-6">
+                <h4 className="font-semibold text-white mb-3">Office Hours</h4>
+                <p className="text-sm text-white/70">
+                  <strong className="text-white/90">Monday - Friday:</strong> 8:00 AM - 5:00 PM (GMT+2)<br />
+                  <strong className="text-white/90">Saturday:</strong> Closed<br />
+                  <strong className="text-white/90">Sunday:</strong> Closed
                 </p>
               </div>
             </div>

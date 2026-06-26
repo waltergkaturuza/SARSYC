@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FiCheck, FiStar, FiTrendingUp, FiAward, FiHeart, FiMail, FiZap, FiTarget, FiLoader } from 'react-icons/fi'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -357,12 +358,12 @@ export default function PartnershipsPage() {
                         ))}
                       </ul>
 
-                      <button
-                        className="btn-primary w-full py-2.5 text-sm"
-                        onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}
+                      <Link
+                        href={`/participate/donate?mode=sponsoring&tier=${encodeURIComponent(String(tier.id))}`}
+                        className="btn-primary w-full py-2.5 text-sm text-center block"
                       >
                         Get Started
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 )
@@ -415,11 +416,11 @@ export default function PartnershipsPage() {
       </section>
 
       {/* Expression of Interest Form */}
-      <section id="inquiry-form" className="section bg-gray-50">
+      <section id="inquiry-form" className="py-6 md:py-8 bg-gray-50">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-5">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 Express Your Interest
               </h2>
               <p className="text-lg text-gray-600">
@@ -428,7 +429,7 @@ export default function PartnershipsPage() {
             </div>
 
             {formSubmitted ? (
-              <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FiCheck className="w-10 h-10 text-green-600" />
                 </div>
@@ -441,8 +442,8 @@ export default function PartnershipsPage() {
                 </a>
               </div>
             ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-xl p-8">
-                <div className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-xl p-6 md:p-7">
+                <div className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="organizationName" className="block text-sm font-medium text-gray-700 mb-2">

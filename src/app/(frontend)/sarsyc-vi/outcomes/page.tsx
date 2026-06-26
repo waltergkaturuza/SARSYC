@@ -139,13 +139,13 @@ export default function OutcomesPage() {
       </section>
 
       {/* CTA */}
-      <section className="section bg-primary-600 text-white">
+      <section className="py-6 md:py-8 bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
               Help Us Achieve These Outcomes
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-lg mb-5 text-white/90">
               Your participation at SARSYC VI directly contributes to these outcomes
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   FiHeart, FiArrowLeft, FiLoader, FiCopy, FiCheck,
   FiUser, FiBriefcase, FiMail, FiPhone, FiMessageSquare,
@@ -68,6 +69,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DonatePage() {
+  const searchParams = useSearchParams()
   const [mode, setMode] = useState<Mode>('donating')
   const [donorType, setDonorType] = useState<DonorType>('individual')
   const [firstName, setFirstName] = useState('')
@@ -90,21 +92,38 @@ export default function DonatePage() {
 
   // ── Load sponsorship tiers (same source as /partnerships) ─────────────────
   useEffect(() => {
+    const urlMode = searchParams.get('mode')
+    const urlTier = searchParams.get('tier')
+    const wantsSponsoring = urlMode === 'sponsoring' || !!urlTier
+
     fetch('/api/sponsorship-tiers')
       .then((r) => r.json())
       .then((data) => {
         const loaded: SponsorshipTier[] = data?.tiers ?? []
         setTiers(loaded)
-        if (loaded.length > 0) {
-          const first = loaded[0]
-          setSelectedTier(first)
-          const amt = tierAmountUsd(first)
+        if (loaded.length === 0) return
+
+        const matchedTier = urlTier
+          ? loaded.find((t) => String(t.id) === urlTier) ?? null
+          : null
+        const tierToSelect = matchedTier ?? loaded[0]
+
+        if (wantsSponsoring) {
+          setMode('sponsoring')
+          setSponsorshipCategory('package')
+          setSelectedTier(tierToSelect)
+          const amt = tierAmountUsd(tierToSelect)
           if (amt) setAmountUsd(String(amt))
+          return
         }
+
+        setSelectedTier(tierToSelect)
+        const amt = tierAmountUsd(tierToSelect)
+        if (amt) setAmountUsd(String(amt))
       })
       .catch(() => {/* tiers optional */})
       .finally(() => setTiersLoading(false))
-  }, [])
+  }, [searchParams])
 
   const handleTierSelect = (tierId: string) => {
     const tier = tiers.find((t) => String(t.id) === tierId) ?? null
