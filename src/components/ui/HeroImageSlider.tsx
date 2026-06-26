@@ -28,7 +28,7 @@ export default function HeroImageSlider() {
   }, [])
 
   return (
-    <div className="relative w-full min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden shadow-2xl lg:shadow-md lg:rounded-l-3xl ring-1 ring-gray-200/80 lg:ring-gray-200 bg-white">
+    <div className="relative w-full min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden bg-slate-800/40">
       {slides.map((slide, index) => (
         <div
           key={slide.src}
@@ -56,7 +56,7 @@ export default function HeroImageSlider() {
             type="button"
             onClick={() => setActiveIndex(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              index === activeIndex ? 'w-6 bg-primary-600' : 'w-2 bg-gray-400/80 hover:bg-gray-500'
+              index === activeIndex ? 'w-6 bg-primary-400' : 'w-2 bg-white/40 hover:bg-white/60'
             }`}
             aria-label={`Show slide ${index + 1} of ${slides.length}`}
             aria-current={index === activeIndex ? 'true' : undefined}

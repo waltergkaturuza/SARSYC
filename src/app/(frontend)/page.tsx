@@ -172,28 +172,33 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero Section — headline, photo, intro copy */}
-      <section className="relative overflow-hidden text-gray-900 bg-[#FFF9F0]">
-        <div className="relative w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:gap-y-5">
-            {/* Headline — left column on desktop */}
-            <h1 className="order-1 lg:col-start-1 lg:row-start-1 text-3xl sm:text-4xl md:text-5xl font-bold text-[#1877F2] leading-tight text-center lg:text-left">
-              The 6th Southern African Regional Students and Youth Conference
-            </h1>
+      <section className="relative overflow-hidden bg-slate-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
-            {/* Intro — left column only, wraps within column bounds */}
-            <div className="order-3 lg:col-start-1 lg:row-start-2 min-w-0 flex flex-col gap-4 text-justify break-words">
-              <p className="text-lg md:text-xl font-semibold text-gray-900">SARSYC VI</p>
-              <p className="text-sm md:text-base font-medium text-gray-900">
+        <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:gap-y-5">
+            {/* Intro copy — left column glass card */}
+            <div className="order-1 lg:col-start-1 lg:row-start-1 lg:row-span-2 min-w-0 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8 flex flex-col gap-4 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary-400 leading-tight text-center lg:text-left">
+                The 6th Southern African Regional Students and Youth Conference
+              </h1>
+              <p className="text-lg md:text-xl font-semibold text-white">SARSYC VI</p>
+              <p className="text-sm md:text-base font-medium text-white/90">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </p>
-              <p className="text-sm md:text-base text-gray-800">#DrivingRegionalSolidarity</p>
-              <p className="text-xs sm:text-sm md:text-[15px] text-gray-800 leading-relaxed">
+              <p className="text-sm md:text-base text-primary-300 italic">#DrivingRegionalSolidarity</p>
+              <p className="text-xs sm:text-sm md:text-[15px] text-white/75 leading-relaxed">
                 A flagship, youth-led regional conference convened by{' '}
                 <a
                   href="https://www.saywhat.org.zw"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-900 font-semibold underline hover:text-primary-700 transition-colors"
+                  className="text-primary-300 font-semibold underline hover:text-amber-300 transition-colors"
                 >
                   SAYWHAT
                 </a>
@@ -202,7 +207,7 @@ export default async function HomePage() {
                   href="https://www.unam.edu.na"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-900 font-semibold underline hover:text-primary-700 transition-colors"
+                  className="text-primary-300 font-semibold underline hover:text-amber-300 transition-colors"
                 >
                   University of Namibia (UNAM)
                 </a>
@@ -214,13 +219,15 @@ export default async function HomePage() {
 
             {/* Team photo slider + date/location caption — right column */}
             <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 min-w-0 flex flex-col gap-3">
-              <HeroImageSlider />
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary-400/30 hover:shadow-primary-500/10">
+                <HeroImageSlider />
+              </div>
               <div className="flex justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-900 ring-1 ring-gray-200 shadow-sm">
-                  <FiCalendar className="w-4 h-4 shrink-0" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-lg">
+                  <FiCalendar className="w-4 h-4 shrink-0 text-primary-300" />
                   <span className="text-sm font-medium">August 5-8, 2026</span>
-                  <span className="w-1 h-1 bg-gray-400 rounded-full shrink-0"></span>
-                  <FiMapPin className="w-4 h-4 shrink-0" />
+                  <span className="w-1 h-1 bg-white/40 rounded-full shrink-0" />
+                  <FiMapPin className="w-4 h-4 shrink-0 text-primary-300" />
                   <span className="text-sm font-medium">Windhoek, Namibia</span>
                 </div>
               </div>
