@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
 import Image from 'next/image'
 import SpeakersFilters from '@/components/admin/SpeakersFilters'
+import SpeakerDeleteButton from '@/components/admin/SpeakerDeleteButton'
 import { 
   FiMic, FiPlus, FiEdit, FiStar, FiUser, FiEye 
 } from 'react-icons/fi'
@@ -206,6 +207,7 @@ export default async function SpeakersManagementPage({
                         >
                           <FiEdit className="w-4 h-4" />
                         </Link>
+                        <SpeakerDeleteButton speakerId={String(speaker.id)} label={speaker.name} />
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { del } from '@vercel/blob'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
@@ -61,6 +62,10 @@ export async function PATCH(
         console.log(`✅ Media record created for speaker ${params.id}: ${photoId}`)
       } catch (uploadError: any) {
         console.error('Media insert error on update:', uploadError.message)
+        return NextResponse.json(
+          { error: 'Failed to save new photo', details: uploadError.message },
+          { status: 500 },
+        )
       }
     }
 
@@ -99,12 +104,38 @@ export async function PATCH(
     // Delete old photo if a new one was uploaded and it's different
     if (photoId && oldPhotoId && oldPhotoId !== photoId) {
       try {
+        let oldPhotoUrl: string | null = null
+        try {
+          const oldPhotoDoc = await payload.findByID({
+            collection: 'media',
+            id: oldPhotoId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          oldPhotoUrl =
+            (oldPhotoDoc as { thumbnailURL?: string; url?: string })?.thumbnailURL ||
+            oldPhotoDoc?.url ||
+            null
+        } catch {
+          // Continue with media record deletion even if URL lookup fails
+        }
+
         await payload.delete({
           collection: 'media',
           id: oldPhotoId,
           overrideAccess: true,
         })
         console.log(`🗑️  Deleted old photo ${oldPhotoId} for speaker ${params.id}`)
+
+        if (oldPhotoUrl?.startsWith('https://')) {
+          try {
+            await del(oldPhotoUrl)
+            console.log(`🗑️  Deleted old blob file: ${oldPhotoUrl}`)
+          } catch (blobError: unknown) {
+            const message = blobError instanceof Error ? blobError.message : String(blobError)
+            console.warn(`⚠️  Could not delete old blob file ${oldPhotoUrl}:`, message)
+          }
+        }
       } catch (deleteError: any) {
         // Log but don't fail - old photo cleanup is not critical
         console.warn(`⚠️  Could not delete old photo ${oldPhotoId}:`, deleteError.message)
@@ -127,11 +158,64 @@ export async function DELETE(
 ) {
   try {
     const payload = await getPayloadClient()
-    
+
+    let photoId: string | null = null
+    let photoUrl: string | null = null
+    try {
+      const speaker = await payload.findByID({
+        collection: 'speakers',
+        id: params.id,
+        depth: 1,
+        overrideAccess: true,
+      })
+      photoId =
+        typeof speaker.photo === 'string'
+          ? speaker.photo
+          : (speaker.photo as { id?: string })?.id || null
+
+      if (photoId) {
+        try {
+          const photoDoc = await payload.findByID({
+            collection: 'media',
+            id: photoId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          photoUrl =
+            (photoDoc as { thumbnailURL?: string; url?: string })?.thumbnailURL ||
+            photoDoc?.url ||
+            null
+        } catch (photoErr: unknown) {
+          const message = photoErr instanceof Error ? photoErr.message : String(photoErr)
+          console.warn('Could not fetch speaker photo for deletion:', message)
+        }
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn('Could not fetch speaker for photo cleanup:', message)
+    }
+
     await payload.delete({
       collection: 'speakers',
       id: params.id,
+      overrideAccess: true,
     })
+
+    if (photoId && photoUrl?.startsWith('https://')) {
+      try {
+        await del(photoUrl)
+        console.log(`🗑️  Deleted blob file: ${photoUrl}`)
+        await payload.delete({
+          collection: 'media',
+          id: photoId,
+          overrideAccess: true,
+        })
+        console.log(`🗑️  Deleted photo media record ${photoId}`)
+      } catch (deleteError: unknown) {
+        const message = deleteError instanceof Error ? deleteError.message : String(deleteError)
+        console.warn('Could not delete speaker photo after deletion:', message)
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

@@ -77,11 +77,12 @@ export async function POST(request: NextRequest) {
         .replace(/-+/g, '-')
         .substring(0, 50) // Limit length
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      filename = `Speakers/photos/${nameHash}.${fileExt}`
+      // Always use a unique path so replaced photos get a fresh URL (avoids CDN/browser cache on overwrite)
+      filename = `Speakers/photos/${nameHash}-${Date.now()}.${fileExt}`
       
       console.log('📧 Using speaker name-based filename:', filename)
       
-      // Check for existing files with this name-based pattern and delete them
+      // Remove older uploads for this speaker so Blob storage does not accumulate
       try {
         const existingBlobs = await list({
           prefix: `Speakers/photos/${nameHash}`,

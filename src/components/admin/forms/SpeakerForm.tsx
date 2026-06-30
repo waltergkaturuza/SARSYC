@@ -6,6 +6,17 @@ import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader } from 'react-icons/fi'
 import Image from 'next/image'
 import { countries } from '@/lib/countries'
+import SpeakerDeleteButton from '@/components/admin/SpeakerDeleteButton'
+
+function getSpeakerPhotoBlobUrl(photo: unknown): string {
+  if (!photo || typeof photo !== 'object') return ''
+  const record = photo as { url?: string; thumbnailURL?: string }
+  const isBlob = (url: string) =>
+    url.includes('blob.vercel-storage.com') || url.includes('public.blob.vercel-storage.com')
+  if (record.thumbnailURL && isBlob(record.thumbnailURL)) return record.thumbnailURL
+  if (record.url && isBlob(record.url)) return record.url
+  return ''
+}
 
 interface SpeakerData {
   name: string
@@ -39,6 +50,9 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoChanged, setPhotoChanged] = useState(false)
+
+  const initialPhotoUrl = getSpeakerPhotoBlobUrl(initialData?.photo)
 
   const [formData, setFormData] = useState<SpeakerData>({
     name: initialData?.name || '',
@@ -46,7 +60,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     title: initialData?.title || '',
     organization: initialData?.organization || '',
     country: initialData?.country || '',
-    photo: initialData?.photo?.url || '',
+    photo: initialPhotoUrl,
     bio: initialData?.bio || '',
     type: initialData?.type || [],
     abstractTitle: initialData?.abstractTitle || '',
@@ -65,10 +79,10 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
   })
 
   useEffect(() => {
-    if (initialData?.photo?.url) {
-      setPreviewImage(initialData.photo.url)
+    if (initialPhotoUrl) {
+      setPreviewImage(initialPhotoUrl)
     }
-  }, [initialData])
+  }, [initialPhotoUrl])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -107,6 +121,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       const data = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error || 'Upload failed')
       setFormData(prev => ({ ...prev, photo: data.url as string }))
+      setPhotoChanged(true)
     } catch (err: any) {
       setErrors(prev => ({ ...prev, photo: err.message || 'Photo upload failed' }))
     } finally {
@@ -148,7 +163,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     if (!formData.country.trim()) newErrors.country = 'Country is required'
     const hasValidPhoto =
       (typeof formData.photo === 'string' && formData.photo.startsWith('https://')) ||
-      (initialData?.photo && mode === 'edit')
+      (mode === 'edit' && initialPhotoUrl && !photoChanged)
     if (!hasValidPhoto) newErrors.photo = mode === 'edit' ? 'Please upload a new photo' : 'Photo is required'
     if (!formData.bio.trim()) newErrors.bio = 'Biography is required'
     if (formData.type.length === 0) newErrors.type = 'At least one speaker type is required'
@@ -189,8 +204,12 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
-      // Only send photoUrl when it's a real Blob/external URL
-      if (typeof formData.photo === 'string' && formData.photo.startsWith('https://')) {
+      // Only send photoUrl when the admin uploaded a new photo
+      if (
+        photoChanged &&
+        typeof formData.photo === 'string' &&
+        formData.photo.startsWith('https://')
+      ) {
         submitData.append('photoUrl', formData.photo)
       }
       
@@ -301,6 +320,10 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
                     alt="Preview"
                     fill
                     className="object-cover"
+                    unoptimized={
+                      previewImage.startsWith('data:') ||
+                      previewImage.includes('blob.vercel-storage.com')
+                    }
                   />
                 </div>
               )}
@@ -514,7 +537,17 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       )}
 
       {/* Submit Button */}
-      <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+      <div className="flex items-center justify-between gap-4 pt-6 border-t border-gray-200">
+        {mode === 'edit' && initialData?.id ? (
+          <SpeakerDeleteButton
+            speakerId={String(initialData.id)}
+            label={formData.name || 'this speaker'}
+            variant="button"
+          />
+        ) : (
+          <div />
+        )}
+        <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={() => router.back()}
@@ -539,6 +572,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
             </>
           )}
         </button>
+        </div>
       </div>
     </form>
   )
