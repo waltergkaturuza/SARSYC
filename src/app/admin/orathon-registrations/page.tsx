@@ -64,7 +64,7 @@ export default async function AdminOrathonRegistrationsPage({ searchParams }: Or
       <div className="w-full py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Orathon Registrations</h1>
-          <p className="text-gray-600 mt-2">Manage registrations for the Orathon Marathon Activity (Day 4)</p>
+          <p className="text-gray-600 mt-2">Manage registrations for the Orathon (November 2026 post-conference activity)</p>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-amber-900 mb-2">Setup required</h2>
@@ -98,7 +98,7 @@ export default async function AdminOrathonRegistrationsPage({ searchParams }: Or
           <FiActivity className="w-8 h-8 text-primary-600" />
           <h1 className="text-3xl font-bold text-gray-900">Orathon Registrations</h1>
         </div>
-        <p className="text-gray-600 mt-2">Manage registrations for the Orathon Marathon Activity (Day 4)</p>
+        <p className="text-gray-600 mt-2">Manage registrations for the Orathon (November 2026 post-conference activity)</p>
       </div>
 
       {/* Stats */}

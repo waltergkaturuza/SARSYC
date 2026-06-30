@@ -270,8 +270,12 @@ export default function SchedulePage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Orathon</h3>
+                  <p className="text-gray-700 leading-relaxed mb-2">
+                    The Orathon is a separate post-conference activity in <strong>November 2026</strong> across
+                    Namibia, Malawi, Zambia, and Zimbabwe — not part of the August 5–7 conference programme in Windhoek.
+                  </p>
                   <p className="text-gray-700 leading-relaxed mb-4">
-                    Join us for advocacy runs (8km & 16km) focusing on ending GBV and preventing NCDs.
+                    Join advocacy runs (8km & 16km) focusing on ending GBV and preventing NCDs.
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4">
@@ -287,6 +291,9 @@ export default function SchedulePage() {
                 <p className="text-gray-600 text-sm">
                   <strong>Focus:</strong> Ending GBV & Preventing NCDs
                 </p>
+                <Link href="/participate/register-orathon" className="btn-primary inline-flex mt-4">
+                  Register for Orathon
+                </Link>
               </div>
             </div>
           </div>

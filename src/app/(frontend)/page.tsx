@@ -225,7 +225,7 @@ export default async function HomePage() {
               <div className="flex justify-center lg:justify-start">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-lg">
                   <FiCalendar className="w-4 h-4 shrink-0 text-primary-300" />
-                  <span className="text-sm font-medium">August 5-8, 2026</span>
+                  <span className="text-sm font-medium">August 5-7, 2026</span>
                   <span className="w-1 h-1 bg-white/40 rounded-full shrink-0" />
                   <FiMapPin className="w-4 h-4 shrink-0 text-primary-300" />
                   <span className="text-sm font-medium">Windhoek, Namibia</span>

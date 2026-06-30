@@ -863,7 +863,7 @@ export default function VolunteerPage() {
                         { value: 'aug-5', label: 'August 5 (Day 1)' },
                         { value: 'aug-6', label: 'August 6 (Day 2)' },
                         { value: 'aug-7', label: 'August 7 (Day 3)' },
-                        { value: 'aug-8', label: 'August 8 (Cleanup)' },
+                        { value: 'aug-8', label: 'August 8 (Venue Cleanup)' },
                       ].map((day) => (
                         <label key={day.value} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                           <input

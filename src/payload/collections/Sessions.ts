@@ -53,7 +53,7 @@ const Sessions: CollectionConfig = {
         { label: 'Day 1', value: 'day-1' },
         { label: 'Day 2', value: 'day-2' },
         { label: 'Day 3', value: 'day-3' },
-        { label: 'Day 4', value: 'day-4' },
+        { label: 'Orathon (November 2026)', value: 'day-4' },
       ],
       defaultValue: 'day-1',
     },
