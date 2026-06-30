@@ -9,6 +9,7 @@ const speakerTypes = [
   { value: 'moderator', label: 'Panel Moderators' },
   { value: 'facilitator', label: 'Workshop Facilitators' },
   { value: 'abstract-presenter', label: 'Abstract Presenters' },
+  { value: 'abstract-reviewer', label: 'Abstract Reviewers' },
 ]
 
 export default function SpeakerFilters() {

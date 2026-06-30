@@ -336,6 +336,7 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
               { value: 'facilitator', label: 'Workshop Facilitator' },
               { value: 'presenter', label: 'Session Presenter' },
               { value: 'abstract-presenter', label: 'Abstract Presenter' },
+              { value: 'abstract-reviewer', label: 'Abstract Reviewer' },
             ].map(({ value, label }) => (
               <label key={value} className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                 <input

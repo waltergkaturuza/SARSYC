@@ -7,6 +7,16 @@ import SocialLinks from '@/components/speakers/SocialLinks'
 import SpeakerFilters from '@/components/speakers/SpeakerFilters'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 
+const SECTION_ONLY_SPEAKER_TYPES = new Set(['abstract-presenter', 'abstract-reviewer'])
+
+function isSectionOnlySpeaker(speaker: any): boolean {
+  return (
+    Array.isArray(speaker.type) &&
+    speaker.type.length === 1 &&
+    SECTION_ONLY_SPEAKER_TYPES.has(speaker.type[0])
+  )
+}
+
 // Helper function to get speaker photo URL (Blob-safe)
 function getSpeakerPhotoUrl(photo: any): string | null {
   if (!photo) return null
@@ -130,12 +140,13 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
   
   let speakers: any[] = []
   let abstractPresenters: any[] = []
+  let abstractReviewers: any[] = []
 
   try {
     const payload = await getPayloadClient()
     await ensureSpeakersLatestColumns(payload)
 
-    // Build where clause for filtering (featured speakers only, excluding abstract-presenters)
+    // Build where clause for filtering (featured speakers only, excluding section-only profiles)
     const where: any = {
       featured: { equals: true },
     }
@@ -151,11 +162,9 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
       depth: 1,
       overrideAccess: true,
     })
-    // Keep non-abstract-presenters in main list
+    // Keep section-only profiles out of the main featured grid
     const allFeatured = speakersResult.docs || []
-    speakers = allFeatured.filter(
-      (s: any) => !(Array.isArray(s.type) && s.type.length === 1 && s.type[0] === 'abstract-presenter')
-    )
+    speakers = allFeatured.filter((s: any) => !isSectionOnlySpeaker(s))
 
     // Fetch abstract presenters separately (all, not just featured)
     const abstractResult = await payload.find({
@@ -167,6 +176,17 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
       overrideAccess: true,
     })
     abstractPresenters = abstractResult.docs || []
+
+    // Fetch abstract reviewers separately (all, not just featured)
+    const reviewerResult = await payload.find({
+      collection: 'speakers',
+      where: { type: { contains: 'abstract-reviewer' } },
+      limit: 1000,
+      sort: 'name',
+      depth: 1,
+      overrideAccess: true,
+    })
+    abstractReviewers = reviewerResult.docs || []
   } catch (error) {
     console.error('Error fetching speakers:', error)
   }
@@ -438,6 +458,89 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                             &ldquo;{speaker.abstractTitle}&rdquo;
                           </p>
                         )}
+                        {speaker.title && (
+                          <p className="text-xs text-white/60">{speaker.title}</p>
+                        )}
+                        {speaker.organization && (
+                          <p className="text-xs text-white/45">{speaker.organization}</p>
+                        )}
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
+                          <SocialLinks
+                            twitter={twitterHandle}
+                            linkedin={linkedinUrl}
+                            website={websiteUrl}
+                            variant="card"
+                          />
+                          <Link
+                            href={`/programme/speakers/${speaker.id}`}
+                            className="relative z-20 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-400 hover:text-amber-300 transition-colors flex-shrink-0"
+                          >
+                            View Profile
+                            <FiArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Abstract Reviewers */}
+          {abstractReviewers.length > 0 && (
+            <div className="mt-16">
+              <div className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Abstract Reviewers</h2>
+                <p className="text-white/60 max-w-2xl">
+                  Expert reviewers who evaluated abstract submissions for the SARSYC VI Research Indaba.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {abstractReviewers.map((speaker: any) => {
+                  const photoUrl = getSpeakerPhotoUrl(speaker.photo)
+                  const initials = getInitials(speaker.name)
+                  const twitterHandle = speaker.socialMedia?.twitter
+                  const linkedinUrl = speaker.socialMedia?.linkedin
+                  const websiteUrl = speaker.socialMedia?.website
+                  return (
+                    <div
+                      key={speaker.id}
+                      className="group relative flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-secondary-500/20 hover:border-secondary-400/40 hover:bg-white/15"
+                    >
+                      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-secondary-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                      <Link
+                        href={`/programme/speakers/${speaker.id}`}
+                        className="absolute inset-0 z-0"
+                        aria-label={`View ${speaker.name}'s profile`}
+                      />
+
+                      <div className="relative z-10 w-full sm:w-44 flex-shrink-0 bg-slate-800/60 overflow-hidden" style={{ minHeight: '180px' }}>
+                        {photoUrl ? (
+                          <img
+                            src={photoUrl}
+                            alt={speaker.name}
+                            className="w-full h-full object-contain sm:object-cover sm:object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-secondary-700 to-secondary-500 flex items-center justify-center">
+                            <span className="text-white text-5xl font-bold opacity-60">{initials}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 bg-secondary-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">
+                            REVIEWER
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-2 relative z-10 flex-1 min-w-0">
+                        <h3 className="text-base font-bold text-primary-400 leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                          {speaker.name}
+                        </h3>
                         {speaker.title && (
                           <p className="text-xs text-white/60">{speaker.title}</p>
                         )}

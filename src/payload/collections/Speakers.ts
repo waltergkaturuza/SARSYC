@@ -90,6 +90,7 @@ const Speakers: CollectionConfig = {
         { label: 'Workshop Facilitator', value: 'facilitator' },
         { label: 'Session Presenter', value: 'presenter' },
         { label: 'Abstract Presenter', value: 'abstract-presenter' },
+        { label: 'Abstract Reviewer', value: 'abstract-reviewer' },
       ],
     },
     {
