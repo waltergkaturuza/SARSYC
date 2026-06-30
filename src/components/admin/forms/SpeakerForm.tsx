@@ -18,6 +18,7 @@ interface SpeakerData {
   type: string[]
   abstractTitle: string
   featured: boolean
+  featuredOrder: number | ''
   socialMedia: {
     twitter?: string
     linkedin?: string
@@ -50,6 +51,10 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
     type: initialData?.type || [],
     abstractTitle: initialData?.abstractTitle || '',
     featured: initialData?.featured || false,
+    featuredOrder:
+      typeof initialData?.featuredOrder === 'number' && Number.isFinite(initialData.featuredOrder)
+        ? initialData.featuredOrder
+        : '',
     socialMedia: initialData?.socialMedia || {
       twitter: '',
       linkedin: '',
@@ -178,6 +183,9 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
         submitData.append('abstractTitle', formData.abstractTitle.trim())
       }
       submitData.append('featured', formData.featured.toString())
+      if (formData.featured && formData.featuredOrder !== '') {
+        submitData.append('featuredOrder', String(formData.featuredOrder))
+      }
       submitData.append('socialMedia', JSON.stringify(formData.socialMedia))
       submitData.append('expertise', JSON.stringify(formData.expertise.filter(e => e.trim())))
       
@@ -453,19 +461,49 @@ export default function SpeakerForm({ initialData, mode }: SpeakerFormProps) {
       </div>
 
       {/* Featured */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={formData.featured}
-            onChange={(e) => handleInputChange('featured', e.target.checked)}
+            onChange={(e) => {
+              const checked = e.target.checked
+              handleInputChange('featured', checked)
+              if (!checked) {
+                handleInputChange('featuredOrder', '')
+              }
+            }}
             className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
           />
           <div>
             <div className="font-medium text-gray-900">Feature on Homepage</div>
-            <div className="text-sm text-gray-500">Display this speaker prominently on the homepage</div>
+            <div className="text-sm text-gray-500">
+              Mark as featured. Only the top 3 by display order appear on the homepage; all featured speakers still show on the speakers page.
+            </div>
           </div>
         </label>
+
+        {formData.featured && (
+          <FormField
+            label="Homepage Display Order"
+            hint="Use 1, 2, or 3 for the homepage row. Lower numbers appear first."
+          >
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={formData.featuredOrder}
+              onChange={(e) =>
+                handleInputChange(
+                  'featuredOrder',
+                  e.target.value === '' ? '' : Number(e.target.value),
+                )
+              }
+              className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="e.g. 1"
+            />
+          </FormField>
+        )}
       </div>
 
       {/* Error Message */}

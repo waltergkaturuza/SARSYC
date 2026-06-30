@@ -14,6 +14,10 @@ export async function ensureSpeakersLatestColumns(payload: Payload): Promise<voi
     `ALTER TABLE "speakers" ADD COLUMN IF NOT EXISTS "abstract_title" varchar`,
   )
 
+  await (payload.db as any).drizzle.execute(
+    `ALTER TABLE "speakers" ADD COLUMN IF NOT EXISTS "featured_order" numeric`,
+  )
+
   // Add abstract-presenter to the speakers type enum if missing.
   // ALTER TYPE ... ADD VALUE cannot run inside a transaction, so we check first.
   await (payload.db as any).drizzle.execute(`

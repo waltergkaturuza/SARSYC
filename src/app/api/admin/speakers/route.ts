@@ -21,6 +21,11 @@ export async function POST(request: NextRequest) {
     const bio = formData.get('bio') as string
     const type = JSON.parse(formData.get('type') as string || '[]')
     const featured = formData.get('featured') === 'true'
+    const featuredOrderRaw = formData.get('featuredOrder') as string | null
+    const featuredOrder =
+      featured && featuredOrderRaw && featuredOrderRaw.trim() !== ''
+        ? Number.parseInt(featuredOrderRaw, 10)
+        : null
     const socialMedia = JSON.parse(formData.get('socialMedia') as string || '{}')
     const expertise = JSON.parse(formData.get('expertise') as string || '[]')
     const abstractTitle = formData.get('abstractTitle') as string | null
@@ -72,6 +77,7 @@ export async function POST(request: NextRequest) {
         type,
         ...(abstractTitle ? { abstractTitle } : {}),
         featured,
+        featuredOrder: Number.isFinite(featuredOrder) ? featuredOrder : null,
         socialMedia,
         expertise: expertise.map((area: string) => ({ area })),
         photo: /^\d+$/.test(photoId) ? Number(photoId) : photoId,

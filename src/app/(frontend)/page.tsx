@@ -3,6 +3,11 @@ import { FiCalendar, FiMapPin, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiArrowR
 import CountdownTimer from '@/components/ui/CountdownTimer'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import { getPayloadClient } from '@/lib/payload'
+import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
+import {
+  HOMEPAGE_FEATURED_SPEAKER_LIMIT,
+  sortFeaturedSpeakersForHomepage,
+} from '@/lib/featuredSpeakers'
 
 // This will be fetched from Payload CMS in production
 const stats = [
@@ -135,17 +140,20 @@ export default async function HomePage() {
   let featuredSpeakers: any[] = []
   try {
     const payload = await getPayloadClient()
+    await ensureSpeakersLatestColumns(payload)
     const speakersResult = await payload.find({
       collection: 'speakers',
       where: {
         featured: { equals: true },
       },
-      limit: 6,
-      sort: '-createdAt',
-      depth: 1, // Minimal depth - Blob URLs don't need deep population
-      overrideAccess: true, // Ensure all speakers are fetched regardless of access control
+      limit: 100,
+      depth: 1,
+      overrideAccess: true,
     })
-    featuredSpeakers = speakersResult.docs || []
+    featuredSpeakers = sortFeaturedSpeakersForHomepage(speakersResult.docs || []).slice(
+      0,
+      HOMEPAGE_FEATURED_SPEAKER_LIMIT,
+    )
     
     // Log for debugging
     console.log(`✅ Fetched ${featuredSpeakers.length} featured speakers`)

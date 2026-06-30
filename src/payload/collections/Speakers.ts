@@ -7,7 +7,7 @@ const Speakers: CollectionConfig = {
   slug: 'speakers',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'organization', 'type', 'featured'],
+    defaultColumns: ['name', 'organization', 'type', 'featured', 'featuredOrder'],
     group: 'Conference',
   },
   access: {
@@ -115,6 +115,16 @@ const Speakers: CollectionConfig = {
       type: 'checkbox',
       label: 'Feature on Homepage',
       defaultValue: false,
+    },
+    {
+      name: 'featuredOrder',
+      type: 'number',
+      label: 'Homepage Display Order',
+      admin: {
+        description:
+          'Only the top 3 featured speakers appear on the homepage. Use 1, 2, 3, etc. Lower numbers appear first.',
+        condition: (data: any) => Boolean(data.featured),
+      },
     },
     {
       name: 'socialMedia',

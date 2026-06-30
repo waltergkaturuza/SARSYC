@@ -166,9 +166,16 @@ export default async function SpeakersManagementPage({
                       );
                     })()}
                     {speaker.featured && (
-                      <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                        <FiStar className="w-3 h-3" />
-                        Featured
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        <div className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          <FiStar className="w-3 h-3" />
+                          Featured
+                        </div>
+                        {typeof speaker.featuredOrder === 'number' && Number.isFinite(speaker.featuredOrder) && (
+                          <div className="bg-white/95 text-gray-800 px-2 py-1 rounded-full text-xs font-medium shadow-sm">
+                            Homepage #{speaker.featuredOrder}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
