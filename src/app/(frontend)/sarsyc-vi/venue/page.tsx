@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FiMapPin, FiHome, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
+import { FiMapPin, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -12,7 +12,9 @@ const hotels = [
     distance: 'Approx. 7 km from NIPAM',
     price: 'Check latest rates',
     features: ['City views', 'Restaurant', 'Conference-friendly'],
-    bookingUrl: 'https://all.accor.com/hotel/B1Q8/index.en.shtml',
+    image: '/Movenpick Hotel Windhoek.jpg',
+    bookingUrl:
+      'https://www.guestreservations.com/movenpick-hotel-windhoek/booking?utm_source=google&utm_medium=cpc&utm_campaign=21835622398&gad_source=1&gad_campaignid=21831759509&gbraid=0AAAAADiMQMbYw4S1GTVmHsyBYwNUYDRL9&gclid=Cj0KCQjwjb3SBhDgARIsAMKiWzhUisiQ9_YEYH-mMIcWKAT0t-hiorrRqqQsD2bBLR0UJp9fMxXkb60aAousEALw_wcB&ctTriggered=true',
   },
   {
     name: 'Mercure Hotel Windhoek',
@@ -20,7 +22,9 @@ const hotels = [
     distance: 'Approx. 7 km from NIPAM',
     price: 'Check latest rates',
     features: ['Pool', 'Restaurant', 'Business facilities'],
-    bookingUrl: 'https://all.accor.com/hotel/B1R0/index.en.shtml',
+    image: '/Mercure Hotel Windhoek.jpg',
+    bookingUrl:
+      'https://all.accor.com/booking/en/accor/hotels/windhoek-namibia?compositions=1&stayplus=false&order_hotels_by=RECOMMENDATION&snu=false&hideWDR=false&productCode=null&accessibleRooms=false&hideHotelDetails=false&filters=eyJicmFuZHMiOlsiTUVSIl19&utm_term=mar&gclid=Cj0KCQjwjb3SBhDgARIsAMKiWziYieFNSzT1KBF6etnsmfIhVqk9IUHB3ZxAGeA2XOOT0uS04aX4aAkQjEALw_wcB&utm_campaign=ppc-mer-mar-goo-af-en-dom_rest-mix-s&utm_medium=cpc&wiz_campaign=20755702701&utm_source=google&utm_content=af-en-NA-V4911',
   },
   {
     name: 'Hilton Windhoek',
@@ -28,7 +32,9 @@ const hotels = [
     distance: 'Approx. 5 km from NIPAM',
     price: 'Check latest rates',
     features: ['Rooftop pool', 'Gym', 'Central location'],
-    bookingUrl: 'https://www.hilton.com/en/hotels/wdhhitw-hilton-windhoek/',
+    image: '/Hilton Windhoek.jpg',
+    bookingUrl:
+      'https://www.booking.com/hotel/na/hilton-windhoek.en-us.html?aid=2378099&label=olr%3ACj0KCQjwjb3SBhDgARIsAMKiWzjiiXg8IRXp2h3DPskN52swwYYDuy5QNGGeNgvyvB2YHEJJcvJe3QcaAqW4EALw_wcB&sid=fa35875b62d9b3bc332d443137d4f82d&all_sr_blocks=30460502_94401958_2_42_0&checkin=2026-07-16&checkout=2026-07-17&dest_id=-2587496&dest_type=city&dist=0&group_adults=2&group_children=0&hapos=1&highlighted_blocks=30460502_94401958_2_42_0&hpos=1&matching_block_id=30460502_94401958_2_42_0&no_rooms=1&req_adults=2&req_children=0&room1=A%2CA&sb_price_type=total&sr_order=popularity&sr_pri_blocks=30460502_94401958_2_42_0__225250&srepoch=1783593698&srpvid=5e624b24e80b0a08&type=total&ucfs=1&#hotelTmpl',
   },
 ]
 
@@ -198,16 +204,25 @@ export default function VenuePage() {
 
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch mb-8">
             <div className="lg:col-span-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
-              <div className="relative w-full aspect-[16/10] bg-gray-100">
+              <div className="relative w-full aspect-[4/3] bg-gray-50">
+                <Image
+                  src="/NIPAM.jpg"
+                  alt="Namibia Institute of Public Administration and Management (NIPAM)"
+                  fill
+                  className="object-contain p-1"
+                  sizes="(max-width: 1024px) 100vw, 42vw"
+                  priority
+                />
+                <div className="absolute top-3 left-3 rounded-lg bg-white/95 p-2 shadow-md border border-gray-200">
                   <Image
-                    src="/NIPAM.jpg"
-                    alt="Namibia Institute of Public Administration and Management (NIPAM)"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority
+                    src="/NIPAM logo.png"
+                    alt="NIPAM logo"
+                    width={72}
+                    height={72}
+                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
                   />
                 </div>
+              </div>
 
                 <div className="p-6 md:p-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -271,48 +286,59 @@ export default function VenuePage() {
 
       {/* Accommodation */}
       <section className="py-8 md:py-10 bg-gray-50">
-        <div className="container-custom">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <h2 className="section-title">Recommended Accommodation</h2>
           <p className="section-subtitle">
             We've negotiated special rates with these hotels for {venue.conferenceEdition || 'SARSYC VI'} participants
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {hotels.map((hotel) => (
-              <div key={hotel.name} className="card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold px-3 py-1 bg-primary-100 text-primary-600 rounded-full">
+              <div
+                key={hotel.name}
+                className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg flex flex-col"
+              >
+                <div className="relative w-full aspect-[16/10] bg-gray-100">
+                  <Image
+                    src={hotel.image}
+                    alt={hotel.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <span className="absolute top-3 right-3 text-xs font-bold px-3 py-1 bg-white/95 text-primary-600 rounded-full shadow-sm">
                     {hotel.category}
                   </span>
-                  <FiHome className="w-6 h-6 text-gray-400" />
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{hotel.distance}</p>
-                <div className="text-2xl font-bold text-primary-600 mb-4">{hotel.price}</div>
+                <div className="p-5 md:p-6 flex flex-col flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
+                  <p className="text-sm text-gray-600 mb-2">{hotel.distance}</p>
+                  <div className="text-lg font-bold text-primary-600 mb-4">{hotel.price}</div>
 
-                <ul className="space-y-2 mb-6">
-                  {hotel.features.map((feature) => (
-                    <li key={feature} className="text-sm text-gray-600 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="space-y-2 mb-6 flex-1">
+                    {hotel.features.map((feature) => (
+                      <li key={feature} className="text-sm text-gray-600 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
 
-                <a
-                  href={hotel.bookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary w-full text-sm inline-flex items-center justify-center"
-                >
-                  Book Now
-                </a>
+                  <a
+                    href={hotel.bookingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary w-full text-sm inline-flex items-center justify-center"
+                  >
+                    Book Now
+                  </a>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-8">
             <p className="text-gray-600 mb-4">
               Use booking code <strong className="text-primary-600">SARSYC2026</strong> for special rates
             </p>
