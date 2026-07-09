@@ -3,17 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FiMapPin, FiHome, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-
-const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="bg-gray-200 rounded-2xl flex items-center justify-center" style={{ height: '500px' }}>
-      <div className="text-gray-500">Loading map...</div>
-    </div>
-  ),
-})
-import { showToast } from '@/lib/toast'
+import Image from 'next/image'
 
 const hotels = [
   {
@@ -202,55 +192,67 @@ export default function VenuePage() {
       </section>
 
       {/* Conference Venue */}
-      <section className="section bg-white">
-        <div className="container-custom">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="section-title">Conference Venue</h2>
-            
-            <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  {venue.venueName}
-                </h3>
-                {venue.conferenceEdition && (
-                  <p className="text-sm text-primary-600 font-semibold mb-2">
-                    {venue.conferenceEdition}
+      <section className="py-8 md:py-10 bg-white">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          <h2 className="section-title">Conference Venue</h2>
+
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch mb-8">
+            <div className="lg:col-span-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+              <div className="relative w-full aspect-[16/10] bg-gray-100">
+                  <Image
+                    src="/NIPAM.jpg"
+                    alt="Namibia Institute of Public Administration and Management (NIPAM)"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority
+                  />
+                </div>
+
+                <div className="p-6 md:p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    {venue.venueName}
+                  </h3>
+                  {venue.conferenceEdition && (
+                    <p className="text-sm text-primary-600 font-semibold mb-3">
+                      {venue.conferenceEdition}
+                    </p>
+                  )}
+                  <p className="text-base text-gray-600 mb-6">
+                    {venue.description || 'A state-of-the-art facility equipped with modern conference amenities and accessibility features.'}
                   </p>
-                )}
-                <p className="text-lg text-gray-600 mb-6">
-                  {venue.description || 'A state-of-the-art facility equipped with modern conference amenities and accessibility features.'}
-                </p>
 
-                <div className="space-y-4">
-                  {venue.address && (
-                    <div className="flex items-start gap-3">
-                      <FiMapPin className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
-                      <div>
-                        <div className="font-semibold text-gray-900">Address</div>
-                        <div className="text-gray-600 whitespace-pre-line">{venue.address}</div>
-                        <div className="text-gray-600">{venue.city}, {venue.country}</div>
+                  <div className="space-y-5">
+                    {venue.address && (
+                      <div className="flex items-start gap-3">
+                        <FiMapPin className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-semibold text-gray-900">Address</div>
+                          <div className="text-gray-600 text-sm whitespace-pre-line">{venue.address}</div>
+                          <div className="text-gray-600 text-sm">{venue.city}, {venue.country}</div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {venue.facilities && venue.facilities.length > 0 && (
-                    <div className="flex items-start gap-3">
-                      <FiInfo className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
-                      <div>
-                        <div className="font-semibold text-gray-900">Facilities</div>
-                        <ul className="text-gray-600 text-sm space-y-1">
-                          {venue.facilities.map((facility, index) => (
-                            <li key={index}>• {typeof facility === 'string' ? facility : facility.facility}</li>
-                          ))}
-                        </ul>
+                    {venue.facilities && venue.facilities.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <FiInfo className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-semibold text-gray-900">Facilities</div>
+                          <ul className="text-gray-600 text-sm space-y-1">
+                            {venue.facilities.map((facility, index) => (
+                              <li key={index}>• {typeof facility === 'string' ? facility : facility.facility}</li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Venue Map */}
-              <div className="w-full h-[600px] lg:h-[700px]">
+              <div className="lg:col-span-7 w-full min-h-[420px] lg:min-h-[640px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4369.209186741202!2d17.092214375301378!3d-22.602548379470328!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1c0b1ad1fb90430b%3A0xc22a1c3456400167!2sNamibian%20Institute%20Of%20Public%20Administration%20And%20Management!5e1!3m2!1sen!2szw!4v1783587513593!5m2!1sen!2szw"
                   width="100%"
@@ -259,17 +261,16 @@ export default function VenuePage() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="strict-origin-when-cross-origin"
-                  className="rounded-2xl"
+                  className="h-full w-full"
                   title="NIPAM location map"
                 />
               </div>
             </div>
-          </div>
         </div>
       </section>
 
       {/* Accommodation */}
-      <section className="section bg-gray-50">
+      <section className="py-8 md:py-10 bg-gray-50">
         <div className="container-custom">
           <h2 className="section-title">Recommended Accommodation</h2>
           <p className="section-subtitle">
