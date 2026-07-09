@@ -3,6 +3,10 @@
 import Link from 'next/link'
 import { FiDownload } from 'react-icons/fi'
 import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgrammeSchedule'
+import CultureNightImageSlider from '@/components/programme/CultureNightImageSlider'
+
+const PROGRAMME_SUBTITLE =
+  'A comprehensive three-day program of learning, engagement, and action in Windhoek.'
 
 export default function ProgrammePage() {
   return (
@@ -34,7 +38,19 @@ export default function ProgrammePage() {
         </div>
       </section>
 
-      <ConferenceProgrammeSchedule variant="page" />
+      <section className="py-8 md:py-10 bg-gray-50">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          <h2 className="section-title">Program Schedule</h2>
+          <p className="section-subtitle text-center max-w-3xl mx-auto mb-8">{PROGRAMME_SUBTITLE}</p>
+
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-10 items-start">
+            <ConferenceProgrammeSchedule variant="cards-only" />
+            <div className="md:sticky md:top-8">
+              <CultureNightImageSlider />
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

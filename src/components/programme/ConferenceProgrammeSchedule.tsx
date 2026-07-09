@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { FiArrowRight } from 'react-icons/fi'
+import CultureNightImageSlider from '@/components/programme/CultureNightImageSlider'
 
 const DEFAULT_SUBTITLE =
   'A comprehensive three-day program of learning, engagement, and action in Windhoek.'
 
 type ConferenceProgrammeScheduleProps = {
-  variant?: 'page' | 'embed'
+  variant?: 'page' | 'embed' | 'cards-only'
   title?: string
   subtitle?: string
   showViewFullLink?: boolean
@@ -18,7 +19,7 @@ export default function ConferenceProgrammeSchedule({
   showViewFullLink = false,
 }: ConferenceProgrammeScheduleProps) {
   const cards = (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="card p-6 lg:p-8">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
@@ -113,12 +114,25 @@ export default function ConferenceProgrammeSchedule({
     </div>
   )
 
+  const scheduleWithSlider = (
+    <div className="grid md:grid-cols-2 gap-8 lg:gap-10 items-start">
+      <div className="order-2 md:order-1">{cards}</div>
+      <div className="order-1 md:order-2 md:sticky md:top-8">
+        <CultureNightImageSlider />
+      </div>
+    </div>
+  )
+
+  if (variant === 'cards-only') {
+    return cards
+  }
+
   if (variant === 'embed') {
     return (
       <>
         <h2 className="section-title">{title}</h2>
         <p className="section-subtitle">{subtitle}</p>
-        {cards}
+        {scheduleWithSlider}
         {showViewFullLink ? (
           <p className="text-center mt-8">
             <Link
@@ -136,10 +150,10 @@ export default function ConferenceProgrammeSchedule({
 
   return (
     <section className="section bg-gray-50">
-      <div className="container-custom">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
         <h2 className="section-title sr-only">{title}</h2>
         <p className="section-subtitle text-center max-w-3xl mx-auto mb-10">{subtitle}</p>
-        {cards}
+        {scheduleWithSlider}
       </div>
     </section>
   )

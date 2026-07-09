@@ -204,27 +204,27 @@ export default function VenuePage() {
 
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch mb-8">
             <div className="lg:col-span-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
-              <div className="relative w-full aspect-[4/3] bg-gray-50">
+              <div className="relative w-full aspect-[16/9] max-h-[220px] sm:max-h-[240px] bg-gray-100">
                 <Image
                   src="/NIPAM.jpg"
                   alt="Namibia Institute of Public Administration and Management (NIPAM)"
                   fill
-                  className="object-contain p-1"
+                  className="object-cover object-center"
                   sizes="(max-width: 1024px) 100vw, 42vw"
                   priority
                 />
-                <div className="absolute top-3 left-3 rounded-lg bg-white/95 p-2 shadow-md border border-gray-200">
+                <div className="absolute top-3 left-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200 p-1">
                   <Image
                     src="/NIPAM logo.png"
                     alt="NIPAM logo"
-                    width={72}
-                    height={72}
-                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-contain"
                   />
                 </div>
               </div>
 
-                <div className="p-6 md:p-8">
+              <div className="p-5 md:p-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {venue.venueName}
                   </h3>
@@ -233,11 +233,11 @@ export default function VenuePage() {
                       {venue.conferenceEdition}
                     </p>
                   )}
-                  <p className="text-base text-gray-600 mb-6">
+                  <p className="text-base text-gray-600 mb-4">
                     {venue.description || 'A state-of-the-art facility equipped with modern conference amenities and accessibility features.'}
                   </p>
 
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {venue.address && (
                       <div className="flex items-start gap-3">
                         <FiMapPin className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
@@ -267,7 +267,7 @@ export default function VenuePage() {
               </div>
 
               {/* Venue Map */}
-              <div className="lg:col-span-7 w-full min-h-[420px] lg:min-h-[640px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+              <div className="lg:col-span-7 w-full min-h-[320px] lg:min-h-[420px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4369.209186741202!2d17.092214375301378!3d-22.602548379470328!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1c0b1ad1fb90430b%3A0xc22a1c3456400167!2sNamibian%20Institute%20Of%20Public%20Administration%20And%20Management!5e1!3m2!1sen!2szw!4v1783587513593!5m2!1sen!2szw"
                   width="100%"
