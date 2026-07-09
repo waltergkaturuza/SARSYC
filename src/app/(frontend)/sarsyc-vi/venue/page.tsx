@@ -213,12 +213,12 @@ export default function VenuePage() {
                   sizes="(max-width: 1024px) 100vw, 42vw"
                   priority
                 />
-                <div className="absolute top-3 left-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200 p-1">
+                <div className="absolute top-4 left-4 z-10 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-xl border border-white/70 bg-white/85 p-1.5 shadow-[0_12px_28px_rgba(15,23,42,0.22)] backdrop-blur-md ring-1 ring-black/5">
                   <Image
                     src="/NIPAM logo.png"
                     alt="NIPAM logo"
-                    width={64}
-                    height={64}
+                    width={72}
+                    height={72}
                     className="h-full w-full object-contain"
                   />
                 </div>
