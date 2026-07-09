@@ -59,7 +59,7 @@ const faqData = [
       },
       {
         question: 'Is there airport pickup available?',
-        answer: 'Yes, we\'ll provide shuttle service from Hosea Kutako International Airport to designated hotels on August 4-5. Details will be emailed to registered participants.',
+        answer: 'No. SARSYC VI is not providing conference shuttle transport. Participants should arrange taxis, ride-hailing, or hotel transfers from Hosea Kutako International Airport.',
       },
     ],
   },

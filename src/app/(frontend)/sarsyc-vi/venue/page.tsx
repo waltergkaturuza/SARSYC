@@ -17,34 +17,52 @@ import { showToast } from '@/lib/toast'
 
 const hotels = [
   {
-    name: 'Windhoek Hilton',
+    name: 'Movenpick Hotel Windhoek',
     category: '5-Star',
-    distance: '2 km from venue',
-    price: '$150-200/night',
-    features: ['Free WiFi', 'Breakfast included', 'Airport shuttle'],
+    distance: 'Approx. 7 km from NIPAM',
+    price: 'Check latest rates',
+    features: ['City views', 'Restaurant', 'Conference-friendly'],
+    bookingUrl: 'https://all.accor.com/hotel/B1Q8/index.en.shtml',
   },
   {
-    name: 'Avani Windhoek Hotel',
+    name: 'Mercure Hotel Windhoek',
     category: '4-Star',
-    distance: '1.5 km from venue',
-    price: '$100-150/night',
-    features: ['Pool', 'Restaurant', 'Gym'],
+    distance: 'Approx. 7 km from NIPAM',
+    price: 'Check latest rates',
+    features: ['Pool', 'Restaurant', 'Business facilities'],
+    bookingUrl: 'https://all.accor.com/hotel/B1R0/index.en.shtml',
   },
   {
-    name: 'Town Lodge Windhoek',
-    category: '3-Star',
-    distance: '3 km from venue',
-    price: '$60-90/night',
-    features: ['Budget-friendly', 'Clean rooms', 'Central location'],
+    name: 'Hilton Windhoek',
+    category: '5-Star',
+    distance: 'Approx. 5 km from NIPAM',
+    price: 'Check latest rates',
+    features: ['Rooftop pool', 'Gym', 'Central location'],
+    bookingUrl: 'https://www.hilton.com/en/hotels/wdhhitw-hilton-windhoek/',
   },
 ]
 
 const attractions = [
-  'Namibia Craft Centre',
-  'National Museum of Namibia',
-  'Christuskirche (Christ Church)',
-  'Independence Memorial Museum',
-  'Joe\'s Beerhouse (famous restaurant)',
+  {
+    name: 'Namibia Craft Centre',
+    link: 'https://www.tripadvisor.com/Attraction_Review-g293821-d1507535-Reviews-Namibia_Craft_Centre-Windhoek_Khomas_Region.html',
+  },
+  {
+    name: 'National Museum of Namibia',
+    link: 'https://www.tripadvisor.com/Attraction_Review-g293821-d2113555-Reviews-National_Museum_of_Namibia-Windhoek_Khomas_Region.html',
+  },
+  {
+    name: 'Christuskirche (Christ Church)',
+    link: 'https://en.wikipedia.org/wiki/Christuskirche,_Windhoek',
+  },
+  {
+    name: 'Independence Memorial Museum',
+    link: 'https://en.wikipedia.org/wiki/Independence_Memorial_Museum',
+  },
+  {
+    name: "Joe's Beerhouse",
+    link: 'https://www.tripadvisor.com/Restaurant_Review-g293821-d798877-Reviews-Joe_s_Beerhouse-Windhoek_Khomas_Region.html',
+  },
 ]
 
 interface VenueLocation {
@@ -96,15 +114,15 @@ export default function VenuePage() {
           // Default fallback venue (Windhoek)
           setVenue({
             id: 'default',
-            venueName: 'The Life Science II Auditorium at the University of Namibia Hage Geingob Campus',
+            venueName: 'Namibia Institute of Public Administration and Management (NIPAM)',
             city: 'Windhoek',
             country: 'Namibia',
-            address: '123 Independence Avenue, Windhoek, Namibia',
-            latitude: -22.5597,
-            longitude: 17.0832,
+            address: 'Paul Nash Street, Khomasdal, Windhoek, Namibia',
+            latitude: -22.6025484,
+            longitude: 17.0922144,
             zoomLevel: 15,
             conferenceEdition: 'SARSYC VI',
-            description: 'A state-of-the-art facility in the heart of Windhoek, equipped with modern conference amenities and accessibility features.',
+            description: 'NIPAM is the official SARSYC VI venue, offering modern training and conference facilities in Windhoek.',
             facilities: [
               { facility: 'Main plenary hall (capacity: 600)' },
               { facility: '4 breakout rooms (capacity: 100 each)' },
@@ -121,15 +139,15 @@ export default function VenuePage() {
       // Set default fallback venue
       setVenue({
         id: 'default',
-        venueName: 'Windhoek International Convention Centre',
+        venueName: 'Namibia Institute of Public Administration and Management (NIPAM)',
         city: 'Windhoek',
         country: 'Namibia',
-        address: '123 Independence Avenue, Windhoek, Namibia',
-        latitude: -22.5597,
-        longitude: 17.0832,
+        address: 'Paul Nash Street, Khomasdal, Windhoek, Namibia',
+        latitude: -22.6025484,
+        longitude: 17.0922144,
         zoomLevel: 15,
         conferenceEdition: 'SARSYC VI',
-        description: 'A state-of-the-art facility in the heart of Windhoek, equipped with modern conference amenities and accessibility features.',
+        description: 'NIPAM is the official SARSYC VI venue, offering modern training and conference facilities in Windhoek.',
         facilities: [
           { facility: 'Main plenary hall (capacity: 600)' },
           { facility: '4 breakout rooms (capacity: 100 each)' },
@@ -231,12 +249,18 @@ export default function VenuePage() {
                 </div>
               </div>
 
-              {/* Interactive Map */}
+              {/* Venue Map */}
               <div className="w-full h-[600px] lg:h-[700px]">
-                <InteractiveMap
-                  venue={venue}
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4369.209186741202!2d17.092214375301378!3d-22.602548379470328!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1c0b1ad1fb90430b%3A0xc22a1c3456400167!2sNamibian%20Institute%20Of%20Public%20Administration%20And%20Management!5e1!3m2!1sen!2szw!4v1783587513593!5m2!1sen!2szw"
+                  width="100%"
                   height="100%"
-                  showControls={true}
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  className="rounded-2xl"
+                  title="NIPAM location map"
                 />
               </div>
             </div>
@@ -275,9 +299,14 @@ export default function VenuePage() {
                   ))}
                 </ul>
 
-                <button className="btn-primary w-full text-sm">
+                <a
+                  href={hotel.bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary w-full text-sm inline-flex items-center justify-center"
+                >
                   Book Now
-                </button>
+                </a>
               </div>
             ))}
           </div>
@@ -308,7 +337,7 @@ export default function VenuePage() {
                   </p>
                   <ul className="text-sm text-gray-600 space-y-2">
                     <li>• Direct flights from Johannesburg, Cape Town, Victoria Falls, Frankfurt</li>
-                    <li>• Airport shuttle service available (pre-book during registration)</li>
+                    <li>• No conference-organized shuttle service; use taxis, ride-hailing, or hotel-arranged transfers</li>
                     <li>• Taxi to city center: ~$30-40 USD</li>
                     <li>• Car rental available at airport</li>
                   </ul>
@@ -316,17 +345,6 @@ export default function VenuePage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h4 className="font-bold text-gray-900 mb-3">✈️ Airport Shuttle Service</h4>
-              <p className="text-gray-700 mb-3">
-                We're providing complimentary shuttle service from the airport to designated hotels for registered participants.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• <strong>Dates:</strong> August 4-5, 2026</li>
-                <li>• <strong>Times:</strong> Every 2 hours (10:00 AM - 8:00 PM)</li>
-                <li>• <strong>Booking:</strong> Select shuttle option during registration</li>
-              </ul>
-            </div>
           </div>
         </div>
       </section>
@@ -342,12 +360,18 @@ export default function VenuePage() {
 
             <div className="grid md:grid-cols-2 gap-6">
               {attractions.map((attraction) => (
-                <div key={attraction} className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200">
+                <a
+                  key={attraction.name}
+                  href={attraction.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
                   <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <FiCoffee className="w-5 h-5 text-primary-600" />
                   </div>
-                  <span className="font-medium text-gray-900">{attraction}</span>
-                </div>
+                  <span className="font-medium text-gray-900">{attraction.name}</span>
+                </a>
               ))}
             </div>
 

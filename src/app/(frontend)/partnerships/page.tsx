@@ -374,17 +374,10 @@ export default function PartnershipsPage() {
       </section>
 
       {/* Past Partners */}
-      <section className="relative overflow-hidden py-6 md:py-8 bg-slate-900">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/sarsyc-group.jpg')" }}
-          aria-hidden
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
-
-        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-2">Our Partners</h2>
-          <p className="text-lg text-white/70 text-center mb-6 max-w-3xl mx-auto">
+      <section className="py-6 md:py-8 bg-white">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-2">Our Partners</h2>
+          <p className="text-lg text-gray-600 text-center mb-6 max-w-3xl mx-auto">
             Proud to partner with leading organizations committed to youth empowerment.
           </p>
 
@@ -392,7 +385,7 @@ export default function PartnershipsPage() {
             {partners.map((partner) => (
               <div
                 key={partner.name}
-                className="group flex items-center justify-center rounded-xl border border-white/10 bg-white/10 backdrop-blur-md p-3 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-xl hover:shadow-primary-500/10"
+                className="group flex items-center justify-center rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md"
               >
                 <div className="relative w-full h-16 sm:h-[4.5rem] flex items-center justify-center">
                   <Image
@@ -408,7 +401,7 @@ export default function PartnershipsPage() {
           </div>
 
           <div className="text-center">
-            <p className="text-white/70 text-sm md:text-base">
+            <p className="text-gray-600 text-sm md:text-base">
               Join these esteemed organizations in supporting SARSYC VI
             </p>
           </div>
