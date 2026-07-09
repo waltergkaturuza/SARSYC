@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FiMapPin, FiCoffee, FiInfo, FiLoader } from 'react-icons/fi'
 import Link from 'next/link'
 import Image from 'next/image'
+import { DEFAULT_SARSYC_VI_VENUE } from '@/lib/sarsycViVenue'
 
 const hotels = [
   {
@@ -107,51 +108,13 @@ export default function VenuePage() {
         if (fallbackResult.venues && fallbackResult.venues.length > 0) {
           setVenue(fallbackResult.venues[0])
         } else {
-          // Default fallback venue (Windhoek)
-          setVenue({
-            id: 'default',
-            venueName: 'Namibia Institute of Public Administration and Management (NIPAM)',
-            city: 'Windhoek',
-            country: 'Namibia',
-            address: 'Paul Nash Street, Khomasdal, Windhoek, Namibia',
-            latitude: -22.6025484,
-            longitude: 17.0922144,
-            zoomLevel: 15,
-            conferenceEdition: 'SARSYC VI',
-            description: 'NIPAM is the official SARSYC VI venue, offering modern training and conference facilities in Windhoek.',
-            facilities: [
-              { facility: 'Main plenary hall (capacity: 600)' },
-              { facility: '4 breakout rooms (capacity: 100 each)' },
-              { facility: 'Exhibition area' },
-              { facility: 'WiFi throughout' },
-              { facility: 'Wheelchair accessible' },
-            ],
-          })
+          setVenue({ ...DEFAULT_SARSYC_VI_VENUE })
         }
       }
     } catch (err: any) {
       console.error('Error fetching venue:', err)
       setError(err.message || 'Failed to load venue information')
-      // Set default fallback venue
-      setVenue({
-        id: 'default',
-        venueName: 'Namibia Institute of Public Administration and Management (NIPAM)',
-        city: 'Windhoek',
-        country: 'Namibia',
-        address: 'Paul Nash Street, Khomasdal, Windhoek, Namibia',
-        latitude: -22.6025484,
-        longitude: 17.0922144,
-        zoomLevel: 15,
-        conferenceEdition: 'SARSYC VI',
-        description: 'NIPAM is the official SARSYC VI venue, offering modern training and conference facilities in Windhoek.',
-        facilities: [
-          { facility: 'Main plenary hall (capacity: 600)' },
-          { facility: '4 breakout rooms (capacity: 100 each)' },
-          { facility: 'Exhibition area' },
-          { facility: 'WiFi throughout' },
-          { facility: 'Wheelchair accessible' },
-        ],
-      })
+      setVenue({ ...DEFAULT_SARSYC_VI_VENUE })
     } finally {
       setLoading(false)
     }

@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
   <p><strong>Conference:</strong> The 6th Southern African Regional Students and Youth Conference</p>
   <p><strong>Dates:</strong> August 5-7, 2026</p>
   <p><strong>Location:</strong> Windhoek, Namibia</p>
+  <p><strong>Venue:</strong> Namibia Institute of Public Administration and Management (NIPAM)</p>
   <p><strong>Theme:</strong> Align for Action: Sustaining Progress in Youth Health and Education</p>
   <hr>
   

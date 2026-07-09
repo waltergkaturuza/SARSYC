@@ -64,7 +64,7 @@ const VenueLocations: CollectionConfig = {
       required: true,
       label: 'Latitude',
       admin: {
-        description: 'Decimal degrees (e.g., -22.5597)',
+        description: 'Decimal degrees (e.g., -22.6025)',
         step: 0.000001,
       },
     },
@@ -74,7 +74,7 @@ const VenueLocations: CollectionConfig = {
       required: true,
       label: 'Longitude',
       admin: {
-        description: 'Decimal degrees (e.g., 17.0832)',
+        description: 'Decimal degrees (e.g., 17.0922)',
         step: 0.000001,
       },
     },

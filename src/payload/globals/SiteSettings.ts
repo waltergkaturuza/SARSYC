@@ -53,6 +53,7 @@ const SiteSettings: GlobalConfig = {
               name: 'conferenceVenue',
               type: 'text',
               label: 'Conference Venue',
+              defaultValue: 'Namibia Institute of Public Administration and Management (NIPAM)',
             },
           ],
         },

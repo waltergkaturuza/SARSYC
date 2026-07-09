@@ -11,6 +11,9 @@ import {
   REGISTRATION_SCHEDULE,
   currencyForPayments,
 } from '@/lib/registrationPackages'
+import {
+  DEFAULT_SARSYC_VI_VENUE,
+} from '@/lib/sarsycViVenue'
 import dynamic from 'next/dynamic'
 
 const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
@@ -37,7 +40,7 @@ interface VenueLocation {
   conferenceEdition?: string
 }
 
-function VenueMapSection() {
+function WelcomeVenueSection() {
   const [venue, setVenue] = useState<VenueLocation | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -53,52 +56,74 @@ function VenueMapSection() {
       if (result.venues && result.venues.length > 0) {
         setVenue(result.venues[0])
       } else {
-        // Fallback to default
-        setVenue({
-          id: 'default',
-          venueName: 'Windhoek International Convention Centre',
-          city: 'Windhoek',
-          country: 'Namibia',
-          address: '123 Independence Avenue, Windhoek, Namibia',
-          latitude: -22.5597,
-          longitude: 17.0832,
-          zoomLevel: 15,
-          conferenceEdition: 'SARSYC VI',
-        })
+        setVenue({ ...DEFAULT_SARSYC_VI_VENUE })
       }
-    } catch (error) {
-      // Fallback to default
-      setVenue({
-        id: 'default',
-        venueName: 'Windhoek International Convention Centre',
-        city: 'Windhoek',
-        country: 'Namibia',
-        address: '123 Independence Avenue, Windhoek, Namibia',
-        latitude: -22.5597,
-        longitude: 17.0832,
-        zoomLevel: 15,
-        conferenceEdition: 'SARSYC VI',
-      })
+    } catch {
+      setVenue({ ...DEFAULT_SARSYC_VI_VENUE })
     } finally {
       setLoading(false)
     }
   }
 
-  if (loading || !venue) {
-    return (
-      <div className="w-full h-[500px] lg:h-[600px] bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
-        <div className="text-center text-white">
-          <FiLoader className="w-16 h-16 mx-auto mb-4 opacity-50 animate-spin" />
-          <p className="text-lg font-medium opacity-75">Loading map...</p>
-        </div>
-      </div>
-    )
-  }
+  const displayVenue = venue ?? { ...DEFAULT_SARSYC_VI_VENUE }
 
   return (
-    <div className="w-full h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-      <InteractiveMap venue={venue} height="100%" showControls={true} />
-    </div>
+    <section className="section bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+      <div className="container-custom">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Welcome to Windhoek</h2>
+            <p className="text-lg text-white/90 mb-6">
+              Namibia&apos;s capital city, known for its stunning landscapes, rich culture, and warm
+              hospitality, serves as the perfect backdrop for SARSYC VI.
+            </p>
+            <div className="space-y-4 mb-8">
+              <div className="flex items-start gap-3">
+                <FiMapPin className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold mb-1">Conference Venue</div>
+                  <div className="text-white/80">{displayVenue.venueName}</div>
+                  {displayVenue.address ? (
+                    <div className="text-white/65 text-sm mt-1">{displayVenue.address}</div>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <FiCalendar className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold mb-1">Duration</div>
+                  <div className="text-white/80">3 days of learning, networking, and action</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <FiUsers className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold mb-1">Expected Participants</div>
+                  <div className="text-white/80">500+ delegates from 14+ countries</div>
+                </div>
+              </div>
+            </div>
+            <Link href="/sarsyc-vi/venue" className="btn-accent inline-flex items-center gap-2">
+              Explore Venue & Accommodation
+              <FiArrowRight />
+            </Link>
+          </div>
+
+          {loading || !venue ? (
+            <div className="w-full h-[500px] lg:h-[600px] bg-gray-700 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center">
+              <div className="text-center text-white">
+                <FiLoader className="w-16 h-16 mx-auto mb-4 opacity-50 animate-spin" />
+                <p className="text-lg font-medium opacity-75">Loading map...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
+              <InteractiveMap venue={venue} height="100%" showControls={true} />
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -552,52 +577,7 @@ export default function SarsycVIPage() {
         </div>
       </section>
 
-      {/* Venue Information */}
-      <section className="section bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Welcome to Windhoek
-              </h2>
-              <p className="text-lg text-white/90 mb-6">
-                Namibia's capital city, known for its stunning landscapes, rich culture, and warm hospitality,
-                serves as the perfect backdrop for SARSYC VI.
-              </p>
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-3">
-                  <FiMapPin className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Conference Venue</div>
-                    <div className="text-white/80">The Life Science II Auditorium at the University of Namibia Hage Geingob Campus</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <FiCalendar className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Duration</div>
-                    <div className="text-white/80">3 days of learning, networking, and action</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <FiUsers className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Expected Participants</div>
-                    <div className="text-white/80">500+ delegates from 14+ countries</div>
-                  </div>
-                </div>
-              </div>
-              <Link href="/sarsyc-vi/venue" className="btn-accent inline-flex items-center gap-2">
-                Explore Venue & Accommodation
-                <FiArrowRight />
-              </Link>
-            </div>
-
-            {/* Interactive Map */}
-            <VenueMapSection />
-          </div>
-        </div>
-      </section>
+      <WelcomeVenueSection />
 
       {/* Detailed Tracks */}
       <section className="section bg-gray-50">
