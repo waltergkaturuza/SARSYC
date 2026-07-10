@@ -13,10 +13,8 @@ const Volunteers: CollectionConfig = {
   access: {
     read: (args: any) => {
       const { req: { user } } = args
-      // Admins can read all, volunteers can read their own
-      if (user?.role === 'admin') return true
+      if (user?.role === 'admin' || user?.role === 'editor') return true
       if (user?.role === 'volunteer') {
-        // Volunteers can read their own application
         return {
           user: { equals: user.id },
         }
@@ -26,8 +24,7 @@ const Volunteers: CollectionConfig = {
     create: () => true, // Public can apply
     update: (args: any) => {
       const { req: { user } } = args
-      // Admins can update all, volunteers can update their own
-      if (user?.role === 'admin') return true
+      if (user?.role === 'admin' || user?.role === 'editor') return true
       if (user?.role === 'volunteer') {
         return {
           user: { equals: user.id },

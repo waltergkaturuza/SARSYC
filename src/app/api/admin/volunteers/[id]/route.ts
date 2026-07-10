@@ -36,7 +36,9 @@ export async function PATCH(
       updateData.reviewerComments = body.reviewerComments.trim() || null
     }
 
-    if (typeof body.interviewDate === 'string') {
+    if (body.interviewDate === null || body.interviewDate === '') {
+      updateData.interviewDate = null
+    } else if (typeof body.interviewDate === 'string') {
       updateData.interviewDate = body.interviewDate.trim() || null
     }
 
@@ -44,9 +46,14 @@ export async function PATCH(
       updateData.interviewNotes = body.interviewNotes.trim() || null
     }
 
-    if (body.assignedReviewerId !== undefined && body.assignedReviewerId !== null) {
-      const idNum = Number(body.assignedReviewerId)
-      updateData.assignedReviewer = Number.isFinite(idNum) && idNum > 0 ? idNum : null
+    if ('assignedReviewerId' in body) {
+      const raw = body.assignedReviewerId
+      if (raw === '' || raw === null) {
+        updateData.assignedReviewer = null
+      } else {
+        const idNum = Number(raw)
+        updateData.assignedReviewer = Number.isFinite(idNum) && idNum > 0 ? idNum : null
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

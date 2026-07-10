@@ -42,6 +42,7 @@ export default async function AdminVolunteersPage({ searchParams }: VolunteersPa
     limit,
     page,
     sort: '-createdAt',
+    overrideAccess: true,
   })
 
   const docs = results.docs || []

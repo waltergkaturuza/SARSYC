@@ -19,14 +19,34 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
   const payload = await getPayloadClient()
 
   let volunteer: any
+  let staffUsers: any[] = []
+
   try {
-    volunteer = await payload.findByID({
-      collection: 'volunteers',
-      id: params.id,
-      depth: 2,
-    })
-    volunteer = await repairVolunteerDocuments(payload, volunteer)
-  } catch (e) {
+    const [volunteerDoc, usersResult] = await Promise.all([
+      payload.findByID({
+        collection: 'volunteers',
+        id: params.id,
+        depth: 2,
+        overrideAccess: true,
+      }),
+      payload.find({
+        collection: 'users',
+        limit: 200,
+        sort: 'email',
+        overrideAccess: true,
+      }),
+    ])
+
+    volunteer = await repairVolunteerDocuments(payload, volunteerDoc)
+    staffUsers = (usersResult.docs as any[]).filter((user) =>
+      ['admin', 'editor', 'accountant'].includes(user.role),
+    )
+  } catch (error) {
+    console.error('[Volunteer detail] Failed to load volunteer:', params.id, error)
+    return notFound()
+  }
+
+  if (!volunteer) {
     return notFound()
   }
 
@@ -38,6 +58,13 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
       return value
     }
   }
+
+  const assignedReviewerId =
+    typeof volunteer.assignedReviewer === 'object' && volunteer.assignedReviewer?.id
+      ? String(volunteer.assignedReviewer.id)
+      : volunteer.assignedReviewer
+        ? String(volunteer.assignedReviewer)
+        : ''
 
   const cvLink = getMediaDocumentLink(volunteer.cv, 'View CV')
   const coverLetterLink = getMediaDocumentLink(volunteer.coverLetter, 'View Cover Letter')
@@ -246,6 +273,10 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                 initialStatus={volunteer.status || 'pending'}
                 initialAdminNotes={volunteer.adminNotes}
                 initialReviewerComments={volunteer.reviewerComments}
+                initialAssignedReviewerId={assignedReviewerId}
+                initialInterviewDate={volunteer.interviewDate}
+                initialInterviewNotes={volunteer.interviewNotes}
+                reviewers={staffUsers}
               />
             </section>
           </div>

@@ -47,48 +47,62 @@ async function findBlobUrlForVolunteerDocument(
 /**
  * Link CV/cover letter media for volunteers whose files reached Blob storage
  * but never got a Payload media record (older upload handler).
+ * Never throws — failures are logged and the original volunteer is returned.
  */
 export async function repairVolunteerDocuments(
   payload: Payload,
   volunteer: VolunteerDoc,
 ): Promise<VolunteerDoc> {
-  const updates: Record<string, string> = {}
+  try {
+    const updates: Record<string, string> = {}
 
-  if (!hasLinkedDocument(volunteer.cv)) {
-    const blobUrl = await findBlobUrlForVolunteerDocument('cv', volunteer.email)
-    if (blobUrl) {
-      const id = await createMediaFromBlobUrl(
-        payload,
-        blobUrl,
-        `CV / Resume: ${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim(),
-      )
-      updates.cv = id
+    if (!hasLinkedDocument(volunteer.cv)) {
+      const blobUrl = await findBlobUrlForVolunteerDocument('cv', volunteer.email)
+      if (blobUrl) {
+        try {
+          const id = await createMediaFromBlobUrl(
+            payload,
+            blobUrl,
+            `CV / Resume: ${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim(),
+          )
+          updates.cv = id
+        } catch (error) {
+          console.warn('Volunteer CV media repair failed:', error)
+        }
+      }
     }
-  }
 
-  if (!hasLinkedDocument(volunteer.coverLetter)) {
-    const blobUrl = await findBlobUrlForVolunteerDocument('coverLetter', volunteer.email)
-    if (blobUrl) {
-      const id = await createMediaFromBlobUrl(
-        payload,
-        blobUrl,
-        `Cover Letter: ${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim(),
-      )
-      updates.coverLetter = id
+    if (!hasLinkedDocument(volunteer.coverLetter)) {
+      const blobUrl = await findBlobUrlForVolunteerDocument('coverLetter', volunteer.email)
+      if (blobUrl) {
+        try {
+          const id = await createMediaFromBlobUrl(
+            payload,
+            blobUrl,
+            `Cover Letter: ${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim(),
+          )
+          updates.coverLetter = id
+        } catch (error) {
+          console.warn('Volunteer cover letter media repair failed:', error)
+        }
+      }
     }
-  }
 
-  if (Object.keys(updates).length === 0) {
+    if (Object.keys(updates).length === 0) {
+      return volunteer
+    }
+
+    const updated = await payload.update({
+      collection: 'volunteers',
+      id: volunteer.id,
+      data: updates,
+      depth: 2,
+      overrideAccess: true,
+    })
+
+    return updated as VolunteerDoc
+  } catch (error) {
+    console.warn('Volunteer document repair skipped:', error)
     return volunteer
   }
-
-  const updated = await payload.update({
-    collection: 'volunteers',
-    id: volunteer.id,
-    data: updates,
-    depth: 2,
-    overrideAccess: true,
-  })
-
-  return updated as VolunteerDoc
 }
