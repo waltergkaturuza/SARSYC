@@ -286,18 +286,11 @@ export default function SubmitAbstractPage() {
                   announcements.
                 </p>
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">
+              <p className="text-gray-700 text-sm leading-relaxed mb-8">
                 We still encourage you to <strong>register as a participant for SARSYC VI</strong> so you can join
                 sessions, workshops, and the Indaba as a delegate and connect with young leaders from across the
                 region.
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 text-left">
-                <p className="text-sm text-amber-900 leading-relaxed">
-                  <strong>Registration note:</strong> Conference registration is <strong>temporarily paused</strong>{' '}
-                  while we finalise arrangements. You can still open the registration form to review requirements and
-                  complete your application when submissions reopen.
-                </p>
-              </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
                   href="/participate/register"
