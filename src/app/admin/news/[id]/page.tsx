@@ -6,6 +6,7 @@ import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import Image from 'next/image'
 import { FiEdit, FiArrowLeft, FiCalendar, FiUser, FiTag, FiStar } from 'react-icons/fi'
 import { format } from 'date-fns'
+import { formatNewsAuthorNames } from '@/lib/newsContent'
 
 export const revalidate = 0
 
@@ -78,12 +79,10 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">{article.title}</h1>
 
             <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-6 pb-6 border-b border-gray-200">
-              {article.author && typeof article.author !== 'string' && (
-                <div className="flex items-center gap-2">
-                  <FiUser className="w-5 h-5" />
-                  <span>{article.author.email}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <FiUser className="w-5 h-5" />
+                <span>{formatNewsAuthorNames(article)}</span>
+              </div>
               {article.publishedDate && (
                 <div className="flex items-center gap-2">
                   <FiCalendar className="w-5 h-5" />

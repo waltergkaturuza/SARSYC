@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
-import { plainTextToSlate } from '@/lib/newsContent'
+import { plainTextToSlate, parseNewsRelatedLinks, parseNewsAuthorIdNumbers, parseNewsDownloadResource } from '@/lib/newsContent'
 import {
   createNewsFeaturedMedia,
   createNewsFeaturedMediaFromUrl,
@@ -8,6 +8,7 @@ import {
 } from '@/lib/newsFeaturedMediaUpload'
 import { formatPayloadError } from '@/lib/payloadErrors'
 import { notifyNewsletterSubscribersOfArticle } from '@/lib/newsletterBroadcast'
+import { ensureNewsLatestColumns } from '@/lib/ensureNewsSchema'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -48,6 +49,7 @@ async function resolveFeaturedImageId(
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
+    await ensureNewsLatestColumns(payload)
     const formData = await request.formData()
 
     const title = formData.get('title') as string
@@ -56,11 +58,19 @@ export async function POST(request: NextRequest) {
     const content = formData.get('content') as string
     const category = JSON.parse((formData.get('category') as string) || '[]')
     const tags = JSON.parse((formData.get('tags') as string) || '[]')
-    const authorRaw = formData.get('author') as string
-    const author = Number(authorRaw)
+    const authorIds = parseNewsAuthorIdNumbers(formData.get('authors') as string | null)
+    const relatedLinks = parseNewsRelatedLinks(formData.get('relatedLinks') as string | null)
+    const downloadResource = parseNewsDownloadResource(
+      formData.get('downloadResourceLabel') as string | null,
+      formData.get('downloadResourceUrl') as string | null,
+    )
     const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
     const publishedDate = formData.get('publishedDate') as string | null
+
+    if (authorIds.length === 0) {
+      return NextResponse.json({ error: 'At least one author is required.' }, { status: 400 })
+    }
 
     let featuredImageId: string | undefined
     try {
@@ -95,7 +105,10 @@ export async function POST(request: NextRequest) {
         content: plainTextToSlate(content),
         category,
         tags: tags.map((tag: string) => ({ tag })),
-        author,
+        relatedLinks,
+        ...(downloadResource && { downloadResource }),
+        authors: authorIds,
+        author: authorIds[0],
         status,
         featured,
         featuredImage: mediaIdForPayload(featuredImageId),

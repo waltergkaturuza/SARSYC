@@ -66,3 +66,79 @@ export const NEWS_CATEGORY_LABELS: Record<string, string> = {
   advocacy: 'Advocacy',
   events: 'Events',
 }
+
+export type NewsRelatedLink = { label: string; url: string }
+
+export function formatNewsUserName(user: unknown): string {
+  if (!user || typeof user !== 'object') return ''
+  const u = user as { firstName?: string; lastName?: string; email?: string }
+  const name = `${u.firstName || ''} ${u.lastName || ''}`.trim()
+  return name || u.email || ''
+}
+
+export function formatNewsAuthorNames(article: {
+  authors?: unknown
+  author?: unknown
+}): string {
+  const authors = Array.isArray(article.authors) ? article.authors : []
+  const names = authors.map(formatNewsUserName).filter(Boolean)
+  if (names.length > 0) return names.join(', ')
+  const primary = formatNewsUserName(article.author)
+  return primary || 'SARSYC'
+}
+
+export function parseNewsAuthorIds(article: {
+  authors?: unknown
+  author?: unknown
+}): string[] {
+  const fromAuthors = Array.isArray(article.authors)
+    ? article.authors
+        .map((a) => (typeof a === 'object' && a && 'id' in a ? String((a as { id: unknown }).id) : String(a)))
+        .filter(Boolean)
+    : []
+  if (fromAuthors.length > 0) return fromAuthors
+  const author = article.author
+  if (typeof author === 'object' && author && 'id' in author) {
+    return [String((author as { id: unknown }).id)]
+  }
+  if (author != null && author !== '') return [String(author)]
+  return []
+}
+
+export type NewsRelatedLinkInput = { label: string; url: string }
+
+export function parseNewsRelatedLinks(raw: string | null): NewsRelatedLinkInput[] {
+  try {
+    const parsed = JSON.parse(raw || '[]')
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .filter((item) => item && typeof item === 'object')
+      .map((item) => ({
+        label: String(item.label || '').trim(),
+        url: String(item.url || '').trim(),
+      }))
+      .filter((item) => item.label && item.url)
+  } catch {
+    return []
+  }
+}
+
+export function parseNewsAuthorIdNumbers(raw: string | null): number[] {
+  try {
+    const parsed = JSON.parse(raw || '[]')
+    if (!Array.isArray(parsed)) return []
+    return parsed.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+  } catch {
+    return []
+  }
+}
+
+export function parseNewsDownloadResource(label: string | null, url: string | null) {
+  const cleanLabel = (label || '').trim()
+  const cleanUrl = (url || '').trim()
+  if (!cleanLabel && !cleanUrl) return undefined
+  if (!cleanLabel || !cleanUrl) {
+    throw new Error('Download resource requires both a label and a URL.')
+  }
+  return { label: cleanLabel, url: cleanUrl }
+}

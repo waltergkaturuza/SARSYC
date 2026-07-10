@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiUser, FiArrowLeft, FiShare2, FiFacebook, FiTwitter, FiLinkedin } from 'react-icons/fi'
+import { FiCalendar, FiUser, FiArrowLeft, FiShare2, FiFacebook, FiTwitter, FiLinkedin, FiExternalLink, FiDownload } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
-import { slateToSimpleHtml, NEWS_CATEGORY_LABELS } from '@/lib/newsContent'
+import { slateToSimpleHtml, NEWS_CATEGORY_LABELS, formatNewsAuthorNames } from '@/lib/newsContent'
 import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 export const revalidate = 60
@@ -42,15 +42,14 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
   const imgUrl = getMediaDisplayUrl(article.featuredImage)
 
-  const author = article.author
-  const authorName =
-    typeof author === 'object' && author
-      ? `${author.firstName || ''} ${author.lastName || ''}`.trim() || author.email || 'SARSYC'
-      : 'SARSYC'
+  const authorName = formatNewsAuthorNames(article)
 
   const categories: string[] = Array.isArray(article.category) ? article.category : []
   const tagList =
     article.tags?.map((t: { tag?: string }) => t?.tag).filter(Boolean) || []
+  const relatedLinks =
+    article.relatedLinks?.filter((link: { label?: string; url?: string }) => link?.label && link?.url) || []
+  const downloadResource = article.downloadResource
 
   const published =
     article.publishedDate || article.createdAt
@@ -128,6 +127,42 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
                   className="prose prose-lg max-w-none text-justify prose-headings:text-left prose-headings:font-bold prose-h2:text-3xl prose-h3:text-2xl prose-p:text-gray-600 prose-p:text-justify prose-li:text-gray-600 prose-a:text-primary-600"
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
+
+                {(relatedLinks.length > 0 || downloadResource?.url) && (
+                  <div className="mt-10 pt-8 border-t border-gray-200 space-y-4">
+                    {relatedLinks.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-3">Related links</p>
+                        <div className="flex flex-col gap-3">
+                          {relatedLinks.map((link: { label: string; url: string }, index: number) => (
+                            <a
+                              key={`${link.url}-${index}`}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700 transition-colors"
+                            >
+                              <FiExternalLink className="w-4 h-4 flex-shrink-0" />
+                              <span>{link.label}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {downloadResource?.url && downloadResource?.label && (
+                      <a
+                        href={downloadResource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center gap-2 px-5 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors w-fit"
+                      >
+                        <FiDownload className="w-5 h-5" />
+                        {downloadResource.label}
+                      </a>
+                    )}
+                  </div>
+                )}
 
                 {tagList.length > 0 && (
                   <div className="mt-12 pt-8 border-t border-gray-200">

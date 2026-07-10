@@ -23,6 +23,7 @@ import * as migration_20260529_000004_create_stanbic_payment_events from './2026
 import * as migration_20260529_000005_add_stanbic_payment_events_locked_docs_column from './20260529_000005_add_stanbic_payment_events_locked_docs_column';
 import * as migration_20260529_000006_add_payment_due_reminder_sent_at from './20260529_000006_add_payment_due_reminder_sent_at';
 import * as migration_20260529_000007_add_accountant_role from './20260529_000007_add_accountant_role';
+import * as migration_20260710_000000_add_news_links_and_authors from './20260710_000000_add_news_links_and_authors';
 
 export const migrations = [
   {
@@ -149,5 +150,10 @@ export const migrations = [
     up: migration_20260529_000007_add_accountant_role.up,
     down: migration_20260529_000007_add_accountant_role.down,
     name: '20260529_000007_add_accountant_role'
+  },
+  {
+    up: migration_20260710_000000_add_news_links_and_authors.up,
+    down: migration_20260710_000000_add_news_links_and_authors.down,
+    name: '20260710_000000_add_news_links_and_authors'
   },
 ];

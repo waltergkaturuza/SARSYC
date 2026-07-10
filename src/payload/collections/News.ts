@@ -97,11 +97,69 @@ const News: CollectionConfig = {
       ],
     },
     {
+      name: 'relatedLinks',
+      type: 'array',
+      label: 'Related Links',
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          label: 'Link label',
+          admin: {
+            placeholder: 'e.g. Meet the 16 Presenters',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          label: 'URL',
+          admin: {
+            placeholder: 'https://www.sarsyc.org/programme/speakers',
+          },
+        },
+      ],
+    },
+    {
+      name: 'downloadResource',
+      type: 'group',
+      label: 'Downloadable Resource',
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Download label',
+          admin: {
+            placeholder: 'e.g. Download the full report (PDF)',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'Download URL',
+          admin: {
+            placeholder: 'https://...',
+          },
+        },
+      ],
+    },
+    {
+      name: 'authors',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Authors / Publishers',
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      label: 'Author',
+      label: 'Primary Author',
+      admin: {
+        description: 'Kept for compatibility; synced from the first selected author.',
+      },
     },
     {
       name: 'status',

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import FormField from './FormField'
 import { FiUpload, FiX, FiPlus, FiSave, FiLoader, FiMail, FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
 import Image from 'next/image'
-import { slateToPlainText } from '@/lib/newsContent'
+import { slateToPlainText, parseNewsAuthorIds, type NewsRelatedLink } from '@/lib/newsContent'
 import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 interface NewsData {
@@ -16,7 +16,10 @@ interface NewsData {
   featuredImage?: string | File
   category: string[]
   tags: string[]
-  author: string
+  authors: string[]
+  relatedLinks: NewsRelatedLink[]
+  downloadResourceLabel: string
+  downloadResourceUrl: string
   status: string
   publishedDate?: string
   featured: boolean
@@ -49,7 +52,14 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     featuredImage: initialData?.featuredImage?.url || '',
     category: initialData?.category || [],
     tags: initialData?.tags?.map((t: any) => t.tag || t).filter(Boolean) || [],
-    author: initialData?.author?.id || initialData?.author || '',
+    authors: parseNewsAuthorIds(initialData || {}),
+    relatedLinks:
+      initialData?.relatedLinks?.map((link: { label?: string; url?: string }) => ({
+        label: link.label || '',
+        url: link.url || '',
+      })) || [],
+    downloadResourceLabel: initialData?.downloadResource?.label || '',
+    downloadResourceUrl: initialData?.downloadResource?.url || '',
     status: initialData?.status || 'draft',
     publishedDate: initialData?.publishedDate ? new Date(initialData.publishedDate).toISOString().slice(0, 16) : '',
     featured: initialData?.featured || false,
@@ -104,6 +114,41 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     }))
   }
 
+  const addRelatedLink = () => {
+    setFormData(prev => ({
+      ...prev,
+      relatedLinks: [...prev.relatedLinks, { label: '', url: '' }],
+    }))
+  }
+
+  const removeRelatedLink = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      relatedLinks: prev.relatedLinks.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateRelatedLink = (index: number, field: 'label' | 'url', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      relatedLinks: prev.relatedLinks.map((link, i) =>
+        i === index ? { ...link, [field]: value } : link,
+      ),
+    }))
+  }
+
+  const toggleAuthor = (userId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      authors: prev.authors.includes(userId)
+        ? prev.authors.filter((id) => id !== userId)
+        : [...prev.authors, userId],
+    }))
+    if (errors.authors) {
+      setErrors(prev => ({ ...prev, authors: '' }))
+    }
+  }
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
     
@@ -114,7 +159,20 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     if (!formData.content.trim()) newErrors.content = 'Content is required'
     if (!formData.featuredImage && !initialData?.featuredImage) newErrors.featuredImage = 'Featured image is required'
     if (formData.category.length === 0) newErrors.category = 'At least one category is required'
-    if (!formData.author) newErrors.author = 'Author is required'
+    if (formData.authors.length === 0) newErrors.authors = 'At least one author is required'
+
+    const incompleteLinks = formData.relatedLinks.filter(
+      (link) => (link.label.trim() && !link.url.trim()) || (!link.label.trim() && link.url.trim()),
+    )
+    if (incompleteLinks.length > 0) {
+      newErrors.relatedLinks = 'Each related link needs both a label and a URL'
+    }
+
+    const hasDownloadLabel = formData.downloadResourceLabel.trim().length > 0
+    const hasDownloadUrl = formData.downloadResourceUrl.trim().length > 0
+    if (hasDownloadLabel !== hasDownloadUrl) {
+      newErrors.downloadResource = 'Download resource needs both a label and a URL'
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -185,7 +243,15 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
       submitData.append('content', formData.content)
       submitData.append('category', JSON.stringify(formData.category))
       submitData.append('tags', JSON.stringify(formData.tags.filter(t => t.trim())))
-      submitData.append('author', formData.author)
+      submitData.append('authors', JSON.stringify(formData.authors))
+      submitData.append(
+        'relatedLinks',
+        JSON.stringify(
+          formData.relatedLinks.filter((link) => link.label.trim() && link.url.trim()),
+        ),
+      )
+      submitData.append('downloadResourceLabel', formData.downloadResourceLabel.trim())
+      submitData.append('downloadResourceUrl', formData.downloadResourceUrl.trim())
       submitData.append('status', formData.status)
       submitData.append('featured', formData.featured.toString())
       
@@ -397,48 +463,142 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
         </div>
       </div>
 
+      {/* Related Links & Downloads */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Links & Resources</h2>
+
+        <div className="space-y-8">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <FormField
+                label="Related Links"
+                hint="Add links shown below the article (e.g. programme pages, speaker lists)"
+                error={errors.relatedLinks}
+              >
+                <div />
+              </FormField>
+              <button
+                type="button"
+                onClick={addRelatedLink}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <FiPlus className="w-4 h-4" />
+                Add Link
+              </button>
+            </div>
+            <div className="space-y-3">
+              {formData.relatedLinks.length === 0 && (
+                <p className="text-sm text-gray-500">No related links yet. Use &quot;Add Link&quot; to include one.</p>
+              )}
+              {formData.relatedLinks.map((link, index) => (
+                <div key={index} className="grid md:grid-cols-2 gap-3 items-start">
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => updateRelatedLink(index, 'label', e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="What the link does (e.g. Meet the 16 Presenters)"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) => updateRelatedLink(index, 'url', e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="https://www.sarsyc.org/..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeRelatedLink(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label="Remove link"
+                    >
+                      <FiX className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-gray-200">
+            <FormField
+              label="Downloadable Resource"
+              hint="Optional file or document link (e.g. PDF report)"
+              error={errors.downloadResource}
+            >
+              <div className="grid md:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={formData.downloadResourceLabel}
+                  onChange={(e) => handleInputChange('downloadResourceLabel', e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Download label (e.g. Download the full report)"
+                />
+                <input
+                  type="url"
+                  value={formData.downloadResourceUrl}
+                  onChange={(e) => handleInputChange('downloadResourceUrl', e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="https://..."
+                />
+              </div>
+            </FormField>
+          </div>
+        </div>
+      </div>
+
       {/* Author & Publishing */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Author & Publishing</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Authors & Publishing</h2>
         
-        <div className="grid md:grid-cols-2 gap-6">
-          <FormField label="Author" required error={errors.author}>
-            <select
-              value={formData.author}
-              onChange={(e) => handleInputChange('author', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="">Select author</option>
+        <div className="space-y-6">
+          <FormField label="Authors / Publishers" required error={errors.authors} hint="Select one or more authors">
+            <div className="grid md:grid-cols-2 gap-3">
               {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.email} {user.firstName ? `(${user.firstName} ${user.lastName})` : ''}
-                </option>
+                <label
+                  key={user.id}
+                  className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.authors.includes(String(user.id))}
+                    onChange={() => toggleAuthor(String(user.id))}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm">
+                    {user.email}
+                    {user.firstName ? ` (${user.firstName} ${user.lastName || ''})`.trim() : ''}
+                  </span>
+                </label>
               ))}
-            </select>
+            </div>
           </FormField>
 
-          <FormField label="Publication Status" required>
-            <select
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-          </FormField>
-
-          {formData.status === 'published' && (
-            <FormField label="Published Date & Time" hint="Leave empty to use current date/time">
-              <input
-                type="datetime-local"
-                value={formData.publishedDate || ''}
-                onChange={(e) => handleInputChange('publishedDate', e.target.value)}
+          <div className="grid md:grid-cols-2 gap-6">
+            <FormField label="Publication Status" required>
+              <select
+                value={formData.status}
+                onChange={(e) => handleInputChange('status', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
             </FormField>
-          )}
+
+            {formData.status === 'published' && (
+              <FormField label="Published Date & Time" hint="Leave empty to use current date/time">
+                <input
+                  type="datetime-local"
+                  value={formData.publishedDate || ''}
+                  onChange={(e) => handleInputChange('publishedDate', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </FormField>
+            )}
+          </div>
         </div>
       </div>
 

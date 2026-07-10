@@ -4,6 +4,7 @@ import config from '../payload/payload.config'
 import { getSecret } from './getSecret'
 import { ensureLockedDocsRelsColumns } from './ensureLockedDocsRelsColumns'
 import { ensureRegistrationsLatestColumns } from './ensureRegistrationSchema'
+import { ensureNewsLatestColumns } from './ensureNewsSchema'
 
 let cached = (global as any).payload
 
@@ -14,6 +15,7 @@ if (!cached) {
 async function ensureDatabaseSchemaPatches(client: Payload): Promise<void> {
   await ensureLockedDocsRelsColumns(client)
   await ensureRegistrationsLatestColumns(client)
+  await ensureNewsLatestColumns(client)
 }
 
 export const getPayloadClient = async (): Promise<Payload> => {
