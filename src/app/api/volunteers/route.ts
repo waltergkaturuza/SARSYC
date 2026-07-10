@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { createAuditLog } from '@/lib/audit'
+import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -71,55 +72,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Create media records for CV and Cover Letter if blob URLs are provided
-    let cvId: string | undefined
-    let coverLetterId: string | undefined
-
     const createDocumentMedia = async (url: string | undefined | null, label: string) => {
       if (!url || typeof url !== 'string' || !url.startsWith('http')) return undefined
       try {
-        // Extract filename from URL for better metadata
-        const urlPath = new URL(url).pathname
-        const filename = urlPath.split('/').pop() || `${label.toLowerCase().replace(/\s+/g, '-')}`
-
-        // Decode filename safely
-        const decodedFilename = decodeURIComponent(filename)
-
-        // Determine MIME type from extension
-        let mimeType = 'application/pdf'
-        const lower = decodedFilename.toLowerCase()
-        if (lower.endsWith('.doc')) {
-          mimeType = 'application/msword'
-        } else if (lower.endsWith('.docx')) {
-          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        }
-
-        const media = await payload.db.collections.media.create({
-          data: {
-            alt: `${label}: ${body.firstName} ${body.lastName}`.trim(),
-            filename: decodedFilename,
-            mimeType,
-            url,
-            filesize: 0,
-            width: null,
-            height: null,
-          },
-        })
-
-        const id = typeof media === 'string' ? media : media.id
+        const id = await createMediaFromBlobUrl(
+          payload,
+          url,
+          `${label}: ${body.firstName} ${body.lastName}`.trim(),
+        )
         console.log('✅ Created media record with blob URL for volunteer document:', {
           label,
           url,
           id,
         })
-        return id as string
-      } catch (err: any) {
-        console.error(`Volunteer ${label} media creation error:`, err?.message || err)
+        return id
+      } catch (err: unknown) {
+        console.error(`Volunteer ${label} media creation error:`, err)
         return undefined
       }
     }
 
-    cvId = await createDocumentMedia(body.cv, 'CV / Resume')
-    coverLetterId = await createDocumentMedia(body.coverLetter, 'Cover Letter')
+    const cvId = await createDocumentMedia(body.cv, 'CV / Resume')
+    const coverLetterId = await createDocumentMedia(body.coverLetter, 'Cover Letter')
 
     // Create volunteer application
     const volunteer = await payload.create({

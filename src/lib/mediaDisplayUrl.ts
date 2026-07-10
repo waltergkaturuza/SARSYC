@@ -55,3 +55,22 @@ export function getMediaDisplayUrl(media: unknown): string | null {
 
   return null
 }
+
+/** Resolve a media upload (image or document) to a public download/view URL. */
+export function getMediaDocumentLink(
+  media: unknown,
+  fallbackLabel = 'View document',
+): { href: string; label: string } | null {
+  const href = getMediaDisplayUrl(media)
+  if (!href) return null
+
+  let label = fallbackLabel
+  if (typeof media === 'object' && media !== null) {
+    const filename = (media as { filename?: string }).filename
+    const alt = (media as { alt?: string }).alt
+    if (filename) label = filename
+    else if (alt) label = alt
+  }
+
+  return { href, label }
+}

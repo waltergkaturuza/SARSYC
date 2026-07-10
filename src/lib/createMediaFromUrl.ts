@@ -15,8 +15,11 @@ function mimeTypeFromUrl(url: string): string {
     gif: 'image/gif',
     webp: 'image/webp',
     svg: 'image/svg+xml',
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   }
-  return map[ext] || 'image/jpeg'
+  return map[ext] || 'application/octet-stream'
 }
 
 function filenameFromUrl(url: string): string {

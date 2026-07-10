@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiUser } from 'react-icons/fi'
 import { VolunteerAdminActions } from '@/components/admin/volunteers/VolunteerAdminActions'
+import { getMediaDocumentLink } from '@/lib/mediaDisplayUrl'
+import { repairVolunteerDocuments } from '@/lib/repairVolunteerDocuments'
 
 export const revalidate = 0
 
@@ -23,6 +25,7 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
       id: params.id,
       depth: 2,
     })
+    volunteer = await repairVolunteerDocuments(payload, volunteer)
   } catch (e) {
     return notFound()
   }
@@ -35,6 +38,9 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
       return value
     }
   }
+
+  const cvLink = getMediaDocumentLink(volunteer.cv, 'View CV')
+  const coverLetterLink = getMediaDocumentLink(volunteer.coverLetter, 'View Cover Letter')
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -519,21 +525,14 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                 <div>
                   <dt className="font-medium">CV / Resume</dt>
                   <dd>
-                    {volunteer.cv && typeof volunteer.cv === 'object' ? (
+                    {cvLink ? (
                       <Link
-                        href={volunteer.cv.url || '#'}
+                        href={cvLink.href}
                         className="text-primary-600 hover:underline"
                         target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        {volunteer.cv.filename || 'View CV'}
-                      </Link>
-                    ) : typeof volunteer.cv === 'string' && volunteer.cv ? (
-                      <Link
-                        href={volunteer.cv}
-                        className="text-primary-600 hover:underline"
-                        target="_blank"
-                      >
-                        View CV
+                        {cvLink.label}
                       </Link>
                     ) : (
                       'Not uploaded'
@@ -543,22 +542,14 @@ export default async function VolunteerDetailPage({ params }: VolunteerDetailPag
                 <div>
                   <dt className="font-medium">Cover Letter</dt>
                   <dd>
-                    {volunteer.coverLetter &&
-                    typeof volunteer.coverLetter === 'object' ? (
+                    {coverLetterLink ? (
                       <Link
-                        href={volunteer.coverLetter.url || '#'}
+                        href={coverLetterLink.href}
                         className="text-primary-600 hover:underline"
                         target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        {volunteer.coverLetter.filename || 'View Cover Letter'}
-                      </Link>
-                    ) : typeof volunteer.coverLetter === 'string' && volunteer.coverLetter ? (
-                      <Link
-                        href={volunteer.coverLetter}
-                        className="text-primary-600 hover:underline"
-                        target="_blank"
-                      >
-                        View Cover Letter
+                        {coverLetterLink.label}
                       </Link>
                     ) : (
                       'Not uploaded'
