@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiUser, FiArrowLeft, FiShare2, FiFacebook, FiTwitter, FiLinkedin, FiExternalLink, FiDownload } from 'react-icons/fi'
+import { FiCalendar, FiUser, FiArrowLeft, FiExternalLink, FiDownload } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToSimpleHtml, NEWS_CATEGORY_LABELS, formatNewsAuthorNames } from '@/lib/newsContent'
 import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
+import ShareButtons from '@/components/ui/ShareButtons'
 
 export const revalidate = 60
 
@@ -182,36 +183,12 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
                 <div className="mt-8 pt-8 border-t border-gray-200">
                   <p className="text-sm font-semibold text-gray-700 mb-4">Share this article:</p>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors"
-                      aria-label="Share on Facebook"
-                    >
-                      <FiFacebook />
-                    </button>
-                    <button
-                      type="button"
-                      className="w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600 transition-colors"
-                      aria-label="Share on Twitter"
-                    >
-                      <FiTwitter />
-                    </button>
-                    <button
-                      type="button"
-                      className="w-10 h-10 rounded-full bg-blue-700 text-white flex items-center justify-center hover:bg-blue-800 transition-colors"
-                      aria-label="Share on LinkedIn"
-                    >
-                      <FiLinkedin />
-                    </button>
-                    <button
-                      type="button"
-                      className="w-10 h-10 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300 transition-colors"
-                      aria-label="Share"
-                    >
-                      <FiShare2 />
-                    </button>
-                  </div>
+                  <ShareButtons
+                    url={`/news/${params.slug}`}
+                    title={article.title}
+                    description={article.excerpt}
+                    showLabel={false}
+                  />
                 </div>
               </div>
 
