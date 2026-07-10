@@ -54,10 +54,12 @@ export default function NewsForm({ initialData, mode, users = [] }: NewsFormProp
     tags: initialData?.tags?.map((t: any) => t.tag || t).filter(Boolean) || [],
     authors: parseNewsAuthorIds(initialData || {}),
     relatedLinks:
-      initialData?.relatedLinks?.map((link: { label?: string; url?: string }) => ({
-        label: link.label || '',
-        url: link.url || '',
-      })) || [],
+      initialData?.relatedLinks
+        ?.filter((link: { label?: string; url?: string } | null) => link != null)
+        .map((link: { label?: string; url?: string }) => ({
+          label: link.label || '',
+          url: link.url || '',
+        })) || [],
     downloadResourceLabel: initialData?.downloadResource?.label || '',
     downloadResourceUrl: initialData?.downloadResource?.url || '',
     status: initialData?.status || 'draft',

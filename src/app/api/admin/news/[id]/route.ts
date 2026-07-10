@@ -120,7 +120,7 @@ export async function PATCH(
       category,
       tags: tags.map((tag: string) => ({ tag })),
       relatedLinks,
-      downloadResource: downloadResource ?? null,
+      downloadResource: downloadResource ?? { label: '', url: '' },
       authors: authorIds,
       author: authorIds[0],
       status,
