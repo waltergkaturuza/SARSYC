@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiFacebook, FiTwitter, FiLinkedin, FiMail, FiLink } from 'react-icons/fi'
 import { SiWhatsapp, SiTiktok } from 'react-icons/si'
+import { getAbsoluteUrl } from '@/lib/siteUrl'
 
 interface ShareButtonsProps {
   url: string
@@ -20,21 +21,22 @@ export default function ShareButtons({
   showLabel = true,
 }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
+  const [fullUrl, setFullUrl] = useState(() => getAbsoluteUrl(url))
 
-  const fullUrl =
-    typeof window !== 'undefined'
-      ? url.startsWith('http')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    setFullUrl(
+      url.startsWith('http')
         ? url
-        : `${window.location.origin}${url}`
-      : url
-
-  const shareText = description ? `${title}\n\n${description}` : title
+        : `${window.location.origin}${url.startsWith('/') ? url : `/${url}`}`,
+    )
+  }, [url])
 
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`,
     twitter: `https://x.com/intent/tweet?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title)}&hashtags=SARSYCVI`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(fullUrl)}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${fullUrl}`)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${title}\n\n${fullUrl}`)}`,
     email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${description ? `${description}\n\n` : ''}${fullUrl}`)}`,
   }
 
