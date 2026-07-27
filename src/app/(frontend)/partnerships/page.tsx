@@ -149,6 +149,51 @@ const partners = [
     logo: '/partners/mohss-namibia.jpg',
     alt: 'Ministry of Health and Social Services Namibia Logo',
   },
+  {
+    name: 'NIPAM',
+    logo: '/additional partners/NIPAM.jpeg',
+    alt: 'Namibia Institute of Public Administration and Management Logo',
+  },
+  {
+    name: 'International University of Management (IUM)',
+    logo: '/additional partners/IUM.jpeg',
+    alt: 'The International University of Management Logo',
+  },
+  {
+    name: 'IntraHealth Namibia',
+    logo: '/additional partners/IntraHealth Namibia.jpeg',
+    alt: 'IntraHealth Namibia Logo',
+  },
+  {
+    name: 'UNESCO UNITWIN',
+    logo: '/additional partners/logounitwin25.png',
+    alt: 'UNESCO UNITWIN University Twinning and Networking Programme Logo',
+  },
+  {
+    name: 'National AIDS Council Zimbabwe',
+    logo: '/additional partners/NAC.jpeg',
+    alt: 'National AIDS Council Zimbabwe Logo',
+  },
+  {
+    name: 'Restless Development',
+    logo: '/additional partners/Restless Devlopement.jpeg',
+    alt: 'Restless Development Logo',
+  },
+  {
+    name: 'Ministry of Higher and Tertiary Education Zimbabwe',
+    logo: '/additional partners/Technology Inovation Wealthy.jpeg',
+    alt: 'Zimbabwe Ministry of Higher and Tertiary Education, Innovation, Science and Technology Development Logo',
+  },
+  {
+    name: 'Government of the Republic of Namibia',
+    logo: '/additional partners/Unit Libert Justice.jpeg',
+    alt: 'Government of the Republic of Namibia Coat of Arms',
+  },
+  {
+    name: 'FAWE',
+    logo: '/additional partners/WhatsApp Image 2026-07-16 at 11.50.48.jpeg',
+    alt: 'Forum for African Women Educationalists Logo',
+  },
 ]
 
 const partnershipInquirySchema = z.object({
