@@ -1,6 +1,8 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import SessionForm from '@/components/admin/forms/SessionForm'
+import { ensureYouthSteeringCommitteeLatestColumns } from '@/lib/ensureYouthSteeringCommitteeSchema'
+import { seedYouthSteeringCommitteeFromStatic } from '@/lib/seedYouthSteeringCommittee'
 
 export const revalidate = 0
 
@@ -19,12 +21,22 @@ export default async function NewSessionPage() {
 
   let committeeMembers: any[] = []
   try {
-    const committeeResult = await payload.find({
+    await ensureYouthSteeringCommitteeLatestColumns(payload)
+    let committeeResult = await payload.find({
       collection: 'youth-steering-committee',
       limit: 100,
       sort: 'order',
       depth: 0,
     })
+    if (committeeResult.totalDocs === 0) {
+      await seedYouthSteeringCommitteeFromStatic(payload)
+      committeeResult = await payload.find({
+        collection: 'youth-steering-committee',
+        limit: 100,
+        sort: 'order',
+        depth: 0,
+      })
+    }
     committeeMembers = committeeResult.docs
   } catch (error) {
     console.error('Failed to load youth steering committee for session form:', error)

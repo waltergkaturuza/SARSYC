@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { 
   FiUsers, FiPlus, FiEdit, FiStar, FiEye 
 } from 'react-icons/fi'
+import { ensureYouthSteeringCommitteeLatestColumns } from '@/lib/ensureYouthSteeringCommitteeSchema'
+import { seedYouthSteeringCommitteeFromStatic } from '@/lib/seedYouthSteeringCommittee'
 
 export const revalidate = 0
 
@@ -82,6 +84,24 @@ export default async function YouthSteeringCommitteePage({
   searchParams: SearchParams
 }) {
   const payload = await getPayloadClient()
+  await ensureYouthSteeringCommitteeLatestColumns(payload)
+
+  // One-time import of the governance-page members when the collection is empty.
+  if (!search && !featured) {
+    try {
+      const existing = await payload.find({
+        collection: 'youth-steering-committee',
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      if (existing.totalDocs === 0) {
+        await seedYouthSteeringCommitteeFromStatic(payload)
+      }
+    } catch (error) {
+      console.error('Youth steering committee auto-seed failed:', error)
+    }
+  }
   
   const page = Number(searchParams.page || 1)
   const perPage = 20

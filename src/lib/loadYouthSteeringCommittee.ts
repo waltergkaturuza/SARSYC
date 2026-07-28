@@ -7,10 +7,13 @@ import {
   youthSteeringCommitteeMembers,
   type YouthSteeringCommitteeMember,
 } from '@/lib/youthSteeringCommitteeMembers'
+import { seedYouthSteeringCommitteeFromStatic } from '@/lib/seedYouthSteeringCommittee'
 
 export type DisplayYouthSteeringMember = YouthSteeringCommitteeMember & {
   id?: string | number
 }
+
+let seedAttemptedThisInstance = false
 
 function normalizeCmsMember(doc: any): DisplayYouthSteeringMember {
   const countryRaw = typeof doc.country === 'string' ? doc.country : ''
@@ -35,6 +38,31 @@ export function countriesMissingMembers(members: Array<{ country: string }>): st
   return steeringCommitteeSadcCountries.filter((c) => !withMembers.has(c))
 }
 
+async function ensureSeededIfEmpty(payload: Payload): Promise<void> {
+  if (seedAttemptedThisInstance) return
+  seedAttemptedThisInstance = true
+
+  try {
+    const existing = await payload.find({
+      collection: 'youth-steering-committee',
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    if (existing.totalDocs > 0) return
+
+    console.log('Youth steering committee is empty — seeding from governance static list...')
+    const result = await seedYouthSteeringCommitteeFromStatic(payload)
+    console.log('Youth steering committee seed result:', {
+      created: result.created.length,
+      skipped: result.skipped.length,
+      errors: result.errors.length,
+    })
+  } catch (error) {
+    console.error('Auto-seed youth steering committee failed:', error)
+  }
+}
+
 /**
  * Load Youth Steering Committee members for public pages.
  * Prefers CMS data; falls back to the static governance list when the DB is empty/unavailable.
@@ -45,6 +73,8 @@ export async function loadYouthSteeringCommitteeForPublic(payload: Payload): Pro
   source: 'cms' | 'static'
 }> {
   try {
+    await ensureSeededIfEmpty(payload)
+
     const result = await payload.find({
       collection: 'youth-steering-committee',
       limit: 200,
