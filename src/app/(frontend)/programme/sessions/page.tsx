@@ -1,36 +1,55 @@
 import Link from 'next/link'
-import { FiCalendar, FiClock, FiMapPin, FiUsers } from 'react-icons/fi'
+import { FiCalendar, FiClock, FiMapPin, FiUsers, FiUser } from 'react-icons/fi'
+import { getPayloadClient } from '@/lib/payload'
+import { slateToPlainText } from '@/lib/newsContent'
+import {
+  formatSessionTime,
+  formatSessionDate,
+  sessionDayLabel,
+  sessionTrackLabel,
+  sessionTrackBadgeClass,
+  sessionTypeLabel,
+  formatSpeakerNamesList,
+  SESSION_DAY_OPTIONS,
+} from '@/lib/sessionsContent'
 
-// Sample sessions - will fetch from Payload CMS
-const sessions = [
-  {
-    id: '1',
-    title: 'Opening Ceremony & Keynote Address',
-    type: 'keynote',
-    track: 'general',
-    day: 'Day 1 - August 5',
-    startTime: '09:00',
-    endTime: '10:30',
-    venue: 'Main Hall',
-    speakers: ['Dr. Sarah Mwangi', 'Hon. Minister of Health'],
-    description: 'Official opening followed by keynote on the state of youth health in Southern Africa.',
-  },
-  {
-    id: '2',
-    title: 'Panel: Comprehensive Sexuality Education - Regional Progress',
-    type: 'panel',
-    track: 'srhr',
-    day: 'Day 1 - August 5',
-    startTime: '11:00',
-    endTime: '12:30',
-    venue: 'Conference Room A',
-    speakers: ['Prof. Jane Doe', 'Dr. John Smith', 'Ms. Alice Brown'],
-    description: 'Examining CSE implementation successes and challenges across Southern Africa.',
-  },
-  // Add more sessions...
-]
+export const revalidate = 0
 
-export default function SessionsPage() {
+function speakerName(value: unknown): string | null {
+  if (value && typeof value === 'object' && 'name' in (value as Record<string, unknown>)) {
+    return String((value as Record<string, unknown>).name)
+  }
+  return null
+}
+
+function speakerId(value: unknown): string | null {
+  if (value && typeof value === 'object' && 'id' in (value as Record<string, unknown>)) {
+    return String((value as Record<string, unknown>).id)
+  }
+  return null
+}
+
+export default async function SessionsPage() {
+  let sessions: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'sessions',
+      limit: 300,
+      sort: 'startTime',
+      depth: 1,
+    })
+    sessions = result.docs
+  } catch (error) {
+    console.error('Failed to load sessions from CMS:', error)
+  }
+
+  // Group sessions by conference day, keeping the configured day order.
+  const dayGroups = SESSION_DAY_OPTIONS.map((dayOption) => ({
+    ...dayOption,
+    sessions: sessions.filter((session) => (session.day || 'day-1') === dayOption.value),
+  })).filter((group) => group.sessions.length > 0)
+
   return (
     <>
       {/* Hero */}
@@ -47,107 +66,209 @@ export default function SessionsPage() {
         </div>
       </section>
 
-      {/* Info Banner */}
-      <section className="bg-yellow-50 border-b border-yellow-200 py-6">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-gray-800">
-              <strong>📅 Programme Update:</strong> Full session details will be published by July 1, 2026.
-              Preliminary programme coming soon!
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Sessions List */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="max-w-5xl mx-auto space-y-6">
-            {sessions.map((session) => (
-              <div key={session.id} className="card p-8 hover:shadow-2xl transition-all">
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Time & Venue */}
-                  <div className="lg:w-56 flex-shrink-0 space-y-3">
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Date & Time</div>
-                      <div className="flex items-center gap-2 text-gray-900">
-                        <FiCalendar className="w-4 h-4 text-primary-600" />
-                        <span className="font-medium">{session.day}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-700 mt-1">
-                        <FiClock className="w-4 h-4 text-primary-600" />
-                        <span>{session.startTime} - {session.endTime}</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Venue</div>
-                      <div className="flex items-center gap-2 text-gray-900">
-                        <FiMapPin className="w-4 h-4 text-primary-600" />
-                        <span className="font-medium">{session.venue}</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full uppercase">
-                        {session.type}
-                      </span>
-                    </div>
+          {dayGroups.length === 0 ? (
+            <div className="max-w-3xl mx-auto text-center bg-gray-50 rounded-xl p-12">
+              <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Programme Coming Soon</h3>
+              <p className="text-gray-600 mb-6">
+                The full session programme is being finalised and will be published here shortly.
+                Check back soon!
+              </p>
+              <Link href="/programme" className="btn-primary">
+                Back to Programme
+              </Link>
+            </div>
+          ) : (
+            <div className="max-w-5xl mx-auto space-y-12">
+              {dayGroups.map((group) => (
+                <div key={group.value}>
+                  <div className="mb-6 border-b-2 border-primary-600 pb-3">
+                    <h2 className="text-3xl font-bold text-gray-900">{group.label}</h2>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 hover:text-primary-600 transition-colors">
-                      {session.title}
-                    </h3>
+                  <div className="space-y-6">
+                    {group.sessions.map((session: any) => {
+                      const description = slateToPlainText(session.description)
+                      const linkedSpeakers = (Array.isArray(session.speakers) ? session.speakers : [])
+                        .map((s: any) => ({ id: speakerId(s), name: speakerName(s) }))
+                        .filter((s: any) => s.name)
+                      const guestSpeakers = formatSpeakerNamesList(session.speakerNames)
+                      const committeeMembers = (Array.isArray(session.committeeMembers) ? session.committeeMembers : [])
+                        .map((m: any) =>
+                          m && typeof m === 'object'
+                            ? { name: m.name as string, role: m.role as string | undefined }
+                            : null,
+                        )
+                        .filter((m: any) => m?.name)
+                      const moderatorName = speakerName(session.moderator)
+                      const isBreak = session.type === 'break'
 
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      {session.description}
-                    </p>
+                      if (isBreak) {
+                        return (
+                          <div
+                            key={session.id}
+                            className="rounded-xl bg-gray-50 border border-gray-200 px-8 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600"
+                          >
+                            <span className="flex items-center gap-2 font-medium">
+                              <FiClock className="w-4 h-4 text-primary-600" />
+                              {formatSessionTime(session.startTime)} – {formatSessionTime(session.endTime)}
+                            </span>
+                            <span className="italic">{session.title}</span>
+                            {session.venue && (
+                              <span className="flex items-center gap-2 text-sm">
+                                <FiMapPin className="w-4 h-4 text-primary-600" />
+                                {session.venue}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      }
 
-                    <div className="flex items-start gap-2 mb-6">
-                      <FiUsers className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Speakers</div>
-                        <div className="text-sm text-gray-700">
-                          {session.speakers.join(', ')}
+                      return (
+                        <div key={session.id} className="card p-8 hover:shadow-2xl transition-all">
+                          <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Time & Venue */}
+                            <div className="lg:w-56 flex-shrink-0 space-y-3">
+                              <div>
+                                <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Date & Time</div>
+                                <div className="flex items-center gap-2 text-gray-900">
+                                  <FiCalendar className="w-4 h-4 text-primary-600" />
+                                  <span className="font-medium">
+                                    {session.date ? formatSessionDate(session.date) : sessionDayLabel(session.day)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-700 mt-1">
+                                  <FiClock className="w-4 h-4 text-primary-600" />
+                                  <span>
+                                    {formatSessionTime(session.startTime)} – {formatSessionTime(session.endTime)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {session.venue && (
+                                <div>
+                                  <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Venue</div>
+                                  <div className="flex items-center gap-2 text-gray-900">
+                                    <FiMapPin className="w-4 h-4 text-primary-600" />
+                                    <span className="font-medium">{session.venue}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex flex-wrap gap-2">
+                                <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full uppercase">
+                                  {sessionTypeLabel(session.type)}
+                                </span>
+                                {session.track && (
+                                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${sessionTrackBadgeClass(session.track)}`}>
+                                    {sessionTrackLabel(session.track)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1">
+                              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                                {session.title}
+                              </h3>
+
+                              {description && (
+                                <p className="text-gray-600 mb-4 leading-relaxed whitespace-pre-line">
+                                  {description}
+                                </p>
+                              )}
+
+                              {(linkedSpeakers.length > 0 || guestSpeakers.length > 0) && (
+                                <div className="flex items-start gap-2 mb-4">
+                                  <FiUsers className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Speakers</div>
+                                    <div className="text-sm text-gray-700 flex flex-wrap gap-x-1 gap-y-1">
+                                      {linkedSpeakers.map((speaker: any, index: number) => (
+                                        <span key={speaker.id ?? speaker.name}>
+                                          {speaker.id ? (
+                                            <Link
+                                              href={`/programme/speakers/${speaker.id}`}
+                                              className="text-primary-600 hover:text-primary-700 hover:underline font-medium"
+                                            >
+                                              {speaker.name}
+                                            </Link>
+                                          ) : (
+                                            speaker.name
+                                          )}
+                                          {index < linkedSpeakers.length - 1 || guestSpeakers.length > 0 ? ',' : ''}
+                                        </span>
+                                      ))}
+                                      {guestSpeakers.map((name: string, index: number) => (
+                                        <span key={name}>
+                                          {name}
+                                          {index < guestSpeakers.length - 1 ? ',' : ''}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {committeeMembers.length > 0 && (
+                                <div className="flex items-start gap-2 mb-4">
+                                  <FiUsers className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                                      Youth Steering Committee
+                                    </div>
+                                    <div className="text-sm text-gray-700">
+                                      {committeeMembers.map((member: any, index: number) => (
+                                        <span key={member.name}>
+                                          <Link
+                                            href="/about/youth-steering-committee"
+                                            className="text-primary-600 hover:text-primary-700 hover:underline font-medium"
+                                          >
+                                            {member.name}
+                                          </Link>
+                                          {member.role ? ` (${member.role})` : ''}
+                                          {index < committeeMembers.length - 1 ? ', ' : ''}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {moderatorName && (
+                                <div className="flex items-center gap-2 mb-4 text-sm text-gray-700">
+                                  <FiUser className="w-4 h-4 text-gray-400" />
+                                  <span>
+                                    <span className="font-semibold text-gray-500">Moderator:</span> {moderatorName}
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="flex flex-wrap gap-3">
+                                <a
+                                  href={`/api/programme/ical?sessionId=${session.id}`}
+                                  download
+                                  className="btn-outline text-sm"
+                                >
+                                  Add to Calendar
+                                </a>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      <Link href={`/programme/sessions/${session.id}`} className="btn-primary text-sm">
-                        View Details
-                      </Link>
-                      <button className="btn-outline text-sm">
-                        <a href={`/api/programme/ical?sessionId=${session.id}`} download>
-                          Add to Calendar
-                        </a>
-                      </button>
-                      <button className="btn-outline text-sm">
-                        Bookmark
-                      </button>
-                    </div>
+                      )
+                    })}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Coming Soon Notice */}
-          <div className="mt-12 text-center bg-gray-50 rounded-xl p-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">More Sessions Coming Soon!</h3>
-            <p className="text-gray-600 mb-6">
-              We're finalizing the full programme with 40+ sessions across 4 tracks.
-              Full schedule will be available by July 1, 2026.
-            </p>
-            <Link href="/participate/submit-abstract" className="btn-primary">
-              Submit Your Abstract
-            </Link>
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
   )
 }
-

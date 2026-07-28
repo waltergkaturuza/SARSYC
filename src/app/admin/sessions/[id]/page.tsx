@@ -4,6 +4,15 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiCalendar, FiClock, FiMapPin, FiUsers } from 'react-icons/fi'
 import { format } from 'date-fns'
+import { slateToSimpleHtml } from '@/lib/newsContent'
+import {
+  formatSessionTime,
+  formatSessionDate,
+  sessionTrackLabel,
+  sessionDayLabel,
+  sessionTypeLabel,
+  formatSpeakerNamesList,
+} from '@/lib/sessionsContent'
 
 export const revalidate = 0
 
@@ -23,9 +32,9 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
       depth: 2,
     })
 
-    const startTime = session.startTime ? format(new Date(session.startTime), 'HH:mm') : ''
-    const endTime = session.endTime ? format(new Date(session.endTime), 'HH:mm') : ''
-    const date = session.date ? format(new Date(session.date), 'EEEE, MMMM d, yyyy') : ''
+    const startTime = formatSessionTime(session.startTime)
+    const endTime = formatSessionTime(session.endTime)
+    const date = formatSessionDate(session.date)
 
     return (
       <div className="container-custom py-8">
@@ -48,12 +57,17 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
                   <FiCalendar className="w-6 h-6" />
-                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm capitalize">
-                    {session.type}
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                    {sessionTypeLabel(session.type)}
                   </span>
+                  {session.day && (
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                      {sessionDayLabel(session.day)}
+                    </span>
+                  )}
                   {session.track && (
-                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm uppercase">
-                      {session.track}
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                      {sessionTrackLabel(session.track)}
                     </span>
                   )}
                 </div>
@@ -87,10 +101,10 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
             {session.description && (
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Description</h3>
-                <div className="prose max-w-none text-gray-700">
-                  {/* Render rich text - simplified for now */}
-                  <p>{typeof session.description === 'string' ? session.description : 'Description content'}</p>
-                </div>
+                <div
+                  className="prose max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: slateToSimpleHtml(session.description) }}
+                />
               </div>
             )}
 
@@ -112,6 +126,43 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
                         <div className="text-sm text-gray-600">{speaker.title}</div>
                       )}
                     </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Youth Steering Committee members */}
+            {Array.isArray(session.committeeMembers) && session.committeeMembers.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Youth Steering Committee</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {session.committeeMembers.map((member: any) => (
+                    <Link
+                      key={typeof member === 'object' ? member.id : member}
+                      href={`/admin/youth-steering-committee/${typeof member === 'object' ? member.id : member}`}
+                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="font-medium text-gray-900">
+                        {typeof member === 'object' ? member.name : member}
+                      </div>
+                      {typeof member === 'object' && member.role && (
+                        <div className="text-sm text-gray-600">{member.role}</div>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Additional guest speakers (free-text names) */}
+            {session.speakerNames && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Additional Speakers</h3>
+                <div className="flex flex-wrap gap-2">
+                  {formatSpeakerNamesList(session.speakerNames).map((name: string) => (
+                    <span key={name} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                      {name}
+                    </span>
                   ))}
                 </div>
               </div>

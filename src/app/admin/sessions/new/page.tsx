@@ -7,9 +7,10 @@ export const revalidate = 0
 export default async function NewSessionPage() {
   const payload = await getPayloadClient()
   
-  // Fetch speakers and abstracts for form
-  const [speakersResult, abstractsResult] = await Promise.all([
-    payload.find({ collection: 'speakers', limit: 100 }),
+  // Fetch speakers, committee members and abstracts for form
+  const [speakersResult, committeeResult, abstractsResult] = await Promise.all([
+    payload.find({ collection: 'speakers', limit: 300, sort: 'name' }),
+    payload.find({ collection: 'youth-steering-committee', limit: 100, sort: 'order' }),
     payload.find({ 
       collection: 'abstracts', 
       where: { status: { equals: 'accepted' } },
@@ -26,6 +27,7 @@ export default async function NewSessionPage() {
       <SessionForm 
         mode="create" 
         speakers={speakersResult.docs}
+        committeeMembers={committeeResult.docs}
         abstracts={abstractsResult.docs}
       />
     </div>

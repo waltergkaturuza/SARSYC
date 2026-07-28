@@ -1,9 +1,20 @@
 import React from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import Link from 'next/link'
-import { 
-  FiCalendar, FiFilter, FiPlus, FiEdit, FiMapPin, FiClock 
+import {
+  FiCalendar, FiFilter, FiPlus, FiEdit, FiMapPin, FiClock, FiEye
 } from 'react-icons/fi'
+import { slateToPlainText } from '@/lib/newsContent'
+import {
+  formatSessionTime,
+  formatSessionDate,
+  sessionTrackLabel,
+  sessionTrackBadgeClass,
+  sessionDayLabel,
+  SESSION_TRACK_OPTIONS,
+  SESSION_DAY_OPTIONS,
+  SESSION_TYPE_OPTIONS,
+} from '@/lib/sessionsContent'
 
 export const revalidate = 0
 
@@ -11,7 +22,7 @@ interface SearchParams {
   page?: string
   type?: string
   track?: string
-  date?: string
+  day?: string
 }
 
 export default async function SessionsManagementPage({
@@ -20,26 +31,26 @@ export default async function SessionsManagementPage({
   searchParams: SearchParams
 }) {
   const payload = await getPayloadClient()
-  
+
   const page = Number(searchParams.page || 1)
-  const perPage = 20
+  const perPage = 50
   const type = searchParams.type
   const track = searchParams.track
-  const date = searchParams.date
+  const day = searchParams.day
 
   // Build where clause
   const where: any = {}
-  
+
   if (type && type !== 'all') {
     where.type = { equals: type }
   }
-  
+
   if (track && track !== 'all') {
     where.track = { equals: track }
   }
-  
-  if (date) {
-    where.date = { equals: date }
+
+  if (day && day !== 'all') {
+    where.day = { equals: day }
   }
 
   const results = await payload.find({
@@ -47,7 +58,8 @@ export default async function SessionsManagementPage({
     where,
     limit: perPage,
     page,
-    sort: 'date,startTime',
+    sort: 'startTime',
+    depth: 1,
   })
 
   const sessions = results.docs
@@ -59,10 +71,13 @@ export default async function SessionsManagementPage({
     'plenary': { color: 'bg-blue-100 text-blue-700', label: 'Plenary' },
     'panel': { color: 'bg-green-100 text-green-700', label: 'Panel' },
     'workshop': { color: 'bg-yellow-100 text-yellow-700', label: 'Workshop' },
-    'oral': { color: 'bg-orange-100 text-orange-700', label: 'Oral Presentation' },
+    'oral': { color: 'bg-orange-100 text-orange-700', label: 'Abstract Presentation' },
     'poster': { color: 'bg-pink-100 text-pink-700', label: 'Poster Session' },
     'networking': { color: 'bg-indigo-100 text-indigo-700', label: 'Networking' },
+    'break': { color: 'bg-gray-100 text-gray-600', label: 'Registration / Break' },
     'side-event': { color: 'bg-gray-100 text-gray-700', label: 'Side Event' },
+    'post-conference': { color: 'bg-teal-100 text-teal-700', label: 'Post-Conference' },
+    'orathon': { color: 'bg-red-100 text-red-700', label: 'Orathon' },
   }
 
   return (
@@ -90,7 +105,7 @@ export default async function SessionsManagementPage({
           <div className="text-sm text-gray-600">Conference Days</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">4</div>
+          <div className="text-2xl font-bold text-gray-900">5</div>
           <div className="text-sm text-gray-600">Tracks</div>
         </div>
       </div>
@@ -101,62 +116,57 @@ export default async function SessionsManagementPage({
           <FiFilter className="w-5 h-5 text-gray-600" />
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         </div>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Type Filter */}
+
+        <form action="/admin/sessions" method="get" className="grid md:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
-            <form action="/admin/sessions" method="get">
-              <select
-                name="type"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                defaultValue={type || 'all'}
-              >
-                <option value="all">All Types</option>
-                <option value="keynote">Keynote</option>
-                <option value="plenary">Plenary</option>
-                <option value="panel">Panel Discussion</option>
-                <option value="workshop">Workshop</option>
-                <option value="oral">Oral Presentation</option>
-                <option value="poster">Poster Session</option>
-              </select>
-            </form>
+            <select
+              name="type"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              defaultValue={type || 'all'}
+            >
+              <option value="all">All Types</option>
+              {SESSION_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Track Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Track</label>
-            <form action="/admin/sessions" method="get">
-              <select
-                name="track"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                defaultValue={track || 'all'}
-              >
-                <option value="all">All Tracks</option>
-                <option value="srhr">SRHR</option>
-                <option value="education">Education</option>
-                <option value="advocacy">Advocacy</option>
-                <option value="innovation">Innovation</option>
-              </select>
-            </form>
+            <select
+              name="track"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              defaultValue={track || 'all'}
+            >
+              <option value="all">All Tracks</option>
+              {SESSION_TRACK_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Date Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-            <form action="/admin/sessions" method="get">
-              <select
-                name="date"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="all">All Days</option>
-                <option value="2026-08-05">Day 1 - Aug 5</option>
-                <option value="2026-08-06">Day 2 - Aug 6</option>
-                <option value="2026-08-07">Day 3 - Aug 7</option>
-              </select>
-            </form>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Day</label>
+            <select
+              name="day"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              defaultValue={day || 'all'}
+            >
+              <option value="all">All Days</option>
+              {SESSION_DAY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
-        </div>
+
+          <button
+            type="submit"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Apply Filters
+          </button>
+        </form>
       </div>
 
       {/* Sessions List */}
@@ -170,13 +180,19 @@ export default async function SessionsManagementPage({
         {sessions.length === 0 ? (
           <div className="p-12 text-center">
             <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">No sessions found</p>
+            <p className="text-gray-600 mb-4">No sessions found</p>
+            <Link href="/admin/sessions/new" className="btn-primary inline-flex items-center gap-2">
+              <FiPlus className="w-5 h-5" />
+              Add your first session
+            </Link>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
             {sessions.map((session: any) => {
               const typeInfo = typeConfig[session.type] || typeConfig['oral']
-              
+              const descriptionText = slateToPlainText(session.description)
+              const linkedSpeakers = Array.isArray(session.speakers) ? session.speakers : []
+
               return (
                 <div key={session.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between">
@@ -187,41 +203,56 @@ export default async function SessionsManagementPage({
                           {typeInfo.label}
                         </span>
                       </div>
-                      
+
                       <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-2">
                           <FiCalendar className="w-4 h-4" />
-                          {new Date(session.date).toLocaleDateString()}
+                          {session.day ? sessionDayLabel(session.day) : formatSessionDate(session.date)}
                         </div>
                         <div className="flex items-center gap-2">
                           <FiClock className="w-4 h-4" />
-                          {session.startTime} - {session.endTime}
+                          {formatSessionTime(session.startTime)} - {formatSessionTime(session.endTime)}
                         </div>
                         <div className="flex items-center gap-2">
                           <FiMapPin className="w-4 h-4" />
                           {session.venue}
                         </div>
                       </div>
-                      
-                      {session.description && (
+
+                      {descriptionText && (
                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                          {session.description}
+                          {descriptionText}
                         </p>
                       )}
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                          {session.track?.toUpperCase()}
-                        </span>
-                        {session.speakers && session.speakers.length > 0 && (
-                          <span className="text-xs text-gray-500">
-                            {session.speakers.length} speaker(s)
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {session.track && (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${sessionTrackBadgeClass(session.track)}`}>
+                            {sessionTrackLabel(session.track)}
                           </span>
+                        )}
+                        {linkedSpeakers.length > 0 && (
+                          <span className="text-xs text-gray-500">
+                            {linkedSpeakers
+                              .map((s: any) => (typeof s === 'object' ? s.name : null))
+                              .filter(Boolean)
+                              .join(', ') || `${linkedSpeakers.length} speaker(s)`}
+                          </span>
+                        )}
+                        {session.speakerNames && (
+                          <span className="text-xs text-gray-500">{session.speakerNames}</span>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2 ml-4">
+                      <Link
+                        href={`/admin/sessions/${session.id}`}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="View"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </Link>
                       <Link
                         href={`/admin/sessions/${session.id}/edit`}
                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -267,4 +298,3 @@ export default async function SessionsManagementPage({
     </div>
   )
 }
-

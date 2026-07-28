@@ -36,9 +36,10 @@ const Sessions: CollectionConfig = {
         { label: 'Plenary', value: 'plenary' },
         { label: 'Panel Discussion', value: 'panel' },
         { label: 'Workshop', value: 'workshop' },
-        { label: 'Oral Presentations', value: 'oral' },
+        { label: 'Oral / Abstract Presentations', value: 'oral' },
         { label: 'Poster Session', value: 'poster' },
         { label: 'Networking', value: 'networking' },
+        { label: 'Registration / Break', value: 'break' },
         { label: 'Side Event', value: 'side-event' },
         { label: 'Post-Conference Activity', value: 'post-conference' },
         { label: 'Orathon', value: 'orathon' },
@@ -62,11 +63,17 @@ const Sessions: CollectionConfig = {
       type: 'select',
       label: 'Conference Track',
       options: [
-        { label: 'Track 1: Youth Sexual & Reproductive Health', value: 'srhr' },
-        { label: 'Track 2: Education & Skills Development', value: 'education' },
-        { label: 'Track 3: Advocacy & Policy Influence', value: 'advocacy' },
-        { label: 'Track 4: Innovation & Technology for Youth', value: 'innovation' },
-        { label: 'General/Plenary', value: 'general' },
+        { label: 'General / Plenary', value: 'general' },
+        { label: 'Track 1: Education Rights & Equity', value: 'education-rights' },
+        { label: 'Track 2: HIV/AIDS, STIs, & Sexual Health', value: 'hiv-aids' },
+        { label: 'Track 3: NCDs Prevention & Healthy Lifestyles', value: 'ncd-prevention' },
+        { label: 'Track 4: Digital Health & Safety', value: 'digital-health' },
+        { label: 'Track 5: Mental Health & Substance Abuse', value: 'mental-health' },
+        // Legacy values kept so older records remain valid.
+        { label: 'Legacy: Youth SRHR', value: 'srhr' },
+        { label: 'Legacy: Education & Skills', value: 'education' },
+        { label: 'Legacy: Advocacy & Policy', value: 'advocacy' },
+        { label: 'Legacy: Innovation & Technology', value: 'innovation' },
       ],
     },
     {
@@ -132,6 +139,25 @@ const Sessions: CollectionConfig = {
       relationTo: 'speakers',
       hasMany: true,
       label: 'Speakers/Moderators',
+    },
+    {
+      name: 'committeeMembers',
+      type: 'relationship',
+      relationTo: 'youth-steering-committee',
+      hasMany: true,
+      label: 'Youth Steering Committee Members',
+      admin: {
+        description: 'Committee members taking part in this session (e.g. chairing or giving remarks)',
+      },
+    },
+    {
+      name: 'speakerNames',
+      type: 'text',
+      label: 'Additional Speaker Names',
+      admin: {
+        description:
+          'Guest presenters not yet in the speakers list, separated by commas (e.g. "Harry Chiwoza (Malawi), Dr. Kahimbi Sylvia Mahoto (Namibia)")',
+      },
     },
     {
       name: 'moderator',

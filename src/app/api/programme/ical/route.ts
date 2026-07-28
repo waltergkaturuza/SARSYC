@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { slateToPlainText } from '@/lib/newsContent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     sessions.forEach((session: any) => {
       if (!session.date) return
 
-      const startDate = new Date(session.date)
+      const startDate = session.startTime ? new Date(session.startTime) : new Date(session.date)
       const endDate = session.endTime 
         ? new Date(session.endTime)
         : new Date(startDate.getTime() + (session.duration || 60) * 60000)
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
         `DTSTART:${formatDate(startDate)}`,
         `DTEND:${formatDate(endDate)}`,
         `SUMMARY:${session.title || 'SARSYC VI Session'}`,
-        `DESCRIPTION:${(session.description || '').replace(/\n/g, '\\n').substring(0, 500)}`,
+        `DESCRIPTION:${slateToPlainText(session.description).replace(/\n/g, '\\n').substring(0, 500)}`,
         `LOCATION:${session.venue || 'Windhoek, Namibia'}`,
         `URL:${process.env.NEXT_PUBLIC_SERVER_URL || 'https://sarsyc.org'}/programme`,
         'STATUS:CONFIRMED',

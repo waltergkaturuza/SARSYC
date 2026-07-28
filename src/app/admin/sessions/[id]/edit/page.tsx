@@ -15,13 +15,14 @@ export default async function EditSessionPage({ params }: EditSessionPageProps) 
   const payload = await getPayloadClient()
   
   try {
-    const [session, speakersResult, abstractsResult] = await Promise.all([
+    const [session, speakersResult, committeeResult, abstractsResult] = await Promise.all([
       payload.findByID({
         collection: 'sessions',
         id: params.id,
         depth: 2,
       }),
-      payload.find({ collection: 'speakers', limit: 100 }),
+      payload.find({ collection: 'speakers', limit: 300, sort: 'name' }),
+      payload.find({ collection: 'youth-steering-committee', limit: 100, sort: 'order' }),
       payload.find({ 
         collection: 'abstracts', 
         where: { status: { equals: 'accepted' } },
@@ -39,6 +40,7 @@ export default async function EditSessionPage({ params }: EditSessionPageProps) 
           mode="edit" 
           initialData={session}
           speakers={speakersResult.docs}
+          committeeMembers={committeeResult.docs}
           abstracts={abstractsResult.docs}
         />
       </div>
