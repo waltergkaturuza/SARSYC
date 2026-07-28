@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { FiHeart } from 'react-icons/fi'
 import { usePathname } from 'next/navigation'
+import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 
 export default function DonateFAB() {
   const pathname = usePathname()
@@ -28,6 +29,13 @@ export default function DonateFAB() {
           href="/participate/donate"
           className="pointer-events-auto flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-4 py-3 rounded-full shadow-2xl shadow-primary-900/50 transition-all hover:scale-105 active:scale-95 group"
           aria-label="Donate or Sponsor SARSYC VI"
+          onClick={() =>
+            trackEvent('donate_fab_click', {
+              source: 'donate-fab',
+              label: 'Donate floating button',
+              fromPath: pathname || '/',
+            })
+          }
         >
           <FiHeart
             size={18}

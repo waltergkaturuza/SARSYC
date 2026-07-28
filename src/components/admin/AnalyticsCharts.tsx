@@ -37,6 +37,7 @@ const PAGE_ENGAGEMENT_COLORS: Record<string, string> = {
   Partnerships: '#f43f5e',
   Media: '#6366f1',
   Contact: '#0d9488',
+  Donate: '#dc2626',
 }
 
 type ViewsByDay = { date: string; count: number }

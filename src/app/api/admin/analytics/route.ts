@@ -301,6 +301,9 @@ export async function GET(request: NextRequest) {
       participatePageViews,
       mediaPageViews,
       contactPageViews,
+      donatePageViews,
+      donateFabClicks,
+      donations,
     ] = await Promise.all([
       payload.find({ collection: 'page-views', limit: 0 }),
       getUniqueVisitors(config.days),
@@ -343,6 +346,15 @@ export async function GET(request: NextRequest) {
       countPageViewsMatching(config.days, ['/participate', '/participate/%']),
       countPageViewsMatching(config.days, ['/media', '/media/%']),
       countPageViewsMatching(config.days, ['/contact%']),
+      countPageViewsMatching(config.days, ['/participate/donate%']),
+      countSiteEvents(config.days, { eventType: 'donate_fab_click' }),
+      payload
+        .find({
+          collection: 'donations',
+          limit: 0,
+          where: { createdAt: { greater_than_equal: sinceIso } },
+        })
+        .catch(() => ({ totalDocs: 0 })),
     ])
 
     const newsletterTotal = newsletterSubs?.totalDocs ?? 0
@@ -402,6 +414,9 @@ export async function GET(request: NextRequest) {
         participatePageViews,
         mediaPageViews,
         contactPageViews,
+        donatePageViews,
+        donateFabClicks,
+        donations: donations?.totalDocs ?? 0,
       },
       rangeLabel: range === '7d' ? '7 days' : range === '14d' ? '14 days' : range === '30d' ? '30 days' : range === '3m' ? '3 months' : '1 year',
     })

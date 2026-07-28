@@ -56,6 +56,9 @@ type AnalyticsData = {
     participatePageViews: number
     mediaPageViews: number
     contactPageViews: number
+    donatePageViews: number
+    donateFabClicks: number
+    donations: number
   }
   rangeLabel: string
 }
@@ -99,6 +102,9 @@ const defaultData: AnalyticsData = {
     participatePageViews: 0,
     mediaPageViews: 0,
     contactPageViews: 0,
+    donatePageViews: 0,
+    donateFabClicks: 0,
+    donations: 0,
   },
   rangeLabel: '14 days',
 }
@@ -336,6 +342,23 @@ export default function AnalyticsDashboard() {
                   <div className="text-xs text-slate-500">Partnerships</div>
                 </div>
               </div>
+              <Link
+                href="/admin/donations"
+                className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+              >
+                <FiHeart className="w-5 h-5 text-rose-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.donations}</div>
+                  <div className="text-xs text-slate-500">Donations started</div>
+                </div>
+              </Link>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiHeart className="w-5 h-5 text-red-500 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.donateFabClicks}</div>
+                  <div className="text-xs text-slate-500">Donate FAB clicks</div>
+                </div>
+              </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
                 <FiSend className="w-5 h-5 text-violet-600 shrink-0" />
                 <div className="min-w-0">
@@ -380,6 +403,7 @@ export default function AnalyticsDashboard() {
                 { section: 'Partnerships', views: data.interactionCounts.partnershipsPageViews },
                 { section: 'Media', views: data.interactionCounts.mediaPageViews },
                 { section: 'Contact', views: data.interactionCounts.contactPageViews },
+                { section: 'Donate', views: data.interactionCounts.donatePageViews },
               ]}
             />
           </div>
