@@ -63,6 +63,11 @@ const nextConfig = {
     optimizePackageImports: ['react-icons', 'framer-motion', 'date-fns'],
     // Speed up builds by skipping type checking (TypeScript will still run separately)
     typedRoutes: false,
+    // Keep pdfkit outside the webpack bundle so AFM font metrics resolve at runtime.
+    serverComponentsExternalPackages: ['pdfkit'],
+    outputFileTracingIncludes: {
+      '/api/programme/pdf': ['./node_modules/pdfkit/js/data/**/*'],
+    },
   },
   // Reduce build output verbosity
   logging: {

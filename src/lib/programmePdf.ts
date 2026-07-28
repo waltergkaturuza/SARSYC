@@ -18,31 +18,43 @@ const TEXT_MUTED = '#4b5563'
 
 const DAY_OVERVIEW: Record<string, { title: string; bullets: string[] }> = {
   'day-1': {
-    title: 'Day 1: Research Indaba III — Evidence for Action',
+    title: 'Day 1: Research Indaba III - Evidence for Action',
     bullets: [
-      'Opening remarks, Evidence Engine & youth-led abstract presentations across 5 tracks',
-      'Evidence to Action Plenary, poster presentations & keynote',
+      'Opening remarks, Evidence Engine and youth-led abstract presentations across 5 tracks',
+      'Evidence to Action Plenary, poster presentations and keynote',
       'Launch of the SARSYC V Research Volume and Celebrating Evidence Excellence awards',
     ],
   },
   'day-2': {
-    title: 'Day 2: Forums & Engagements',
+    title: 'Day 2: Forums and Engagements',
     bullets: [
-      "Mugota/Ixhiba Young Men's Forum — suicide, substance use & sexual health",
-      'Web for Life Network Symposium | SHE SOARS — education equity, digital safety & healthy lifestyles',
-      'Alliance Building Labs — GEAR Alliance Impact Showcase & Alliance Spotlight',
-      'STEPP — youth advocacy presentations and policy panels with parliamentarians',
-      'High-Level Youth–Parliamentarian Round Table (closed meeting)',
+      "Mugota/Ixhiba Young Men's Forum - suicide, substance use and sexual health",
+      'Web for Life Network Symposium | SHE SOARS - education equity, digital safety and healthy lifestyles',
+      'Alliance Building Labs - GEAR Alliance Impact Showcase and Alliance Spotlight',
+      'STEPP - youth advocacy presentations and policy panels with parliamentarians',
+      'High-Level Youth-Parliamentarian Round Table (closed meeting)',
     ],
   },
   'day-3': {
-    title: 'Day 3: High-Level Engagement & Culture Night',
+    title: 'Day 3: High-Level Engagement and Culture Night',
     bullets: [
-      'High-Level Engagement Platform & Official Ceremony — Windhoek Declaration handover',
+      'High-Level Engagement Platform and Official Ceremony - Windhoek Declaration handover',
       'Regional leadership addresses and Voices of Namibia',
-      'Culture Night — Sixteen Nations, One Movement',
+      'Culture Night - Sixteen Nations, One Movement',
     ],
   },
+}
+
+/** PDFKit Helvetica only supports WinAnsi — strip/replace unsupported glyphs. */
+function pdfSafe(value: unknown): string {
+  return String(value ?? '')
+    .replace(/\u2013|\u2014|\u2212/g, '-') // en/em dash, minus
+    .replace(/\u2022|\u00B7|\u2023/g, '-') // bullets / middle dot
+    .replace(/\u2026/g, '...')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u00A0/g, ' ')
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '')
 }
 
 async function loadBrandImage(filename: string): Promise<Buffer | null> {
@@ -82,7 +94,7 @@ function speakerLine(session: any): string {
 
   const parts = [...linked, ...guests, ...committee]
   if (moderator) parts.push(moderator)
-  return parts.join(' · ')
+  return pdfSafe(parts.join(' | '))
 }
 
 function collectChunks(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -103,6 +115,7 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
   const doc = new PDFDocument({
     size: 'A4',
     margins: { top: 36, bottom: 72, left: 48, right: 48 },
+    autoFirstPage: true,
     info: {
       Title: 'SARSYC VI Conference Programme',
       Author: 'SARSYC Secretariat',
@@ -116,42 +129,52 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
 
   const drawFooter = () => {
     const footerY = doc.page.height - 58
-    if (footer) {
-      const footerHeight = 42
-      doc.image(footer, 48, footerY, { width: contentWidth, height: footerHeight, fit: [contentWidth, footerHeight] })
-    } else {
-      doc
-        .fontSize(8)
-        .fillColor(TEXT_MUTED)
-        .text(
-          'Organising Secretariat: SAYWHAT  ·  Host Partner: University of Namibia  ·  www.sarsyc.org',
-          48,
-          footerY + 12,
-          { width: contentWidth, align: 'center' },
-        )
+    try {
+      if (footer) {
+        doc.image(footer, 48, footerY, { fit: [contentWidth, 42] })
+      } else {
+        doc
+          .fontSize(8)
+          .fillColor(TEXT_MUTED)
+          .text(
+            pdfSafe(
+              'Organising Secretariat: SAYWHAT  |  Host Partner: University of Namibia  |  www.sarsyc.org',
+            ),
+            48,
+            footerY + 12,
+            { width: contentWidth, align: 'center' },
+          )
+      }
+    } catch (error) {
+      console.warn('PDF footer draw failed:', error)
     }
   }
 
   // First page letterhead
   let y = 36
   if (letterhead) {
-    const letterheadHeight = 110
-    doc.image(letterhead, 48, y, { width: contentWidth, height: letterheadHeight, fit: [contentWidth, letterheadHeight] })
-    y += letterheadHeight + 16
+    try {
+      const letterheadHeight = 110
+      doc.image(letterhead, 48, y, { fit: [contentWidth, letterheadHeight] })
+      y += letterheadHeight + 16
+    } catch (error) {
+      console.warn('PDF letterhead draw failed:', error)
+      y = 48
+    }
   } else {
     doc
       .fontSize(18)
       .fillColor(BRAND_BLUE)
-      .text('SARSYC VI Conference Programme', 48, y, { width: contentWidth, align: 'center' })
+      .text(pdfSafe('SARSYC VI Conference Programme'), 48, y, { width: contentWidth, align: 'center' })
     y += 28
     doc
       .fontSize(10)
       .fillColor(TEXT_MUTED)
-      .text('Align for Action: Sustaining Progress in Youth Health and Education', {
+      .text(pdfSafe('Align for Action: Sustaining Progress in Youth Health and Education'), {
         width: contentWidth,
         align: 'center',
       })
-    doc.text('5–7 August 2026 | Windhoek, Namibia', { width: contentWidth, align: 'center' })
+    doc.text(pdfSafe('5-7 August 2026 | Windhoek, Namibia'), { width: contentWidth, align: 'center' })
     y = doc.y + 16
   }
 
@@ -159,28 +182,30 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
   doc
     .fontSize(14)
     .fillColor(BRAND_BLUE)
-    .text('Full Conference Programme', { width: contentWidth })
+    .text(pdfSafe('Full Conference Programme'), { width: contentWidth })
   doc
     .moveDown(0.3)
     .fontSize(10)
     .fillColor(TEXT_MUTED)
     .text(
-      'Venue: Namibia Institute of Public Administration and Management (NIPAM), Windhoek · Generated for download from www.sarsyc.org/programme',
+      pdfSafe(
+        'Venue: Namibia Institute of Public Administration and Management (NIPAM), Windhoek | Generated from www.sarsyc.org/programme',
+      ),
       { width: contentWidth },
     )
   doc.moveDown(0.8)
 
   // Overview section
-  doc.fontSize(12).fillColor(BRAND_BLUE).text('Programme Overview', { width: contentWidth })
+  doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe('Programme Overview'), { width: contentWidth })
   doc.moveDown(0.4)
 
   for (const day of SESSION_DAY_OPTIONS.filter((d) => d.value !== 'day-4')) {
     const overview = DAY_OVERVIEW[day.value]
     if (!overview) continue
-    doc.fontSize(11).fillColor(TEXT_DARK).text(overview.title, { width: contentWidth })
+    doc.fontSize(11).fillColor(TEXT_DARK).text(pdfSafe(overview.title), { width: contentWidth })
     doc.moveDown(0.2)
     for (const bullet of overview.bullets) {
-      doc.fontSize(9).fillColor(TEXT_MUTED).text(`•  ${bullet}`, { width: contentWidth, indent: 8 })
+      doc.fontSize(9).fillColor(TEXT_MUTED).text(pdfSafe(`-  ${bullet}`), { width: contentWidth, indent: 8 })
     }
     doc.moveDown(0.45)
   }
@@ -207,22 +232,23 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
       .fontSize(10)
       .fillColor(TEXT_MUTED)
       .text(
-        'Detailed session listings will appear here as they are published in the conference CMS. Visit www.sarsyc.org/programme/sessions for the latest updates.',
+        pdfSafe(
+          'Detailed session listings will appear here as they are published in the conference CMS. Visit www.sarsyc.org/programme/sessions for the latest updates.',
+        ),
         { width: contentWidth },
       )
   } else {
-    doc.fontSize(12).fillColor(BRAND_BLUE).text('Detailed Session Schedule', { width: contentWidth })
+    doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe('Detailed Session Schedule'), { width: contentWidth })
     doc.moveDown(0.5)
 
     for (const group of byDay) {
-      // Ensure space for day header
       if (doc.y > doc.page.height - 140) {
         drawFooter()
         doc.addPage()
         doc.y = 48
       }
 
-      doc.fontSize(12).fillColor(BRAND_BLUE).text(sessionDayLabel(group.value), { width: contentWidth })
+      doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe(sessionDayLabel(group.value)), { width: contentWidth })
       doc.moveDown(0.35)
 
       for (const session of group.sessions) {
@@ -235,30 +261,33 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
 
         const start = formatSessionTime(session.startTime)
         const end = formatSessionTime(session.endTime)
-        const timeLabel = start && end ? `${start} – ${end}` : start || ''
+        const timeLabel = start && end ? `${start} - ${end}` : start || ''
         const typeLabel = sessionTypeLabel(session.type)
         const trackLabel = session.track ? sessionTrackLabel(session.track) : ''
         const description = slateToPlainText(session.description)
         const people = speakerLine(session)
 
-        // Time + type row
-        doc.fontSize(9).fillColor(ACCENT_BLUE).text(timeLabel || 'TBA', { continued: Boolean(typeLabel), width: contentWidth })
-        if (typeLabel) {
-          doc.fillColor(TEXT_MUTED).text(`   ·   ${typeLabel}${trackLabel ? `   ·   ${trackLabel}` : ''}`)
+        const meta = [typeLabel, trackLabel].filter(Boolean).join(' | ')
+        doc
+          .fontSize(9)
+          .fillColor(ACCENT_BLUE)
+          .text(pdfSafe(timeLabel || 'TBA'), { continued: Boolean(meta), width: contentWidth })
+        if (meta) {
+          doc.fillColor(TEXT_MUTED).text(pdfSafe(`   |   ${meta}`))
         } else {
           doc.text('')
         }
 
-        doc.fontSize(10).fillColor(TEXT_DARK).text(session.title || 'Untitled session', { width: contentWidth })
+        doc.fontSize(10).fillColor(TEXT_DARK).text(pdfSafe(session.title || 'Untitled session'), { width: contentWidth })
 
         if (session.venue) {
-          doc.fontSize(8).fillColor(TEXT_MUTED).text(`Venue: ${session.venue}`, { width: contentWidth })
+          doc.fontSize(8).fillColor(TEXT_MUTED).text(pdfSafe(`Venue: ${session.venue}`), { width: contentWidth })
         }
 
         if (description && session.type !== 'break') {
           const clipped =
-            description.length > 280 ? `${description.slice(0, 277).trimEnd()}…` : description
-          doc.fontSize(8).fillColor(TEXT_MUTED).text(clipped, { width: contentWidth })
+            description.length > 280 ? `${description.slice(0, 277).trimEnd()}...` : description
+          doc.fontSize(8).fillColor(TEXT_MUTED).text(pdfSafe(clipped), { width: contentWidth })
         }
 
         if (people) {

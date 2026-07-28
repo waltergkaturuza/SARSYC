@@ -8,10 +8,9 @@ export const maxDuration = 60
 
 export async function GET() {
   try {
-    const payload = await getPayloadClient()
-
     let sessions: any[] = []
     try {
+      const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'sessions',
         limit: 1000,
@@ -36,7 +35,10 @@ export async function GET() {
   } catch (error: any) {
     console.error('PDF generation error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to generate programme PDF' },
+      {
+        error: error?.message || 'Failed to generate programme PDF',
+        details: process.env.NODE_ENV === 'development' ? String(error?.stack || '') : undefined,
+      },
       { status: 500 },
     )
   }
