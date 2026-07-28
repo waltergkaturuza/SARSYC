@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe, FiStar } from 'react-icons/fi'
+import { slateToSimpleHtml, slateToPlainText } from '@/lib/newsContent'
+import { getCountryLabel } from '@/lib/countries'
 
 export const revalidate = 0
 
@@ -94,6 +96,9 @@ export default async function CommitteeMemberViewPage({
   }
 
   const photoUrl = getPhotoUrl(member.photo)
+  const bioHtml = slateToSimpleHtml(member.bio)
+  const bioText = slateToPlainText(member.bio)
+  const countryLabel = getCountryLabel(member.country) || member.country
 
   return (
     <div className="container-custom py-8">
@@ -147,12 +152,11 @@ export default async function CommitteeMemberViewPage({
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Biography</h2>
             <div className="prose max-w-none">
-              {member.bio ? (
-                typeof member.bio === 'string' ? (
-                  <p className="text-gray-700 whitespace-pre-wrap">{member.bio}</p>
-                ) : (
-                  <div dangerouslySetInnerHTML={{ __html: member.bio }} />
-                )
+              {bioText ? (
+                <div
+                  className="text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: bioHtml }}
+                />
               ) : (
                 <p className="text-gray-500 italic">No biography available</p>
               )}
@@ -176,7 +180,7 @@ export default async function CommitteeMemberViewPage({
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">Country</dt>
-                <dd className="text-gray-900">{member.country}</dd>
+                <dd className="text-gray-900">{countryLabel}</dd>
               </div>
               {member.email && (
                 <div>

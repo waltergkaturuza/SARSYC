@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { plainTextToSlate } from '@/lib/newsContent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
           role,
           organization,
           country,
-          bio: typeof bio === 'string' ? bio : (Array.isArray(bio) ? bio : JSON.stringify(bio)),
+          bio: typeof bio === 'string' ? plainTextToSlate(bio) : (Array.isArray(bio) ? bio : plainTextToSlate(String(bio || ''))),
           email: email?.trim() || undefined,
           photo: photoId || undefined, // Optional - only set if photo was uploaded
           featured: featured || false,

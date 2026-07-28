@@ -6,26 +6,11 @@ import FormField from './FormField'
 import { FiUpload, FiX, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { uploadFile } from '@/lib/chunkedUpload'
+import { slateToPlainText } from '@/lib/newsContent'
 
 // Helper function to extract text from rich text format
 function extractBioText(bio: any): string {
-  if (!bio) return ''
-  if (typeof bio === 'string') return bio
-  
-  // If it's a rich text object (Slate editor format)
-  if (Array.isArray(bio)) {
-    return bio
-      .map((node: any) => {
-        if (node.children) {
-          return node.children.map((child: any) => child.text || '').join('')
-        }
-        return node.text || ''
-      })
-      .join(' ')
-      .trim()
-  }
-  
-  return ''
+  return slateToPlainText(bio)
 }
 
 interface CommitteeMemberData {
