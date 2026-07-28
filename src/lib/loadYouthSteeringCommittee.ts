@@ -54,7 +54,9 @@ export async function loadYouthSteeringCommitteeForPublic(payload: Payload): Pro
     })
 
     if (result.docs.length > 0) {
-      const members = result.docs.map(normalizeCmsMember).filter((m) => m.name)
+      const members = result.docs
+        .map(normalizeCmsMember)
+        .filter((m: DisplayYouthSteeringMember) => Boolean(m.name))
       return {
         members,
         countriesWithoutMembers: countriesMissingMembers(members),
