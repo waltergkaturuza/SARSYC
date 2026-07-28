@@ -20,7 +20,11 @@ export default function ProgrammePage() {
               official opening, closing & culture night
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="/api/programme/pdf" download className="btn-accent flex items-center gap-2">
+              <a
+                href="/api/programme/pdf"
+                download="SARSYC-VI-Programme.pdf"
+                className="btn-accent flex items-center gap-2"
+              >
                 <FiDownload />
                 Download Full Programme (PDF)
               </a>
