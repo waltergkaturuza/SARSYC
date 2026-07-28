@@ -20,97 +20,138 @@ export default function ConferenceProgrammeSchedule({
 }: ConferenceProgrammeScheduleProps) {
   const cards = (
     <div className="space-y-6">
-      <div className="card p-6 lg:p-8">
+      <Link href="/programme/sessions#day-1" className="card p-6 lg:p-8 block group hover:shadow-2xl transition-all">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
             1
           </div>
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 1: Research Indaba</h3>
-            <p className="text-gray-600">
-              A full day dedicated to research presentations, discussions, and knowledge exchange.
-              Researchers and academics will share their findings and engage in critical dialogue.
+            <h3 className="text-2xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
+              Day 1: Research Indaba III
+            </h3>
+            <p className="text-sm font-medium text-primary-600 mb-3">
+              Evidence for Action — Youth-Led Research shaping Policy and Practice
             </p>
-            <p className="text-sm text-gray-500 mt-2">
-              <em>Detailed schedule will be published once speakers are confirmed.</em>
-            </p>
+            <ul className="space-y-2 text-sm text-gray-600 list-disc pl-4">
+              <li>Setting the Stage, Opening Remarks & The Evidence Engine</li>
+              <li>Youth-led abstract presentations across all 5 conference tracks</li>
+              <li>Evidence to Action Plenary — translating research into regional realities</li>
+              <li>Poster presentations & keynote: Evidence, Leadership and Legacy</li>
+              <li>Launch of the SARSYC V Research Volume (2nd edition)</li>
+              <li>Celebrating Evidence Excellence — awards for top oral presentations</li>
+            </ul>
+            <span className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+              View Day 1 sessions
+              <FiArrowRight className="w-4 h-4" />
+            </span>
           </div>
         </div>
-      </div>
+      </Link>
 
-      <div className="card p-6 lg:p-8">
+      <Link href="/programme/sessions#day-2" className="card p-6 lg:p-8 block group hover:shadow-2xl transition-all">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-16 h-16 bg-secondary-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
             2
           </div>
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Day 2: Multiple Forums & Engagements</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">
+              Day 2: Forums & Engagements
+            </h3>
             <div className="space-y-3 text-gray-600">
               <div>
                 <strong className="text-gray-900">Mugota/Ixhiba Young Men&apos;s Forum</strong>
                 <p className="text-sm mt-1">
-                  A dedicated space for young men to discuss health, education, and empowerment.
+                  Confronting suicide, substance use & sexual health challenges facing adolescent
+                  boys and young men — from keynote to the Young Men&apos;s Call to Action.
                 </p>
               </div>
               <div>
-                <strong className="text-gray-900">Web for Life Network Symposium</strong>
+                <strong className="text-gray-900">
+                  Web for Life Network for Girls & Young Women Symposium | SHE SOARS
+                </strong>
                 <p className="text-sm mt-1">
-                  Exploring digital health solutions and online safety for young people.
+                  Advancing education equity, digital safety & healthy lifestyles for adolescent
+                  girls and young women, closing with the Young Women Call to Action.
                 </p>
               </div>
               <div>
                 <strong className="text-gray-900">Alliance Building Labs</strong>
                 <p className="text-sm mt-1">
-                  Collaborative sessions to build strategic partnerships and networks.
+                  Transforming evidence and dialogue into coordinated regional action — featuring
+                  the GEAR Alliance Impact Showcase and Alliance Spotlight.
                 </p>
               </div>
               <div>
                 <strong className="text-gray-900">
-                  Student Talks and Engagement with Policymakers and Partners
+                  Students Talks & Engagement with Policymakers and Partners (STEPP)
                 </strong>
                 <p className="text-sm mt-1">
-                  Direct dialogue between students, policymakers, and development partners.
+                  Youth advocacy presentations and policy panels with parliamentarians and
+                  partners, capped by a high-level ministerial keynote.
+                </p>
+              </div>
+              <div>
+                <strong className="text-gray-900">High-Level Youth–Parliamentarian Round Table</strong>
+                <p className="text-sm mt-1">
+                  An evening intergenerational dialogue (closed meeting) culminating in the signing
+                  of the SARSYC VI Youth Health and Education Accountability Compact.
                 </p>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
-              <em>Detailed schedule will be published once speakers are confirmed.</em>
-            </p>
+            <span className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+              View Day 2 sessions
+              <FiArrowRight className="w-4 h-4" />
+            </span>
           </div>
         </div>
-      </div>
+      </Link>
 
-      <div className="card p-6 lg:p-8">
+      <Link href="/programme/sessions#day-3" className="card p-6 lg:p-8 block group hover:shadow-2xl transition-all">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-16 h-16 bg-accent-500 rounded-xl flex items-center justify-center text-gray-900 text-2xl font-bold flex-shrink-0">
             3
           </div>
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Day 3: Official Opening, Closing & Culture Night
+            <h3 className="text-2xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
+              Day 3: High-Level Engagement & Culture Night
             </h3>
+            <p className="text-sm font-medium text-primary-600 mb-3">
+              High Level Engagement Platform | Official Ceremony
+            </p>
             <div className="space-y-3 text-gray-600">
               <div>
-                <strong className="text-gray-900">Official Opening and Closing Ceremony</strong>
+                <strong className="text-gray-900">High-Level Engagement Platform</strong>
                 <p className="text-sm mt-1">
-                  Formal opening and closing ceremonies with keynote addresses and official
-                  statements.
+                  Official ceremony with anthems, SARSYC&apos;s twelve-year journey, UNESCO and
+                  Society for AIDS in Africa addresses, reading of the Windhoek Declaration by the
+                  Youth Steering Committee, and a SADC Parliamentary Forum reflection — From
+                  Gaborone to Windhoek.
                 </p>
               </div>
               <div>
-                <strong className="text-gray-900">Culture Night</strong>
+                <strong className="text-gray-900">Voices of Namibia & Regional Leadership</strong>
                 <p className="text-sm mt-1">
-                  A celebration of Southern African culture, music, and arts showcasing the rich
-                  diversity of the region.
+                  University of Namibia choir interlude, keynote by the Governor of Khomas Region,
+                  and a Vote of Thanks from the Vice Chancellor of the University of Namibia.
+                </p>
+              </div>
+              <div>
+                <strong className="text-gray-900">
+                  Culture Night — Culture is not the backdrop! It is the Blueprint!
+                </strong>
+                <p className="text-sm mt-1">
+                  Cultural dress showcase, Sixteen Nations One Movement opening, Unity in Diversity
+                  keynote, traditional performances, then dinner, music and networking.
                 </p>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
-              <em>Detailed schedule will be published once speakers are confirmed.</em>
-            </p>
+            <span className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+              View Day 3 sessions
+              <FiArrowRight className="w-4 h-4" />
+            </span>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   )
 

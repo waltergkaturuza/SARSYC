@@ -25,6 +25,7 @@ import * as migration_20260529_000006_add_payment_due_reminder_sent_at from './2
 import * as migration_20260529_000007_add_accountant_role from './20260529_000007_add_accountant_role';
 import * as migration_20260710_000000_add_news_links_and_authors from './20260710_000000_add_news_links_and_authors';
 import * as migration_20260728_000000_add_sessions_day_tracks_speaker_names from './20260728_000000_add_sessions_day_tracks_speaker_names';
+import * as migration_20260728_000001_fix_youth_steering_committee_photo_id from './20260728_000001_fix_youth_steering_committee_photo_id';
 
 export const migrations = [
   {
@@ -161,5 +162,10 @@ export const migrations = [
     up: migration_20260728_000000_add_sessions_day_tracks_speaker_names.up,
     down: migration_20260728_000000_add_sessions_day_tracks_speaker_names.down,
     name: '20260728_000000_add_sessions_day_tracks_speaker_names'
+  },
+  {
+    up: migration_20260728_000001_fix_youth_steering_committee_photo_id.up,
+    down: migration_20260728_000001_fix_youth_steering_committee_photo_id.down,
+    name: '20260728_000001_fix_youth_steering_committee_photo_id'
   },
 ];

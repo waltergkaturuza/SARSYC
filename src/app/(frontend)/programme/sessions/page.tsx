@@ -84,7 +84,7 @@ export default async function SessionsPage() {
           ) : (
             <div className="max-w-5xl mx-auto space-y-12">
               {dayGroups.map((group) => (
-                <div key={group.value}>
+                <div key={group.value} id={group.value} className="scroll-mt-24">
                   <div className="mb-6 border-b-2 border-primary-600 pb-3">
                     <h2 className="text-3xl font-bold text-gray-900">{group.label}</h2>
                   </div>

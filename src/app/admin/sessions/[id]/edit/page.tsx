@@ -13,22 +13,35 @@ interface EditSessionPageProps {
 
 export default async function EditSessionPage({ params }: EditSessionPageProps) {
   const payload = await getPayloadClient()
-  
+
   try {
-    const [session, speakersResult, committeeResult, abstractsResult] = await Promise.all([
+    const [session, speakersResult, abstractsResult] = await Promise.all([
       payload.findByID({
         collection: 'sessions',
         id: params.id,
         depth: 2,
       }),
-      payload.find({ collection: 'speakers', limit: 300, sort: 'name' }),
-      payload.find({ collection: 'youth-steering-committee', limit: 100, sort: 'order' }),
-      payload.find({ 
-        collection: 'abstracts', 
+      payload.find({ collection: 'speakers', limit: 300, sort: 'name', depth: 0 }),
+      payload.find({
+        collection: 'abstracts',
         where: { status: { equals: 'accepted' } },
-        limit: 100 
+        limit: 100,
+        depth: 0,
       }),
     ])
+
+    let committeeMembers: any[] = []
+    try {
+      const committeeResult = await payload.find({
+        collection: 'youth-steering-committee',
+        limit: 100,
+        sort: 'order',
+        depth: 0,
+      })
+      committeeMembers = committeeResult.docs
+    } catch (error) {
+      console.error('Failed to load youth steering committee for session form:', error)
+    }
 
     return (
       <div className="container-custom py-8">
@@ -36,19 +49,17 @@ export default async function EditSessionPage({ params }: EditSessionPageProps) 
           <h1 className="text-3xl font-bold text-gray-900">Edit Session</h1>
           <p className="text-gray-600 mt-2">Update session information</p>
         </div>
-        <SessionForm 
-          mode="edit" 
+        <SessionForm
+          mode="edit"
           initialData={session}
           speakers={speakersResult.docs}
-          committeeMembers={committeeResult.docs}
+          committeeMembers={committeeMembers}
           abstracts={abstractsResult.docs}
         />
       </div>
     )
   } catch (error) {
+    console.error('Failed to load session for edit:', error)
     notFound()
   }
 }
-
-
-

@@ -6,6 +6,7 @@ import { ensureLockedDocsRelsColumns } from './ensureLockedDocsRelsColumns'
 import { ensureRegistrationsLatestColumns } from './ensureRegistrationSchema'
 import { ensureNewsLatestColumns } from './ensureNewsSchema'
 import { ensureSessionsLatestColumns } from './ensureSessionsSchema'
+import { ensureYouthSteeringCommitteeLatestColumns } from './ensureYouthSteeringCommitteeSchema'
 
 let cached = (global as any).payload
 
@@ -18,6 +19,7 @@ async function ensureDatabaseSchemaPatches(client: Payload): Promise<void> {
   await ensureRegistrationsLatestColumns(client)
   await ensureNewsLatestColumns(client)
   await ensureSessionsLatestColumns(client)
+  await ensureYouthSteeringCommitteeLatestColumns(client)
 }
 
 export const getPayloadClient = async (): Promise<Payload> => {
