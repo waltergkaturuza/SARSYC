@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FiCalendar, FiClock, FiMapPin, FiUsers, FiUser } from 'react-icons/fi'
+import { FiCalendar, FiClock, FiMapPin, FiUsers, FiUser, FiDownload } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToPlainText } from '@/lib/newsContent'
 import {
@@ -59,9 +59,17 @@ export default async function SessionsPage() {
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Conference Sessions
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl text-white/90 mb-6">
               Browse all sessions for SARSYC VI
             </p>
+            <a
+              href="/api/programme/pdf"
+              download="SARSYC-VI-Programme.pdf"
+              className="btn-accent inline-flex items-center gap-2"
+            >
+              <FiDownload />
+              Download Full Programme (PDF)
+            </a>
           </div>
         </div>
       </section>

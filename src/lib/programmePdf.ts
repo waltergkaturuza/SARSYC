@@ -114,7 +114,7 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
 
   const doc = new PDFDocument({
     size: 'A4',
-    margins: { top: 36, bottom: 72, left: 48, right: 48 },
+    margins: { top: 36, bottom: 90, left: 48, right: 48 },
     autoFirstPage: true,
     info: {
       Title: 'SARSYC VI Conference Programme',
@@ -126,12 +126,15 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
   const done = collectChunks(doc)
   const pageWidth = doc.page.width
   const contentWidth = pageWidth - 96
+  // Match email assets: footer is wider/shorter than letterhead — force same draw width.
+  const letterheadHeight = Math.round(contentWidth / (1024 / 182))
+  const footerHeight = Math.round(contentWidth / (669 / 68))
 
   const drawFooter = () => {
-    const footerY = doc.page.height - 58
+    const footerY = doc.page.height - footerHeight - 18
     try {
       if (footer) {
-        doc.image(footer, 48, footerY, { fit: [contentWidth, 42] })
+        doc.image(footer, 48, footerY, { width: contentWidth })
       } else {
         doc
           .fontSize(8)
@@ -150,12 +153,11 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     }
   }
 
-  // First page letterhead
+  // First page letterhead — same width as footer
   let y = 36
   if (letterhead) {
     try {
-      const letterheadHeight = 110
-      doc.image(letterhead, 48, y, { fit: [contentWidth, letterheadHeight] })
+      doc.image(letterhead, 48, y, { width: contentWidth })
       y += letterheadHeight + 16
     } catch (error) {
       console.warn('PDF letterhead draw failed:', error)
