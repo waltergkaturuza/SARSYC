@@ -12,16 +12,10 @@ import {
   FiFilter,
   FiMail,
   FiCalendar,
-  FiBookOpen,
-  FiUserCheck,
-  FiMic,
-  FiFolder,
-  FiGlobe,
   FiHeart,
   FiSend,
-  FiImage,
 } from 'react-icons/fi'
-import { PageViewsChart, EventsChart } from '@/components/admin/AnalyticsCharts'
+import { PageViewsChart, EventsChart, PageEngagementChart } from '@/components/admin/AnalyticsCharts'
 
 type TimeRange = '7d' | '14d' | '30d' | '3m' | '1y'
 
@@ -372,92 +366,22 @@ export default function AnalyticsDashboard() {
             <p className="text-xs text-slate-500 mb-4 uppercase tracking-wide">
               Views by section · {data.rangeLabel}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiBookOpen className="w-5 h-5 text-rose-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.sessionsPageViews}</div>
-                  <div className="text-xs text-slate-500">Sessions</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiCalendar className="w-5 h-5 text-primary-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.programmePageViews}</div>
-                  <div className="text-xs text-slate-500">Programme</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiMic className="w-5 h-5 text-fuchsia-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.speakersPageViews}</div>
-                  <div className="text-xs text-slate-500">Speakers</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiUserCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.steeringPageViews}</div>
-                  <div className="text-xs text-slate-500">Steering / Governance</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiGlobe className="w-5 h-5 text-cyan-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.aboutPageViews}</div>
-                  <div className="text-xs text-slate-500">About</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiActivity className="w-5 h-5 text-blue-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.sarsycViPageViews}</div>
-                  <div className="text-xs text-slate-500">SARSYC VI</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiUsers className="w-5 h-5 text-orange-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.participatePageViews}</div>
-                  <div className="text-xs text-slate-500">Participate</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiFolder className="w-5 h-5 text-amber-700 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.resourcesPageViews}</div>
-                  <div className="text-xs text-slate-500">Resources</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiFileText className="w-5 h-5 text-slate-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.newsPageViews}</div>
-                  <div className="text-xs text-slate-500">News</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiHeart className="w-5 h-5 text-rose-500 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.partnershipsPageViews}</div>
-                  <div className="text-xs text-slate-500">Partnerships</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiImage className="w-5 h-5 text-indigo-500 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.mediaPageViews}</div>
-                  <div className="text-xs text-slate-500">Media</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <FiInbox className="w-5 h-5 text-teal-600 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{data.interactionCounts.contactPageViews}</div>
-                  <div className="text-xs text-slate-500">Contact page</div>
-                </div>
-              </div>
-            </div>
+            <PageEngagementChart
+              data={[
+                { section: 'Sessions', views: data.interactionCounts.sessionsPageViews },
+                { section: 'Programme', views: data.interactionCounts.programmePageViews },
+                { section: 'Speakers', views: data.interactionCounts.speakersPageViews },
+                { section: 'Steering / Governance', views: data.interactionCounts.steeringPageViews },
+                { section: 'About', views: data.interactionCounts.aboutPageViews },
+                { section: 'SARSYC VI', views: data.interactionCounts.sarsycViPageViews },
+                { section: 'Participate', views: data.interactionCounts.participatePageViews },
+                { section: 'Resources', views: data.interactionCounts.resourcesPageViews },
+                { section: 'News', views: data.interactionCounts.newsPageViews },
+                { section: 'Partnerships', views: data.interactionCounts.partnershipsPageViews },
+                { section: 'Media', views: data.interactionCounts.mediaPageViews },
+                { section: 'Contact', views: data.interactionCounts.contactPageViews },
+              ]}
+            />
           </div>
 
           {/* Recent events */}
