@@ -263,6 +263,20 @@ export function getCountryLabel(code: string): string {
 }
 
 /**
+ * Resolve a country name (e.g. "Namibia") to its ISO code (e.g. "NA").
+ * Falls back to the input when it already looks like a code.
+ */
+export function getCountryCodeByLabel(labelOrCode: string): string {
+  const raw = (labelOrCode || '').trim()
+  if (!raw) return ''
+  const byCode = countries.find((c) => c.value.toLowerCase() === raw.toLowerCase())
+  if (byCode) return byCode.value
+  const byLabel = countries.find((c) => c.label.toLowerCase() === raw.toLowerCase())
+  if (byLabel) return byLabel.value
+  return raw
+}
+
+/**
  * Get country options for Payload select fields
  */
 export function getCountryOptions() {

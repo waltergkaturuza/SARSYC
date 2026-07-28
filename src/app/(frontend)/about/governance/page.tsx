@@ -1,13 +1,19 @@
 import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
 import CountryFlag from '@/components/ui/CountryFlag'
-import { youthSteeringCommitteeMembers } from '@/lib/youthSteeringCommitteeMembers'
+import { getPayloadClient } from '@/lib/payload'
+import { loadYouthSteeringCommitteeForPublic } from '@/lib/loadYouthSteeringCommittee'
+
+export const revalidate = 0
 
 function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 3)
 }
 
-export default function GovernancePage() {
+export default async function GovernancePage() {
+  const payload = await getPayloadClient()
+  const { members } = await loadYouthSteeringCommitteeForPublic(payload)
+
   return (
     <div className="relative min-h-screen bg-slate-900">
       {/* Background image */}
@@ -40,9 +46,9 @@ export default function GovernancePage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {youthSteeringCommitteeMembers.map((member) => (
+            {members.map((member) => (
               <div
-                key={member.name}
+                key={member.id ?? member.name}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/20 hover:border-amber-400/40 hover:bg-white/15"
               >
                 {/* Amber top accent */}
@@ -115,4 +121,3 @@ export default function GovernancePage() {
     </div>
   )
 }
-

@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { FiArrowLeft } from 'react-icons/fi'
 import CountryFlag from '@/components/ui/CountryFlag'
-import {
-  getSteeringCountriesWithoutMembers,
-  youthSteeringCommitteeMembers,
-} from '@/lib/youthSteeringCommitteeMembers'
+import { getPayloadClient } from '@/lib/payload'
+import { loadYouthSteeringCommitteeForPublic } from '@/lib/loadYouthSteeringCommittee'
+
+export const revalidate = 0
 
 function getInitials(name: string): string {
   return name
@@ -15,10 +15,11 @@ function getInitials(name: string): string {
     .slice(0, 3)
 }
 
-export default function YouthSteeringCommitteePage() {
-  const countriesWithoutMembers = getSteeringCountriesWithoutMembers()
+export default async function YouthSteeringCommitteePage() {
+  const payload = await getPayloadClient()
+  const { members, countriesWithoutMembers } = await loadYouthSteeringCommitteeForPublic(payload)
 
-  const membersByCountry = youthSteeringCommitteeMembers.reduce(
+  const membersByCountry = members.reduce(
     (acc, member) => {
       if (!acc[member.country]) {
         acc[member.country] = []
@@ -26,7 +27,7 @@ export default function YouthSteeringCommitteePage() {
       acc[member.country].push(member)
       return acc
     },
-    {} as Record<string, typeof youthSteeringCommitteeMembers>,
+    {} as Record<string, typeof members>,
   )
 
   const sortedCountries = Object.keys(membersByCountry).sort((a, b) => a.localeCompare(b))
@@ -67,7 +68,7 @@ export default function YouthSteeringCommitteePage() {
         {/* Members by country */}
         <div className="space-y-8">
           {sortedCountries.map((country) => {
-            const members = membersByCountry[country]
+            const countryMembers = membersByCountry[country]
             return (
               <div
                 key={country}
@@ -80,9 +81,9 @@ export default function YouthSteeringCommitteePage() {
                 </div>
 
                 <div className="divide-y divide-white/10">
-                  {members.map((member) => (
+                  {countryMembers.map((member) => (
                     <div
-                      key={member.name}
+                      key={member.id ?? member.name}
                       className="group flex flex-col md:flex-row transition-all duration-300 hover:bg-white/5"
                     >
                       {/* Photo */}
