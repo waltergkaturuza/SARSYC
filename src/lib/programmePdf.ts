@@ -112,9 +112,19 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     loadBrandImage('email-footer.png'),
   ])
 
+  const pageWidth = 595.28 // A4
+  const contentWidth = pageWidth - 96
+  // Match email assets: footer is wider/shorter than letterhead — force same draw width.
+  const letterheadHeight = Math.round(contentWidth / (1024 / 182))
+  const footerHeight = Math.round(contentWidth / (669 / 68))
+  const letterheadTop = 24
+  const contentTop = letterheadTop + letterheadHeight + 14
+  const footerBottomGap = 18
+  const bottomMargin = footerHeight + footerBottomGap + 12
+
   const doc = new PDFDocument({
     size: 'A4',
-    margins: { top: 36, bottom: 90, left: 48, right: 48 },
+    margins: { top: contentTop, bottom: bottomMargin, left: 48, right: 48 },
     autoFirstPage: true,
     info: {
       Title: 'SARSYC VI Conference Programme',
@@ -124,14 +134,34 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
   })
 
   const done = collectChunks(doc)
-  const pageWidth = doc.page.width
-  const contentWidth = pageWidth - 96
-  // Match email assets: footer is wider/shorter than letterhead — force same draw width.
-  const letterheadHeight = Math.round(contentWidth / (1024 / 182))
-  const footerHeight = Math.round(contentWidth / (669 / 68))
+
+  const drawLetterhead = () => {
+    try {
+      if (letterhead) {
+        doc.image(letterhead, 48, letterheadTop, { width: contentWidth })
+      } else {
+        doc
+          .fontSize(11)
+          .fillColor(BRAND_BLUE)
+          .text(pdfSafe('SARSYC VI Conference Programme'), 48, letterheadTop + 8, {
+            width: contentWidth,
+            align: 'center',
+          })
+        doc
+          .fontSize(8)
+          .fillColor(TEXT_MUTED)
+          .text(pdfSafe('5-7 August 2026 | Windhoek, Namibia'), {
+            width: contentWidth,
+            align: 'center',
+          })
+      }
+    } catch (error) {
+      console.warn('PDF letterhead draw failed:', error)
+    }
+  }
 
   const drawFooter = () => {
-    const footerY = doc.page.height - footerHeight - 18
+    const footerY = doc.page.height - footerHeight - footerBottomGap
     try {
       if (footer) {
         doc.image(footer, 48, footerY, { width: contentWidth })
@@ -153,34 +183,19 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     }
   }
 
-  // First page letterhead — same width as footer
-  let y = 36
-  if (letterhead) {
-    try {
-      doc.image(letterhead, 48, y, { width: contentWidth })
-      y += letterheadHeight + 16
-    } catch (error) {
-      console.warn('PDF letterhead draw failed:', error)
-      y = 48
-    }
-  } else {
-    doc
-      .fontSize(18)
-      .fillColor(BRAND_BLUE)
-      .text(pdfSafe('SARSYC VI Conference Programme'), 48, y, { width: contentWidth, align: 'center' })
-    y += 28
-    doc
-      .fontSize(10)
-      .fillColor(TEXT_MUTED)
-      .text(pdfSafe('Align for Action: Sustaining Progress in Youth Health and Education'), {
-        width: contentWidth,
-        align: 'center',
-      })
-    doc.text(pdfSafe('5-7 August 2026 | Windhoek, Namibia'), { width: contentWidth, align: 'center' })
-    y = doc.y + 16
+  const startNewPage = () => {
+    drawFooter()
+    doc.addPage()
   }
 
-  doc.y = y
+  // Letterhead on every page (first page + each added page), same as footer.
+  drawLetterhead()
+  doc.y = contentTop
+  doc.on('pageAdded', () => {
+    drawLetterhead()
+    doc.y = contentTop
+  })
+
   doc
     .fontSize(14)
     .fillColor(BRAND_BLUE)
@@ -244,10 +259,8 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     doc.moveDown(0.5)
 
     for (const group of byDay) {
-      if (doc.y > doc.page.height - 140) {
-        drawFooter()
-        doc.addPage()
-        doc.y = 48
+      if (doc.y > doc.page.height - bottomMargin - 80) {
+        startNewPage()
       }
 
       doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe(sessionDayLabel(group.value)), { width: contentWidth })
@@ -255,10 +268,8 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
 
       for (const session of group.sessions) {
         const needed = 70
-        if (doc.y > doc.page.height - needed - 60) {
-          drawFooter()
-          doc.addPage()
-          doc.y = 48
+        if (doc.y > doc.page.height - bottomMargin - needed) {
+          startNewPage()
         }
 
         const start = formatSessionTime(session.startTime)
