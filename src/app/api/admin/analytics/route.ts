@@ -62,6 +62,73 @@ async function getTopPages(days: number): Promise<{ path: string; count: number;
   }
 }
 
+async function countPageViewsMatching(days: number, patterns: string[]): Promise<number> {
+  try {
+    const dbUrl = process.env.DATABASE_URL
+    if (!dbUrl || patterns.length === 0) return 0
+    const postgres = (await import('postgres')).default
+    const sql = postgres(dbUrl, { max: 1 })
+    let total = 0
+    for (const pattern of patterns) {
+      const rows = await sql`
+        SELECT COUNT(*)::int as count
+        FROM page_views
+        WHERE created_at >= NOW() - (${String(days)} || ' days')::interval
+          AND path LIKE ${pattern}
+      `
+      total += Number(rows[0]?.count ?? 0)
+    }
+    await sql.end()
+    return total
+  } catch {
+    return 0
+  }
+}
+
+async function countSiteEvents(
+  days: number,
+  opts: { eventType?: string; metadataSource?: string } = {},
+): Promise<number> {
+  try {
+    const dbUrl = process.env.DATABASE_URL
+    if (!dbUrl) return 0
+    const postgres = (await import('postgres')).default
+    const sql = postgres(dbUrl, { max: 1 })
+
+    let rows
+    if (opts.metadataSource) {
+      rows = await sql`
+        SELECT COUNT(*)::int as count
+        FROM site_events
+        WHERE created_at >= NOW() - (${String(days)} || ' days')::interval
+          AND event_type = ${opts.eventType || 'download'}
+          AND (
+            metadata->>'source' = ${opts.metadataSource}
+            OR metadata::text ILIKE ${'%' + opts.metadataSource + '%'}
+          )
+      `
+    } else if (opts.eventType) {
+      rows = await sql`
+        SELECT COUNT(*)::int as count
+        FROM site_events
+        WHERE created_at >= NOW() - (${String(days)} || ' days')::interval
+          AND event_type = ${opts.eventType}
+      `
+    } else {
+      rows = await sql`
+        SELECT COUNT(*)::int as count
+        FROM site_events
+        WHERE created_at >= NOW() - (${String(days)} || ' days')::interval
+      `
+    }
+
+    await sql.end()
+    return Number(rows[0]?.count ?? 0)
+  } catch {
+    return 0
+  }
+}
+
 type ViewsByDay = { date: string; count: number }
 type EventsByDay = { date: string; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }
 
@@ -203,6 +270,8 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayloadClient()
 
+    const sinceIso = new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString()
+
     const [
       pageViewsResult,
       uniqueVisitorsResult,
@@ -216,23 +285,64 @@ export async function GET(request: NextRequest) {
       contactMessages,
       newsletterSubs,
       orathonRegs,
+      partnershipInquiries,
+      downloads,
+      programmePdfDownloads,
+      formSubmits,
+      sessionsPageViews,
+      steeringPageViews,
+      programmePageViews,
+      speakersPageViews,
+      resourcesPageViews,
+      newsPageViews,
+      partnershipsPageViews,
+      sarsycViPageViews,
+      aboutPageViews,
+      participatePageViews,
+      mediaPageViews,
+      contactPageViews,
     ] = await Promise.all([
       payload.find({ collection: 'page-views', limit: 0 }),
       getUniqueVisitors(config.days),
       getTopPages(config.days),
       getViewsByDay(config),
       getEventsByDay(config),
-      payload.find({ collection: 'site-events', limit: 20, sort: '-createdAt' }).catch(() => ({ docs: [], totalDocs: 0 })),
-      payload.find({ collection: 'registrations', limit: 0, where: { createdAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } } }),
-      payload.find({ collection: 'abstracts', limit: 0, where: { createdAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } } }),
-      payload.find({ collection: 'volunteers', limit: 0, where: { createdAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } } }),
-      payload.find({ collection: 'contact-messages', limit: 0, where: { createdAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } } }),
+      payload.find({ collection: 'site-events', limit: 40, sort: '-createdAt' }).catch(() => ({ docs: [], totalDocs: 0 })),
+      payload.find({ collection: 'registrations', limit: 0, where: { createdAt: { greater_than_equal: sinceIso } } }),
+      payload.find({ collection: 'abstracts', limit: 0, where: { createdAt: { greater_than_equal: sinceIso } } }),
+      payload.find({ collection: 'volunteers', limit: 0, where: { createdAt: { greater_than_equal: sinceIso } } }),
+      payload.find({ collection: 'contact-messages', limit: 0, where: { createdAt: { greater_than_equal: sinceIso } } }),
       payload.find({ collection: 'newsletter-subscriptions', limit: 0 }).catch(() => ({ totalDocs: 0 })),
       payload.find({
         collection: 'orathon-registrations',
         limit: 0,
-        where: { createdAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } },
+        where: { createdAt: { greater_than_equal: sinceIso } },
       }).catch(() => ({ totalDocs: 0 })),
+      payload
+        .find({
+          collection: 'partnership-inquiries',
+          limit: 0,
+          where: { createdAt: { greater_than_equal: sinceIso } },
+        })
+        .catch(() => ({ totalDocs: 0 })),
+      countSiteEvents(config.days, { eventType: 'download' }),
+      countSiteEvents(config.days, { eventType: 'download', metadataSource: 'programme-pdf' }),
+      countSiteEvents(config.days, { eventType: 'form_submit' }),
+      countPageViewsMatching(config.days, ['/programme/sessions%']),
+      countPageViewsMatching(config.days, [
+        '/about/youth-steering-committee%',
+        '/about/governance%',
+      ]),
+      countPageViewsMatching(config.days, ['/programme', '/programme/%']),
+      countPageViewsMatching(config.days, ['/programme/speakers%']),
+      countPageViewsMatching(config.days, ['/resources%']),
+      countPageViewsMatching(config.days, ['/news', '/news/%']),
+      countPageViewsMatching(config.days, ['/partnerships%']),
+      countPageViewsMatching(config.days, ['/sarsyc-vi', '/sarsyc-vi/%']),
+      countPageViewsMatching(config.days, ['/about', '/about/%']),
+      countPageViewsMatching(config.days, ['/participate', '/participate/%']),
+      countPageViewsMatching(config.days, ['/media', '/media/%']),
+      countPageViewsMatching(config.days, ['/contact%']),
     ])
 
     const newsletterTotal = newsletterSubs?.totalDocs ?? 0
@@ -241,7 +351,7 @@ export async function GET(request: NextRequest) {
       const subsInRange = await payload.find({
         collection: 'newsletter-subscriptions',
         limit: 0,
-        where: { subscribedAt: { greater_than_equal: new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() } },
+        where: { subscribedAt: { greater_than_equal: sinceIso } },
       })
       newsletterInRange = subsInRange.totalDocs
     } catch {
@@ -276,6 +386,22 @@ export async function GET(request: NextRequest) {
         newsletterSubscriptions: newsletterTotal,
         newsletterNewInRange: newsletterInRange,
         orathonRegistrations: orathonRegs?.totalDocs ?? 0,
+        partnershipInquiries: partnershipInquiries?.totalDocs ?? 0,
+        downloads,
+        programmePdfDownloads,
+        formSubmits,
+        sessionsPageViews,
+        steeringPageViews,
+        programmePageViews,
+        speakersPageViews,
+        resourcesPageViews,
+        newsPageViews,
+        partnershipsPageViews,
+        sarsycViPageViews,
+        aboutPageViews,
+        participatePageViews,
+        mediaPageViews,
+        contactPageViews,
       },
       rangeLabel: range === '7d' ? '7 days' : range === '14d' ? '14 days' : range === '30d' ? '30 days' : range === '3m' ? '3 months' : '1 year',
     })

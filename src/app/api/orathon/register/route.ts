@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -46,6 +47,8 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send confirmation email
     // await sendOrathonConfirmationEmail(registration)
+
+    await recordFormSubmit(payload, request, 'orathon', 'Orathon registration')
 
     return NextResponse.json(
       {

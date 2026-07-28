@@ -95,7 +95,12 @@ export default function ResourcesPage() {
       })
 
       // Track in analytics
-      trackEvent('download', { fileName: resource.file?.filename || resource.title, resourceId: resource.id })
+      trackEvent('download', {
+        fileName: resource.file?.filename || resource.title,
+        resourceId: resource.id,
+        source: 'resources',
+        label: resource.title || 'Resource download',
+      })
 
       // Open/download file
       window.open(fileUrl, '_blank')

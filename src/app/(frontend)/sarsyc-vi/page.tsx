@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
+import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import CountdownTimer from '@/components/ui/CountdownTimer'
 import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgrammeSchedule'
 import {
@@ -200,6 +201,13 @@ function DownloadConceptNoteButton() {
         target="_blank"
         rel="noopener noreferrer"
         className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto"
+        onClick={() =>
+          trackEvent('download', {
+            fileName: 'SARSYC-VI-Concept-Note',
+            source: 'concept-note',
+            label: 'Concept Note',
+          })
+        }
       >
         <FiDownload className="mr-2" />
         Download Concept Note

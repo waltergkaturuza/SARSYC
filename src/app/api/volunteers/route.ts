@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { createAuditLog } from '@/lib/audit'
 import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -161,6 +162,8 @@ export async function POST(request: NextRequest) {
       // Don't fail if audit logging fails
       console.warn('Failed to log audit trail for volunteer application:', auditError)
     }
+
+    await recordFormSubmit(payload, request, 'volunteer_application', 'Volunteer application')
 
     return NextResponse.json({
       success: true,

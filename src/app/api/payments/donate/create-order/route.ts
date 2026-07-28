@@ -13,6 +13,7 @@ import { buildStanbicStartLogPayload } from '@/lib/stanbic/stanbicCertification'
 import { isConferenceTrackId, conferenceTrackLabel } from '@/lib/conferenceTracks'
 import { trackSponsorshipAmountUsd } from '@/lib/trackSponsorship'
 import { buildDonationCategoryDisplay, donationCategorySlug } from '@/lib/donationCategory'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -214,6 +215,11 @@ export async function POST(req: NextRequest) {
     console.error('[donate create-order] db create', err)
     return NextResponse.json({ error: 'Could not record donation. Please try again.' }, { status: 500 })
   }
+
+  await recordFormSubmit(payload, request, 'donation', 'Donation / sponsorship started', {
+    type,
+    amountUsd,
+  })
 
   const redirectUrl = stanbicDonatePaymentReturnUrl(donationId)
   const amountMinorUnits = Math.round(amountUsd * 100) // cents

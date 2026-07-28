@@ -15,6 +15,7 @@ import {
 } from '@/lib/registrationPackages'
 import { ensureRegistrationsLatestColumns } from '@/lib/ensureRegistrationSchema'
 import { completePaymentPageUrl } from '@/lib/registrationResumePayment'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 /** Postgres timestamptz columns reject ""; strip blank optional dates before insert */
 const REGISTRATION_DATE_FIELDS = [
@@ -922,6 +923,8 @@ export async function POST(request: NextRequest) {
       // Log but don't fail the registration if email fails
       console.error('Failed to send registration confirmation email:', emailError)
     }
+
+    await recordFormSubmit(payload, request, 'registration', 'Conference registration')
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendNewsletterWelcomeEmail } from '@/lib/mail'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -69,6 +70,8 @@ export async function POST(request: NextRequest) {
       to: email,
       firstName,
     })
+
+    await recordFormSubmit(payload, request, 'newsletter', 'Newsletter subscription')
 
     return NextResponse.json({
       success: true,

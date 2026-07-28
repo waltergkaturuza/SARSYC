@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { z } from 'zod'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -55,6 +56,8 @@ export async function POST(request: NextRequest) {
     //   subject: `New Contact Message: ${subject}`,
     //   html: `...`,
     // })
+
+    await recordFormSubmit(payload, request, 'contact', 'Contact form', { subject })
 
     return NextResponse.json({
       success: true,

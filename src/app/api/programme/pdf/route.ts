@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { buildProgrammePdfBuffer } from '@/lib/programmePdf'
+import { pathFromReferer, recordSiteEvent } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     let sessions: any[] = []
+    let payload: Awaited<ReturnType<typeof getPayloadClient>> | null = null
     try {
-      const payload = await getPayloadClient()
+      payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'sessions',
         limit: 1000,
@@ -24,6 +26,18 @@ export async function GET() {
     }
 
     const pdf = await buildProgrammePdfBuffer(sessions)
+
+    if (payload) {
+      await recordSiteEvent(payload, {
+        eventType: 'download',
+        path: pathFromReferer(request, '/api/programme/pdf'),
+        metadata: {
+          fileName: 'SARSYC-VI-Programme.pdf',
+          source: 'programme-pdf',
+          label: 'Programme PDF',
+        },
+      })
+    }
 
     return new NextResponse(new Uint8Array(pdf), {
       headers: {

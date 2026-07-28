@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToPlainText } from '@/lib/newsContent'
+import { pathFromReferer, recordSiteEvent } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -34,6 +35,19 @@ export async function GET(request: NextRequest) {
       })
       sessions = result.docs
     }
+
+    await recordSiteEvent(payload, {
+      eventType: 'download',
+      path: pathFromReferer(request, '/programme/sessions'),
+      metadata: {
+        source: 'programme-ical',
+        label: sessionId ? 'Session calendar (.ics)' : 'Programme calendar (.ics)',
+        fileName: sessionId
+          ? `sarsyc-vi-session-${sessionId}.ics`
+          : 'sarsyc-vi-programme.ics',
+        sessionId: sessionId || undefined,
+      },
+    })
 
     // Generate iCal content
     const lines = [

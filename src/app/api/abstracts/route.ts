@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { sendMail } from '@/lib/mail'
 import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
+import { recordFormSubmit } from '@/lib/recordSiteEvent'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -236,6 +237,10 @@ The SARSYC VI Steering Committee
     }
 
     console.log('Abstract submitted:', abstract.submissionId)
+
+    await recordFormSubmit(payload, request, 'abstract', 'Abstract submission', {
+      track: body?.track,
+    })
 
     return NextResponse.json({
       success: true,

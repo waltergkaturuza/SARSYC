@@ -12,6 +12,14 @@ import {
   FiFilter,
   FiMail,
   FiCalendar,
+  FiBookOpen,
+  FiUserCheck,
+  FiMic,
+  FiFolder,
+  FiGlobe,
+  FiHeart,
+  FiSend,
+  FiImage,
 } from 'react-icons/fi'
 import { PageViewsChart, EventsChart } from '@/components/admin/AnalyticsCharts'
 
@@ -23,7 +31,13 @@ type AnalyticsData = {
   topPages: { path: string; count: number; displayPath?: string }[]
   viewsByDay: { date: string; count: number }[]
   eventsByDay: { date: string; download?: number; form_submit?: number; page_view?: number; other?: number; total?: number }[]
-  recentEvents: { id: string; eventType: string; path?: string; createdAt: string }[]
+  recentEvents: {
+    id: string
+    eventType: string
+    path?: string
+    createdAt: string
+    metadata?: { fileName?: string; label?: string; source?: string; [key: string]: unknown }
+  }[]
   interactionCounts: {
     registrations: number
     abstracts: number
@@ -32,6 +46,22 @@ type AnalyticsData = {
     newsletterSubscriptions: number
     newsletterNewInRange: number
     orathonRegistrations: number
+    partnershipInquiries: number
+    downloads: number
+    programmePdfDownloads: number
+    formSubmits: number
+    sessionsPageViews: number
+    steeringPageViews: number
+    programmePageViews: number
+    speakersPageViews: number
+    resourcesPageViews: number
+    newsPageViews: number
+    partnershipsPageViews: number
+    sarsycViPageViews: number
+    aboutPageViews: number
+    participatePageViews: number
+    mediaPageViews: number
+    contactPageViews: number
   }
   rangeLabel: string
 }
@@ -59,6 +89,22 @@ const defaultData: AnalyticsData = {
     newsletterSubscriptions: 0,
     newsletterNewInRange: 0,
     orathonRegistrations: 0,
+    partnershipInquiries: 0,
+    downloads: 0,
+    programmePdfDownloads: 0,
+    formSubmits: 0,
+    sessionsPageViews: 0,
+    steeringPageViews: 0,
+    programmePageViews: 0,
+    speakersPageViews: 0,
+    resourcesPageViews: 0,
+    newsPageViews: 0,
+    partnershipsPageViews: 0,
+    sarsycViPageViews: 0,
+    aboutPageViews: 0,
+    participatePageViews: 0,
+    mediaPageViews: 0,
+    contactPageViews: 0,
   },
   rangeLabel: '14 days',
 }
@@ -220,10 +266,13 @@ export default function AnalyticsDashboard() {
             )}
           </div>
 
-          {/* Key interactions - incl newsletters, subscriptions */}
+          {/* Key interactions - form submissions & downloads */}
           <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
-            <h3 className="text-sm font-medium text-slate-900 mb-4">Key interactions</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <h3 className="text-sm font-medium text-slate-900 mb-1">Key interactions</h3>
+            <p className="text-xs text-slate-500 mb-4 uppercase tracking-wide">
+              Submissions & downloads · {data.rangeLabel}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               <Link
                 href="/admin/registrations"
                 className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
@@ -286,6 +335,128 @@ export default function AnalyticsDashboard() {
                   <div className="text-xs text-slate-500">Orathon</div>
                 </div>
               </Link>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiHeart className="w-5 h-5 text-pink-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.partnershipInquiries}</div>
+                  <div className="text-xs text-slate-500">Partnerships</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiSend className="w-5 h-5 text-violet-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.formSubmits}</div>
+                  <div className="text-xs text-slate-500">Form submits</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiDownload className="w-5 h-5 text-sky-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.programmePdfDownloads}</div>
+                  <div className="text-xs text-slate-500">Programme PDFs</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiDownload className="w-5 h-5 text-indigo-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.downloads}</div>
+                  <div className="text-xs text-slate-500">All downloads</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Page engagement by section */}
+          <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+            <h3 className="text-sm font-medium text-slate-900 mb-1">Page engagement</h3>
+            <p className="text-xs text-slate-500 mb-4 uppercase tracking-wide">
+              Views by section · {data.rangeLabel}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiBookOpen className="w-5 h-5 text-rose-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.sessionsPageViews}</div>
+                  <div className="text-xs text-slate-500">Sessions</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiCalendar className="w-5 h-5 text-primary-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.programmePageViews}</div>
+                  <div className="text-xs text-slate-500">Programme</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiMic className="w-5 h-5 text-fuchsia-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.speakersPageViews}</div>
+                  <div className="text-xs text-slate-500">Speakers</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiUserCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.steeringPageViews}</div>
+                  <div className="text-xs text-slate-500">Steering / Governance</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiGlobe className="w-5 h-5 text-cyan-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.aboutPageViews}</div>
+                  <div className="text-xs text-slate-500">About</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiActivity className="w-5 h-5 text-blue-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.sarsycViPageViews}</div>
+                  <div className="text-xs text-slate-500">SARSYC VI</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiUsers className="w-5 h-5 text-orange-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.participatePageViews}</div>
+                  <div className="text-xs text-slate-500">Participate</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiFolder className="w-5 h-5 text-amber-700 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.resourcesPageViews}</div>
+                  <div className="text-xs text-slate-500">Resources</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiFileText className="w-5 h-5 text-slate-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.newsPageViews}</div>
+                  <div className="text-xs text-slate-500">News</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiHeart className="w-5 h-5 text-rose-500 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.partnershipsPageViews}</div>
+                  <div className="text-xs text-slate-500">Partnerships</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiImage className="w-5 h-5 text-indigo-500 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.mediaPageViews}</div>
+                  <div className="text-xs text-slate-500">Media</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <FiInbox className="w-5 h-5 text-teal-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-900">{data.interactionCounts.contactPageViews}</div>
+                  <div className="text-xs text-slate-500">Contact page</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -301,6 +472,9 @@ export default function AnalyticsDashboard() {
                         Event
                       </th>
                       <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Detail
+                      </th>
+                      <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                         Path
                       </th>
                       <th className="py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -309,26 +483,32 @@ export default function AnalyticsDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {data.recentEvents.map((ev) => (
-                      <tr key={ev.id}>
-                        <td className="py-2">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
-                            {ev.eventType}
-                          </span>
-                        </td>
-                        <td className="py-2 text-sm text-slate-600">{ev.path || '—'}</td>
-                        <td className="py-2 text-sm text-slate-500">
-                          {new Date(ev.createdAt).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
+                    {data.recentEvents.map((ev) => {
+                      const detail =
+                        ev.metadata?.label ||
+                        ev.metadata?.fileName ||
+                        (ev.metadata?.source ? String(ev.metadata.source) : null)
+                      return (
+                        <tr key={ev.id}>
+                          <td className="py-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                              {ev.eventType}
+                            </span>
+                          </td>
+                          <td className="py-2 text-sm text-slate-600">{detail || '—'}</td>
+                          <td className="py-2 text-sm text-slate-600">{ev.path || '—'}</td>
+                          <td className="py-2 text-sm text-slate-500">
+                            {new Date(ev.createdAt).toLocaleString()}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
             ) : (
               <p className="text-slate-400 text-sm py-8 text-center">
-                No custom events yet. Use <code className="bg-slate-100 px-1 rounded">trackEvent()</code>{' '}
-                in forms and downloads to record interactions.
+                No custom events yet. Downloads and form submissions will appear here.
               </p>
             )}
           </div>

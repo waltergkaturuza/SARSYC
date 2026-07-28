@@ -3,6 +3,7 @@
 import { FiDownload, FiImage, FiFileText, FiInfo } from 'react-icons/fi'
 import Image from 'next/image'
 import Link from 'next/link'
+import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 
 const mediaAssets = [
   {
@@ -95,6 +96,15 @@ export default function MediaKitPage() {
                       href={asset.download}
                       download
                       className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                      onClick={() => {
+                        if (asset.download && asset.download !== '#') {
+                          trackEvent('download', {
+                            fileName: asset.name,
+                            source: 'media-kit',
+                            label: asset.name,
+                          })
+                        }
+                      }}
                     >
                       <FiDownload className="w-5 h-5" />
                       Download

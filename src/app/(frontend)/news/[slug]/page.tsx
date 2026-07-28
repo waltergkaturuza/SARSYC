@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiUser, FiArrowLeft, FiExternalLink, FiDownload } from 'react-icons/fi'
+import { FiCalendar, FiUser, FiArrowLeft, FiExternalLink } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToSimpleHtml, NEWS_CATEGORY_LABELS, formatNewsAuthorNames } from '@/lib/newsContent'
 import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 import ShareButtons from '@/components/ui/ShareButtons'
+import TrackedDownloadLink from '@/components/analytics/TrackedDownloadLink'
 
 export const revalidate = 60
 
@@ -151,16 +152,12 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
                       </div>
                     )}
                     {downloadResource?.url && downloadResource?.label && (
-                      <a
+                      <TrackedDownloadLink
                         href={downloadResource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download
+                        label={downloadResource.label}
+                        source="news-download"
                         className="inline-flex items-center gap-2 px-5 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors w-fit"
-                      >
-                        <FiDownload className="w-5 h-5" />
-                        {downloadResource.label}
-                      </a>
+                      />
                     )}
                   </div>
                 )}
