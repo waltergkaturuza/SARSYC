@@ -10,7 +10,14 @@ const TRACK_ENUM_VALUES = [
   'mental-health',
 ]
 
-const TYPE_ENUM_VALUES = ['break', 'post-conference', 'orathon']
+const TYPE_ENUM_VALUES = [
+  'break',
+  'post-conference',
+  'orathon',
+  'launch-event',
+  'concluding-presentation',
+  'forum-reflection',
+]
 
 const DAY_ENUM_VALUES = ['day-1', 'day-2', 'day-3', 'day-4']
 

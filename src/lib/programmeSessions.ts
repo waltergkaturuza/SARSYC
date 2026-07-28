@@ -72,6 +72,9 @@ const TYPE_BADGE_CLASS: Record<string, string> = {
   workshop: 'bg-green-100 text-green-800',
   oral: 'bg-purple-100 text-purple-800',
   poster: 'bg-pink-100 text-pink-800',
+  'launch-event': 'bg-amber-100 text-amber-800',
+  'concluding-presentation': 'bg-cyan-100 text-cyan-800',
+  'forum-reflection': 'bg-violet-100 text-violet-800',
   default: 'bg-primary-100 text-primary-800',
 }
 
