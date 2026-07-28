@@ -86,6 +86,11 @@ export default async function YouthSteeringCommitteePage({
   const payload = await getPayloadClient()
   await ensureYouthSteeringCommitteeLatestColumns(payload)
 
+  const page = Number(searchParams.page || 1)
+  const perPage = 20
+  const featured = searchParams.featured
+  const search = searchParams.search
+
   // One-time import of the governance-page members when the collection is empty.
   if (!search && !featured) {
     try {
@@ -102,11 +107,6 @@ export default async function YouthSteeringCommitteePage({
       console.error('Youth steering committee auto-seed failed:', error)
     }
   }
-  
-  const page = Number(searchParams.page || 1)
-  const perPage = 20
-  const featured = searchParams.featured
-  const search = searchParams.search
 
   const where: any = {}
   
