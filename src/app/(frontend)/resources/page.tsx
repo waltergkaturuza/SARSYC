@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit } from 'react-icons/fi'
+import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit, FiX } from 'react-icons/fi'
 import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import EmptyState from '@/components/ui/EmptyState'
 
@@ -30,11 +30,27 @@ export default function ResourcesPage() {
   const [selectedType, setSelectedType] = useState('all')
   const [selectedYear, setSelectedYear] = useState('all')
   const [downloading, setDownloading] = useState<number | null>(null)
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({})
+  const [selectedResource, setSelectedResource] = useState<any | null>(null)
 
   useEffect(() => {
     fetchResources()
   }, [selectedType, selectedYear, searchQuery])
+
+  useEffect(() => {
+    if (!selectedResource) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedResource(null)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [selectedResource])
 
   const fetchResources = async () => {
     setLoading(true)
@@ -121,12 +137,6 @@ export default function ResourcesPage() {
   }
 
   const availableYears = Array.from(new Set(resources.map(r => r.year).filter(Boolean))).sort((a, b) => b - a)
-  const toggleDescription = (resourceId: string) => {
-    setExpandedDescriptions((prev) => ({
-      ...prev,
-      [resourceId]: !prev[resourceId],
-    }))
-  }
 
   const getResourceIcon = (type: string) => {
     const typeIcon = resourceTypes.find(t => t.value === type)
@@ -270,7 +280,6 @@ export default function ResourcesPage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {resources.map((resource) => {
                   const description = resource.description ?? ''
-                  const isExpanded = expandedDescriptions[resource.id]
                   const hasLongDescription = description.length > 160
                   const ResourceIcon = getResourceIcon(resource.type)
 
@@ -297,16 +306,16 @@ export default function ResourcesPage() {
 
                       {description ? (
                         <>
-                          <p className={`text-sm text-white/65 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                          <p className="text-sm text-white/65 line-clamp-3 text-justify">
                             {description}
                           </p>
                           {hasLongDescription ? (
                             <button
                               type="button"
-                              onClick={() => toggleDescription(resource.id)}
+                              onClick={() => setSelectedResource(resource)}
                               className="text-sm font-medium text-primary-300 hover:text-primary-200 mb-4 text-left"
                             >
-                              {isExpanded ? 'Read less' : 'Read more'}
+                              Read more
                             </button>
                           ) : (
                             <div className="mb-4" />
@@ -344,6 +353,92 @@ export default function ResourcesPage() {
           </div>
         </section>
       </div>
+
+      {selectedResource && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resource-modal-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            aria-label="Close resource details"
+            onClick={() => setSelectedResource(null)}
+          />
+          <div className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/15 bg-slate-900/95 shadow-2xl shadow-black/40">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-slate-900/95 px-6 py-5 backdrop-blur-md">
+              <div className="min-w-0 flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  {(() => {
+                    const Icon = getResourceIcon(selectedResource.type)
+                    return <Icon className="w-6 h-6 text-primary-300" />
+                  })()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wide text-white/45 mb-1">
+                    {[selectedResource.year, selectedResource.file?.filesize ? formatFileSize(selectedResource.file.filesize) : null]
+                      .filter(Boolean)
+                      .join(' · ') || 'Resource'}
+                  </p>
+                  <h2 id="resource-modal-title" className="text-xl sm:text-2xl font-bold text-primary-200 leading-snug">
+                    {selectedResource.title}
+                  </h2>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedResource(null)}
+                className="flex-shrink-0 rounded-full p-2 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-6 sm:px-8 sm:py-7">
+              <p className="text-base sm:text-lg leading-relaxed text-white/80 text-justify whitespace-pre-wrap">
+                {selectedResource.description || 'No description available.'}
+              </p>
+            </div>
+
+            <div className="sticky bottom-0 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-white/10 bg-slate-900/95 px-6 py-4 backdrop-blur-md">
+              <div className="flex items-center gap-1 text-sm text-white/50">
+                <FiDownload className="w-4 h-4" />
+                {selectedResource.downloads || 0} downloads
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedResource(null)}
+                  className="inline-flex items-center justify-center rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(selectedResource)}
+                  disabled={downloading === selectedResource.id || !selectedResource.file?.url}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white font-medium py-2 px-5 text-sm transition-colors disabled:opacity-50 shadow-lg shadow-primary-900/30"
+                >
+                  {downloading === selectedResource.id ? (
+                    <>
+                      <FiLoader className="w-4 h-4 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <FiDownload className="w-4 h-4" />
+                      Download
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
