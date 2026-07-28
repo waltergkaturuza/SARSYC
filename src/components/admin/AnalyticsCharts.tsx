@@ -214,6 +214,8 @@ export function EventsChart({ data }: { data: EventsByDay[] }) {
 export function PageEngagementChart({ data }: { data: PageEngagementDatum[] }) {
   const chartData = [...data].sort((a, b) => b.views - a.views)
   const hasData = chartData.some((d) => d.views > 0)
+  // ~48px per bar + space for axes/legend so every Y label can render
+  const chartHeight = Math.max(420, chartData.length * 48 + 96)
 
   if (!hasData) {
     return (
@@ -224,12 +226,13 @@ export function PageEngagementChart({ data }: { data: PageEngagementDatum[] }) {
   }
 
   return (
-    <div className="h-[360px] w-full">
+    <div className="w-full" style={{ height: chartHeight }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+          margin={{ top: 8, right: 24, left: 8, bottom: 48 }}
+          barCategoryGap="18%"
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
           <XAxis
@@ -242,8 +245,9 @@ export function PageEngagementChart({ data }: { data: PageEngagementDatum[] }) {
           <YAxis
             type="category"
             dataKey="section"
-            width={132}
-            tick={{ fontSize: 11, fill: '#334155' }}
+            width={148}
+            interval={0}
+            tick={{ fontSize: 12, fill: '#334155' }}
             axisLine={false}
             tickLine={false}
           />
@@ -259,7 +263,7 @@ export function PageEngagementChart({ data }: { data: PageEngagementDatum[] }) {
             formatter={(value: number) => [value.toLocaleString(), 'Views']}
           />
           <Legend
-            wrapperStyle={{ paddingTop: 12 }}
+            wrapperStyle={{ paddingTop: 16 }}
             iconType="square"
             iconSize={10}
             payload={chartData.map((d) => ({
@@ -268,7 +272,7 @@ export function PageEngagementChart({ data }: { data: PageEngagementDatum[] }) {
               color: PAGE_ENGAGEMENT_COLORS[d.section] || CHART_COLORS.other,
             }))}
           />
-          <Bar dataKey="views" name="Views" radius={[0, 4, 4, 0]} maxBarSize={28}>
+          <Bar dataKey="views" name="Views" radius={[0, 4, 4, 0]} maxBarSize={32}>
             {chartData.map((entry) => (
               <Cell
                 key={entry.section}
