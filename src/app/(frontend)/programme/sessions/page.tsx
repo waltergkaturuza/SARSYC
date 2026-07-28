@@ -104,28 +104,6 @@ export default async function SessionsPage() {
                         )
                         .filter((m: any) => m?.name)
                       const moderatorName = speakerName(session.moderator)
-                      const isBreak = session.type === 'break'
-
-                      if (isBreak) {
-                        return (
-                          <div
-                            key={session.id}
-                            className="rounded-xl bg-gray-50 border border-gray-200 px-8 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600"
-                          >
-                            <span className="flex items-center gap-2 font-medium">
-                              <FiClock className="w-4 h-4 text-primary-600" />
-                              {formatSessionTime(session.startTime)} – {formatSessionTime(session.endTime)}
-                            </span>
-                            <span className="italic">{session.title}</span>
-                            {session.venue && (
-                              <span className="flex items-center gap-2 text-sm">
-                                <FiMapPin className="w-4 h-4 text-primary-600" />
-                                {session.venue}
-                              </span>
-                            )}
-                          </div>
-                        )
-                      }
 
                       return (
                         <div key={session.id} className="card p-8 hover:shadow-2xl transition-all">
@@ -160,7 +138,7 @@ export default async function SessionsPage() {
 
                               <div className="flex flex-wrap gap-2">
                                 <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full uppercase">
-                                  {sessionTypeLabel(session.type)}
+                                  {sessionTypeLabel(session.type) || session.type || 'Session'}
                                 </span>
                                 {session.track && (
                                   <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${sessionTrackBadgeClass(session.track)}`}>
