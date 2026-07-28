@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not record donation. Please try again.' }, { status: 500 })
   }
 
-  await recordFormSubmit(payload, request, 'donation', 'Donation / sponsorship started', {
+  await recordFormSubmit(payload, req, 'donation', 'Donation / sponsorship started', {
     type,
     amountUsd,
   })
