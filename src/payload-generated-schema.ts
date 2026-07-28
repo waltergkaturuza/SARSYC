@@ -82,6 +82,7 @@ export const enum_sessions_type = pgEnum("enum_sessions_type", [
   "launch-event",
   "concluding-presentation",
   "forum-reflection",
+  "award-ceremony",
   "networking",
   "side-event",
 ]);

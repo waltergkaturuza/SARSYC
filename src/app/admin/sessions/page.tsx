@@ -76,6 +76,7 @@ export default async function SessionsManagementPage({
     'launch-event': { color: 'bg-amber-100 text-amber-700', label: 'Launch Event' },
     'concluding-presentation': { color: 'bg-cyan-100 text-cyan-700', label: 'Concluding Presentation' },
     'forum-reflection': { color: 'bg-violet-100 text-violet-700', label: 'Forum Reflection' },
+    'award-ceremony': { color: 'bg-yellow-100 text-yellow-800', label: 'Award Ceremony' },
     'networking': { color: 'bg-indigo-100 text-indigo-700', label: 'Networking' },
     'break': { color: 'bg-gray-100 text-gray-600', label: 'Registration / Break' },
     'side-event': { color: 'bg-gray-100 text-gray-700', label: 'Side Event' },

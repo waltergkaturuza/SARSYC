@@ -27,6 +27,7 @@ import * as migration_20260710_000000_add_news_links_and_authors from './2026071
 import * as migration_20260728_000000_add_sessions_day_tracks_speaker_names from './20260728_000000_add_sessions_day_tracks_speaker_names';
 import * as migration_20260728_000001_fix_youth_steering_committee_photo_id from './20260728_000001_fix_youth_steering_committee_photo_id';
 import * as migration_20260728_000002_add_session_types_launch_concluding_reflection from './20260728_000002_add_session_types_launch_concluding_reflection';
+import * as migration_20260728_000003_add_session_type_award_ceremony from './20260728_000003_add_session_type_award_ceremony';
 
 export const migrations = [
   {
@@ -173,5 +174,10 @@ export const migrations = [
     up: migration_20260728_000002_add_session_types_launch_concluding_reflection.up,
     down: migration_20260728_000002_add_session_types_launch_concluding_reflection.down,
     name: '20260728_000002_add_session_types_launch_concluding_reflection'
+  },
+  {
+    up: migration_20260728_000003_add_session_type_award_ceremony.up,
+    down: migration_20260728_000003_add_session_type_award_ceremony.down,
+    name: '20260728_000003_add_session_type_award_ceremony'
   },
 ];

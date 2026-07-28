@@ -75,6 +75,7 @@ const TYPE_BADGE_CLASS: Record<string, string> = {
   'launch-event': 'bg-amber-100 text-amber-800',
   'concluding-presentation': 'bg-cyan-100 text-cyan-800',
   'forum-reflection': 'bg-violet-100 text-violet-800',
+  'award-ceremony': 'bg-yellow-100 text-yellow-800',
   default: 'bg-primary-100 text-primary-800',
 }
 

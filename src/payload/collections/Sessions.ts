@@ -41,6 +41,7 @@ const Sessions: CollectionConfig = {
         { label: 'Launch Event', value: 'launch-event' },
         { label: 'Concluding Presentation', value: 'concluding-presentation' },
         { label: 'Forum Reflection', value: 'forum-reflection' },
+        { label: 'Award Ceremony', value: 'award-ceremony' },
         { label: 'Networking', value: 'networking' },
         { label: 'Registration / Break', value: 'break' },
         { label: 'Side Event', value: 'side-event' },

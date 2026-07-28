@@ -17,6 +17,7 @@ const TYPE_ENUM_VALUES = [
   'launch-event',
   'concluding-presentation',
   'forum-reflection',
+  'award-ceremony',
 ]
 
 const DAY_ENUM_VALUES = ['day-1', 'day-2', 'day-3', 'day-4']
