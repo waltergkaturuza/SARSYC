@@ -6,7 +6,7 @@ import {
   FiUsers, FiPlus, FiEdit, FiStar, FiEye 
 } from 'react-icons/fi'
 import { ensureYouthSteeringCommitteeLatestColumns } from '@/lib/ensureYouthSteeringCommitteeSchema'
-import { seedYouthSteeringCommitteeFromStatic } from '@/lib/seedYouthSteeringCommittee'
+import SyncYouthSteeringCommitteeButton from '@/components/admin/youth-steering/SyncYouthSteeringCommitteeButton'
 
 export const revalidate = 0
 
@@ -91,23 +91,6 @@ export default async function YouthSteeringCommitteePage({
   const featured = searchParams.featured
   const search = searchParams.search
 
-  // One-time import of the governance-page members when the collection is empty.
-  if (!search && !featured) {
-    try {
-      const existing = await payload.find({
-        collection: 'youth-steering-committee',
-        limit: 1,
-        depth: 0,
-        overrideAccess: true,
-      })
-      if (existing.totalDocs === 0) {
-        await seedYouthSteeringCommitteeFromStatic(payload)
-      }
-    } catch (error) {
-      console.error('Youth steering committee auto-seed failed:', error)
-    }
-  }
-
   const where: any = {}
   
   if (featured === 'true') {
@@ -150,16 +133,27 @@ export default async function YouthSteeringCommitteePage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Youth Steering Committee</h1>
           <p className="text-gray-600 mt-1">Manage Youth Steering Committee members</p>
         </div>
-        <Link href="/admin/youth-steering-committee/new" className="btn-primary flex items-center gap-2">
-          <FiPlus className="w-5 h-5" />
-          Add Member
-        </Link>
+        <div className="flex flex-col sm:flex-row items-end gap-3">
+          <SyncYouthSteeringCommitteeButton />
+          <Link href="/admin/youth-steering-committee/new" className="btn-primary flex items-center gap-2">
+            <FiPlus className="w-5 h-5" />
+            Add Member
+          </Link>
+        </div>
       </div>
+
+      {totalDocs === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-900 text-sm">
+          No members in the database yet. Click <strong>Sync from Website</strong> to import the
+          12 Youth Steering Committee members from the public governance page (names, roles,
+          countries, bios, and photos).
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -218,13 +212,20 @@ export default async function YouthSteeringCommitteePage({
         </div>
 
         {members.length === 0 ? (
-          <div className="p-12 text-center">
+          <div className="p-12 text-center space-y-4">
             <FiUsers className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No committee members found</p>
-            <Link href="/admin/youth-steering-committee/new" className="btn-primary mt-4 inline-flex items-center gap-2">
-              <FiPlus className="w-5 h-5" />
-              Add First Member
-            </Link>
+            <p className="text-sm text-gray-500 max-w-md mx-auto">
+              Use <strong>Sync from Website</strong> above to import the members already shown on
+              the public Governance page, or add one manually.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <SyncYouthSteeringCommitteeButton />
+              <Link href="/admin/youth-steering-committee/new" className="btn-primary inline-flex items-center gap-2">
+                <FiPlus className="w-5 h-5" />
+                Add First Member
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
