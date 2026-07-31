@@ -185,6 +185,123 @@
   animation: float 6s ease-in-out infinite;
 }
 
+/* Sessions paper-scroll — full-page, soft curls */
+.session-paper-frame {
+  perspective: 1600px;
+}
+
+.session-paper-curl {
+  pointer-events: none;
+}
+
+.session-paper-curl--fixed {
+  position: fixed;
+  left: 50%;
+  z-index: 30;
+  width: min(64rem, calc(100% - 1.5rem));
+  height: 72px;
+  transform: translateX(-50%);
+}
+
+.session-paper-curl--top {
+  top: 4.5rem;
+}
+
+.session-paper-curl--bottom {
+  bottom: 0.75rem;
+  height: 80px;
+}
+
+.session-paper-curl__roll {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 28px;
+  border-radius: 999px;
+  opacity: 0.72;
+  background:
+    radial-gradient(ellipse 90% 80% at 35% 30%, rgba(255, 255, 255, 0.9), transparent 60%),
+    linear-gradient(
+      180deg,
+      rgba(248, 250, 252, 0.95) 0%,
+      rgba(226, 232, 240, 0.75) 45%,
+      rgba(241, 245, 249, 0.9) 100%
+    );
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.06),
+    inset 0 1px 3px rgba(255, 255, 255, 0.75),
+    inset 0 -2px 4px rgba(15, 23, 42, 0.05);
+}
+
+.session-paper-curl--top .session-paper-curl__roll {
+  top: 10px;
+  transform: rotateX(10deg);
+  transform-origin: center bottom;
+}
+
+.session-paper-curl--bottom .session-paper-curl__roll {
+  bottom: 14px;
+  height: 32px;
+  transform: rotateX(-8deg);
+  transform-origin: center top;
+}
+
+.session-paper-curl__fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.session-paper-curl--top .session-paper-curl__fade {
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0.92) 0%,
+    rgba(248, 250, 252, 0.45) 45%,
+    transparent 100%
+  );
+}
+
+.session-paper-curl--bottom .session-paper-curl__fade {
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(248, 250, 252, 0.95) 0%,
+    rgba(248, 250, 252, 0.4) 50%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .session-paper-curl--top {
+    top: 3.75rem;
+    height: 56px;
+  }
+
+  .session-paper-curl--bottom {
+    height: 64px;
+  }
+
+  .session-paper-curl__roll {
+    height: 22px;
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-paper-stage [data-paper-sheet] {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  .session-paper-curl--fixed {
+    display: none;
+  }
+}
+
+
 
 
 
