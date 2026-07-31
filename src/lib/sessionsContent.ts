@@ -115,11 +115,20 @@ export function formatSessionDate(value: unknown): string {
 /** Day accent styles for session cards (border/hover glow). */
 export const SESSION_DAY_THEME: Record<
   string,
-  { accent: string; soft: string; badge: string; hover: string; bar: string; pdf: string }
+  {
+    accent: string
+    soft: string
+    label: string
+    badge: string
+    hover: string
+    bar: string
+    pdf: string
+  }
 > = {
   'day-1': {
-    accent: 'border-sky-500',
-    soft: 'bg-sky-50',
+    accent: 'border-sky-600',
+    soft: 'bg-white border border-sky-200 shadow-sm',
+    label: 'text-sky-700',
     badge: 'bg-sky-100 text-sky-800',
     hover:
       'hover:border-sky-500 hover:ring-2 hover:ring-sky-400/70 hover:shadow-[0_0_0_1px_rgba(14,165,233,0.35),0_12px_28px_rgba(14,165,233,0.28)] hover:bg-sky-50/50',
@@ -127,8 +136,9 @@ export const SESSION_DAY_THEME: Record<
     pdf: '#0284c7',
   },
   'day-2': {
-    accent: 'border-emerald-500',
-    soft: 'bg-emerald-50',
+    accent: 'border-emerald-600',
+    soft: 'bg-white border border-emerald-200 shadow-sm',
+    label: 'text-emerald-700',
     badge: 'bg-emerald-100 text-emerald-800',
     hover:
       'hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/70 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.35),0_12px_28px_rgba(16,185,129,0.28)] hover:bg-emerald-50/50',
@@ -136,8 +146,9 @@ export const SESSION_DAY_THEME: Record<
     pdf: '#059669',
   },
   'day-3': {
-    accent: 'border-orange-500',
-    soft: 'bg-orange-50',
+    accent: 'border-orange-600',
+    soft: 'bg-white border border-orange-200 shadow-sm',
+    label: 'text-orange-700',
     badge: 'bg-orange-100 text-orange-800',
     hover:
       'hover:border-orange-500 hover:ring-2 hover:ring-orange-400/70 hover:shadow-[0_0_0_1px_rgba(249,115,22,0.35),0_12px_28px_rgba(249,115,22,0.28)] hover:bg-orange-50/50',
@@ -145,8 +156,9 @@ export const SESSION_DAY_THEME: Record<
     pdf: '#ea580c',
   },
   'day-4': {
-    accent: 'border-amber-500',
-    soft: 'bg-amber-50',
+    accent: 'border-amber-600',
+    soft: 'bg-white border border-amber-200 shadow-sm',
+    label: 'text-amber-800',
     badge: 'bg-amber-100 text-amber-800',
     hover:
       'hover:border-amber-500 hover:ring-2 hover:ring-amber-400/70 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.28)] hover:bg-amber-50/50',

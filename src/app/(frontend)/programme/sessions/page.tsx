@@ -134,7 +134,7 @@ export default async function SessionsPage() {
         </div>
       </section>
 
-      <section className="section sessions-page-bg">
+      <section className="sessions-page-bg py-6 md:py-8">
         <div className="container-custom">
           {dayGroups.length === 0 ? (
             <div className="max-w-3xl mx-auto text-center bg-white rounded-2xl border border-slate-200 p-12 shadow-sm">

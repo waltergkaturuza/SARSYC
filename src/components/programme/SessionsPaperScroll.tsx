@@ -116,17 +116,19 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
       </div>
 
       <div className="session-paper-frame relative px-1 sm:px-2">
-        <div className="session-paper-surface space-y-14 pb-8 pt-4">
+        <div className="session-paper-surface space-y-10 pb-6 pt-0">
             {dayGroups.map((group) => {
               const theme = sessionDayTheme(group.value)
               return (
-                <div key={group.value} id={group.value} className="scroll-mt-28">
+                <div key={group.value} id={group.value} className="scroll-mt-24">
                   <div
                     data-paper-sheet
-                    className={`mb-7 rounded-xl border-l-4 ${theme.accent} ${theme.soft} px-5 py-4 will-change-transform`}
+                    className={`mb-4 rounded-xl border-l-4 ${theme.accent} ${theme.soft} px-5 py-3 will-change-transform`}
                     style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
                   >
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                    <p
+                      className={`text-xs font-semibold uppercase tracking-wider mb-1 ${theme.label}`}
+                    >
                       Conference day
                     </p>
                     <h2 className="text-3xl font-bold text-slate-900">{group.label}</h2>
