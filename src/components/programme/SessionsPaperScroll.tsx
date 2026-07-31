@@ -123,13 +123,13 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                 <div key={group.value} id={group.value} className="scroll-mt-28">
                   <div
                     data-paper-sheet
-                    className={`mb-7 rounded-xl border border-[#e8dcc8] border-l-4 ${theme.accent} bg-[#fffdf8] px-5 py-4 will-change-transform shadow-sm`}
+                    className={`mb-7 rounded-xl border-l-4 ${theme.accent} ${theme.soft} px-5 py-4 will-change-transform`}
                     style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
                   >
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#8B6F4D] mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                       Conference day
                     </p>
-                    <h2 className="text-3xl font-bold text-[#3d2f1f]">{group.label}</h2>
+                    <h2 className="text-3xl font-bold text-slate-900">{group.label}</h2>
                   </div>
 
                   <div className="space-y-5">
@@ -137,7 +137,7 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                       <article
                         key={session.id}
                         data-paper-sheet
-                        className={`session-kraft-card group relative overflow-hidden rounded-2xl border border-[#6f583c] p-6 md:p-8 shadow-[0_8px_24px_rgba(61,47,31,0.12)] transition-[box-shadow,ring] duration-300 will-change-transform ${theme.hover}`}
+                        className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all duration-300 will-change-transform ${theme.hover}`}
                         style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
                       >
                         <div className={`absolute inset-y-0 left-0 w-1.5 ${theme.bar}`} aria-hidden />
@@ -146,19 +146,19 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 px-2">
                           <aside className="lg:w-60 flex-shrink-0 space-y-4">
                             <div>
-                              <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide mb-1.5">
+                              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                                 Date & Time
                               </div>
-                              <div className="flex items-start gap-2 text-[#fff8ee]">
-                                <FiCalendar className="w-4 h-4 text-[#f3e6d0]/75 mt-0.5 flex-shrink-0" />
+                              <div className="flex items-start gap-2 text-slate-900">
+                                <FiCalendar className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                                 <span className="font-medium text-sm leading-snug">
                                   {session.date
                                     ? formatSessionDate(session.date)
                                     : sessionDayLabel(session.day)}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-[#f7ecda] mt-1.5">
-                                <FiClock className="w-4 h-4 text-[#f3e6d0]/75 flex-shrink-0" />
+                              <div className="flex items-center gap-2 text-slate-700 mt-1.5">
+                                <FiClock className="w-4 h-4 text-slate-500 flex-shrink-0" />
                                 <span className="text-sm font-semibold tabular-nums">
                                   {formatSessionTime(session.startTime)} –{' '}
                                   {formatSessionTime(session.endTime)}
@@ -168,11 +168,11 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
 
                             {session.venue && (
                               <div>
-                                <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide mb-1.5">
+                                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                                   Venue
                                 </div>
-                                <div className="flex items-start gap-2 text-[#fff8ee]">
-                                  <FiMapPin className="w-4 h-4 text-[#f3e6d0]/75 mt-0.5 flex-shrink-0" />
+                                <div className="flex items-start gap-2 text-slate-900">
+                                  <FiMapPin className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                                   <span className="font-medium text-sm">{session.venue}</span>
                                 </div>
                               </div>
@@ -195,12 +195,12 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                           </aside>
 
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-2xl font-bold text-[#fffaf2] mb-3 tracking-tight">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight group-hover:text-slate-800">
                               {session.title}
                             </h3>
 
                             {session.description && (
-                              <p className="text-[#f2e4ce] mb-5 leading-relaxed text-justify whitespace-pre-line">
+                              <p className="text-slate-600 mb-5 leading-relaxed text-justify whitespace-pre-line">
                                 {session.description}
                               </p>
                             )}
@@ -208,8 +208,8 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                             {(session.speakers.length > 0 || session.guestSpeakers.length > 0) && (
                               <div className="mb-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <FiUsers className="w-4 h-4 text-[#f3e6d0]/70" />
-                                  <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide">
+                                  <FiUsers className="w-4 h-4 text-slate-400" />
+                                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                                     Speakers
                                   </div>
                                 </div>
@@ -219,24 +219,24 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                                       {speaker.href ? (
                                         <Link
                                           href={speaker.href}
-                                          className="font-semibold text-[#ffe8b8] hover:text-white hover:underline"
+                                          className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
                                         >
                                           {speaker.name}
                                         </Link>
                                       ) : (
-                                        <span className="font-semibold text-[#fffaf2]">
+                                        <span className="font-semibold text-slate-900">
                                           {speaker.name}
                                         </span>
                                       )}
                                       {speaker.affiliation && (
-                                        <span className="block text-[#e8d4b5] text-justify">
+                                        <span className="block text-slate-500 text-justify">
                                           {speaker.affiliation}
                                         </span>
                                       )}
                                     </li>
                                   ))}
                                   {session.guestSpeakers.map((name) => (
-                                    <li key={name} className="text-sm font-medium text-[#fff8ee]">
+                                    <li key={name} className="text-sm font-medium text-slate-800">
                                       {name}
                                     </li>
                                   ))}
@@ -247,8 +247,8 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                             {session.committeeMembers.length > 0 && (
                               <div className="mb-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <FiUsers className="w-4 h-4 text-[#f3e6d0]/70" />
-                                  <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide">
+                                  <FiUsers className="w-4 h-4 text-slate-400" />
+                                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                                     Youth Steering Committee
                                   </div>
                                 </div>
@@ -257,12 +257,12 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                                     <li key={member.id ?? member.name} className="text-sm">
                                       <Link
                                         href={member.href || '/about/youth-steering-committee'}
-                                        className="font-semibold text-[#ffe8b8] hover:text-white hover:underline"
+                                        className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
                                       >
                                         {member.name}
                                       </Link>
                                       {member.affiliation && (
-                                        <span className="block text-[#e8d4b5] text-justify">
+                                        <span className="block text-slate-500 text-justify">
                                           {member.affiliation}
                                         </span>
                                       )}
@@ -277,19 +277,19 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                                 {session.moderator.href ? (
                                   <Link
                                     href={session.moderator.href}
-                                    className="block rounded-xl bg-[#fff8ee]/12 border border-[#fff8ee]/20 px-4 py-3 transition-colors hover:bg-[#fff8ee]/20 group/mod"
+                                    className="block rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 transition-colors hover:bg-primary-50 hover:border-primary-200 group/mod"
                                   >
                                     <div className="flex items-start gap-2 text-sm">
-                                      <FiUser className="w-4 h-4 text-[#f3e6d0]/75 mt-0.5 flex-shrink-0" />
+                                      <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                                       <div>
-                                        <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide mb-1">
+                                        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
                                           Moderator
                                         </div>
-                                        <div className="font-semibold text-[#ffe8b8] group-hover/mod:text-white group-hover/mod:underline">
+                                        <div className="font-semibold text-primary-700 group-hover/mod:text-primary-800 group-hover/mod:underline">
                                           {session.moderator.name}
                                         </div>
                                         {session.moderator.affiliation && (
-                                          <div className="text-[#e8d4b5] text-justify mt-0.5">
+                                          <div className="text-slate-500 text-justify mt-0.5">
                                             {session.moderator.affiliation}
                                           </div>
                                         )}
@@ -297,18 +297,18 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                                     </div>
                                   </Link>
                                 ) : (
-                                  <div className="rounded-xl bg-[#fff8ee]/12 border border-[#fff8ee]/20 px-4 py-3">
+                                  <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
                                     <div className="flex items-start gap-2 text-sm">
-                                      <FiUser className="w-4 h-4 text-[#f3e6d0]/75 mt-0.5 flex-shrink-0" />
+                                      <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                                       <div>
-                                        <div className="text-[11px] font-semibold text-[#f3e6d0]/80 uppercase tracking-wide mb-1">
+                                        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
                                           Moderator
                                         </div>
-                                        <div className="font-semibold text-[#fffaf2]">
+                                        <div className="font-semibold text-slate-900">
                                           {session.moderator.name}
                                         </div>
                                         {session.moderator.affiliation && (
-                                          <div className="text-[#e8d4b5] text-justify mt-0.5">
+                                          <div className="text-slate-500 text-justify mt-0.5">
                                             {session.moderator.affiliation}
                                           </div>
                                         )}
@@ -323,7 +323,7 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                               <a
                                 href={`/api/programme/ical?sessionId=${session.id}`}
                                 download
-                                className="session-kraft-btn text-sm"
+                                className="btn-outline text-sm"
                               >
                                 Add to Calendar
                               </a>

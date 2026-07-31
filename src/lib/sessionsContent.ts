@@ -120,37 +120,37 @@ export const SESSION_DAY_THEME: Record<
   'day-1': {
     accent: 'border-sky-500',
     soft: 'bg-sky-50',
-    badge: 'bg-[#fff8ee] text-sky-800',
+    badge: 'bg-sky-100 text-sky-800',
     hover:
-      'hover:ring-2 hover:ring-sky-300/80 hover:shadow-[0_0_0_1px_rgba(14,165,233,0.35),0_14px_30px_rgba(61,47,31,0.22)]',
-    bar: 'bg-sky-400',
+      'hover:border-sky-500 hover:ring-2 hover:ring-sky-400/70 hover:shadow-[0_0_0_1px_rgba(14,165,233,0.35),0_12px_28px_rgba(14,165,233,0.28)] hover:bg-sky-50/50',
+    bar: 'bg-sky-500',
     pdf: '#0284c7',
   },
   'day-2': {
     accent: 'border-emerald-500',
     soft: 'bg-emerald-50',
-    badge: 'bg-[#fff8ee] text-emerald-800',
+    badge: 'bg-emerald-100 text-emerald-800',
     hover:
-      'hover:ring-2 hover:ring-emerald-300/80 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.35),0_14px_30px_rgba(61,47,31,0.22)]',
-    bar: 'bg-emerald-400',
+      'hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/70 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.35),0_12px_28px_rgba(16,185,129,0.28)] hover:bg-emerald-50/50',
+    bar: 'bg-emerald-500',
     pdf: '#059669',
   },
   'day-3': {
     accent: 'border-orange-500',
     soft: 'bg-orange-50',
-    badge: 'bg-[#fff8ee] text-orange-800',
+    badge: 'bg-orange-100 text-orange-800',
     hover:
-      'hover:ring-2 hover:ring-orange-300/80 hover:shadow-[0_0_0_1px_rgba(249,115,22,0.35),0_14px_30px_rgba(61,47,31,0.22)]',
-    bar: 'bg-orange-400',
+      'hover:border-orange-500 hover:ring-2 hover:ring-orange-400/70 hover:shadow-[0_0_0_1px_rgba(249,115,22,0.35),0_12px_28px_rgba(249,115,22,0.28)] hover:bg-orange-50/50',
+    bar: 'bg-orange-500',
     pdf: '#ea580c',
   },
   'day-4': {
     accent: 'border-amber-500',
     soft: 'bg-amber-50',
-    badge: 'bg-[#fff8ee] text-amber-900',
+    badge: 'bg-amber-100 text-amber-800',
     hover:
-      'hover:ring-2 hover:ring-amber-300/80 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_14px_30px_rgba(61,47,31,0.22)]',
-    bar: 'bg-amber-400',
+      'hover:border-amber-500 hover:ring-2 hover:ring-amber-400/70 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.28)] hover:bg-amber-50/50',
+    bar: 'bg-amber-500',
     pdf: '#d97706',
   },
 }
