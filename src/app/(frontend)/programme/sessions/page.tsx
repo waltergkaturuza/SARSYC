@@ -134,13 +134,13 @@ export default async function SessionsPage() {
         </div>
       </section>
 
-      <section className="section bg-gradient-to-b from-slate-50 to-white">
+      <section className="section sessions-page-bg">
         <div className="container-custom">
           {dayGroups.length === 0 ? (
-            <div className="max-w-3xl mx-auto text-center bg-white rounded-2xl border border-slate-200 p-12 shadow-sm">
-              <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Programme Coming Soon</h3>
-              <p className="text-gray-600 mb-6 text-justify">
+            <div className="max-w-3xl mx-auto text-center rounded-2xl border border-[#d9cfc0] bg-[#fffdf8] p-12 shadow-sm">
+              <FiCalendar className="w-12 h-12 text-[#8B6F4D]/60 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-[#3d2f1f] mb-4">Programme Coming Soon</h3>
+              <p className="text-[#5c4a35] mb-6 text-justify">
                 The full session programme is being finalised and will be published here shortly.
                 Check back soon!
               </p>
