@@ -84,7 +84,8 @@ export default async function YouthSteeringCommitteePage() {
                   {countryMembers.map((member) => (
                     <div
                       key={member.id ?? member.name}
-                      className="group flex flex-col md:flex-row transition-all duration-300 hover:bg-white/5"
+                      id={member.id != null ? `member-${member.id}` : undefined}
+                      className="group flex flex-col md:flex-row transition-all duration-300 hover:bg-white/5 scroll-mt-24"
                     >
                       {/* Photo */}
                       <div className="relative w-full md:w-56 flex-shrink-0 bg-slate-800 overflow-hidden self-stretch" style={{ minHeight: '220px' }}>

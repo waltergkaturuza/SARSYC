@@ -86,11 +86,29 @@ function countryLabel(value: unknown): string | null {
 
 function personDetail(person: any, roleKey: 'title' | 'role' = 'title'): string | null {
   if (!person || typeof person !== 'object' || !person.name) return null
+  const country = countryLabel(person.country)
+  let roleOrTitle: string | null =
+    roleKey === 'title'
+      ? typeof person.title === 'string'
+        ? person.title
+        : null
+      : typeof person.role === 'string'
+        ? person.role
+        : null
+
+  if (roleKey === 'role') {
+    const raw = (roleOrTitle || '').trim()
+    if (!raw) roleOrTitle = 'Youth Steering Committee Member'
+    else if (/youth\s+steering/i.test(raw)) roleOrTitle = raw
+    else if (/^committee\s+member$/i.test(raw)) roleOrTitle = 'Youth Steering Committee Member'
+    else roleOrTitle = `Youth Steering Committee ${raw}`
+  }
+
   const affiliation = formatPersonAffiliation({
-    title: roleKey === 'title' ? person.title : null,
-    role: roleKey === 'role' ? person.role : null,
+    title: roleKey === 'title' ? roleOrTitle : null,
+    role: roleKey === 'role' ? roleOrTitle : null,
     organization: person.organization,
-    country: countryLabel(person.country),
+    country,
   })
   return affiliation ? `${person.name} - ${affiliation}` : String(person.name)
 }
@@ -114,10 +132,7 @@ function peopleBlocks(session: any): { label: string; lines: string[] }[] {
     personDetail(session.moderator, 'title') ||
     personDetail(session.committeeModerator, 'role')
   if (moderator) {
-    const source = session.committeeModerator && !session.moderator
-      ? 'Moderator (Youth Steering Committee)'
-      : 'Moderator'
-    blocks.push({ label: source, lines: [moderator] })
+    blocks.push({ label: 'Moderator', lines: [moderator] })
   }
 
   return blocks

@@ -22,13 +22,23 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : null
 }
 
+function committeeRoleLabel(role: unknown): string {
+  const raw = typeof role === 'string' ? role.trim() : ''
+  if (!raw) return 'Youth Steering Committee Member'
+  if (/youth\s+steering/i.test(raw)) return raw
+  if (/^committee\s+member$/i.test(raw)) return 'Youth Steering Committee Member'
+  return `Youth Steering Committee ${raw}`
+}
+
 function personFromSpeaker(value: unknown) {
   const s = asRecord(value)
   if (!s?.name) return null
   const countryRaw = typeof s.country === 'string' ? s.country : ''
+  const id = s.id != null ? String(s.id) : null
   return {
-    id: s.id != null ? String(s.id) : null,
+    id,
     name: String(s.name),
+    href: id ? `/programme/speakers/${id}` : null,
     affiliation: formatPersonAffiliation({
       title: typeof s.title === 'string' ? s.title : null,
       organization: typeof s.organization === 'string' ? s.organization : null,
@@ -41,11 +51,15 @@ function personFromCommittee(value: unknown) {
   const m = asRecord(value)
   if (!m?.name) return null
   const countryRaw = typeof m.country === 'string' ? m.country : ''
+  const id = m.id != null ? String(m.id) : null
   return {
-    id: m.id != null ? String(m.id) : null,
+    id,
     name: String(m.name),
+    href: id
+      ? `/about/youth-steering-committee#member-${id}`
+      : '/about/youth-steering-committee',
     affiliation: formatPersonAffiliation({
-      role: typeof m.role === 'string' ? m.role : null,
+      role: committeeRoleLabel(m.role),
       organization: typeof m.organization === 'string' ? m.organization : null,
       country: countryRaw ? getCountryLabel(countryRaw) || countryRaw : null,
     }),
@@ -133,19 +147,22 @@ export default async function SessionsPage() {
                         const speakerModerator = personFromSpeaker(session.moderator)
                         const committeeModerator = personFromCommittee(session.committeeModerator)
                         const moderator = speakerModerator || committeeModerator
-                        const moderatorIsCommittee = Boolean(committeeModerator && !speakerModerator)
 
                         return (
                           <article
                             key={session.id}
-                            className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${theme.hover}`}
+                            className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all duration-300 hover:-translate-y-0.5 ${theme.hover}`}
                           >
                             <div
                               className={`absolute inset-y-0 left-0 w-1.5 ${theme.bar}`}
                               aria-hidden
                             />
+                            <div
+                              className={`absolute inset-y-0 right-0 w-1.5 ${theme.bar}`}
+                              aria-hidden
+                            />
 
-                            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 pl-2">
+                            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 px-2">
                               <aside className="lg:w-60 flex-shrink-0 space-y-4">
                                 <div>
                                   <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -254,7 +271,7 @@ export default async function SessionsPage() {
                                       {committeeMembers.map((member) => (
                                         <li key={member.id ?? member.name} className="text-sm">
                                           <Link
-                                            href="/about/youth-steering-committee"
+                                            href={member.href || '/about/youth-steering-committee'}
                                             className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
                                           >
                                             {member.name}
@@ -271,29 +288,47 @@ export default async function SessionsPage() {
                                 )}
 
                                 {moderator && (
-                                  <div className="mb-5 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
-                                    <div className="flex items-start gap-2 text-sm">
-                                      <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                                      <div>
-                                        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
-                                          Moderator
-                                          {moderatorIsCommittee ? ' · Youth Steering Committee' : ''}
+                                  <div className="mb-5">
+                                    {moderator.href ? (
+                                      <Link
+                                        href={moderator.href}
+                                        className="block rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 transition-colors hover:bg-primary-50 hover:border-primary-200 group/mod"
+                                      >
+                                        <div className="flex items-start gap-2 text-sm">
+                                          <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                          <div>
+                                            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                              Moderator
+                                            </div>
+                                            <div className="font-semibold text-primary-700 group-hover/mod:text-primary-800 group-hover/mod:underline">
+                                              {moderator.name}
+                                            </div>
+                                            {moderator.affiliation && (
+                                              <div className="text-slate-500 text-justify mt-0.5">
+                                                {moderator.affiliation}
+                                              </div>
+                                            )}
+                                          </div>
                                         </div>
-                                        {moderatorIsCommittee || !speakerModerator?.id ? (
-                                          <div className="font-semibold text-slate-900">{moderator.name}</div>
-                                        ) : (
-                                          <Link
-                                            href={`/programme/speakers/${speakerModerator.id}`}
-                                            className="font-semibold text-primary-700 hover:underline"
-                                          >
-                                            {moderator.name}
-                                          </Link>
-                                        )}
-                                        {moderator.affiliation && (
-                                          <div className="text-slate-500 text-justify">{moderator.affiliation}</div>
-                                        )}
+                                      </Link>
+                                    ) : (
+                                      <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
+                                        <div className="flex items-start gap-2 text-sm">
+                                          <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                          <div>
+                                            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                              Moderator
+                                            </div>
+                                            <div className="font-semibold text-slate-900">{moderator.name}</div>
+                                            {moderator.affiliation && (
+                                              <div className="text-slate-500 text-justify mt-0.5">
+                                                {moderator.affiliation}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
+                                    )}
                                   </div>
                                 )}
 
