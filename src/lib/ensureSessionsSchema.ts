@@ -18,6 +18,13 @@ const TYPE_ENUM_VALUES = [
   'concluding-presentation',
   'forum-reflection',
   'award-ceremony',
+  'welcome-remarks',
+  'introductions',
+  'presentation',
+  'round-table',
+  'music-dance',
+  'lunch',
+  'dinner',
 ]
 
 const DAY_ENUM_VALUES = ['day-1', 'day-2', 'day-3', 'day-4']
@@ -92,6 +99,15 @@ export async function ensureSessionsLatestColumns(payload: Payload): Promise<voi
   for (const value of TYPE_ENUM_VALUES) {
     await db.drizzle.execute(addEnumValueSql('enum_sessions_type', value))
   }
+
+  // Optional Youth Steering Committee member as session moderator.
+  await db.drizzle.execute(
+    `ALTER TABLE "sessions" ADD COLUMN IF NOT EXISTS "committee_moderator_id" integer`,
+  )
+  await db.drizzle.execute(`
+    CREATE INDEX IF NOT EXISTS "sessions_committee_moderator_idx"
+      ON "sessions" ("committee_moderator_id");
+  `)
 
   patchedThisInstance = true
 }

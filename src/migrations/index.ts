@@ -28,6 +28,8 @@ import * as migration_20260728_000000_add_sessions_day_tracks_speaker_names from
 import * as migration_20260728_000001_fix_youth_steering_committee_photo_id from './20260728_000001_fix_youth_steering_committee_photo_id';
 import * as migration_20260728_000002_add_session_types_launch_concluding_reflection from './20260728_000002_add_session_types_launch_concluding_reflection';
 import * as migration_20260728_000003_add_session_type_award_ceremony from './20260728_000003_add_session_type_award_ceremony';
+import * as migration_20260731_000000_add_session_types_programme_events from './20260731_000000_add_session_types_programme_events';
+import * as migration_20260731_000001_add_session_committee_moderator from './20260731_000001_add_session_committee_moderator';
 
 export const migrations = [
   {
@@ -179,5 +181,15 @@ export const migrations = [
     up: migration_20260728_000003_add_session_type_award_ceremony.up,
     down: migration_20260728_000003_add_session_type_award_ceremony.down,
     name: '20260728_000003_add_session_type_award_ceremony'
+  },
+  {
+    up: migration_20260731_000000_add_session_types_programme_events.up,
+    down: migration_20260731_000000_add_session_types_programme_events.down,
+    name: '20260731_000000_add_session_types_programme_events'
+  },
+  {
+    up: migration_20260731_000001_add_session_committee_moderator.up,
+    down: migration_20260731_000001_add_session_committee_moderator.down,
+    name: '20260731_000001_add_session_committee_moderator'
   },
 ];

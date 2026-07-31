@@ -26,6 +26,7 @@ interface SessionData {
   speakers: string[]
   committeeMembers: string[]
   speakerNames: string
+  /** Prefixed: `speaker:ID` or `committee:ID` */
   moderator?: string
   presentations: string[]
   requiresRegistration: boolean
@@ -61,6 +62,45 @@ const relationId = (value: any): string => {
   return String(value)
 }
 
+function initialModeratorValue(data: any): string {
+  if (data?.committeeModerator) {
+    const id = relationId(data.committeeModerator)
+    return id ? `committee:${id}` : ''
+  }
+  if (data?.moderator) {
+    const id = relationId(data.moderator)
+    return id ? `speaker:${id}` : ''
+  }
+  return ''
+}
+
+function parseModeratorSelection(value: string | undefined): {
+  moderator: number | null
+  committeeModerator: number | null
+} {
+  if (!value) return { moderator: null, committeeModerator: null }
+  if (value.startsWith('committee:')) {
+    const id = Number(value.slice('committee:'.length))
+    return {
+      moderator: null,
+      committeeModerator: Number.isFinite(id) && id > 0 ? id : null,
+    }
+  }
+  if (value.startsWith('speaker:')) {
+    const id = Number(value.slice('speaker:'.length))
+    return {
+      moderator: Number.isFinite(id) && id > 0 ? id : null,
+      committeeModerator: null,
+    }
+  }
+  // Legacy bare speaker id from older form state
+  const id = Number(value)
+  return {
+    moderator: Number.isFinite(id) && id > 0 ? id : null,
+    committeeModerator: null,
+  }
+}
+
 export default function SessionForm({
   initialData,
   mode,
@@ -86,7 +126,7 @@ export default function SessionForm({
     speakers: (initialData?.speakers || []).map(relationId).filter(Boolean),
     committeeMembers: (initialData?.committeeMembers || []).map(relationId).filter(Boolean),
     speakerNames: initialData?.speakerNames || '',
-    moderator: relationId(initialData?.moderator),
+    moderator: initialModeratorValue(initialData),
     presentations: (initialData?.presentations || []).map(relationId).filter(Boolean),
     requiresRegistration: initialData?.requiresRegistration || false,
   })
@@ -172,6 +212,7 @@ export default function SessionForm({
 
     setLoading(true)
     try {
+      const { moderator, committeeModerator } = parseModeratorSelection(formData.moderator)
       const submitData = {
         title: formData.title,
         description: formData.description,
@@ -186,7 +227,8 @@ export default function SessionForm({
         speakers: formData.speakers,
         committeeMembers: formData.committeeMembers,
         speakerNames: formData.speakerNames.trim(),
-        moderator: formData.moderator || null,
+        moderator,
+        committeeModerator,
         presentations: formData.presentations,
         requiresRegistration: formData.requiresRegistration,
       }
@@ -458,19 +500,37 @@ export default function SessionForm({
             />
           </FormField>
 
-          <FormField label="Session Moderator" hint="Optional">
+          <FormField
+            label="Session Moderator"
+            hint="Optional — choose a speaker or Youth Steering Committee member"
+          >
             <select
               value={formData.moderator || ''}
               onChange={(e) => handleInputChange('moderator', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">Select moderator (optional)</option>
-              {speakers.map((speaker) => (
-                <option key={speaker.id} value={String(speaker.id)}>
-                  {speaker.name}
-                  {speaker.organization ? ` — ${speaker.organization}` : ''}
-                </option>
-              ))}
+              {speakers.length > 0 && (
+                <optgroup label="Speakers">
+                  {speakers.map((speaker) => (
+                    <option key={`speaker-${speaker.id}`} value={`speaker:${speaker.id}`}>
+                      {speaker.name}
+                      {speaker.organization ? ` — ${speaker.organization}` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {committeeMembers.length > 0 && (
+                <optgroup label="Youth Steering Committee">
+                  {committeeMembers.map((member) => (
+                    <option key={`committee-${member.id}`} value={`committee:${member.id}`}>
+                      {member.name}
+                      {member.role ? ` — ${member.role}` : ''}
+                      {member.organization ? ` (${member.organization})` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </FormField>
         </div>

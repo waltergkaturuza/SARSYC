@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
         committeeMembers: toIdNumbers(body.committeeMembers),
         speakerNames: body.speakerNames || '',
         moderator: body.moderator ? Number(body.moderator) : null,
+        committeeModerator: body.committeeModerator ? Number(body.committeeModerator) : null,
         presentations: toIdNumbers(body.presentations),
         requiresRegistration: body.requiresRegistration || false,
       },

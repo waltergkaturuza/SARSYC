@@ -76,6 +76,13 @@ const TYPE_BADGE_CLASS: Record<string, string> = {
   'concluding-presentation': 'bg-cyan-100 text-cyan-800',
   'forum-reflection': 'bg-violet-100 text-violet-800',
   'award-ceremony': 'bg-yellow-100 text-yellow-800',
+  'welcome-remarks': 'bg-sky-100 text-sky-800',
+  introductions: 'bg-lime-100 text-lime-800',
+  presentation: 'bg-blue-100 text-blue-800',
+  'round-table': 'bg-emerald-100 text-emerald-800',
+  'music-dance': 'bg-fuchsia-100 text-fuchsia-800',
+  lunch: 'bg-stone-100 text-stone-700',
+  dinner: 'bg-stone-100 text-stone-800',
   default: 'bg-primary-100 text-primary-800',
 }
 

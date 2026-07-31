@@ -75,7 +75,11 @@ export const enum_speakers_type = pgEnum("enum_speakers_type", [
 export const enum_sessions_type = pgEnum("enum_sessions_type", [
   "keynote",
   "plenary",
+  "welcome-remarks",
+  "introductions",
+  "presentation",
   "panel",
+  "round-table",
   "workshop",
   "oral",
   "poster",
@@ -83,7 +87,10 @@ export const enum_sessions_type = pgEnum("enum_sessions_type", [
   "concluding-presentation",
   "forum-reflection",
   "award-ceremony",
+  "music-dance",
   "networking",
+  "lunch",
+  "dinner",
   "side-event",
 ]);
 export const enum_sessions_track = pgEnum("enum_sessions_track", [

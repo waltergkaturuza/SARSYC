@@ -34,7 +34,11 @@ const Sessions: CollectionConfig = {
       options: [
         { label: 'Keynote', value: 'keynote' },
         { label: 'Plenary', value: 'plenary' },
+        { label: 'Welcome Remarks', value: 'welcome-remarks' },
+        { label: 'Introductions', value: 'introductions' },
+        { label: 'Presentation', value: 'presentation' },
         { label: 'Panel Discussion', value: 'panel' },
+        { label: 'Round Table Discussion', value: 'round-table' },
         { label: 'Workshop', value: 'workshop' },
         { label: 'Oral / Abstract Presentations', value: 'oral' },
         { label: 'Poster Session', value: 'poster' },
@@ -42,7 +46,10 @@ const Sessions: CollectionConfig = {
         { label: 'Concluding Presentation', value: 'concluding-presentation' },
         { label: 'Forum Reflection', value: 'forum-reflection' },
         { label: 'Award Ceremony', value: 'award-ceremony' },
+        { label: 'Music / Dance', value: 'music-dance' },
         { label: 'Networking', value: 'networking' },
+        { label: 'Lunch', value: 'lunch' },
+        { label: 'Dinner', value: 'dinner' },
         { label: 'Registration / Break', value: 'break' },
         { label: 'Side Event', value: 'side-event' },
         { label: 'Post-Conference Activity', value: 'post-conference' },
@@ -167,7 +174,19 @@ const Sessions: CollectionConfig = {
       name: 'moderator',
       type: 'relationship',
       relationTo: 'speakers',
-      label: 'Session Moderator',
+      label: 'Session Moderator (Speaker)',
+      admin: {
+        description: 'Optional speaker moderating this session. Use Youth Steering Committee moderator below if a committee member is moderating.',
+      },
+    },
+    {
+      name: 'committeeModerator',
+      type: 'relationship',
+      relationTo: 'youth-steering-committee',
+      label: 'Session Moderator (Youth Steering Committee)',
+      admin: {
+        description: 'Optional Youth Steering Committee member moderating this session.',
+      },
     },
     {
       name: 'presentations',

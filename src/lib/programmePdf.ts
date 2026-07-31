@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import PDFDocument from 'pdfkit'
 import { slateToPlainText } from '@/lib/newsContent'
+import { getCountryLabel } from '@/lib/countries'
 import {
   SESSION_DAY_OPTIONS,
   formatSessionTime,
@@ -9,6 +10,8 @@ import {
   sessionTrackLabel,
   sessionTypeLabel,
   formatSpeakerNamesList,
+  formatPersonAffiliation,
+  sessionDayTheme,
 } from '@/lib/sessionsContent'
 
 const BRAND_BLUE = '#1e3a8a'
@@ -76,25 +79,48 @@ async function loadBrandImage(filename: string): Promise<Buffer | null> {
   }
 }
 
-function speakerLine(session: any): string {
-  const linked = (Array.isArray(session.speakers) ? session.speakers : [])
-    .map((s: any) => (typeof s === 'object' && s?.name ? s.name : null))
-    .filter(Boolean)
-  const guests = formatSpeakerNamesList(session.speakerNames)
-  const committee = (Array.isArray(session.committeeMembers) ? session.committeeMembers : [])
-    .map((m: any) => {
-      if (typeof m !== 'object' || !m?.name) return null
-      return m.role ? `${m.name} (${m.role})` : m.name
-    })
-    .filter(Boolean)
-  const moderator =
-    session.moderator && typeof session.moderator === 'object' && session.moderator.name
-      ? `Moderator: ${session.moderator.name}`
-      : null
+function countryLabel(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null
+  return getCountryLabel(value) || value
+}
 
-  const parts = [...linked, ...guests, ...committee]
-  if (moderator) parts.push(moderator)
-  return pdfSafe(parts.join(' | '))
+function personDetail(person: any, roleKey: 'title' | 'role' = 'title'): string | null {
+  if (!person || typeof person !== 'object' || !person.name) return null
+  const affiliation = formatPersonAffiliation({
+    title: roleKey === 'title' ? person.title : null,
+    role: roleKey === 'role' ? person.role : null,
+    organization: person.organization,
+    country: countryLabel(person.country),
+  })
+  return affiliation ? `${person.name} - ${affiliation}` : String(person.name)
+}
+
+function peopleBlocks(session: any): { label: string; lines: string[] }[] {
+  const blocks: { label: string; lines: string[] }[] = []
+
+  const speakers = (Array.isArray(session.speakers) ? session.speakers : [])
+    .map((s: any) => personDetail(s, 'title'))
+    .filter(Boolean) as string[]
+  const guests = formatSpeakerNamesList(session.speakerNames)
+  const allSpeakers = [...speakers, ...guests]
+  if (allSpeakers.length) blocks.push({ label: 'Speakers', lines: allSpeakers })
+
+  const committee = (Array.isArray(session.committeeMembers) ? session.committeeMembers : [])
+    .map((m: any) => personDetail(m, 'role'))
+    .filter(Boolean) as string[]
+  if (committee.length) blocks.push({ label: 'Youth Steering Committee', lines: committee })
+
+  const moderator =
+    personDetail(session.moderator, 'title') ||
+    personDetail(session.committeeModerator, 'role')
+  if (moderator) {
+    const source = session.committeeModerator && !session.moderator
+      ? 'Moderator (Youth Steering Committee)'
+      : 'Moderator'
+    blocks.push({ label: source, lines: [moderator] })
+  }
+
+  return blocks
 }
 
 function collectChunks(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -114,7 +140,6 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
 
   const pageWidth = 595.28 // A4
   const contentWidth = pageWidth - 96
-  // Match email assets: footer is wider/shorter than letterhead — force same draw width.
   const letterheadHeight = Math.round(contentWidth / (1024 / 182))
   const footerHeight = Math.round(contentWidth / (669 / 68))
   const letterheadTop = 24
@@ -188,7 +213,6 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     doc.addPage()
   }
 
-  // Letterhead on every page (first page + each added page), same as footer.
   drawLetterhead()
   doc.y = contentTop
   doc.on('pageAdded', () => {
@@ -199,7 +223,7 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
   doc
     .fontSize(14)
     .fillColor(BRAND_BLUE)
-    .text(pdfSafe('Full Conference Programme'), { width: contentWidth })
+    .text(pdfSafe('Full Conference Programme'), { width: contentWidth, align: 'center' })
   doc
     .moveDown(0.3)
     .fontSize(10)
@@ -208,21 +232,24 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
       pdfSafe(
         'Venue: Namibia Institute of Public Administration and Management (NIPAM), Windhoek | Generated from www.sarsyc.org/programme',
       ),
-      { width: contentWidth },
+      { width: contentWidth, align: 'center' },
     )
   doc.moveDown(0.8)
 
-  // Overview section
   doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe('Programme Overview'), { width: contentWidth })
   doc.moveDown(0.4)
 
   for (const day of SESSION_DAY_OPTIONS.filter((d) => d.value !== 'day-4')) {
     const overview = DAY_OVERVIEW[day.value]
     if (!overview) continue
-    doc.fontSize(11).fillColor(TEXT_DARK).text(pdfSafe(overview.title), { width: contentWidth })
+    const dayColor = sessionDayTheme(day.value).pdf
+    doc.fontSize(11).fillColor(dayColor).text(pdfSafe(overview.title), { width: contentWidth })
     doc.moveDown(0.2)
     for (const bullet of overview.bullets) {
-      doc.fontSize(9).fillColor(TEXT_MUTED).text(pdfSafe(`-  ${bullet}`), { width: contentWidth, indent: 8 })
+      doc
+        .fontSize(9)
+        .fillColor(TEXT_MUTED)
+        .text(pdfSafe(`-  ${bullet}`), { width: contentWidth, indent: 8, align: 'justify' })
     }
     doc.moveDown(0.45)
   }
@@ -236,7 +263,6 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
     .stroke()
   doc.moveDown(0.8)
 
-  // Detailed sessions from CMS
   const byDay = SESSION_DAY_OPTIONS.map((day) => ({
     ...day,
     sessions: sessions
@@ -252,10 +278,12 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
         pdfSafe(
           'Detailed session listings will appear here as they are published in the conference CMS. Visit www.sarsyc.org/programme/sessions for the latest updates.',
         ),
-        { width: contentWidth },
+        { width: contentWidth, align: 'justify' },
       )
   } else {
-    doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe('Detailed Session Schedule'), { width: contentWidth })
+    doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe('Detailed Session Schedule'), {
+      width: contentWidth,
+    })
     doc.moveDown(0.5)
 
     for (const group of byDay) {
@@ -263,54 +291,90 @@ export async function buildProgrammePdfBuffer(sessions: any[]): Promise<Buffer> 
         startNewPage()
       }
 
-      doc.fontSize(12).fillColor(BRAND_BLUE).text(pdfSafe(sessionDayLabel(group.value)), { width: contentWidth })
-      doc.moveDown(0.35)
+      const dayColor = sessionDayTheme(group.value).pdf
+      const dayY = doc.y
+      doc
+        .save()
+        .rect(48, dayY, 4, 18)
+        .fill(dayColor)
+        .restore()
+      doc
+        .fontSize(12)
+        .fillColor(dayColor)
+        .text(pdfSafe(sessionDayLabel(group.value)), 58, dayY, { width: contentWidth - 10 })
+      doc.moveDown(0.45)
 
       for (const session of group.sessions) {
-        const needed = 70
+        const people = peopleBlocks(session)
+        const description = slateToPlainText(session.description)
+        const needed = 90 + people.length * 28
         if (doc.y > doc.page.height - bottomMargin - needed) {
           startNewPage()
         }
 
         const start = formatSessionTime(session.startTime)
         const end = formatSessionTime(session.endTime)
-        const timeLabel = start && end ? `${start} - ${end}` : start || ''
+        const timeLabel = start && end ? `${start} - ${end}` : start || 'TBA'
         const typeLabel = sessionTypeLabel(session.type)
         const trackLabel = session.track ? sessionTrackLabel(session.track) : ''
-        const description = slateToPlainText(session.description)
-        const people = speakerLine(session)
+        const meta = [typeLabel, trackLabel].filter(Boolean).join('  |  ')
 
-        const meta = [typeLabel, trackLabel].filter(Boolean).join(' | ')
+        const cardTop = doc.y
+        doc
+          .save()
+          .roundedRect(48, cardTop, contentWidth, 2, 0)
+          .fill(dayColor)
+          .restore()
+        doc.y = cardTop + 8
+
         doc
           .fontSize(9)
-          .fillColor(ACCENT_BLUE)
-          .text(pdfSafe(timeLabel || 'TBA'), { continued: Boolean(meta), width: contentWidth })
+          .fillColor(dayColor)
+          .text(pdfSafe(timeLabel), { continued: Boolean(meta), width: contentWidth })
         if (meta) {
           doc.fillColor(TEXT_MUTED).text(pdfSafe(`   |   ${meta}`))
         } else {
           doc.text('')
         }
 
-        doc.fontSize(10).fillColor(TEXT_DARK).text(pdfSafe(session.title || 'Untitled session'), { width: contentWidth })
+        doc
+          .fontSize(11)
+          .fillColor(TEXT_DARK)
+          .text(pdfSafe(session.title || 'Untitled session'), { width: contentWidth })
 
         if (session.venue) {
-          doc.fontSize(8).fillColor(TEXT_MUTED).text(pdfSafe(`Venue: ${session.venue}`), { width: contentWidth })
+          doc
+            .fontSize(8)
+            .fillColor(TEXT_MUTED)
+            .text(pdfSafe(`Venue: ${session.venue}`), { width: contentWidth })
         }
 
-        if (description && session.type !== 'break') {
+        if (description && session.type !== 'break' && session.type !== 'lunch' && session.type !== 'dinner') {
           const clipped =
-            description.length > 280 ? `${description.slice(0, 277).trimEnd()}...` : description
-          doc.fontSize(8).fillColor(TEXT_MUTED).text(pdfSafe(clipped), { width: contentWidth })
+            description.length > 320 ? `${description.slice(0, 317).trimEnd()}...` : description
+          doc
+            .fontSize(8)
+            .fillColor(TEXT_MUTED)
+            .text(pdfSafe(clipped), { width: contentWidth, align: 'justify' })
         }
 
-        if (people) {
-          doc.fontSize(8).fillColor(BRAND_BLUE).text(people, { width: contentWidth })
+        for (const block of people) {
+          doc.moveDown(0.15)
+          doc.fontSize(8).fillColor(dayColor).text(pdfSafe(block.label.toUpperCase()), {
+            width: contentWidth,
+          })
+          for (const line of block.lines) {
+            doc
+              .fontSize(8)
+              .fillColor(TEXT_DARK)
+              .text(pdfSafe(`- ${line}`), { width: contentWidth, align: 'justify' })
+          }
         }
 
-        doc.moveDown(0.55)
+        doc.moveDown(0.65)
       }
 
-      doc.moveDown(0.3)
+      doc.moveDown(0.25)
     }
   }
 

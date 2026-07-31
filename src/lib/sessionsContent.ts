@@ -6,7 +6,11 @@
 export const SESSION_TYPE_OPTIONS = [
   { label: 'Keynote', value: 'keynote' },
   { label: 'Plenary', value: 'plenary' },
+  { label: 'Welcome Remarks', value: 'welcome-remarks' },
+  { label: 'Introductions', value: 'introductions' },
+  { label: 'Presentation', value: 'presentation' },
   { label: 'Panel Discussion', value: 'panel' },
+  { label: 'Round Table Discussion', value: 'round-table' },
   { label: 'Workshop', value: 'workshop' },
   { label: 'Oral / Abstract Presentations', value: 'oral' },
   { label: 'Poster Session', value: 'poster' },
@@ -14,7 +18,10 @@ export const SESSION_TYPE_OPTIONS = [
   { label: 'Concluding Presentation', value: 'concluding-presentation' },
   { label: 'Forum Reflection', value: 'forum-reflection' },
   { label: 'Award Ceremony', value: 'award-ceremony' },
+  { label: 'Music / Dance', value: 'music-dance' },
   { label: 'Networking', value: 'networking' },
+  { label: 'Lunch', value: 'lunch' },
+  { label: 'Dinner', value: 'dinner' },
   { label: 'Registration / Break', value: 'break' },
   { label: 'Side Event', value: 'side-event' },
   { label: 'Post-Conference Activity', value: 'post-conference' },
@@ -103,6 +110,63 @@ export function formatSessionDate(value: unknown): string {
     year: 'numeric',
     timeZone: 'UTC',
   })
+}
+
+/** Day accent styles for session cards (border/hover glow). */
+export const SESSION_DAY_THEME: Record<
+  string,
+  { accent: string; soft: string; badge: string; hover: string; bar: string; pdf: string }
+> = {
+  'day-1': {
+    accent: 'border-sky-500',
+    soft: 'bg-sky-50',
+    badge: 'bg-sky-100 text-sky-800',
+    hover: 'hover:border-sky-500 hover:shadow-sky-200/70 hover:bg-sky-50/40',
+    bar: 'bg-sky-500',
+    pdf: '#0284c7',
+  },
+  'day-2': {
+    accent: 'border-emerald-500',
+    soft: 'bg-emerald-50',
+    badge: 'bg-emerald-100 text-emerald-800',
+    hover: 'hover:border-emerald-500 hover:shadow-emerald-200/70 hover:bg-emerald-50/40',
+    bar: 'bg-emerald-500',
+    pdf: '#059669',
+  },
+  'day-3': {
+    accent: 'border-violet-500',
+    soft: 'bg-violet-50',
+    badge: 'bg-violet-100 text-violet-800',
+    hover: 'hover:border-violet-500 hover:shadow-violet-200/70 hover:bg-violet-50/40',
+    bar: 'bg-violet-500',
+    pdf: '#7c3aed',
+  },
+  'day-4': {
+    accent: 'border-amber-500',
+    soft: 'bg-amber-50',
+    badge: 'bg-amber-100 text-amber-800',
+    hover: 'hover:border-amber-500 hover:shadow-amber-200/70 hover:bg-amber-50/40',
+    bar: 'bg-amber-500',
+    pdf: '#d97706',
+  },
+}
+
+export function sessionDayTheme(day: unknown) {
+  if (typeof day === 'string' && SESSION_DAY_THEME[day]) return SESSION_DAY_THEME[day]
+  return SESSION_DAY_THEME['day-1']
+}
+
+/** Title/role · organization · country for speakers and committee members. */
+export function formatPersonAffiliation(person: {
+  title?: string | null
+  role?: string | null
+  organization?: string | null
+  country?: string | null
+}): string {
+  return [person.title || person.role, person.organization, person.country]
+    .map((part) => (typeof part === 'string' ? part.trim() : ''))
+    .filter(Boolean)
+    .join(' · ')
 }
 
 export function formatSpeakerNamesList(raw: unknown): string[] {

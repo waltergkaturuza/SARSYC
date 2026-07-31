@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { FiCalendar, FiClock, FiMapPin, FiUsers, FiUser, FiDownload } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { slateToPlainText } from '@/lib/newsContent'
+import { getCountryLabel } from '@/lib/countries'
 import {
   formatSessionTime,
   formatSessionDate,
@@ -10,23 +11,45 @@ import {
   sessionTrackBadgeClass,
   sessionTypeLabel,
   formatSpeakerNamesList,
+  formatPersonAffiliation,
+  sessionDayTheme,
   SESSION_DAY_OPTIONS,
 } from '@/lib/sessionsContent'
 
 export const revalidate = 0
 
-function speakerName(value: unknown): string | null {
-  if (value && typeof value === 'object' && 'name' in (value as Record<string, unknown>)) {
-    return String((value as Record<string, unknown>).name)
-  }
-  return null
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : null
 }
 
-function speakerId(value: unknown): string | null {
-  if (value && typeof value === 'object' && 'id' in (value as Record<string, unknown>)) {
-    return String((value as Record<string, unknown>).id)
+function personFromSpeaker(value: unknown) {
+  const s = asRecord(value)
+  if (!s?.name) return null
+  const countryRaw = typeof s.country === 'string' ? s.country : ''
+  return {
+    id: s.id != null ? String(s.id) : null,
+    name: String(s.name),
+    affiliation: formatPersonAffiliation({
+      title: typeof s.title === 'string' ? s.title : null,
+      organization: typeof s.organization === 'string' ? s.organization : null,
+      country: countryRaw ? getCountryLabel(countryRaw) || countryRaw : null,
+    }),
   }
-  return null
+}
+
+function personFromCommittee(value: unknown) {
+  const m = asRecord(value)
+  if (!m?.name) return null
+  const countryRaw = typeof m.country === 'string' ? m.country : ''
+  return {
+    id: m.id != null ? String(m.id) : null,
+    name: String(m.name),
+    affiliation: formatPersonAffiliation({
+      role: typeof m.role === 'string' ? m.role : null,
+      organization: typeof m.organization === 'string' ? m.organization : null,
+      country: countryRaw ? getCountryLabel(countryRaw) || countryRaw : null,
+    }),
+  }
 }
 
 export default async function SessionsPage() {
@@ -44,7 +67,6 @@ export default async function SessionsPage() {
     console.error('Failed to load sessions from CMS:', error)
   }
 
-  // Group sessions by conference day, keeping the configured day order.
   const dayGroups = SESSION_DAY_OPTIONS.map((dayOption) => ({
     ...dayOption,
     sessions: sessions.filter((session) => (session.day || 'day-1') === dayOption.value),
@@ -52,16 +74,11 @@ export default async function SessionsPage() {
 
   return (
     <>
-      {/* Hero */}
       <section className="bg-slate-800 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Conference Sessions
-            </h1>
-            <p className="text-xl text-white/90 mb-6">
-              Browse all sessions for SARSYC VI
-            </p>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Conference Sessions</h1>
+            <p className="text-xl text-white/90 mb-6">Browse all sessions for SARSYC VI</p>
             <a
               href="/api/programme/pdf"
               download="SARSYC-VI-Programme.pdf"
@@ -74,14 +91,13 @@ export default async function SessionsPage() {
         </div>
       </section>
 
-      {/* Sessions List */}
-      <section className="section bg-white">
+      <section className="section bg-gradient-to-b from-slate-50 to-white">
         <div className="container-custom">
           {dayGroups.length === 0 ? (
-            <div className="max-w-3xl mx-auto text-center bg-gray-50 rounded-xl p-12">
+            <div className="max-w-3xl mx-auto text-center bg-white rounded-2xl border border-slate-200 p-12 shadow-sm">
               <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Programme Coming Soon</h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-6 text-justify">
                 The full session programme is being finalised and will be published here shortly.
                 Check back soon!
               </p>
@@ -90,167 +106,215 @@ export default async function SessionsPage() {
               </Link>
             </div>
           ) : (
-            <div className="max-w-5xl mx-auto space-y-12">
-              {dayGroups.map((group) => (
-                <div key={group.value} id={group.value} className="scroll-mt-24">
-                  <div className="mb-6 border-b-2 border-primary-600 pb-3">
-                    <h2 className="text-3xl font-bold text-gray-900">{group.label}</h2>
-                  </div>
+            <div className="max-w-5xl mx-auto space-y-14">
+              {dayGroups.map((group) => {
+                const theme = sessionDayTheme(group.value)
+                return (
+                  <div key={group.value} id={group.value} className="scroll-mt-24">
+                    <div className={`mb-7 rounded-xl border-l-4 ${theme.accent} ${theme.soft} px-5 py-4`}>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                        Conference day
+                      </p>
+                      <h2 className="text-3xl font-bold text-slate-900">{group.label}</h2>
+                    </div>
 
-                  <div className="space-y-6">
-                    {group.sessions.map((session: any) => {
-                      const description = slateToPlainText(session.description)
-                      const linkedSpeakers = (Array.isArray(session.speakers) ? session.speakers : [])
-                        .map((s: any) => ({ id: speakerId(s), name: speakerName(s) }))
-                        .filter((s: any) => s.name)
-                      const guestSpeakers = formatSpeakerNamesList(session.speakerNames)
-                      const committeeMembers = (Array.isArray(session.committeeMembers) ? session.committeeMembers : [])
-                        .map((m: any) =>
-                          m && typeof m === 'object'
-                            ? { name: m.name as string, role: m.role as string | undefined }
-                            : null,
+                    <div className="space-y-5">
+                      {group.sessions.map((session: any) => {
+                        const description = slateToPlainText(session.description)
+                        const linkedSpeakers = (Array.isArray(session.speakers) ? session.speakers : [])
+                          .map(personFromSpeaker)
+                          .filter(Boolean) as NonNullable<ReturnType<typeof personFromSpeaker>>[]
+                        const guestSpeakers = formatSpeakerNamesList(session.speakerNames)
+                        const committeeMembers = (
+                          Array.isArray(session.committeeMembers) ? session.committeeMembers : []
                         )
-                        .filter((m: any) => m?.name)
-                      const moderatorName = speakerName(session.moderator)
+                          .map(personFromCommittee)
+                          .filter(Boolean) as NonNullable<ReturnType<typeof personFromCommittee>>[]
+                        const speakerModerator = personFromSpeaker(session.moderator)
+                        const committeeModerator = personFromCommittee(session.committeeModerator)
+                        const moderator = speakerModerator || committeeModerator
+                        const moderatorIsCommittee = Boolean(committeeModerator && !speakerModerator)
 
-                      return (
-                        <div key={session.id} className="card p-8 hover:shadow-2xl transition-all">
-                          <div className="flex flex-col lg:flex-row gap-6">
-                            {/* Time & Venue */}
-                            <div className="lg:w-56 flex-shrink-0 space-y-3">
-                              <div>
-                                <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Date & Time</div>
-                                <div className="flex items-center gap-2 text-gray-900">
-                                  <FiCalendar className="w-4 h-4 text-primary-600" />
-                                  <span className="font-medium">
-                                    {session.date ? formatSessionDate(session.date) : sessionDayLabel(session.day)}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-gray-700 mt-1">
-                                  <FiClock className="w-4 h-4 text-primary-600" />
-                                  <span>
-                                    {formatSessionTime(session.startTime)} – {formatSessionTime(session.endTime)}
-                                  </span>
-                                </div>
-                              </div>
+                        return (
+                          <article
+                            key={session.id}
+                            className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${theme.hover}`}
+                          >
+                            <div
+                              className={`absolute inset-y-0 left-0 w-1.5 ${theme.bar}`}
+                              aria-hidden
+                            />
 
-                              {session.venue && (
+                            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 pl-2">
+                              <aside className="lg:w-60 flex-shrink-0 space-y-4">
                                 <div>
-                                  <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Venue</div>
-                                  <div className="flex items-center gap-2 text-gray-900">
-                                    <FiMapPin className="w-4 h-4 text-primary-600" />
-                                    <span className="font-medium">{session.venue}</span>
+                                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                                    Date & Time
+                                  </div>
+                                  <div className="flex items-start gap-2 text-slate-900">
+                                    <FiCalendar className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
+                                    <span className="font-medium text-sm leading-snug">
+                                      {session.date
+                                        ? formatSessionDate(session.date)
+                                        : sessionDayLabel(session.day)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-slate-700 mt-1.5">
+                                    <FiClock className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                                    <span className="text-sm font-semibold tabular-nums">
+                                      {formatSessionTime(session.startTime)} –{' '}
+                                      {formatSessionTime(session.endTime)}
+                                    </span>
                                   </div>
                                 </div>
-                              )}
 
-                              <div className="flex flex-wrap gap-2">
-                                <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full uppercase">
-                                  {sessionTypeLabel(session.type) || session.type || 'Session'}
-                                </span>
-                                {session.track && (
-                                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${sessionTrackBadgeClass(session.track)}`}>
-                                    {sessionTrackLabel(session.track)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-1">
-                              <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                                {session.title}
-                              </h3>
-
-                              {description && (
-                                <p className="text-gray-600 mb-4 leading-relaxed whitespace-pre-line">
-                                  {description}
-                                </p>
-                              )}
-
-                              {(linkedSpeakers.length > 0 || guestSpeakers.length > 0) && (
-                                <div className="flex items-start gap-2 mb-4">
-                                  <FiUsers className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                {session.venue && (
                                   <div>
-                                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Speakers</div>
-                                    <div className="text-sm text-gray-700 flex flex-wrap gap-x-1 gap-y-1">
-                                      {linkedSpeakers.map((speaker: any, index: number) => (
-                                        <span key={speaker.id ?? speaker.name}>
+                                    <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                                      Venue
+                                    </div>
+                                    <div className="flex items-start gap-2 text-slate-900">
+                                      <FiMapPin className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
+                                      <span className="font-medium text-sm">{session.venue}</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  <span className={`inline-block px-3 py-1 text-[11px] font-bold rounded-full uppercase tracking-wide ${theme.badge}`}>
+                                    {sessionTypeLabel(session.type) || session.type || 'Session'}
+                                  </span>
+                                  {session.track && (
+                                    <span
+                                      className={`inline-block px-3 py-1 text-[11px] font-bold rounded-full ${sessionTrackBadgeClass(session.track)}`}
+                                    >
+                                      {sessionTrackLabel(session.track)}
+                                    </span>
+                                  )}
+                                </div>
+                              </aside>
+
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight group-hover:text-slate-800">
+                                  {session.title}
+                                </h3>
+
+                                {description && (
+                                  <p className="text-slate-600 mb-5 leading-relaxed text-justify whitespace-pre-line">
+                                    {description}
+                                  </p>
+                                )}
+
+                                {(linkedSpeakers.length > 0 || guestSpeakers.length > 0) && (
+                                  <div className="mb-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <FiUsers className="w-4 h-4 text-slate-400" />
+                                      <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Speakers
+                                      </div>
+                                    </div>
+                                    <ul className="space-y-2.5">
+                                      {linkedSpeakers.map((speaker) => (
+                                        <li key={speaker.id ?? speaker.name} className="text-sm">
                                           {speaker.id ? (
                                             <Link
                                               href={`/programme/speakers/${speaker.id}`}
-                                              className="text-primary-600 hover:text-primary-700 hover:underline font-medium"
+                                              className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
                                             >
                                               {speaker.name}
                                             </Link>
                                           ) : (
-                                            speaker.name
+                                            <span className="font-semibold text-slate-900">{speaker.name}</span>
                                           )}
-                                          {index < linkedSpeakers.length - 1 || guestSpeakers.length > 0 ? ',' : ''}
-                                        </span>
+                                          {speaker.affiliation && (
+                                            <span className="block text-slate-500 text-justify">
+                                              {speaker.affiliation}
+                                            </span>
+                                          )}
+                                        </li>
                                       ))}
-                                      {guestSpeakers.map((name: string, index: number) => (
-                                        <span key={name}>
+                                      {guestSpeakers.map((name) => (
+                                        <li key={name} className="text-sm font-medium text-slate-800">
                                           {name}
-                                          {index < guestSpeakers.length - 1 ? ',' : ''}
-                                        </span>
+                                        </li>
                                       ))}
-                                    </div>
+                                    </ul>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {committeeMembers.length > 0 && (
-                                <div className="flex items-start gap-2 mb-4">
-                                  <FiUsers className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                                      Youth Steering Committee
+                                {committeeMembers.length > 0 && (
+                                  <div className="mb-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <FiUsers className="w-4 h-4 text-slate-400" />
+                                      <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Youth Steering Committee
+                                      </div>
                                     </div>
-                                    <div className="text-sm text-gray-700">
-                                      {committeeMembers.map((member: any, index: number) => (
-                                        <span key={member.name}>
+                                    <ul className="space-y-2.5">
+                                      {committeeMembers.map((member) => (
+                                        <li key={member.id ?? member.name} className="text-sm">
                                           <Link
                                             href="/about/youth-steering-committee"
-                                            className="text-primary-600 hover:text-primary-700 hover:underline font-medium"
+                                            className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
                                           >
                                             {member.name}
                                           </Link>
-                                          {member.role ? ` (${member.role})` : ''}
-                                          {index < committeeMembers.length - 1 ? ', ' : ''}
-                                        </span>
+                                          {member.affiliation && (
+                                            <span className="block text-slate-500 text-justify">
+                                              {member.affiliation}
+                                            </span>
+                                          )}
+                                        </li>
                                       ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {moderator && (
+                                  <div className="mb-5 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <FiUser className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                      <div>
+                                        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                                          Moderator
+                                          {moderatorIsCommittee ? ' · Youth Steering Committee' : ''}
+                                        </div>
+                                        {moderatorIsCommittee || !speakerModerator?.id ? (
+                                          <div className="font-semibold text-slate-900">{moderator.name}</div>
+                                        ) : (
+                                          <Link
+                                            href={`/programme/speakers/${speakerModerator.id}`}
+                                            className="font-semibold text-primary-700 hover:underline"
+                                          >
+                                            {moderator.name}
+                                          </Link>
+                                        )}
+                                        {moderator.affiliation && (
+                                          <div className="text-slate-500 text-justify">{moderator.affiliation}</div>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {moderatorName && (
-                                <div className="flex items-center gap-2 mb-4 text-sm text-gray-700">
-                                  <FiUser className="w-4 h-4 text-gray-400" />
-                                  <span>
-                                    <span className="font-semibold text-gray-500">Moderator:</span> {moderatorName}
-                                  </span>
+                                <div className="flex flex-wrap gap-3 pt-1">
+                                  <a
+                                    href={`/api/programme/ical?sessionId=${session.id}`}
+                                    download
+                                    className="btn-outline text-sm"
+                                  >
+                                    Add to Calendar
+                                  </a>
                                 </div>
-                              )}
-
-                              <div className="flex flex-wrap gap-3">
-                                <a
-                                  href={`/api/programme/ical?sessionId=${session.id}`}
-                                  download
-                                  className="btn-outline text-sm"
-                                >
-                                  Add to Calendar
-                                </a>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                          </article>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
