@@ -18,7 +18,7 @@ const YouthSteeringCommittee: CollectionConfig = {
     read: () => true, // Public can read
     create: (args: any) => Boolean(args.req?.user),
     update: (args: any) => Boolean(args.req?.user),
-    delete: (args: any) => args.req?.user?.role === 'admin',
+    delete: (args: any) => Boolean(args.req?.user),
   },
   fields: [
     {

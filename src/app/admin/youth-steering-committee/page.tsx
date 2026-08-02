@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi'
 import { ensureYouthSteeringCommitteeLatestColumns } from '@/lib/ensureYouthSteeringCommitteeSchema'
 import SyncYouthSteeringCommitteeButton from '@/components/admin/youth-steering/SyncYouthSteeringCommitteeButton'
+import YouthSteeringCommitteeDeleteButton from '@/components/admin/YouthSteeringCommitteeDeleteButton'
 
 export const revalidate = 0
 
@@ -302,6 +303,10 @@ export default async function YouthSteeringCommitteePage({
                           >
                             <FiEdit className="w-4 h-4" />
                           </Link>
+                          <YouthSteeringCommitteeDeleteButton
+                            memberId={String(member.id)}
+                            label={member.name || 'this member'}
+                          />
                         </div>
                       </td>
                     </tr>

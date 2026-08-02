@@ -7,6 +7,7 @@ import { FiUpload, FiX, FiSave, FiLoader } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { uploadFile } from '@/lib/chunkedUpload'
 import { slateToPlainText } from '@/lib/newsContent'
+import YouthSteeringCommitteeDeleteButton from '@/components/admin/YouthSteeringCommitteeDeleteButton'
 
 // Helper function to extract text from rich text format
 function extractBioText(bio: any): string {
@@ -447,31 +448,42 @@ export default function YouthSteeringCommitteeForm({ initialData, mode }: YouthS
       )}
 
       {/* Submit Button */}
-      <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? (
-            <>
-              <FiLoader className="w-5 h-5 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <FiSave className="w-5 h-5" />
-              {mode === 'create' ? 'Create Member' : 'Save Changes'}
-            </>
+      <div className="flex items-center justify-between gap-4 pt-6 border-t border-gray-200">
+        <div>
+          {mode === 'edit' && initialData?.id != null && (
+            <YouthSteeringCommitteeDeleteButton
+              memberId={String(initialData.id)}
+              label={formData.name || 'this member'}
+              variant="button"
+            />
           )}
-        </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? (
+              <>
+                <FiLoader className="w-5 h-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <FiSave className="w-5 h-5" />
+                {mode === 'create' ? 'Create Member' : 'Save Changes'}
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </form>
   )

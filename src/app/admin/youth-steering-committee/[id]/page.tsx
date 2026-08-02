@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiEdit, FiArrowLeft, FiMail, FiTwitter, FiLinkedin, FiGlobe, FiStar } from 'react-icons/fi'
+import YouthSteeringCommitteeDeleteButton from '@/components/admin/YouthSteeringCommitteeDeleteButton'
 import { slateToSimpleHtml, slateToPlainText } from '@/lib/newsContent'
 import { getCountryLabel } from '@/lib/countries'
 
@@ -115,13 +116,20 @@ export default async function CommitteeMemberViewPage({
             <h1 className="text-3xl font-bold text-gray-900">{member.name}</h1>
             <p className="text-gray-600 mt-1">{member.role} • {member.organization}</p>
           </div>
-          <Link
-            href={`/admin/youth-steering-committee/${member.id}/edit`}
-            className="btn-primary flex items-center gap-2"
-          >
-            <FiEdit className="w-5 h-5" />
-            Edit Member
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <YouthSteeringCommitteeDeleteButton
+              memberId={String(member.id)}
+              label={member.name || 'this member'}
+              variant="button"
+            />
+            <Link
+              href={`/admin/youth-steering-committee/${member.id}/edit`}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FiEdit className="w-5 h-5" />
+              Edit Member
+            </Link>
+          </div>
         </div>
       </div>
 
