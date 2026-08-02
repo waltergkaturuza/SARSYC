@@ -109,5 +109,25 @@ export async function ensureSessionsLatestColumns(payload: Payload): Promise<voi
       ON "sessions" ("committee_moderator_id");
   `)
 
+  // Publish visibility (draft / published / archived).
+  await db.drizzle.execute(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_sessions_status') THEN
+        CREATE TYPE "enum_sessions_status" AS ENUM ('draft', 'published', 'archived');
+      END IF;
+    END
+    $$;
+  `)
+  for (const value of ['draft', 'published', 'archived']) {
+    await db.drizzle.execute(addEnumValueSql('enum_sessions_status', value))
+  }
+  await db.drizzle.execute(
+    `ALTER TABLE "sessions" ADD COLUMN IF NOT EXISTS "status" "enum_sessions_status" DEFAULT 'published'`,
+  )
+  await db.drizzle.execute(
+    `UPDATE "sessions" SET "status" = 'published' WHERE "status" IS NULL`,
+  )
+
   patchedThisInstance = true
 }

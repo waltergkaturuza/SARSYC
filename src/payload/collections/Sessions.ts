@@ -4,14 +4,18 @@ const Sessions: CollectionConfig = {
   slug: 'sessions',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'type', 'track', 'date', 'time'],
+    defaultColumns: ['title', 'type', 'track', 'status', 'date'],
     group: 'Conference',
   },
   access: {
-    read: () => true, // Public can read
+    read: (args: any) => {
+      if (args.req?.user) return true
+      // Public can only see published sessions
+      return { status: { equals: 'published' } }
+    },
     create: (args: any) => Boolean(args.req?.user),
     update: (args: any) => Boolean(args.req?.user),
-    delete: (args: any) => args.req?.user?.role === 'admin',
+    delete: (args: any) => Boolean(args.req?.user),
   },
   fields: [
     {
@@ -19,6 +23,22 @@ const Sessions: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'Session Title',
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      label: 'Visibility',
+      defaultValue: 'published',
+      options: [
+        { label: 'Published (public)', value: 'published' },
+        { label: 'Draft (hidden from public)', value: 'draft' },
+        { label: 'Archived', value: 'archived' },
+      ],
+      admin: {
+        description: 'Draft and archived sessions stay in admin but are hidden from the public programme, PDF, and calendar.',
+        position: 'sidebar',
+      },
     },
     {
       name: 'description',

@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
       payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'sessions',
+        where: { status: { equals: 'published' } },
         limit: 1000,
         sort: 'startTime',
         depth: 1,

@@ -98,6 +98,7 @@ export default async function SessionsPage() {
     const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'sessions',
+      where: { status: { equals: 'published' } },
       limit: 300,
       sort: 'startTime',
       depth: 1,

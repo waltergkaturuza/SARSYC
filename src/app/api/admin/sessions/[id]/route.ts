@@ -13,6 +13,11 @@ function toIdNumbers(value: unknown): number[] {
     .filter((id) => Number.isFinite(id) && id > 0)
 }
 
+function normalizeStatus(value: unknown): 'draft' | 'published' | 'archived' | null {
+  if (value === 'draft' || value === 'published' || value === 'archived') return value
+  return null
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -21,10 +26,26 @@ export async function PATCH(
     const payload = await getPayloadClient()
     await ensureSessionsLatestColumns(payload)
     const body = await request.json()
+    const status = normalizeStatus(body.status)
+
+    // Quick publish / unpublish from the admin list or detail page.
+    if (body.statusOnly) {
+      if (!status) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      }
+      const session = await payload.update({
+        collection: 'sessions',
+        id: params.id,
+        data: { status },
+        overrideAccess: true,
+      })
+      return NextResponse.json({ success: true, doc: session })
+    }
 
     const session = await payload.update({
       collection: 'sessions',
       id: params.id,
+      overrideAccess: true,
       data: {
         title: body.title,
         description:
@@ -46,6 +67,7 @@ export async function PATCH(
         committeeModerator: body.committeeModerator ? Number(body.committeeModerator) : null,
         presentations: toIdNumbers(body.presentations),
         requiresRegistration: body.requiresRegistration || false,
+        ...(status ? { status } : {}),
       },
     })
 
@@ -69,6 +91,7 @@ export async function DELETE(
     await payload.delete({
       collection: 'sessions',
       id: params.id,
+      overrideAccess: true,
     })
 
     return NextResponse.json({ success: true })

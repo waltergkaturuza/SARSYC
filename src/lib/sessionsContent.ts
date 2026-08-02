@@ -44,6 +44,23 @@ export const SESSION_DAY_OPTIONS = [
   { label: 'Orathon — November 2026', value: 'day-4', date: '' },
 ] as const
 
+export const SESSION_STATUS_OPTIONS = [
+  { label: 'Published', value: 'published' },
+  { label: 'Draft (unpublished)', value: 'draft' },
+  { label: 'Archived', value: 'archived' },
+] as const
+
+export function sessionStatusLabel(value: unknown): string {
+  const found = SESSION_STATUS_OPTIONS.find((option) => option.value === value)
+  return found ? found.label : typeof value === 'string' ? value : 'Published'
+}
+
+export function sessionStatusBadgeClass(value: unknown): string {
+  if (value === 'draft') return 'bg-amber-100 text-amber-800'
+  if (value === 'archived') return 'bg-gray-100 text-gray-700'
+  return 'bg-green-100 text-green-800'
+}
+
 export function sessionTypeLabel(value: unknown): string {
   const found = SESSION_TYPE_OPTIONS.find((option) => option.value === value)
   return found ? found.label : typeof value === 'string' ? value : ''

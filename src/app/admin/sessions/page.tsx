@@ -11,10 +11,15 @@ import {
   sessionTrackLabel,
   sessionTrackBadgeClass,
   sessionDayLabel,
+  sessionStatusLabel,
+  sessionStatusBadgeClass,
   SESSION_TRACK_OPTIONS,
   SESSION_DAY_OPTIONS,
   SESSION_TYPE_OPTIONS,
+  SESSION_STATUS_OPTIONS,
 } from '@/lib/sessionsContent'
+import SessionDeleteButton from '@/components/admin/SessionDeleteButton'
+import SessionPublishButton from '@/components/admin/SessionPublishButton'
 
 export const revalidate = 0
 
@@ -23,6 +28,7 @@ interface SearchParams {
   type?: string
   track?: string
   day?: string
+  status?: string
 }
 
 export default async function SessionsManagementPage({
@@ -37,6 +43,7 @@ export default async function SessionsManagementPage({
   const type = searchParams.type
   const track = searchParams.track
   const day = searchParams.day
+  const status = searchParams.status
 
   // Build where clause
   const where: any = {}
@@ -53,6 +60,10 @@ export default async function SessionsManagementPage({
     where.day = { equals: day }
   }
 
+  if (status && status !== 'all') {
+    where.status = { equals: status }
+  }
+
   const results = await payload.find({
     collection: 'sessions',
     where,
@@ -60,6 +71,7 @@ export default async function SessionsManagementPage({
     page,
     sort: 'startTime',
     depth: 1,
+    overrideAccess: true,
   })
 
   const sessions = results.docs
@@ -128,7 +140,7 @@ export default async function SessionsManagementPage({
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         </div>
 
-        <form action="/admin/sessions" method="get" className="grid md:grid-cols-4 gap-4 items-end">
+        <form action="/admin/sessions" method="get" className="grid md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
             <select
@@ -171,6 +183,20 @@ export default async function SessionsManagementPage({
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
+            <select
+              name="status"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              defaultValue={status || 'all'}
+            >
+              <option value="all">All</option>
+              {SESSION_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
           <button
             type="submit"
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -208,10 +234,15 @@ export default async function SessionsManagementPage({
                 <div key={session.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3 className="font-bold text-gray-900">{session.title}</h3>
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${typeInfo.color}`}>
                           {typeInfo.label}
+                        </span>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${sessionStatusBadgeClass(session.status || 'published')}`}
+                        >
+                          {sessionStatusLabel(session.status || 'published')}
                         </span>
                       </div>
 
@@ -271,6 +302,14 @@ export default async function SessionsManagementPage({
                       >
                         <FiEdit className="w-4 h-4" />
                       </Link>
+                      <SessionPublishButton
+                        sessionId={String(session.id)}
+                        status={session.status || 'published'}
+                      />
+                      <SessionDeleteButton
+                        sessionId={String(session.id)}
+                        label={session.title || 'this session'}
+                      />
                     </div>
                   </div>
                 </div>

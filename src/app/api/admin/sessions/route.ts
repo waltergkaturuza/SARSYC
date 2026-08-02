@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
 
     const session = await payload.create({
       collection: 'sessions',
+      overrideAccess: true,
       data: {
         title: body.title,
         description:
@@ -42,6 +43,10 @@ export async function POST(request: NextRequest) {
         committeeModerator: body.committeeModerator ? Number(body.committeeModerator) : null,
         presentations: toIdNumbers(body.presentations),
         requiresRegistration: body.requiresRegistration || false,
+        status:
+          body.status === 'draft' || body.status === 'archived' || body.status === 'published'
+            ? body.status
+            : 'published',
       },
     })
 

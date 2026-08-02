@@ -11,8 +11,11 @@ import {
   sessionTrackLabel,
   sessionDayLabel,
   sessionTypeLabel,
+  sessionStatusLabel,
   formatSpeakerNamesList,
 } from '@/lib/sessionsContent'
+import SessionDeleteButton from '@/components/admin/SessionDeleteButton'
+import SessionPublishButton from '@/components/admin/SessionPublishButton'
 
 export const revalidate = 0
 
@@ -30,6 +33,7 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
       collection: 'sessions',
       id: params.id,
       depth: 2,
+      overrideAccess: true,
     })
 
     const startTime = formatSessionTime(session.startTime)
@@ -44,10 +48,22 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
             <FiArrowLeft className="w-5 h-5" />
             <span>Back to Sessions</span>
           </Link>
-          <Link href={`/admin/sessions/${params.id}/edit`} className="btn-primary flex items-center gap-2">
-            <FiEdit className="w-5 h-5" />
-            Edit Session
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <SessionPublishButton
+              sessionId={String(params.id)}
+              status={(session as { status?: string }).status || 'published'}
+              variant="button"
+            />
+            <SessionDeleteButton
+              sessionId={String(params.id)}
+              label={session.title || 'this session'}
+              variant="button"
+            />
+            <Link href={`/admin/sessions/${params.id}/edit`} className="btn-primary flex items-center gap-2">
+              <FiEdit className="w-5 h-5" />
+              Edit Session
+            </Link>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -55,10 +71,13 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
           <div className="bg-gradient-to-r from-primary-600 to-secondary-600 p-8 text-white">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <FiCalendar className="w-6 h-6" />
                   <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
                     {sessionTypeLabel(session.type)}
+                  </span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                    {sessionStatusLabel((session as { status?: string }).status || 'published')}
                   </span>
                   {session.day && (
                     <span className="px-3 py-1 bg-white/20 rounded-full text-sm">

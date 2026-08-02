@@ -10,7 +10,9 @@ import {
   SESSION_TYPE_OPTIONS,
   SESSION_TRACK_OPTIONS,
   SESSION_DAY_OPTIONS,
+  SESSION_STATUS_OPTIONS,
 } from '@/lib/sessionsContent'
+import SessionDeleteButton from '@/components/admin/SessionDeleteButton'
 
 interface SessionData {
   title: string
@@ -18,6 +20,7 @@ interface SessionData {
   type: string
   day: string
   track: string
+  status: string
   date: string
   startTime: string
   endTime: string
@@ -118,6 +121,7 @@ export default function SessionForm({
     type: initialData?.type || '',
     day: initialData?.day || 'day-1',
     track: initialData?.track || '',
+    status: initialData?.status || 'published',
     date: formatDateForInput(initialData?.date),
     startTime: formatTimeForInput(initialData?.startTime),
     endTime: formatTimeForInput(initialData?.endTime),
@@ -219,6 +223,7 @@ export default function SessionForm({
         type: formData.type,
         day: formData.day,
         track: formData.track || null,
+        status: formData.status || 'published',
         date: formData.date,
         startTime: `${formData.date}T${formData.startTime}:00.000Z`,
         endTime: `${formData.date}T${formData.endTime}:00.000Z`,
@@ -319,6 +324,23 @@ export default function SessionForm({
               </select>
             </FormField>
           </div>
+
+          <FormField
+            label="Visibility"
+            hint="Draft / archived sessions stay in admin but are hidden from the public programme, PDF, and calendar."
+          >
+            <select
+              value={formData.status}
+              onChange={(e) => handleInputChange('status', e.target.value)}
+              className="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              {SESSION_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
         </div>
       </div>
 
@@ -592,31 +614,42 @@ export default function SessionForm({
       )}
 
       {/* Submit Button */}
-      <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? (
-            <>
-              <FiLoader className="w-5 h-5 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <FiSave className="w-5 h-5" />
-              {mode === 'create' ? 'Create Session' : 'Save Changes'}
-            </>
+      <div className="flex items-center justify-between gap-4 pt-6 border-t border-gray-200">
+        <div>
+          {mode === 'edit' && initialData?.id != null && (
+            <SessionDeleteButton
+              sessionId={String(initialData.id)}
+              label={formData.title || 'this session'}
+              variant="button"
+            />
           )}
-        </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? (
+              <>
+                <FiLoader className="w-5 h-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <FiSave className="w-5 h-5" />
+                {mode === 'create' ? 'Create Session' : 'Save Changes'}
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </form>
   )

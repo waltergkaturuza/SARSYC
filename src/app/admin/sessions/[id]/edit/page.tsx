@@ -20,6 +20,7 @@ export default async function EditSessionPage({ params }: EditSessionPageProps) 
         collection: 'sessions',
         id: params.id,
         depth: 2,
+        overrideAccess: true,
       }),
       payload.find({ collection: 'speakers', limit: 300, sort: 'name', depth: 0 }),
       payload.find({

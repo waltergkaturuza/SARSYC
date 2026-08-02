@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
     payload.find({ collection: 'registrations', limit: 0 }),
     payload.find({ collection: 'abstracts', limit: 0 }),
     payload.find({ collection: 'speakers', limit: 0 }),
-    payload.find({ collection: 'sessions', limit: 0 }),
+    payload.find({ collection: 'sessions', limit: 0, overrideAccess: true }),
     payload.find({ collection: 'news', limit: 0 }),
   ])
 

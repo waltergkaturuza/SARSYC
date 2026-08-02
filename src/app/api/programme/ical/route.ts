@@ -20,16 +20,20 @@ export async function GET(request: NextRequest) {
     let sessions: any[] = []
 
     if (sessionId) {
-      // Get single session
+      // Get single published session
       const session = await payload.findByID({
         collection: 'sessions',
         id: parseInt(sessionId),
       })
-      if (session) sessions = [session]
+      const visibility = (session as { status?: string }).status ?? 'published'
+      if (session && visibility === 'published') {
+        sessions = [session]
+      }
     } else {
-      // Get all sessions
+      // Get all published sessions
       const result = await payload.find({
         collection: 'sessions',
+        where: { status: { equals: 'published' } },
         limit: 1000,
         sort: 'date',
       })
