@@ -1,4 +1,4 @@
-import { FiUsers, FiArrowRight } from 'react-icons/fi'
+import { FiUsers, FiArrowRight, FiExternalLink } from 'react-icons/fi'
 import Link from 'next/link'
 
 export default function TeamPage() {

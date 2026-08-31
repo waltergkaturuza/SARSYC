@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { FiArrowLeft, FiMapPin, FiUsers, FiAward, FiExternalLink } from 'react-icons/fi'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
+import { getConferenceGallerySlides } from '@/lib/conferenceMedia'
+import ConferenceImageSlider from '@/components/conferences/ConferenceImageSlider'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -21,7 +23,7 @@ export default async function ConferenceDetailPage({
       and: [{ slug: { equals: params.slug } }, { status: { equals: 'published' } }],
     },
     limit: 1,
-    depth: 0,
+    depth: 2,
   })
 
   const conference = results.docs[0] as any | undefined
@@ -30,6 +32,7 @@ export default async function ConferenceDetailPage({
   const backHref = conference.isCurrent
     ? conference.currentPath || '/sarsyc-vi'
     : '/conferences'
+  const slides = getConferenceGallerySlides(conference)
 
   return (
     <>
@@ -62,6 +65,14 @@ export default async function ConferenceDetailPage({
       <section className="section bg-white">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto space-y-8">
+            {slides.length > 0 && (
+              <ConferenceImageSlider
+                images={slides}
+                title={`${conference.title} gallery`}
+                aspectClassName="aspect-[16/10]"
+              />
+            )}
+
             <div className="flex flex-wrap gap-4 text-gray-700">
               <div className="flex items-center gap-2">
                 <FiMapPin className="w-5 h-5 text-primary-600" />

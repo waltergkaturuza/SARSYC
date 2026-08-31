@@ -3,10 +3,17 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import FormField from './FormField'
-import { FiSave, FiLoader, FiPlus, FiTrash2 } from 'react-icons/fi'
+import { FiSave, FiLoader, FiPlus, FiTrash2, FiUpload } from 'react-icons/fi'
+import { getConferenceMediaUrl } from '@/lib/conferenceMedia'
 
 type OutcomeRow = { outcome: string }
 type LinkRow = { label: string; url: string }
+type GalleryRow = {
+  key: string
+  mediaId?: string
+  url: string
+  caption: string
+}
 
 interface ConferenceFormData {
   title: string
@@ -25,6 +32,7 @@ interface ConferenceFormData {
   status: string
   keyOutcomes: OutcomeRow[]
   relatedLinks: LinkRow[]
+  gallery: GalleryRow[]
 }
 
 interface ConferenceFormProps {
@@ -46,9 +54,32 @@ function formatDateInput(value: unknown): string {
   return d.toISOString().slice(0, 10)
 }
 
+function mapInitialGallery(initialData?: any): GalleryRow[] {
+  if (!Array.isArray(initialData?.gallery)) return []
+  return initialData.gallery
+    .map((row: any, index: number) => {
+      const url = getConferenceMediaUrl(row.image) || ''
+      const mediaId =
+        typeof row.image === 'object' && row.image?.id != null
+          ? String(row.image.id)
+          : row.image != null
+            ? String(row.image)
+            : undefined
+      if (!url && !mediaId) return null
+      return {
+        key: row.id || `existing-${index}-${mediaId || url}`,
+        mediaId,
+        url,
+        caption: row.caption || '',
+      }
+    })
+    .filter(Boolean) as GalleryRow[]
+}
+
 export default function ConferenceForm({ initialData, mode }: ConferenceFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<ConferenceFormData>({
@@ -75,6 +106,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
           url: row.url || '',
         }))
       : [],
+    gallery: mapInitialGallery(initialData),
   })
 
   const handleChange = (field: keyof ConferenceFormData, value: any) => {
@@ -88,6 +120,33 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
   }
 
+  const handleGalleryUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    setErrors((prev) => ({ ...prev, gallery: '' }))
+    try {
+      const uploaded: GalleryRow[] = []
+      for (const file of Array.from(files)) {
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('conferenceSlug', formData.slug || formData.title || 'conference')
+        const res = await fetch('/api/upload/conference-gallery', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Upload failed')
+        uploaded.push({
+          key: `new-${Date.now()}-${file.name}`,
+          url: data.url as string,
+          caption: '',
+        })
+      }
+      setFormData((prev) => ({ ...prev, gallery: [...prev.gallery, ...uploaded] }))
+    } catch (err: any) {
+      setErrors((prev) => ({ ...prev, gallery: err.message || 'Photo upload failed' }))
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const validate = () => {
     const next: Record<string, string> = {}
     if (!formData.title.trim()) next.title = 'Title is required'
@@ -95,6 +154,9 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     if (!formData.year.trim()) next.year = 'Year is required'
     if (!formData.location.trim()) next.location = 'Location is required'
     if (!formData.summary.trim()) next.summary = 'Summary is required'
+    if (formData.gallery.length === 0) {
+      next.gallery = 'Add at least one photo for this conference'
+    }
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -129,6 +191,11 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         relatedLinks: formData.relatedLinks
           .map((row) => ({ label: row.label.trim(), url: row.url.trim() }))
           .filter((row) => row.label && row.url),
+        gallery: formData.gallery.map((row) => ({
+          mediaId: row.mediaId || undefined,
+          url: row.url,
+          caption: row.caption.trim() || null,
+        })),
       }
 
       const url =
@@ -262,6 +329,78 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
             />
           </FormField>
         </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Photo Gallery</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Add at least one photo. Multiple photos will slide on the public conference pages.
+            </p>
+          </div>
+          <label
+            className={`inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg cursor-pointer hover:bg-primary-700 transition-colors ${
+              uploading ? 'opacity-60 pointer-events-none' : ''
+            }`}
+          >
+            {uploading ? <FiLoader className="w-4 h-4 animate-spin" /> : <FiUpload className="w-4 h-4" />}
+            <span>{uploading ? 'Uploading…' : 'Upload photos'}</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              multiple
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                void handleGalleryUpload(e.target.files)
+                e.target.value = ''
+              }}
+            />
+          </label>
+        </div>
+        {errors.gallery && <p className="text-sm text-red-600">{errors.gallery}</p>}
+        {formData.gallery.length === 0 ? (
+          <p className="text-sm text-gray-500">No photos yet.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {formData.gallery.map((row, index) => (
+              <div key={row.key} className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={row.url} alt="" className="h-40 w-full object-cover bg-gray-200" />
+                <div className="p-3 space-y-2">
+                  <input
+                    type="text"
+                    value={row.caption}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData((prev) => {
+                        const gallery = [...prev.gallery]
+                        gallery[index] = { ...gallery[index], caption: value }
+                        return { ...prev, gallery }
+                      })
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                    placeholder="Caption (optional)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        gallery: prev.gallery.filter((_, i) => i !== index),
+                      }))
+                    }
+                    className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
@@ -444,7 +583,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploading}
           className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
         >
           {loading ? (

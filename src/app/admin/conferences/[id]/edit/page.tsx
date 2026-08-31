@@ -17,7 +17,7 @@ export default async function EditConferencePage({ params }: { params: { id: str
     conference = await payload.findByID({
       collection: 'conferences',
       id: params.id,
-      depth: 0,
+      depth: 1,
       overrideAccess: true,
     })
   } catch {

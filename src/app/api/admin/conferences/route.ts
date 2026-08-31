@@ -2,30 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
+import { normalizeConferenceBody, resolveConferenceGallery } from '@/lib/conferenceAdmin'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-function normalizePayload(body: any) {
-  return {
-    title: body.title,
-    slug: body.slug,
-    year: Number(body.year),
-    location: body.location,
-    theme: body.theme || null,
-    summary: body.summary,
-    participants: body.participants || null,
-    highlights: body.highlights || null,
-    content: body.content || null,
-    startDate: body.startDate || null,
-    endDate: body.endDate || null,
-    isCurrent: Boolean(body.isCurrent),
-    currentPath: body.currentPath || null,
-    status: body.status === 'draft' || body.status === 'archived' ? body.status : 'published',
-    keyOutcomes: Array.isArray(body.keyOutcomes) ? body.keyOutcomes : [],
-    relatedLinks: Array.isArray(body.relatedLinks) ? body.relatedLinks : [],
-  }
-}
 
 export async function GET() {
   try {
@@ -37,7 +17,7 @@ export async function GET() {
       collection: 'conferences',
       limit: 100,
       sort: '-year',
-      depth: 0,
+      depth: 1,
       overrideAccess: true,
     })
 
@@ -56,12 +36,14 @@ export async function POST(request: NextRequest) {
     const payload = await getPayloadClient()
     await ensureConferencesSchema(payload)
     const body = await request.json()
-    const data = normalizePayload(body)
+    const data = normalizeConferenceBody(body)
+    const gallery = await resolveConferenceGallery(payload, body.gallery, data.title)
 
     const conference = await payload.create({
       collection: 'conferences',
-      data,
+      data: { ...data, gallery },
       overrideAccess: true,
+      depth: 1,
     })
 
     return NextResponse.json({ success: true, doc: conference })

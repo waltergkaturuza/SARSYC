@@ -141,6 +141,29 @@ const Conferences: CollectionConfig = {
       },
     },
     {
+      name: 'gallery',
+      type: 'array',
+      label: 'Photo Gallery',
+      admin: {
+        description:
+          'Add at least one photo per conference. Multiple photos slide automatically on the public pages.',
+      },
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          label: 'Image',
+        },
+        {
+          name: 'caption',
+          type: 'text',
+          label: 'Caption',
+        },
+      ],
+    },
+    {
       name: 'startDate',
       type: 'date',
       label: 'Start Date',

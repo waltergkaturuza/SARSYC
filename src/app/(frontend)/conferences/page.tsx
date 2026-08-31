@@ -3,6 +3,8 @@ import { FiMapPin, FiUsers, FiAward, FiCalendar, FiArrowRight } from 'react-icon
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
+import { getConferenceGallerySlides } from '@/lib/conferenceMedia'
+import ConferenceImageSlider from '@/components/conferences/ConferenceImageSlider'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -29,7 +31,7 @@ export default async function PreviousConferencesPage() {
       },
       sort: '-year',
       limit: 100,
-      depth: 0,
+      depth: 2,
     })
     conferences = results.docs as any[]
 
@@ -76,78 +78,89 @@ export default async function PreviousConferencesPage() {
                 Previous conference editions will appear here once published.
               </div>
             ) : (
-              conferences.map((conf, index) => (
-                <article
-                  key={conf.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm"
-                >
-                  <div className="grid md:grid-cols-4 gap-6">
-                    <div className="text-center md:text-left">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-600 text-white text-2xl font-bold mb-3">
-                        {conferences.length - index}
-                      </div>
-                      <div className="text-3xl font-bold text-gray-900">{conf.year}</div>
-                    </div>
-
-                    <div className="md:col-span-3">
-                      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                        <h2 className="text-2xl font-bold text-gray-900">{conf.title}</h2>
-                        <Link
-                          href={`/conferences/${conf.slug}`}
-                          className="text-sm font-semibold text-primary-700 hover:text-primary-800 inline-flex items-center gap-1"
-                        >
-                          View details
-                          <FiArrowRight className="w-4 h-4" />
-                        </Link>
-                      </div>
-
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-                        <div className="flex items-center gap-2">
-                          <FiMapPin className="w-4 h-4 text-primary-600" />
-                          {conf.location}
+              conferences.map((conf, index) => {
+                const slides = getConferenceGallerySlides(conf)
+                return (
+                  <article
+                    key={conf.id}
+                    className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm"
+                  >
+                    <div className="grid md:grid-cols-4 gap-6">
+                      <div className="text-center md:text-left">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-600 text-white text-2xl font-bold mb-3">
+                          {conferences.length - index}
                         </div>
-                        {conf.participants && (
+                        <div className="text-3xl font-bold text-gray-900">{conf.year}</div>
+                      </div>
+
+                      <div className="md:col-span-3 space-y-4">
+                        {slides.length > 0 && (
+                          <ConferenceImageSlider
+                            images={slides}
+                            title={conf.title}
+                            aspectClassName="aspect-[16/9]"
+                          />
+                        )}
+
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h2 className="text-2xl font-bold text-gray-900">{conf.title}</h2>
+                          <Link
+                            href={`/conferences/${conf.slug}`}
+                            className="text-sm font-semibold text-primary-700 hover:text-primary-800 inline-flex items-center gap-1"
+                          >
+                            View details
+                            <FiArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
-                            <FiUsers className="w-4 h-4 text-primary-600" />
-                            {conf.participants} participants
+                            <FiMapPin className="w-4 h-4 text-primary-600" />
+                            {conf.location}
+                          </div>
+                          {conf.participants && (
+                            <div className="flex items-center gap-2">
+                              <FiUsers className="w-4 h-4 text-primary-600" />
+                              {conf.participants} participants
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <FiCalendar className="w-4 h-4 text-primary-600" />
+                            {conf.year}
+                          </div>
+                        </div>
+
+                        {conf.theme && (
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <p className="text-sm font-semibold text-gray-700 mb-1">Theme</p>
+                            <p className="text-gray-900 font-medium">{conf.theme}</p>
                           </div>
                         )}
-                        <div className="flex items-center gap-2">
-                          <FiCalendar className="w-4 h-4 text-primary-600" />
-                          {conf.year}
-                        </div>
-                      </div>
 
-                      {conf.theme && (
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                          <p className="text-sm font-semibold text-gray-700 mb-1">Theme</p>
-                          <p className="text-gray-900 font-medium">{conf.theme}</p>
-                        </div>
-                      )}
+                        <p className="text-gray-700 text-justify">{conf.summary}</p>
 
-                      <p className="text-gray-700 mb-4 text-justify">{conf.summary}</p>
-
-                      {Array.isArray(conf.keyOutcomes) && conf.keyOutcomes.length > 0 && (
-                        <div className="mb-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <FiAward className="w-4 h-4 text-primary-600" />
-                            <p className="text-sm font-semibold text-gray-700">Key outcomes</p>
+                        {Array.isArray(conf.keyOutcomes) && conf.keyOutcomes.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <FiAward className="w-4 h-4 text-primary-600" />
+                              <p className="text-sm font-semibold text-gray-700">Key outcomes</p>
+                            </div>
+                            <ul className="list-disc list-inside space-y-1 text-gray-700">
+                              {conf.keyOutcomes.map((row: any, i: number) => (
+                                <li key={i}>{row.outcome}</li>
+                              ))}
+                            </ul>
                           </div>
-                          <ul className="list-disc list-inside space-y-1 text-gray-700">
-                            {conf.keyOutcomes.map((row: any, i: number) => (
-                              <li key={i}>{row.outcome}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                        )}
 
-                      {conf.highlights && (
-                        <p className="text-sm text-gray-500">{conf.highlights}</p>
-                      )}
+                        {conf.highlights && (
+                          <p className="text-sm text-gray-500">{conf.highlights}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))
+                  </article>
+                )
+              })
             )}
           </div>
         </div>
