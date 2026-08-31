@@ -4,38 +4,48 @@ import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function PreviousConferencesPage() {
   const payload = await getPayloadClient()
   await ensureConferencesSchema(payload)
-  await seedPreviousConferencesIfEmpty(payload)
+  try {
+    await seedPreviousConferencesIfEmpty(payload)
+  } catch (error) {
+    console.warn('Conference seed failed:', error)
+  }
 
-  const results = await payload.find({
-    collection: 'conferences',
-    where: {
-      and: [
-        { status: { equals: 'published' } },
-        { isCurrent: { equals: false } },
-      ],
-    },
-    sort: '-year',
-    limit: 100,
-    depth: 0,
-  })
+  let conferences: any[] = []
+  let currentHref = '/sarsyc-vi'
+  try {
+    const results = await payload.find({
+      collection: 'conferences',
+      where: {
+        and: [
+          { status: { equals: 'published' } },
+          { isCurrent: { equals: false } },
+        ],
+      },
+      sort: '-year',
+      limit: 100,
+      depth: 0,
+    })
+    conferences = results.docs as any[]
 
-  const conferences = results.docs as any[]
-
-  const currentResults = await payload.find({
-    collection: 'conferences',
-    where: {
-      and: [{ status: { equals: 'published' } }, { isCurrent: { equals: true } }],
-    },
-    limit: 1,
-    depth: 0,
-  })
-  const current = currentResults.docs[0] as any | undefined
-  const currentHref = current?.currentPath || '/sarsyc-vi'
+    const currentResults = await payload.find({
+      collection: 'conferences',
+      where: {
+        and: [{ status: { equals: 'published' } }, { isCurrent: { equals: true } }],
+      },
+      limit: 1,
+      depth: 0,
+    })
+    const current = currentResults.docs[0] as any | undefined
+    currentHref = current?.currentPath || '/sarsyc-vi'
+  } catch (error) {
+    console.error('Failed to load conferences:', error)
+  }
 
   return (
     <>

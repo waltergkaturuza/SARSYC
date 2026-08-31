@@ -4,7 +4,8 @@ import { FiArrowLeft, FiMapPin, FiUsers, FiAward, FiExternalLink } from 'react-i
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function ConferenceDetailPage({
   params,

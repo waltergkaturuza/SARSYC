@@ -3,7 +3,7 @@ import type { Payload } from 'payload'
 export const PREVIOUS_CONFERENCE_SEED = [
   {
     title: 'SARSYC I',
-    slug: 'sarsyc-i',
+    slug: 'sarsyc-1',
     year: 2015,
     location: 'Zimbabwe',
     participants: '200',
@@ -18,7 +18,7 @@ export const PREVIOUS_CONFERENCE_SEED = [
   },
   {
     title: 'SARSYC II',
-    slug: 'sarsyc-ii',
+    slug: 'sarsyc-2',
     year: 2017,
     location: 'University of Johannesburg, South Africa',
     participants: '300',
@@ -33,7 +33,7 @@ export const PREVIOUS_CONFERENCE_SEED = [
   },
   {
     title: 'SARSYC III',
-    slug: 'sarsyc-iii',
+    slug: 'sarsyc-3',
     year: 2019,
     location: 'University of Zambia',
     participants: '400',
@@ -48,7 +48,7 @@ export const PREVIOUS_CONFERENCE_SEED = [
   },
   {
     title: 'SARSYC IV',
-    slug: 'sarsyc-iv',
+    slug: 'sarsyc-4',
     year: 2022,
     location: 'LUANAR, Malawi',
     participants: '350',
@@ -63,7 +63,7 @@ export const PREVIOUS_CONFERENCE_SEED = [
   },
   {
     title: 'SARSYC V',
-    slug: 'sarsyc-v',
+    slug: 'sarsyc-5',
     year: 2024,
     location: 'University of Botswana',
     participants: '500',
@@ -78,29 +78,47 @@ export const PREVIOUS_CONFERENCE_SEED = [
   },
 ] as const
 
-/** Seed SARSYC I–V as previous conferences when the collection is empty. */
+/** Seed SARSYC I–V as previous conferences when missing. Safe for concurrent builds. */
 export async function seedPreviousConferencesIfEmpty(payload: Payload): Promise<number> {
-  const existing = await payload.find({
-    collection: 'conferences',
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  if (existing.totalDocs > 0) return 0
-
   let created = 0
+
   for (const conf of PREVIOUS_CONFERENCE_SEED) {
-    await payload.create({
-      collection: 'conferences',
-      data: {
-        ...conf,
-        keyOutcomes: conf.keyOutcomes.map((item) => ({ outcome: item.outcome })),
-        isCurrent: false,
-        status: 'published',
-      },
-      overrideAccess: true,
-    })
-    created += 1
+    try {
+      const existing = await payload.find({
+        collection: 'conferences',
+        where: { slug: { equals: conf.slug } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      if (existing.totalDocs > 0) continue
+
+      await payload.create({
+        collection: 'conferences',
+        data: {
+          title: conf.title,
+          slug: conf.slug,
+          year: conf.year,
+          location: conf.location,
+          theme: conf.theme,
+          summary: conf.summary,
+          participants: conf.participants,
+          highlights: conf.highlights,
+          keyOutcomes: conf.keyOutcomes.map((item) => ({ outcome: item.outcome })),
+          isCurrent: false,
+          status: 'published',
+        },
+        overrideAccess: true,
+      })
+      created += 1
+    } catch (error) {
+      // Ignore races / unique conflicts during parallel prerenders or repeated seeds.
+      console.warn(
+        `Conference seed skipped for ${conf.slug}:`,
+        error instanceof Error ? error.message : error,
+      )
+    }
   }
+
   return created
 }
