@@ -201,27 +201,15 @@ export default async function HomePage() {
               </p>
               <p className="text-sm md:text-base text-primary-300 italic">#DrivingRegionalSolidarity</p>
               <p className="text-xs sm:text-sm md:text-[15px] text-white/75 leading-relaxed">
-                A flagship, youth-led regional conference convened by{' '}
-                <a
-                  href="https://www.saywhat.org.zw"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-300 font-semibold underline hover:text-amber-300 transition-colors"
-                >
-                  SAYWHAT
-                </a>
-                {' '}in partnership with{' '}
-                <a
-                  href="https://www.unam.edu.na"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-300 font-semibold underline hover:text-amber-300 transition-colors"
-                >
-                  University of Namibia (UNAM)
-                </a>
-                , bringing together students, youth leaders, policymakers, civil society, development
-                partners, and the private sector from across Southern Africa to drive transnational advocacy
-                on youth health and education.
+                SARSYC VI brought together hundreds of young leaders, researchers, policymakers, and
+                changemakers from across Southern Africa for three unforgettable days of learning,
+                connection, and action. From powerful youth-led research and inspiring conversations to
+                regional partnerships and bold commitments, the conference amplified youth voices and
+                sparked solutions for the challenges facing young people today. The adoption of the
+                Windhoek Declaration marked a collective commitment to turning ideas into action and
+                creating lasting impact across the region. One region. Bold Ideas. Stronger
+                partnerships. Youth-led action. The conference may be over, but the conversations and
+                movement continue.
               </p>
             </div>
 
@@ -485,8 +473,8 @@ export default async function HomePage() {
       <section className="py-8 md:py-10 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Ready to Join Us in Windhoek?
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 uppercase tracking-wide">
+              What Happened in Windhoek
             </h2>
             <p className="text-lg md:text-xl mb-6 text-white/90">
               Registration is now open for SARSYC VI. Secure your spot today and be part of this transformative
