@@ -179,7 +179,7 @@ const Conferences: CollectionConfig = {
       admin: {
         description: 'Public path for the live conference site (e.g. /sarsyc-vi). Used when this edition is current.',
         placeholder: '/sarsyc-vi',
-        condition: (_, siblingData) => Boolean(siblingData?.isCurrent),
+        condition: (_: any, siblingData: any) => Boolean(siblingData?.isCurrent),
         position: 'sidebar',
       },
     },
