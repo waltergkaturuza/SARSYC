@@ -5,49 +5,60 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
 
-const navigation = [
+type NavChild = { name: string; href: string }
+type NavSubItem = { name: string; href: string; children?: NavChild[] }
+type NavItem = { name: string; href: string; dropdown?: NavSubItem[] }
+
+const CURRENT_CONFERENCE_LINKS: NavChild[] = [
+  { name: 'Overview', href: '/sarsyc-vi' },
+  { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
+  { name: 'Objectives', href: '/sarsyc-vi/objectives' },
+  { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
+  { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
+]
+
+const navigation: NavItem[] = [
   { name: 'Home', href: '/' },
-  { 
-    name: 'About', 
+  {
+    name: 'About',
     href: '/about',
     dropdown: [
       { name: 'About SARSYC', href: '/about' },
       { name: 'Vision & Mission', href: '/about/vision' },
       { name: 'Who We Are', href: '/about/team' },
       { name: 'Governance', href: '/about/governance' },
-    ]
+    ],
   },
-  { 
-    name: 'Conferences', 
+  {
+    name: 'Conferences',
     href: '/sarsyc-vi',
     dropdown: [
-      { name: 'Current Conference', href: '/sarsyc-vi' },
-      { name: 'Overview', href: '/sarsyc-vi' },
-      { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
-      { name: 'Objectives', href: '/sarsyc-vi/objectives' },
-      { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
-      { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
+      {
+        name: 'Current Conference',
+        href: '/sarsyc-vi',
+        children: CURRENT_CONFERENCE_LINKS,
+      },
       { name: 'Previous Conferences', href: '/conferences' },
-    ]
+    ],
   },
-  { 
-    name: 'Programme', 
+  {
+    name: 'Programme',
     href: '/programme',
     dropdown: [
       { name: 'Programme Schedule', href: '/programme' },
       { name: 'Speakers', href: '/programme/speakers' },
       { name: 'Sessions', href: '/programme/sessions' },
-    ]
+    ],
   },
-  { 
-    name: 'Participate', 
+  {
+    name: 'Participate',
     href: '/participate',
     dropdown: [
       { name: 'Register', href: '/participate/register' },
       { name: 'Submit Abstract', href: '/participate/submit-abstract' },
       { name: 'Volunteer', href: '/participate/volunteer' },
       { name: 'Track Status', href: '/track' },
-    ]
+    ],
   },
   { name: 'Resources', href: '/resources' },
   { name: 'News', href: '/news' },
@@ -59,7 +70,8 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>('Current Conference')
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,7 +82,6 @@ export default function Header() {
   }, [])
 
   const handleMouseEnter = (itemName: string) => {
-    // Clear any pending close timeout
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current)
       closeTimeoutRef.current = null
@@ -79,7 +90,6 @@ export default function Header() {
   }
 
   const handleMouseLeave = () => {
-    // Add a 300ms delay before closing
     closeTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null)
     }, 300)
@@ -93,7 +103,6 @@ export default function Header() {
     >
       <nav className="max-w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24 md:h-28 w-full">
-          {/* Logo - Circular */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3">
               <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden">
@@ -116,7 +125,6 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation - Spread evenly across available space */}
           <div className="hidden lg:flex lg:items-center lg:flex-1 lg:justify-center lg:gap-1 xl:gap-2 lg:mx-4">
             {navigation.map((item) => (
               <div
@@ -133,17 +141,34 @@ export default function Header() {
                   {item.dropdown && <FiChevronDown className="w-3 h-3 xl:w-4 xl:h-4" />}
                 </Link>
 
-                {/* Dropdown Menu */}
                 {item.dropdown && activeDropdown === item.name && (
-                  <div className="absolute left-0 mt-1 w-56 bg-white rounded-lg shadow-xl py-2 animate-fade-in z-50">
+                  <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-xl py-2 animate-fade-in z-50">
                     {item.dropdown.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
-                      >
-                        {subItem.name}
-                      </Link>
+                      <div key={subItem.name}>
+                        <Link
+                          href={subItem.href}
+                          className={`block px-4 py-2 text-sm transition-colors duration-200 ${
+                            subItem.children
+                              ? 'font-semibold text-gray-900 hover:bg-primary-50 hover:text-primary-700'
+                              : 'text-gray-700 hover:bg-primary-50 hover:text-primary-600'
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                        {subItem.children && (
+                          <div className="pb-2 mb-1 border-b border-gray-100">
+                            {subItem.children.map((child) => (
+                              <Link
+                                key={child.name}
+                                href={child.href}
+                                className="block pl-7 pr-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
+                              >
+                                {child.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -151,14 +176,15 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Buttons - Right side (Login moved to footer for reduced visibility) */}
           <div className="hidden lg:flex lg:items-center lg:gap-3 lg:flex-shrink-0">
-            <Link href="/participate/register" className="btn-primary font-bold text-sm xl:text-base px-4 xl:px-6 py-2 xl:py-3 whitespace-nowrap">
+            <Link
+              href="/participate/register"
+              className="btn-primary font-bold text-sm xl:text-base px-4 xl:px-6 py-2 xl:py-3 whitespace-nowrap"
+            >
               Register Now
             </Link>
           </div>
 
-          {/* Mobile menu button */}
           <div className="lg:hidden">
             <button
               type="button"
@@ -166,16 +192,11 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <FiX className="w-6 h-6" />
-              ) : (
-                <FiMenu className="w-6 h-6" />
-              )}
+              {mobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 top-24 bg-white z-40 overflow-y-auto">
             <div className="container-custom py-4">
@@ -192,14 +213,57 @@ export default function Header() {
                     {item.dropdown && (
                       <div className="pl-4 space-y-1">
                         {item.dropdown.map((subItem) => (
-                          <Link
-                            key={subItem.name}
-                            href={subItem.href}
-                            className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {subItem.name}
-                          </Link>
+                          <div key={subItem.name}>
+                            {subItem.children ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-primary-50 hover:text-primary-700 rounded-lg"
+                                  onClick={() =>
+                                    setMobileExpanded((prev) =>
+                                      prev === subItem.name ? null : subItem.name,
+                                    )
+                                  }
+                                >
+                                  <span>{subItem.name}</span>
+                                  <FiChevronDown
+                                    className={`w-4 h-4 transition-transform ${
+                                      mobileExpanded === subItem.name ? 'rotate-180' : ''
+                                    }`}
+                                  />
+                                </button>
+                                {mobileExpanded === subItem.name && (
+                                  <div className="pl-3 space-y-1 pb-2">
+                                    <Link
+                                      href={subItem.href}
+                                      className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      Open current conference
+                                    </Link>
+                                    {subItem.children.map((child) => (
+                                      <Link
+                                        key={child.name}
+                                        href={child.href}
+                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                      >
+                                        {child.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <Link
+                                href={subItem.href}
+                                className="block px-4 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                {subItem.name}
+                              </Link>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
@@ -222,9 +286,3 @@ export default function Header() {
     </header>
   )
 }
-
-
-
-
-
-
