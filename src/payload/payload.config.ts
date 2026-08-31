@@ -21,6 +21,7 @@ import Sessions from './collections/Sessions'
 import Participants from './collections/Participants'
 import Resources from './collections/Resources'
 import News from './collections/News'
+import Conferences from './collections/Conferences'
 import Partners from './collections/Partners'
 import FAQs from './collections/FAQs'
 import Media from './collections/Media'
@@ -152,6 +153,7 @@ export default buildConfig({
     Sessions,
     Resources,
     News,
+    Conferences,
     Partners,
     FAQs,
     Media,

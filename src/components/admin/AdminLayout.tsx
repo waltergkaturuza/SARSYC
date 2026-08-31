@@ -73,6 +73,12 @@ const navigation = [
     description: 'Programme schedule',
   },
   {
+    name: 'Conferences',
+    href: '/admin/conferences',
+    icon: FiAward,
+    description: 'Current & previous editions',
+  },
+  {
     name: 'Orathon Registrations',
     href: '/admin/orathon-registrations',
     icon: FiActivity,

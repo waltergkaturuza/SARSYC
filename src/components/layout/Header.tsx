@@ -18,14 +18,16 @@ const navigation = [
     ]
   },
   { 
-    name: 'SARSYC VI', 
+    name: 'Conferences', 
     href: '/sarsyc-vi',
     dropdown: [
+      { name: 'Current Conference', href: '/sarsyc-vi' },
       { name: 'Overview', href: '/sarsyc-vi' },
       { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
       { name: 'Objectives', href: '/sarsyc-vi/objectives' },
       { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
       { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
+      { name: 'Previous Conferences', href: '/conferences' },
     ]
   },
   { 

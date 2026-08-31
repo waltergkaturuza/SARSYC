@@ -31,6 +31,7 @@ import * as migration_20260728_000003_add_session_type_award_ceremony from './20
 import * as migration_20260731_000000_add_session_types_programme_events from './20260731_000000_add_session_types_programme_events';
 import * as migration_20260731_000001_add_session_committee_moderator from './20260731_000001_add_session_committee_moderator';
 import * as migration_20260803_000000_add_session_status from './20260803_000000_add_session_status';
+import * as migration_20260831_000000_create_conferences from './20260831_000000_create_conferences';
 
 export const migrations = [
   {
@@ -197,5 +198,10 @@ export const migrations = [
     up: migration_20260803_000000_add_session_status.up,
     down: migration_20260803_000000_add_session_status.down,
     name: '20260803_000000_add_session_status'
+  },
+  {
+    up: migration_20260831_000000_create_conferences.up,
+    down: migration_20260831_000000_create_conferences.down,
+    name: '20260831_000000_create_conferences'
   },
 ];

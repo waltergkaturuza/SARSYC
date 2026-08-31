@@ -9,7 +9,8 @@ import { SiTiktok } from 'react-icons/si'
 const footerLinks = {
   conference: [
     { name: 'About SARSYC', href: '/about' },
-    { name: 'SARSYC VI Overview', href: '/sarsyc-vi' },
+    { name: 'Current Conference', href: '/sarsyc-vi' },
+    { name: 'Previous Conferences', href: '/conferences' },
     { name: 'Programme', href: '/programme' },
     { name: 'Speakers', href: '/programme/speakers' },
   ],
@@ -22,7 +23,6 @@ const footerLinks = {
   resources: [
     { name: 'Resource Library', href: '/resources' },
     { name: 'News & Updates', href: '/news' },
-    { name: 'Past Editions', href: '/about/history' },
     { name: 'FAQs', href: '/faq' },
   ],
   legal: [

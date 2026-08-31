@@ -5,6 +5,7 @@ export const EDITOR_ADMIN_PREFIXES = [
   '/admin/resources',
   '/admin/speakers',
   '/admin/sessions',
+  '/admin/conferences',
   '/admin/volunteers',
 ] as const
 
