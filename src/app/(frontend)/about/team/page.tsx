@@ -1,4 +1,4 @@
-import { FiUsers, FiArrowRight, FiExternalLink } from 'react-icons/fi'
+import { FiUsers, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
 
 export default function TeamPage() {
@@ -65,31 +65,9 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* About UNAM */}
       <section className="section bg-gray-50">
         <div className="container-custom">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="section-title">About UNAM</h2>
-            <p className="profile-description">
-              The <strong>University of Namibia (UNAM)</strong> is Namibia&apos;s premier public university.
-              Established in 1992, it provides undergraduate and postgraduate education across a wide range of
-              disciplines, with a strong focus on national development, research, and community engagement. UNAM has
-              multiple campuses across the country, with its main campus in Windhoek.
-            </p>
-            <p className="mt-6">
-              <a
-                href="https://www.unam.edu.na"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
-              >
-                Visit the UNAM website
-                <FiExternalLink className="w-4 h-4" />
-              </a>
-            </p>
-          </div>
-
-          <div className="text-center mt-12">
+          <div className="text-center">
             <Link
               href="/about/youth-steering-committee"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"

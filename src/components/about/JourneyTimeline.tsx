@@ -62,7 +62,7 @@ const milestones: JourneyMilestone[] = [
     country: 'Namibia',
     countryCode: 'NA',
     description:
-      'Marks "12 Years since the inaugural conference, 5 years since the establishment of the GEAR Alliance." It highlights "an opportunity to scale up transnational advocacy as an impactful and sustainable model to address persisting and emerging challenges amidst shifting development landscapes."',
+      'In partnership with the University of Namibia, the focus was on moving from evidence and dialogue to coordinated action that accelerates and sustains progress in youth health and education across Southern Africa.',
     x: 82,
     y: 85,
   },

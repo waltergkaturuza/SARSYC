@@ -399,7 +399,7 @@ export default async function HomePage() {
             <div className="max-w-3xl mx-auto text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Featured Speakers</h2>
               <p className="text-white/70 text-lg">
-                Meet some of the distinguished speakers who will be sharing their expertise at SARSYC VI.
+                A big thanks to the distinguished speakers who shared their expertise at SARSYC VI.
               </p>
             </div>
 
@@ -473,17 +473,10 @@ export default async function HomePage() {
       <section className="py-8 md:py-10 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 uppercase tracking-wide">
-              What Happened in Windhoek
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              What Happened In Windhoek
             </h2>
-            <p className="text-lg md:text-xl mb-6 text-white/90">
-              Registration is now open for SARSYC VI. Secure your spot today and be part of this transformative
-              conference.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
-                Register for SARSYC VI
-              </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
               <Link href="/programme" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
                 View Programme
               </Link>
