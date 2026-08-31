@@ -23,7 +23,7 @@ const Conferences: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ data, req, operation, originalDoc }) => {
+      async ({ data, req, originalDoc }: any) => {
         // When marking a conference as current, demote any other current edition
         // so it automatically appears under Previous Conferences.
         if (data?.isCurrent === true) {
@@ -53,7 +53,7 @@ const Conferences: CollectionConfig = {
       },
     ],
     beforeValidate: [
-      ({ data }) => {
+      ({ data }: any) => {
         if (data && !data.slug && data.title) {
           data.slug = String(data.title)
             .toLowerCase()
