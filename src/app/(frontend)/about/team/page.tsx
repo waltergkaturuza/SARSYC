@@ -4,20 +4,6 @@ import Link from 'next/link'
 export default function TeamPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="about-hero bg-slate-800 text-white py-8 md:py-10">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Who We Are
-            </h1>
-            <p className="text-xl text-white/90">
-              Convened by SAYWHAT in partnership with the University of Namibia (UNAM)
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* About SAYWHAT */}
       <section className="section bg-white">
         <div className="container-custom">
@@ -65,7 +51,7 @@ export default function TeamPage() {
         </div>
       </section>
 
-      <section className="section bg-gray-50">
+      <section className="bg-gray-50 py-4 md:py-5">
         <div className="container-custom">
           <div className="text-center">
             <Link

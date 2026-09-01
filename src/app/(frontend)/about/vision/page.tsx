@@ -1,34 +1,27 @@
-import { FiEye, FiTarget, FiHeart, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiZap } from 'react-icons/fi'
 import Link from 'next/link'
 
 const values = [
   {
-    icon: FiUsers,
     title: 'Youth-Centered',
     description: 'We place youth at the center of everything we do, amplifying their voices and prioritizing their leadership.',
   },
   {
-    icon: FiGlobe,
     title: 'Regional Solidarity',
     description: 'We foster collaboration, knowledge-sharing, and collective action across Southern Africa.',
   },
   {
-    icon: FiAward,
     title: 'Evidence-Based',
     description: 'We ground our advocacy in rigorous research, data, and the lived experiences of young people.',
   },
   {
-    icon: FiHeart,
     title: 'Inclusive',
     description: 'We create spaces that welcome all young people, regardless of background, identity, or circumstance.',
   },
   {
-    icon: FiTrendingUp,
     title: 'Action-Oriented',
     description: 'We translate knowledge and dialogue into concrete actions and measurable outcomes.',
   },
   {
-    icon: FiZap,
     title: 'Innovation',
     description: 'We embrace new ideas, technologies, and approaches to advance youth empowerment.',
   },
@@ -52,16 +45,12 @@ export default function VisionPage() {
       </section>
 
       {/* Vision & Mission */}
-      <section className="section bg-white">
+      <section className="bg-white py-8 md:py-10">
         <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Vision */}
+          <div className="grid md:grid-cols-2 gap-5 md:gap-8">
             <div>
-              <div className="w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center text-white mb-6">
-                <FiEye className="w-10 h-10" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Vision</h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Vision</h2>
+              <p className="text-lg text-gray-600 leading-relaxed mb-4">
                 A Southern Africa where all young people enjoy optimal sexual and reproductive health, access to
                 quality education, and are empowered to realize their full potential as active citizens and change agents.
               </p>
@@ -71,13 +60,9 @@ export default function VisionPage() {
               </p>
             </div>
 
-            {/* Mission */}
             <div>
-              <div className="w-20 h-20 bg-gradient-secondary rounded-2xl flex items-center justify-center text-white mb-6">
-                <FiTarget className="w-10 h-10" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Mission</h2>
+              <p className="text-lg text-gray-600 leading-relaxed mb-4">
                 To mobilize, connect, and empower students and youth in Southern Africa to advocate for evidence-based
                 policies and programs that advance youth sexual and reproductive health and education.
               </p>
@@ -91,43 +76,41 @@ export default function VisionPage() {
       </section>
 
       {/* Core Values */}
-      <section className="section bg-gray-50">
+      <section className="bg-gray-50 py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="section-title">Our Core Values</h2>
-          <p className="section-subtitle">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-2">
+            Our Core Values
+          </h2>
+          <p className="text-center text-gray-600 mb-5 md:mb-6 max-w-2xl mx-auto">
             These principles guide everything we do at SARSYC
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {values.map((value) => {
-              const Icon = value.icon
-              return (
-                <div key={value.title} className="card p-8 hover:shadow-xl transition-all">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center text-white mb-6">
-                    <Icon className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{value.description}</p>
-                </div>
-              )
-            })}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {values.map((value) => (
+              <div key={value.title} className="card p-4 md:p-5 hover:shadow-xl transition-all">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{value.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{value.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Strategic Priorities */}
-      <section className="section bg-white">
+      <section className="bg-white py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="section-title">Strategic Priorities</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-5 md:mb-6">
+            Strategic Priorities
+          </h2>
           <div className="max-w-4xl mx-auto">
-            <div className="space-y-8">
-              <div className="card p-8">
+            <div className="space-y-4">
+              <div className="card p-5 md:p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-bold text-primary-600">1</span>
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-primary-600">1</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
                       Strengthen Youth Advocacy Networks
                     </h3>
                     <p className="text-gray-600">
@@ -137,13 +120,13 @@ export default function VisionPage() {
                 </div>
               </div>
 
-              <div className="card p-8">
+              <div className="card p-5 md:p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-bold text-primary-600">2</span>
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-primary-600">2</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
                       Advance Youth SRHR and Education
                     </h3>
                     <p className="text-gray-600">
@@ -153,13 +136,13 @@ export default function VisionPage() {
                 </div>
               </div>
 
-              <div className="card p-8">
+              <div className="card p-5 md:p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-bold text-primary-600">3</span>
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-primary-600">3</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
                       Generate and Share Knowledge
                     </h3>
                     <p className="text-gray-600">
@@ -169,13 +152,13 @@ export default function VisionPage() {
                 </div>
               </div>
 
-              <div className="card p-8">
+              <div className="card p-5 md:p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-bold text-primary-600">4</span>
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-primary-600">4</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
                       Influence Regional and National Policies
                     </h3>
                     <p className="text-gray-600">
@@ -190,13 +173,13 @@ export default function VisionPage() {
       </section>
 
       {/* CTA */}
-      <section className="about-cta section bg-primary-600 text-white">
+      <section className="about-cta bg-primary-600 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Join Us in Making This Vision Reality
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-xl mb-6 text-white/90">
               Be part of the movement transforming youth health and education in Southern Africa.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -213,6 +196,3 @@ export default function VisionPage() {
     </>
   )
 }
-
-
-

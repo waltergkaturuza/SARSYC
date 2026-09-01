@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { FiCalendar, FiMapPin, FiUsers, FiGlobe, FiAward, FiTrendingUp, FiArrowRight, FiMic, FiUser } from 'react-icons/fi'
-import CountdownTimer from '@/components/ui/CountdownTimer'
+import { FiCalendar, FiMapPin, FiArrowRight, FiUser } from 'react-icons/fi'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
@@ -11,10 +10,10 @@ import {
 
 // This will be fetched from Payload CMS in production
 const stats = [
-  { icon: FiGlobe, value: '14', label: 'Countries Represented' },
-  { icon: FiUsers, value: '2,000+', label: 'Youth Reached' },
-  { icon: FiAward, value: '150+', label: 'Research Papers' },
-  { icon: FiTrendingUp, value: '6', label: 'Conference Editions' },
+  { value: '14', label: 'Countries Represented' },
+  { value: '2,000+', label: 'Youth Reached' },
+  { value: '150+', label: 'Research Papers' },
+  { value: '6', label: 'Conference Editions' },
 ]
 
 const tracks = [
@@ -134,8 +133,6 @@ function getSpeakerPhotoUrl(photo: any): string | null {
 export const revalidate = 0
 
 export default async function HomePage() {
-  const conferenceDate = process.env.NEXT_PUBLIC_CONFERENCE_DATE || '2026-08-05T09:00:00'
-  
   // Fetch featured speakers
   let featuredSpeakers: any[] = []
   try {
@@ -232,10 +229,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Register & countdown */}
-      <section className="relative text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600 pb-12 md:pb-16">
-        <div className="container-custom pt-2 md:pt-4">
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 mb-10">
+      {/* Register CTAs */}
+      <section className="relative text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600 py-4 md:py-5 pb-8 md:pb-10">
+        <div className="container-custom relative z-10">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
             <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
               Register for SARSYC VI
               <FiArrowRight className="w-5 h-5 ml-2" />
@@ -247,18 +244,11 @@ export default async function HomePage() {
               Become a Partner / Exhibitor
             </Link>
           </div>
-
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl md:text-2xl font-semibold text-white mb-4">
-              Conference Countdown
-            </h2>
-            <CountdownTimer targetDate={conferenceDate} />
-          </div>
         </div>
 
         {/* Wave Separator */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg className="w-full h-12 md:h-20 text-white" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+          <svg className="w-full h-6 md:h-8 text-white" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="currentColor"></path>
           </svg>
         </div>
@@ -275,25 +265,19 @@ export default async function HomePage() {
 
         <div className="container-custom relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-12">
-            {stats.map((stat) => {
-              const Icon = stat.icon
-              return (
+            {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-4 md:p-5 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/30 hover:bg-white/15"
+                  className="text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md px-3 py-2 md:px-4 md:py-2.5 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/30 hover:bg-white/15"
                 >
-                  <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-primary-500/30 rounded-full mb-2 md:mb-3 border border-primary-400/30">
-                    <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary-300" />
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                  <div className="text-2xl md:text-3xl font-bold text-white leading-tight">
                     {stat.value}
                   </div>
-                  <div className="text-xs md:text-sm text-white/70">
+                  <div className="text-xs md:text-sm text-white/70 mt-0.5">
                     {stat.label}
                   </div>
                 </div>
-              )
-            })}
+            ))}
           </div>
 
           <div className="max-w-3xl mx-auto text-center mb-8">
@@ -350,9 +334,11 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-[#FFF9F0]/18" aria-hidden />
         <div className="container-custom relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 text-gray-900 drop-shadow-sm">Conference Tracks</h2>
-            <p className="text-lg text-gray-700 text-center max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto text-center mb-6 rounded-2xl bg-slate-900/70 backdrop-blur-sm px-5 py-4 shadow-lg">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 text-white">
+              Conference Tracks
+            </h2>
+            <p className="text-lg text-white/95 text-center max-w-3xl mx-auto">
               SARSYC VI features five thematic tracks addressing critical issues in youth development.
             </p>
           </div>

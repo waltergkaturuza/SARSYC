@@ -1,26 +1,21 @@
 import Image from 'next/image'
-import { FiTarget, FiEye, FiHeart, FiUsers, FiGlobe, FiAward } from 'react-icons/fi'
 import Link from 'next/link'
 import JourneyTimeline from '@/components/about/JourneyTimeline'
 
 const values = [
   {
-    icon: FiUsers,
     title: 'Youth-Centered',
     description: 'We amplify youth voices and prioritize youth leadership in all aspects of our work.',
   },
   {
-    icon: FiGlobe,
     title: 'Regional Solidarity',
     description: 'We foster collaboration and knowledge-sharing across Southern Africa.',
   },
   {
-    icon: FiAward,
     title: 'Evidence-Based',
     description: 'We ground our advocacy in research, data, and lived experiences of young people.',
   },
   {
-    icon: FiHeart,
     title: 'Inclusive & Accessible',
     description: 'We create spaces that welcome and include all young people, regardless of background.',
   },
@@ -97,25 +92,19 @@ export default function AboutPage() {
       </section>
 
       {/* Vision & Mission */}
-      <section className="section bg-gray-50">
+      <section className="bg-gray-50 py-8 md:py-10">
         <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="card p-8">
-              <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center text-white mb-6">
-                <FiEye className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
+          <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+            <div className="card p-5 md:p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Our Vision</h3>
               <p className="text-gray-600 leading-relaxed">
                 A Southern Africa where all young people enjoy optimal sexual and reproductive health, access to
                 quality education, and are empowered to realize their full potential.
               </p>
             </div>
 
-            <div className="card p-8">
-              <div className="w-16 h-16 bg-gradient-secondary rounded-xl flex items-center justify-center text-white mb-6">
-                <FiTarget className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
+            <div className="card p-5 md:p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Our Mission</h3>
               <p className="text-gray-600 leading-relaxed">
                 To mobilize, connect, and empower students and youth in Southern Africa to advocate for evidence-based
                 policies and programs that advance youth sexual and reproductive health and education.
@@ -126,22 +115,18 @@ export default function AboutPage() {
       </section>
 
       {/* Core Values */}
-      <section className="section bg-white">
+      <section className="bg-white py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="section-title">Our Core Values</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value) => {
-              const Icon = value.icon
-              return (
-                <div key={value.title} className="card p-6 text-center hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{value.title}</h3>
-                  <p className="text-sm text-gray-600">{value.description}</p>
-                </div>
-              )
-            })}
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-5 md:mb-6">
+            Our Core Values
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {values.map((value) => (
+              <div key={value.title} className="card p-4 md:p-5 text-center hover:shadow-xl transition-shadow">
+                <h3 className="font-bold text-gray-900 mb-1.5">{value.title}</h3>
+                <p className="text-sm text-gray-600">{value.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
