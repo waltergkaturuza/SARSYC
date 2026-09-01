@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { FiCalendar, FiMapPin, FiArrowRight, FiUser } from 'react-icons/fi'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
+import ConferenceTrackCards from '@/components/ui/ConferenceTrackCards'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 import {
@@ -22,30 +23,35 @@ const tracks = [
     title: 'Education Rights and Equity',
     description: 'Financing and innovation for equitable digital learning in rural communities, evaluating the effectiveness of climate resilience in education systems, Gender Equality & Social Inclusion (GESI) through responsive education budgeting, and CSE as a driver for quality education and retention.',
     color: 'from-blue-500 to-blue-600',
+    textColor: 'text-blue-700',
   },
   {
     number: '02',
     title: 'HIV/AIDS, STIs, and Sexual Health',
     description: 'Sustaining gains in HIV/AIDS and STIs prevention and treatment, addressing resurgence among People Who Use and Inject Drugs, expanding harm reduction programs, and domestic health financing and resource mobilization.',
     color: 'from-purple-500 to-purple-600',
+    textColor: 'text-purple-700',
   },
   {
     number: '03',
     title: 'Non-Communicable Diseases (NCDs) Prevention and Health Lifestyles',
     description: 'Community-led NCD prevention and integration into primary health care, promoting healthy behaviors, nutrition, exercise, and reducing harmful habits, digital health tools for lifestyle change and risk monitoring, and innovations for early detection and screening in low-resource settings.',
     color: 'from-pink-500 to-pink-600',
+    textColor: 'text-pink-700',
   },
   {
     number: '04',
     title: 'Digital Health and Safety',
     description: 'Digital violence/ online harassment: gendered vulnerabilities and responses, social media algorithms and adolescent mental health and behavior, online gambling and betting addiction, emerging trends and policy responses, and leveraging technology for health, education and service delivery.',
     color: 'from-orange-500 to-orange-600',
+    textColor: 'text-orange-700',
   },
   {
     number: '05',
     title: 'Mental Health and Substance Abuse',
     description: 'Rising mental health challenges among boys and young men, suicide prevention strategies and psychosocial support, substance abuse trends and government responses, progress and gaps, and community-driven interventions for mental health and addiction recovery.',
     color: 'from-green-500 to-green-600',
+    textColor: 'text-green-700',
   },
 ]
 
@@ -343,21 +349,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
-            {tracks.map((track) => (
-              <div key={track.number} className="card p-5 hover:shadow-2xl transition-shadow duration-300 bg-white/95 backdrop-blur-sm">
-                <div className={`inline-block bg-gradient-to-r ${track.color} text-white text-sm font-bold px-3 py-1 rounded-full mb-4`}>
-                  Track {track.number}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  {track.title}
-                </h3>
-                <p className="text-gray-600">
-                  {track.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <ConferenceTrackCards tracks={tracks} />
 
           <div className="text-center mt-6">
             <Link href="/sarsyc-vi" className="btn-primary">
