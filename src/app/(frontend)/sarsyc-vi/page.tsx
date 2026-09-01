@@ -16,6 +16,7 @@ import {
   DEFAULT_SARSYC_VI_VENUE,
 } from '@/lib/sarsycViVenue'
 import dynamic from 'next/dynamic'
+import ConferenceTrackCards from '@/components/ui/ConferenceTrackCards'
 
 const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
   ssr: false,
@@ -235,6 +236,7 @@ const tracks = [
       'CSE as a driver for quality education and retention',
     ],
     color: 'from-blue-500 to-blue-600',
+    textColor: 'text-blue-700',
   },
   {
     number: '02',
@@ -247,6 +249,7 @@ const tracks = [
       'Domestic health financing and resource mobilization',
     ],
     color: 'from-purple-500 to-purple-600',
+    textColor: 'text-purple-700',
   },
   {
     number: '03',
@@ -259,6 +262,7 @@ const tracks = [
       'Innovations for early detection and screening in low-resource settings',
     ],
     color: 'from-pink-500 to-pink-600',
+    textColor: 'text-pink-700',
   },
   {
     number: '04',
@@ -271,6 +275,7 @@ const tracks = [
       'Leveraging technology for health, education and service delivery',
     ],
     color: 'from-orange-500 to-orange-600',
+    textColor: 'text-orange-700',
   },
   {
     number: '05',
@@ -283,6 +288,7 @@ const tracks = [
       'Community-driven interventions for mental health and addiction recovery',
     ],
     color: 'from-green-500 to-green-600',
+    textColor: 'text-green-700',
   },
 ]
 
@@ -408,29 +414,7 @@ export default function SarsycVIPage() {
             SARSYC VI features five thematic tracks addressing critical priorities in youth development.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {tracks.map((track) => (
-              <div key={track.number} className="card p-8 hover:shadow-2xl transition-all">
-                <div className={`inline-block bg-gradient-to-r ${track.color} text-white text-sm font-bold px-3 py-1 rounded-full mb-4`}>
-                  Track {track.number}
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">{track.title}</h3>
-                <p className="text-gray-600 mb-6">{track.description}</p>
-                
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Key Topics:</p>
-                  <ul className="space-y-2">
-                    {track.topics.map((topic) => (
-                      <li key={topic} className="text-sm text-gray-600 flex items-start">
-                        <span className="text-primary-600 mr-2 mt-1">•</span>
-                        <span>{topic}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ConferenceTrackCards tracks={tracks} showTopics />
         </div>
       </section>
 
@@ -595,46 +579,13 @@ export default function SarsycVIPage() {
             Deep dive into each thematic area and discover how you can contribute.
           </p>
 
-          <div className="grid gap-8">
-            {tracks.map((track) => (
-              <div key={track.number} className="card p-8 lg:p-10">
-                <div className="flex flex-col lg:flex-row gap-6">
-                  <div className={`w-24 h-24 bg-gradient-to-br ${track.color} rounded-2xl flex items-center justify-center text-white text-3xl font-bold flex-shrink-0`}>
-                    {track.number}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                      {track.title}
-                    </h3>
-                    <p className="text-lg text-gray-600 mb-6">
-                      {track.description}
-                    </p>
-                    
-                    <div className="mb-6">
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Key Topics:</p>
-                      <div className="grid md:grid-cols-2 gap-2">
-                        {track.topics.map((topic) => (
-                          <div key={topic} className="flex items-center gap-2 text-gray-600">
-                            <FiCheck className="w-4 h-4 text-green-600 flex-shrink-0" />
-                            <span className="text-sm">{topic}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/programme?track=${track.number}`}
-                      className="inline-flex items-center gap-2 text-primary-600 font-medium hover:gap-3 transition-all"
-                    >
-                      View Track Sessions
-                      <FiArrowRight />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ConferenceTrackCards
+            tracks={tracks}
+            variant="stack"
+            showTopics
+            showExploreLink
+            detailed
+          />
         </div>
       </section>
 
