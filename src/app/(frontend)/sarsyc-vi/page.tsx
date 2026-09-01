@@ -75,7 +75,7 @@ function WelcomeVenueSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl md:text-5xl font-bold mb-6">Welcome to Windhoek</h2>
-            <p className="text-lg text-white/90 mb-6">
+            <p className="text-xl text-white/90 mb-6">
               Namibia&apos;s capital city, known for its stunning landscapes, rich culture, and warm
               hospitality, serves as the perfect backdrop for SARSYC VI.
             </p>
@@ -586,45 +586,6 @@ export default function SarsycVIPage() {
             showExploreLink
             detailed
           />
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="section bg-primary-600 text-white">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Be Part of SARSYC VI
-            </h2>
-            <p className="text-xl mb-12 text-white/90">
-              Join 500+ youth leaders, researchers, and advocates in shaping the future of youth health and education
-              in Southern Africa.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                <div className="text-4xl font-bold mb-2">500+</div>
-                <div className="text-white/80">Expected Participants</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                <div className="text-4xl font-bold mb-2">14+</div>
-                <div className="text-white/80">Countries</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                <div className="text-4xl font-bold mb-2">50+</div>
-                <div className="text-white/80">Expert Speakers</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-4 w-full sm:w-auto">
-                Register for SARSYC VI
-              </Link>
-              <Link href="/programme" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-4 w-full sm:w-auto">
-                View Programme
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
     </>

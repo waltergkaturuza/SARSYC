@@ -94,11 +94,11 @@ function LoginForm() {
 
   return (
     <>
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Login to Your Account</h1>
-            <p className="text-white/90 text-sm md:text-base">
+            <h1 className="page-hero-title">Login to Your Account</h1>
+            <p className="page-hero-subtitle">
               Access your dashboard, submissions, and conference tools
             </p>
           </div>

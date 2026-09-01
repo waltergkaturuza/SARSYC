@@ -60,28 +60,28 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
   return (
     <>
-      <section className="bg-gray-900 text-white py-12">
+      <section className="page-hero">
         <div className="container-custom">
           <Link
             href="/news"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-8 transition-colors"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-3 transition-colors"
           >
             <FiArrowLeft />
             Back to News
           </Link>
 
           <div className="max-w-4xl">
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
               {categories.map((cat: string) => (
-                <span key={cat} className="px-3 py-1 bg-primary-600 rounded-full text-sm font-medium">
+                <span key={cat} className="px-3 py-1 bg-white/15 rounded-full text-sm font-medium">
                   {NEWS_CATEGORY_LABELS[cat] || cat}
                 </span>
               ))}
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-bold mb-6">{article.title}</h1>
+            <h1 className="page-hero-title">{article.title}</h1>
 
-            <div className="flex flex-wrap items-center gap-6 text-white/80">
+            <div className="flex flex-wrap items-center gap-6 text-white/80 text-sm md:text-base">
               <div className="flex items-center gap-2">
                 <FiCalendar className="w-5 h-5" />
                 <span>

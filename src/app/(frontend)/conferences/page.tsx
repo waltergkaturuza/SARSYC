@@ -51,11 +51,11 @@ export default async function PreviousConferencesPage() {
 
   return (
     <>
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Previous Conferences</h1>
-            <p className="text-xl text-white/90 mb-6">
+            <h1 className="page-hero-title">Previous Conferences</h1>
+            <p className="page-hero-subtitle mb-6">
               A decade of youth advocacy, knowledge sharing, and regional impact across Southern
               Africa
             </p>

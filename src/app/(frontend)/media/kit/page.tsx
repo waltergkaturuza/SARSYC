@@ -39,13 +39,13 @@ const mediaAssets = [
 export default function MediaKitPage() {
   return (
     <>
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               Media Kit
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="page-hero-subtitle">
               Download logos, fact sheets, and media resources
             </p>
           </div>

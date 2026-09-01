@@ -331,13 +331,13 @@ export default function VolunteerPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            <h1 className="page-hero-title">
               Volunteer at SARSYC VI
             </h1>
-            <p className="text-lg md:text-xl text-white/90">
+            <p className="page-hero-subtitle">
               Be part of the team that makes SARSYC VI an unforgettable experience for 500+ participants
             </p>
           </div>

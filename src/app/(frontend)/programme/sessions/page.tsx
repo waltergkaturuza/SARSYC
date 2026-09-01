@@ -118,11 +118,11 @@ export default async function SessionsPage() {
 
   return (
     <>
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Conference Sessions</h1>
-            <p className="text-xl text-white/90 mb-6">Browse all sessions for SARSYC VI</p>
+            <h1 className="page-hero-title">Conference Sessions</h1>
+            <p className="page-hero-subtitle mb-6">Browse all sessions for SARSYC VI</p>
             <a
               href="/api/programme/pdf"
               download="SARSYC-VI-Programme.pdf"

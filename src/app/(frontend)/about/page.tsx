@@ -34,13 +34,13 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="about-hero bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               About SARSYC
             </h1>
-            <p className="text-xl md:text-2xl text-white/90">
+            <p className="page-hero-subtitle">
               The premier regional platform for youth health and education advocacy in Southern Africa
             </p>
           </div>
@@ -144,20 +144,20 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="about-cta section bg-primary-600 text-white">
+      <section className="about-cta bg-primary-600 text-white py-4 md:py-5">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">
               Join the SARSYC Movement
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-base md:text-lg mb-4 text-white/90">
               Be part of the next chapter in Southern Africa's youth advocacy movement.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent px-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/participate/register" className="btn-accent px-6 py-2.5">
                 Register for SARSYC VI
               </Link>
-              <Link href="/sarsyc-vi" className="btn-outline border-white text-white hover:bg-white/10 px-8 py-4">
+              <Link href="/sarsyc-vi" className="btn-outline border-white text-white hover:bg-white/10 px-6 py-2.5">
                 Learn More
               </Link>
             </div>

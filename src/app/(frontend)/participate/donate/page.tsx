@@ -271,26 +271,28 @@ function DonatePageContent() {
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-900 to-primary-800 border-b border-primary-700">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-primary-300 hover:text-white transition-colors mb-6 text-sm"
-          >
-            <FiArrowLeft size={16} /> Back to Home
-          </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-              <FiHeart size={20} />
+      <section className="page-hero">
+        <div className="container-custom">
+          <div className="max-w-4xl">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-3 text-sm"
+            >
+              <FiArrowLeft size={16} /> Back to Home
+            </Link>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center">
+                <FiHeart size={20} />
+              </div>
+              <h1 className="page-hero-title mb-0">Support SARSYC VI</h1>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">Support SARSYC VI</h1>
+            <p className="page-hero-subtitle max-w-xl">
+              Support the summit with a flexible donation or a fixed sponsorship package. Use the card form
+              below, or pay by bank transfer on the right.
+            </p>
           </div>
-          <p className="text-primary-200 max-w-xl">
-            Support the summit with a flexible donation or a fixed sponsorship package. Use the card form
-            below, or pay by bank transfer on the right.
-          </p>
         </div>
-      </div>
+      </section>
 
       {/* Form + bank transfer — distinct band above site footer */}
       <section

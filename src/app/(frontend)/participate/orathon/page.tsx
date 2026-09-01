@@ -144,13 +144,13 @@ export default function OrathonRegistrationPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-green-600 to-green-700 text-white py-20">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               SARSYC VI Orathon
             </h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="page-hero-subtitle mb-4">
               Post-conference activity — November 2026
             </p>
             <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">

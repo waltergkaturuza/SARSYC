@@ -72,13 +72,13 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-5 md:py-6">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+            <h1 className="page-hero-title">
               Get in Touch
             </h1>
-            <p className="text-lg text-white/90">
+            <p className="page-hero-subtitle">
               We'd love to hear from you. Reach out with any questions about SARSYC VI.
             </p>
           </div>

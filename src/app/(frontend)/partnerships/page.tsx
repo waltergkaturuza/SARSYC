@@ -280,13 +280,13 @@ export default function PartnershipsPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="mx-auto max-w-5xl md:max-w-6xl text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               Partner With Us
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="page-hero-subtitle">
               Join leading organizations in supporting youth health and education advocacy across Southern Africa
             </p>
           </div>

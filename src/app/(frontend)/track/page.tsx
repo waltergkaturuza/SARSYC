@@ -84,13 +84,13 @@ export default function TrackPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               Track Your Application
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8">
+            <p className="page-hero-subtitle mb-8">
               Enter your Registration ID, Abstract Submission ID, Partnership Inquiry ID, or Volunteer Application ID to check your status
             </p>
 

@@ -71,16 +71,14 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Page header */}
-      <div className="bg-primary-700 text-white py-10">
-        <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 xl:px-10">
-          <div className="flex items-center gap-2 text-primary-200 text-sm mb-3">
-            <FiFolder className="w-4 h-4" />
-            <span>Updates & News</span>
+      <section className="page-hero">
+        <div className="container-custom">
+          <div className="max-w-4xl">
+            <h1 className="page-hero-title">Updates & News</h1>
+            <p className="page-hero-subtitle">Latest summit news, announcements and upcoming events.</p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Updates & News</h1>
-          <p className="text-primary-200 text-lg">Latest summit news, announcements and upcoming events.</p>
         </div>
-      </div>
+      </section>
 
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 xl:px-10 py-10">
         {/* Tabs */}

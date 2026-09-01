@@ -127,14 +127,14 @@ export default function FAQPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <FiHelpCircle className="w-16 h-16 mx-auto mb-6 opacity-90" />
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               Frequently Asked Questions
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="page-hero-subtitle">
               Find answers to common questions about SARSYC VI
             </p>
           </div>

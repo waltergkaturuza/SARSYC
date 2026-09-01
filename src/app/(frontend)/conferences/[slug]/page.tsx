@@ -36,17 +36,17 @@ export default async function ConferenceDetailPage({
 
   return (
     <>
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4"
             >
               <FiArrowLeft className="w-4 h-4" />
               {conference.isCurrent ? 'Back to current conference' : 'Back to previous conferences'}
             </Link>
-            <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
               <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold">
                 {conference.year}
               </span>
@@ -56,8 +56,8 @@ export default async function ConferenceDetailPage({
                 </span>
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{conference.title}</h1>
-            {conference.theme && <p className="text-xl text-white/90">{conference.theme}</p>}
+            <h1 className="page-hero-title">{conference.title}</h1>
+            {conference.theme && <p className="page-hero-subtitle">{conference.theme}</p>}
           </div>
         </div>
       </section>

@@ -57,13 +57,13 @@ export default function ParticipatePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-slate-800 text-white py-8 md:py-10">
+      <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="page-hero-title">
               Participate in SARSYC VI
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="page-hero-subtitle">
               Choose how you want to be part of this transformative conference
             </p>
           </div>
@@ -193,16 +193,16 @@ export default function ParticipatePage() {
       </section>
 
       {/* CTA */}
-      <section className="section bg-primary-600 text-white">
+      <section className="bg-primary-600 text-white py-4 md:py-5">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">
               Ready to Join SARSYC VI?
             </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <p className="text-base md:text-lg mb-4 text-white/90">
               Registration is now open! Secure your spot today.
             </p>
-            <Link href="/participate/register" className="btn-accent text-lg px-8 py-4">
+            <Link href="/participate/register" className="btn-accent px-6 py-2.5">
               Register Now
             </Link>
           </div>
