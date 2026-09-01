@@ -135,6 +135,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         if (!res.ok) throw new Error(data.error || 'Upload failed')
         uploaded.push({
           key: `new-${Date.now()}-${file.name}`,
+          mediaId: data.mediaId != null ? String(data.mediaId) : undefined,
           url: data.url as string,
           caption: '',
         })

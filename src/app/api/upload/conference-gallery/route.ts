@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 /**
- * Upload conference gallery photos to Vercel Blob.
+ * Upload conference gallery photos to Vercel Blob and create a media record.
  * Path: Conferences/gallery/{slug-or-name}/{timestamp}-{filename}
  */
 export async function POST(request: NextRequest) {
@@ -64,10 +65,14 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid blob URL returned from upload')
     }
 
+    // Create media now so Save can use a numeric mediaId (avoids Payload upload validation errors)
+    const mediaId = await createMediaFromBlobUrl(null, blob.url, file.name || 'Conference photo')
+
     return NextResponse.json({
       success: true,
       url: blob.url,
       pathname: blob.pathname,
+      mediaId,
     })
   } catch (error: any) {
     console.error('Conference gallery upload error:', error)

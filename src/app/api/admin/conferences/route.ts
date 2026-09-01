@@ -3,7 +3,11 @@ import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { ensureLockedDocsRelsColumns } from '@/lib/ensureLockedDocsRelsColumns'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
-import { normalizeConferenceBody, resolveConferenceGallery } from '@/lib/conferenceAdmin'
+import {
+  normalizeConferenceBody,
+  resolveConferenceGallery,
+  syncConferenceGallery,
+} from '@/lib/conferenceAdmin'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -44,12 +48,21 @@ export async function POST(request: NextRequest) {
 
     const conference = await payload.create({
       collection: 'conferences',
-      data: { ...data, gallery },
+      data,
       overrideAccess: true,
-      depth: 1,
+      depth: 0,
     })
 
-    return NextResponse.json({ success: true, doc: conference })
+    await syncConferenceGallery(payload, conference.id, gallery)
+
+    const full = await payload.findByID({
+      collection: 'conferences',
+      id: conference.id,
+      depth: 1,
+      overrideAccess: true,
+    })
+
+    return NextResponse.json({ success: true, doc: full })
   } catch (error: any) {
     console.error('Create conference error:', error)
     return NextResponse.json(
