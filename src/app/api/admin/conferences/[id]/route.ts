@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
+import { ensureLockedDocsRelsColumns } from '@/lib/ensureLockedDocsRelsColumns'
 import { normalizeConferenceBody, resolveConferenceGallery } from '@/lib/conferenceAdmin'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +14,7 @@ export async function PATCH(
   try {
     const payload = await getPayloadClient()
     await ensureConferencesSchema(payload)
+    await ensureLockedDocsRelsColumns(payload)
     const body = await request.json()
     const data = normalizeConferenceBody(body)
     const gallery = await resolveConferenceGallery(payload, body.gallery, data.title)

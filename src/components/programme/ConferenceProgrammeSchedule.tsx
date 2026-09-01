@@ -171,8 +171,8 @@ export default function ConferenceProgrammeSchedule({
   if (variant === 'embed') {
     return (
       <>
-        <h2 className="section-title">{title}</h2>
-        <p className="section-subtitle">{subtitle}</p>
+        {title ? <h2 className="section-title">{title}</h2> : null}
+        {subtitle ? <p className="section-subtitle">{subtitle}</p> : null}
         {scheduleWithSlider}
         {showViewFullLink ? (
           <p className="text-center mt-8">

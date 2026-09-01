@@ -33,6 +33,7 @@ import * as migration_20260731_000001_add_session_committee_moderator from './20
 import * as migration_20260803_000000_add_session_status from './20260803_000000_add_session_status';
 import * as migration_20260831_000000_create_conferences from './20260831_000000_create_conferences';
 import * as migration_20260831_120000_conference_gallery from './20260831_120000_conference_gallery';
+import * as migration_20260901_000000_add_conferences_locked_docs_column from './20260901_000000_add_conferences_locked_docs_column';
 
 export const migrations = [
   {
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20260831_120000_conference_gallery.up,
     down: migration_20260831_120000_conference_gallery.down,
     name: '20260831_120000_conference_gallery'
+  },
+  {
+    up: migration_20260901_000000_add_conferences_locked_docs_column.up,
+    down: migration_20260901_000000_add_conferences_locked_docs_column.down,
+    name: '20260901_000000_add_conferences_locked_docs_column'
   },
 ];

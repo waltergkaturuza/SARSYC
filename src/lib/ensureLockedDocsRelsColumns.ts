@@ -1,7 +1,5 @@
 import type { Payload } from 'payload'
 
-let patchedThisInstance = false
-
 /**
  * Payload document-locking joins require a FK column per collection on
  * payload_locked_documents_rels. New collections break edits until their column exists.
@@ -22,16 +20,15 @@ const LOCKED_DOCS_RELS_COLUMNS = [
   'site_events_id',
   'donations_id',
   'stanbic_payment_events_id',
+  'conferences_id',
 ] as const
 
 export async function ensureLockedDocsRelsColumns(payload: Payload): Promise<void> {
-  if (patchedThisInstance) return
-
+  // Always run ADD IF NOT EXISTS so newly added collections (e.g. conferences)
+  // are patched even on warm instances that already ran an older column list.
   for (const column of LOCKED_DOCS_RELS_COLUMNS) {
     await payload.db.drizzle.execute(
       `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "${column}" integer`,
     )
   }
-
-  patchedThisInstance = true
 }

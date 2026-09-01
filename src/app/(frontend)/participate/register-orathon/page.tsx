@@ -93,13 +93,10 @@ export default function RegisterOrathonPage() {
       <section className="page-hero">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mb-6">
-              <FiActivity className="w-10 h-10" />
-            </div>
             <h1 className="page-hero-title">
               Register for Orathon
             </h1>
-            <p className="page-hero-subtitle mb-8">
+            <p className="page-hero-subtitle">
               Post-conference activity — November 2026 across Namibia, Malawi, Zambia, and Zimbabwe
             </p>
           </div>

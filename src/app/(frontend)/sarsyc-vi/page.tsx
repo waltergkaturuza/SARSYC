@@ -530,8 +530,8 @@ export default function SarsycVIPage() {
         <div className="container-custom">
           <ConferenceProgrammeSchedule
             variant="embed"
-            title="Program Schedule"
-            subtitle="A comprehensive three-day program of learning, engagement, and action in Windhoek."
+            title=""
+            subtitle=""
             showViewFullLink
           />
         </div>
@@ -570,24 +570,6 @@ export default function SarsycVIPage() {
       </section>
 
       <WelcomeVenueSection />
-
-      {/* Detailed Tracks */}
-      <section className="section bg-gray-50">
-        <div className="container-custom">
-          <h2 className="section-title">Explore Conference Tracks</h2>
-          <p className="section-subtitle">
-            Deep dive into each thematic area and discover how you can contribute.
-          </p>
-
-          <ConferenceTrackCards
-            tracks={tracks}
-            variant="stack"
-            showTopics
-            showExploreLink
-            detailed
-          />
-        </div>
-      </section>
     </>
   )
 }
