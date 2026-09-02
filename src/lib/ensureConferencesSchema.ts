@@ -30,7 +30,6 @@ export async function ensureConferencesSchema(payload: Payload): Promise<void> {
         "year" numeric NOT NULL,
         "location" varchar NOT NULL,
         "theme" varchar,
-        "objectives" varchar,
         "summary" varchar NOT NULL,
         "participants" varchar,
         "highlights" varchar,
@@ -147,9 +146,45 @@ export async function ensureConferencesSchema(payload: Payload): Promise<void> {
   }
 
   if (!objectivesPatchedThisInstance) {
-    await db.drizzle.execute(
-      `ALTER TABLE "conferences" ADD COLUMN IF NOT EXISTS "objectives" varchar`,
-    )
+    await db.drizzle.execute(`
+      CREATE TABLE IF NOT EXISTS "conferences_objectives" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY NOT NULL,
+        "objective" varchar
+      );
+    `)
+    await db.drizzle.execute(`
+      CREATE INDEX IF NOT EXISTS "conferences_objectives_order_idx"
+        ON "conferences_objectives" ("_order");
+    `)
+    await db.drizzle.execute(`
+      CREATE INDEX IF NOT EXISTS "conferences_objectives_parent_id_idx"
+        ON "conferences_objectives" ("_parent_id");
+    `)
+
+    // Migrate legacy single-text objectives column into array rows (once)
+    await db.drizzle.execute(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'conferences' AND column_name = 'objectives'
+        ) THEN
+          INSERT INTO "conferences_objectives" ("_order", "_parent_id", "id", "objective")
+          SELECT 1, c."id", 'obj-migrated-' || c."id"::text, c."objectives"
+          FROM "conferences" c
+          WHERE c."objectives" IS NOT NULL
+            AND TRIM(c."objectives") <> ''
+            AND NOT EXISTS (
+              SELECT 1 FROM "conferences_objectives" o WHERE o."_parent_id" = c."id"
+            );
+          ALTER TABLE "conferences" DROP COLUMN IF EXISTS "objectives";
+        END IF;
+      END
+      $$;
+    `)
+
     objectivesPatchedThisInstance = true
   }
 }

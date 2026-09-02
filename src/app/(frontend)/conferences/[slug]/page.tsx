@@ -77,6 +77,9 @@ export default async function ConferenceDetailPage({
   const keyOutcomes = Array.isArray(conference.keyOutcomes)
     ? conference.keyOutcomes.filter((row: any) => row?.outcome)
     : []
+  const objectives = Array.isArray(conference.objectives)
+    ? conference.objectives.filter((row: any) => row?.objective)
+    : []
   const relatedLinks = Array.isArray(conference.relatedLinks)
     ? conference.relatedLinks.filter((link: any) => link?.label && link?.url)
     : []
@@ -322,14 +325,18 @@ export default async function ConferenceDetailPage({
                   )}
                 </div>
 
-                {conference.objectives && (
+                {objectives.length > 0 && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <FiTarget className="w-5 h-5 text-primary-600" /> Objectives
                     </h3>
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                      {conference.objectives}
-                    </p>
+                    <ol className="space-y-2 list-decimal list-inside text-sm text-gray-700">
+                      {objectives.map((row: any, i: number) => (
+                        <li key={i} className="leading-relaxed">
+                          {row.objective}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                 )}
 

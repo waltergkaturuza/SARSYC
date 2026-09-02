@@ -55,7 +55,6 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
           { title: { contains: search } },
           { location: { contains: search } },
           { theme: { contains: search } },
-          { objectives: { contains: search } },
           { summary: { contains: search } },
         ],
       })

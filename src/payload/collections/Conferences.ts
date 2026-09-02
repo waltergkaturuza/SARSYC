@@ -107,12 +107,19 @@ const Conferences: CollectionConfig = {
     },
     {
       name: 'objectives',
-      type: 'textarea',
+      type: 'array',
       label: 'Objectives',
       admin: {
-        description: 'Shown in the right column on the conference detail page.',
-        placeholder: 'e.g. Building Bridges: Advancing Equitable Access…',
+        description: 'Numbered list shown in the right column on the conference detail page.',
       },
+      fields: [
+        {
+          name: 'objective',
+          type: 'text',
+          required: true,
+          label: 'Objective',
+        },
+      ],
     },
     {
       name: 'summary',

@@ -270,7 +270,11 @@ export function normalizeConferenceBody(body: any) {
     year: Number(body.year),
     location: body.location,
     theme: body.theme || null,
-    objectives: body.objectives || null,
+    objectives: Array.isArray(body.objectives)
+      ? body.objectives
+          .map((row: any) => ({ objective: String(row?.objective || '').trim() }))
+          .filter((row: { objective: string }) => row.objective)
+      : [],
     summary: body.summary,
     participants: body.participants || null,
     highlights: body.highlights || null,

@@ -7,6 +7,7 @@ import { FiSave, FiLoader, FiPlus, FiTrash2, FiUpload } from 'react-icons/fi'
 import { getConferenceMediaUrl } from '@/lib/conferenceMedia'
 
 type OutcomeRow = { outcome: string }
+type ObjectiveRow = { objective: string }
 type LinkRow = { label: string; url: string }
 type GalleryRow = {
   key: string
@@ -30,7 +31,7 @@ interface ConferenceFormData {
   year: string
   location: string
   theme: string
-  objectives: string
+  objectives: ObjectiveRow[]
   summary: string
   participants: string
   highlights: string
@@ -124,7 +125,13 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     year: initialData?.year != null ? String(initialData.year) : '',
     location: initialData?.location || '',
     theme: initialData?.theme || '',
-    objectives: initialData?.objectives || '',
+    objectives: Array.isArray(initialData?.objectives)
+      ? initialData.objectives.map((row: any) => ({
+          objective: row.objective || (typeof row === 'string' ? row : ''),
+        }))
+      : typeof initialData?.objectives === 'string' && initialData.objectives.trim()
+        ? [{ objective: initialData.objectives.trim() }]
+        : [],
     summary: initialData?.summary || '',
     participants: initialData?.participants || '',
     highlights: initialData?.highlights || '',
@@ -257,7 +264,9 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         year: Number(formData.year),
         location: formData.location.trim(),
         theme: formData.theme.trim() || null,
-        objectives: formData.objectives.trim() || null,
+        objectives: formData.objectives
+          .map((row) => ({ objective: row.objective.trim() }))
+          .filter((row) => row.objective),
         summary: formData.summary.trim(),
         participants: formData.participants.trim() || null,
         highlights: formData.highlights.trim() || null,
@@ -377,19 +386,6 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
             onChange={(e) => handleChange('theme', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder="e.g. Plan, Prioritize and Prevent"
-          />
-        </FormField>
-
-        <FormField
-          label="Objectives"
-          hint="Shown in the right column on the conference detail page"
-        >
-          <textarea
-            value={formData.objectives}
-            onChange={(e) => handleChange('objectives', e.target.value)}
-            rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            placeholder="e.g. Building Bridges: Advancing Equitable Access…"
           />
         </FormField>
 
@@ -672,6 +668,68 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
             ))}
           </div>
         )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Objectives</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Numbered list shown in the right column on the conference detail page.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setFormData((prev) => ({
+                ...prev,
+                objectives: [...prev.objectives, { objective: '' }],
+              }))
+            }
+            className="inline-flex items-center gap-2 text-sm text-primary-700 hover:text-primary-800"
+          >
+            <FiPlus className="w-4 h-4" />
+            Add objective
+          </button>
+        </div>
+        {formData.objectives.length === 0 && (
+          <p className="text-sm text-gray-500">No objectives added yet.</p>
+        )}
+        <div className="space-y-3">
+          {formData.objectives.map((row, index) => (
+            <div key={index} className="flex gap-2 items-start">
+              <span className="mt-2 w-6 text-sm font-semibold text-gray-500 shrink-0">
+                {index + 1}.
+              </span>
+              <input
+                type="text"
+                value={row.objective}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setFormData((prev) => {
+                    const objectives = [...prev.objectives]
+                    objectives[index] = { objective: value }
+                    return { ...prev, objectives }
+                  })
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder={`Objective ${index + 1}`}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    objectives: prev.objectives.filter((_, i) => i !== index),
+                  }))
+                }
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+              >
+                <FiTrash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">

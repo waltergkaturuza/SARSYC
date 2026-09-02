@@ -36,6 +36,7 @@ import * as migration_20260831_120000_conference_gallery from './20260831_120000
 import * as migration_20260901_000000_add_conferences_locked_docs_column from './20260901_000000_add_conferences_locked_docs_column';
 import * as migration_20260902_000000_conference_featured_speakers from './20260902_000000_conference_featured_speakers';
 import * as migration_20260902_120000_conference_objectives from './20260902_120000_conference_objectives';
+import * as migration_20260902_130000_conference_objectives_array from './20260902_130000_conference_objectives_array';
 
 export const migrations = [
   {
@@ -227,5 +228,10 @@ export const migrations = [
     up: migration_20260902_120000_conference_objectives.up,
     down: migration_20260902_120000_conference_objectives.down,
     name: '20260902_120000_conference_objectives'
+  },
+  {
+    up: migration_20260902_130000_conference_objectives_array.up,
+    down: migration_20260902_130000_conference_objectives_array.down,
+    name: '20260902_130000_conference_objectives_array'
   },
 ];
