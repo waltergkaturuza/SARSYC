@@ -20,7 +20,11 @@ const slides = [
 
 const INTERVAL_MS = 6000
 
-export default function HeroImageSlider() {
+type HeroImageSliderProps = {
+  className?: string
+}
+
+export default function HeroImageSlider({ className = '' }: HeroImageSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -32,7 +36,9 @@ export default function HeroImageSlider() {
   }, [])
 
   return (
-    <div className="relative w-full min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden bg-slate-800/40">
+    <div
+      className={`relative w-full h-full min-h-[280px] overflow-hidden bg-slate-900/30 ${className}`.trim()}
+    >
       {slides.map((slide, index) => (
         <div
           key={slide.src}
@@ -46,9 +52,9 @@ export default function HeroImageSlider() {
             alt={slide.alt}
             fill
             priority={index === 0}
-            quality={95}
-            className="object-contain object-center lg:object-left"
-            sizes="(max-width: 1024px) 100vw, 56vw"
+            quality={100}
+            className="object-cover object-center"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 60vw"
           />
         </div>
       ))}
@@ -60,7 +66,7 @@ export default function HeroImageSlider() {
             type="button"
             onClick={() => setActiveIndex(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              index === activeIndex ? 'w-6 bg-primary-400' : 'w-2 bg-white/40 hover:bg-white/60'
+              index === activeIndex ? 'w-6 bg-primary-400' : 'w-2 bg-white/50 hover:bg-white/75'
             }`}
             aria-label={`Show slide ${index + 1} of ${slides.length}`}
             aria-current={index === activeIndex ? 'true' : undefined}

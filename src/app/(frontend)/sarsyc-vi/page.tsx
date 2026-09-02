@@ -299,18 +299,15 @@ export default function SarsycVIPage() {
           alt=""
           fill
           priority
+          quality={100}
           className="object-cover object-center"
           sizes="100vw"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/50 via-primary-800/40 to-secondary-900/55" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/15 via-slate-900/10 to-secondary-900/18" />
 
         <div className="relative container-custom py-10 md:py-14">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-4">
-              <span className="text-sm font-medium">6th Edition</span>
-            </div>
-            
             <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               SARSYC VI
             </h1>

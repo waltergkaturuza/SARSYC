@@ -163,8 +163,6 @@ export default function VenuePage() {
       {/* Conference Venue */}
       <section className="py-8 md:py-10 bg-white">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-          <h2 className="section-title">Conference Venue</h2>
-
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch mb-8">
             <div className="lg:col-span-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
               <div className="relative w-full aspect-[16/9] max-h-[220px] sm:max-h-[240px] bg-gray-100">
@@ -310,22 +308,24 @@ export default function VenuePage() {
       </section>
 
       {/* Getting to Windhoek */}
-      <section className="section bg-white">
+      <section className="bg-white py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">Getting to {venue.city}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-4">
+              Getting to {venue.city}
+            </h2>
 
-            <div className="card p-8 mb-8">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FiMapPin className="w-6 h-6 text-primary-600" />
+            <div className="card p-4 md:p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FiMapPin className="w-5 h-5 text-primary-600" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">By Air</h3>
-                  <p className="text-gray-600 mb-4">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1.5">By Air</h3>
+                  <p className="text-sm text-gray-600 mb-2">
                     <strong>Hosea Kutako International Airport (WDH)</strong> is located 45 km east of Windhoek.
                   </p>
-                  <ul className="text-sm text-gray-600 space-y-2">
+                  <ul className="text-sm text-gray-600 space-y-1">
                     <li>• Direct flights from Johannesburg, Cape Town, Victoria Falls, Frankfurt</li>
                     <li>• No conference-organized shuttle service; use taxis, ride-hailing, or hotel-arranged transfers</li>
                     <li>• Taxi to city center: ~$30-40 USD</li>
@@ -334,39 +334,40 @@ export default function VenuePage() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
       {/* Explore Windhoek */}
-      <section className="section bg-gray-50">
+      <section className="bg-gray-50 py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">Explore {venue.city}</h2>
-            <p className="section-subtitle">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-1.5">
+              Explore {venue.city}
+            </h2>
+            <p className="text-sm md:text-base text-gray-600 text-center mb-4">
               Make the most of your visit with these local attractions
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-2.5 md:gap-3">
               {attractions.map((attraction) => (
                 <a
                   key={attraction.name}
                   href={attraction.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
                 >
-                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FiCoffee className="w-5 h-5 text-primary-600" />
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiCoffee className="w-4 h-4 text-primary-600" />
                   </div>
-                  <span className="font-medium text-gray-900">{attraction.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{attraction.name}</span>
                 </a>
               ))}
             </div>
 
-            <div className="text-center mt-12">
-              <Link href="/faq" className="text-primary-600 font-medium hover:underline">
+            <div className="text-center mt-5">
+              <Link href="/faq" className="text-primary-600 font-medium hover:underline text-sm">
                 More questions? Check our FAQ →
               </Link>
             </div>

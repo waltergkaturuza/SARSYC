@@ -1,45 +1,32 @@
 import Link from 'next/link'
-import { FiAlertCircle, FiHeart, FiUsers, FiGlobe, FiTrendingUp, FiShield, FiDroplet, FiThermometer } from 'react-icons/fi'
 
 // Static content - revalidate every 6 hours
 export const revalidate = 21600
 
 const challenges = [
   {
-    icon: FiTrendingUp,
     title: 'Shrinking Global Development Funding',
     description: 'Reduced international aid requires sustainable, homegrown solutions.',
-    color: 'from-red-500 to-red-600',
   },
   {
-    icon: FiShield,
     title: 'Digital Health Risks & Online Gender-Based Violence',
     description: 'New challenges emerge as health services move online.',
-    color: 'from-orange-500 to-orange-600',
   },
   {
-    icon: FiThermometer,
     title: 'Climate Change & Youth Vulnerability',
     description: 'Young people disproportionately affected by environmental crises.',
-    color: 'from-green-500 to-green-600',
   },
   {
-    icon: FiHeart,
     title: 'Mental Health Crises & Substance Abuse',
     description: 'Growing mental health challenges and substance abuse among youth.',
-    color: 'from-purple-500 to-purple-600',
   },
   {
-    icon: FiDroplet,
     title: 'Teenage Pregnancies & Unsafe Abortions',
     description: 'Continued high rates threaten youth health and education.',
-    color: 'from-pink-500 to-pink-600',
   },
   {
-    icon: FiAlertCircle,
     title: 'Rising Non-Communicable Diseases (NCDs)',
     description: 'Increasing burden of diabetes, hypertension, and other NCDs in youth.',
-    color: 'from-blue-500 to-blue-600',
   },
 ]
 
@@ -96,50 +83,42 @@ export default function WhySarsycVIPage() {
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {challenges.map((challenge) => {
-                const Icon = challenge.icon
-                return (
-                  <div
-                    key={challenge.title}
-                    className="group rounded-2xl border border-white/20 bg-white/15 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/20 hover:shadow-2xl hover:shadow-primary-500/10"
-                  >
-                    <div className={`w-14 h-14 bg-gradient-to-br ${challenge.color} rounded-xl flex items-center justify-center text-white mb-4 shadow-lg`}>
-                      <Icon className="w-7 h-7" />
-                    </div>
-                    <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">{challenge.title}</h3>
-                    <p className="text-white/75 leading-relaxed">{challenge.description}</p>
-                  </div>
-                )
-              })}
+              {challenges.map((challenge) => (
+                <div
+                  key={challenge.title}
+                  className="group rounded-2xl border border-white/20 bg-white/15 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/20 hover:shadow-2xl hover:shadow-primary-500/10"
+                >
+                  <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
+                    {challenge.title}
+                  </h3>
+                  <p className="text-white/75 leading-relaxed text-justify">{challenge.description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Regional Response */}
-      <section className="section bg-white">
+      <section className="bg-white py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">Why Regional Solidarity Matters</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="card p-8">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-6">
-                  <FiGlobe className="w-8 h-8 text-primary-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Shared Challenges</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Youth across Southern Africa face similar challenges regardless of borders. By working together, 
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-4 md:mb-5">
+              Why Regional Solidarity Matters
+            </h2>
+            <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+              <div className="card p-4 md:p-5">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Shared Challenges</h3>
+                <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                  Youth across Southern Africa face similar challenges regardless of borders. By working together,
                   we can share solutions and amplify our collective voice.
                 </p>
               </div>
 
-              <div className="card p-8">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-6">
-                  <FiUsers className="w-8 h-8 text-primary-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Stronger Together</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Regional collaboration creates more sustainable solutions. Together, we can influence policy at 
+              <div className="card p-4 md:p-5">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Stronger Together</h3>
+                <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                  Regional collaboration creates more sustainable solutions. Together, we can influence policy at
                   both national and regional levels, including SADC summits.
                 </p>
               </div>

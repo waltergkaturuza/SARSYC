@@ -201,9 +201,9 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
         <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:gap-y-5">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:items-stretch">
             {/* Intro copy — left column glass card */}
-            <div className="order-1 lg:col-start-1 lg:row-start-1 lg:row-span-2 min-w-0 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8 flex flex-col gap-4 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+            <div className="order-1 min-w-0 h-full rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8 flex flex-col gap-4 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary-400 leading-tight text-center lg:text-left">
                 The 6th Southern African Regional Students and Youth Conference
               </h1>
@@ -226,11 +226,11 @@ export default async function HomePage() {
             </div>
 
             {/* Team photo slider + date/location caption — right column */}
-            <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 min-w-0 flex flex-col gap-3">
-              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary-400/30 hover:shadow-primary-500/10">
-                <HeroImageSlider />
+            <div className="order-2 min-w-0 flex flex-col gap-3 h-full">
+              <div className="flex-1 min-h-[280px] sm:min-h-[340px] rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary-400/30 hover:shadow-primary-500/10">
+                <HeroImageSlider className="h-full min-h-[280px] sm:min-h-[340px]" />
               </div>
-              <div className="flex justify-center lg:justify-start">
+              <div className="flex justify-center lg:justify-start shrink-0">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-lg">
                   <FiCalendar className="w-4 h-4 shrink-0 text-primary-300" />
                   <span className="text-sm font-medium">August 5-7, 2026</span>

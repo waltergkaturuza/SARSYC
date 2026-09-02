@@ -45,9 +45,9 @@ export default function VolunteerImageSlider({ className = '' }: VolunteerImageS
             alt={slide.alt}
             fill
             priority={index === 0}
-            quality={90}
+            quality={100}
             className="object-cover object-center"
-            sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 58vw, 720px"
+            sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 60vw, 800px"
           />
         </div>
       ))}

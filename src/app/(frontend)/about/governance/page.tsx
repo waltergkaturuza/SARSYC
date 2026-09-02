@@ -1,4 +1,4 @@
-import { FiUsers, FiShield, FiTarget, FiArrowRight } from 'react-icons/fi'
+import { FiUsers, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
 import CountryFlag from '@/components/ui/CountryFlag'
 import { getPayloadClient } from '@/lib/payload'
@@ -99,19 +99,21 @@ export default async function GovernancePage() {
 
         {/* Governance Principles */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">Governance Principles</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">Governance Principles</h2>
+          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {[
-              { icon: FiUsers, title: 'Participatory', desc: 'Youth representatives involved in all decision-making processes.' },
-              { icon: FiShield, title: 'Transparent', desc: 'Open communication and accountability to all stakeholders.' },
-              { icon: FiTarget, title: 'Results-Focused', desc: 'Committed to measurable outcomes and sustained impact.' },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8 text-center hover:border-amber-400/40 hover:bg-white/15 transition-all duration-300">
-                <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <Icon className="w-7 h-7 text-amber-400" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-3 group-hover:text-amber-300 transition-colors">{title}</h3>
-                <p className="text-white/60 text-sm">{desc}</p>
+              { title: 'Participatory', desc: 'Youth representatives involved in all decision-making processes.' },
+              { title: 'Transparent', desc: 'Open communication and accountability to all stakeholders.' },
+              { title: 'Results-Focused', desc: 'Committed to measurable outcomes and sustained impact.' },
+            ].map(({ title, desc }) => (
+              <div
+                key={title}
+                className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-4 md:p-5 text-center hover:border-amber-400/40 hover:bg-white/15 transition-all duration-300"
+              >
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-300 transition-colors">
+                  {title}
+                </h3>
+                <p className="text-white/60 text-sm text-justify">{desc}</p>
               </div>
             ))}
           </div>

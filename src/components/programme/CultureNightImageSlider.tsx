@@ -52,16 +52,17 @@ export default function CultureNightImageSlider() {
               src={image.src}
               alt={image.alt}
               fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 42vw"
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 48vw"
+              quality={100}
               priority={index === 0}
             />
           </div>
         ))}
 
-        <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/50 to-transparent p-4">
-          <p className="text-white text-sm font-semibold">Culture Night Highlights</p>
-          <p className="text-white/80 text-xs">Southern African music, dance, and arts</p>
+        <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/35 via-black/10 to-transparent p-4">
+          <p className="text-white text-sm font-semibold drop-shadow-md">Culture Night Highlights</p>
+          <p className="text-white/90 text-xs drop-shadow-sm">Southern African music, dance, and arts</p>
         </div>
 
         <button
