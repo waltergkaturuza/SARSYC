@@ -2,12 +2,20 @@ import Link from 'next/link'
 import { FiCalendar, FiMapPin, FiArrowRight, FiUser } from 'react-icons/fi'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import ConferenceTrackCards from '@/components/ui/ConferenceTrackCards'
+import AboutVideoPlayer from '@/components/ui/AboutVideoPlayer'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 import {
   HOMEPAGE_FEATURED_SPEAKER_LIMIT,
   sortFeaturedSpeakersForHomepage,
 } from '@/lib/featuredSpeakers'
+
+/** Lower-bitrate files power the quality menu; 720p is default for lighter autoplay. */
+const aboutVideoSources = [
+  { label: '720p', src: '/sarsyc-2026-doc-720p.mp4' },
+  { label: '1080p', src: '/sarsyc-2026-doc.mp4' },
+  { label: '480p', src: '/sarsyc-2026-doc-480p.mp4' },
+]
 
 // This will be fetched from Payload CMS in production
 const stats = [
@@ -286,46 +294,64 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="max-w-3xl mx-auto text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">What is SARSYC?</h2>
-            <p className="text-lg md:text-xl text-white/70 text-center max-w-3xl mx-auto">
-              The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
-              for transnational advocacy on youth health and education.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
-                1
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+            <div className="min-w-0">
+              <div className="mb-6 md:mb-8 text-left">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">What is SARSYC?</h2>
+                <p className="text-lg md:text-xl text-white/70">
+                  The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
+                  for transnational advocacy on youth health and education.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Connect</h3>
-              <p className="text-white/75">
-                Network with 500+ young leaders, researchers, policymakers, development partners, and the private sector from across
-                Southern Africa.
-              </p>
+
+              <div className="grid gap-4">
+                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+                  <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-xl font-bold mb-3 shadow-lg">
+                    1
+                  </div>
+                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
+                    Connect
+                  </h3>
+                  <p className="text-sm text-white/75 leading-relaxed">
+                    Network with 500+ young leaders, researchers, policymakers, development partners, and the private
+                    sector from across Southern Africa.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+                  <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-xl font-bold mb-3 shadow-lg">
+                    2
+                  </div>
+                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
+                    Learn
+                  </h3>
+                  <p className="text-sm text-white/75 leading-relaxed">
+                    Engage with cutting-edge research, best practices, and innovative solutions in youth health and
+                    education.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
+                  <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-xl font-bold mb-3 shadow-lg">
+                    3
+                  </div>
+                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
+                    Act
+                  </h3>
+                  <p className="text-sm text-white/75 leading-relaxed">
+                    Develop actionable strategies and commitments to drive real change in youth health and education
+                    outcomes.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-              <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
-                2
-              </div>
-              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Learn</h3>
-              <p className="text-white/75">
-                Engage with cutting-edge research, best practices, and innovative solutions in youth health and
-                education.
-              </p>
-            </div>
-
-            <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-6 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-              <div className="w-12 h-12 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-2xl font-bold mb-4 shadow-lg">
-                3
-              </div>
-              <h3 className="text-xl font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-3">Act</h3>
-              <p className="text-white/75">
-                Develop actionable strategies and commitments to drive real change in youth health and education
-                outcomes.
-              </p>
+            <div className="min-w-0 lg:sticky lg:top-24">
+              <AboutVideoPlayer
+                sources={aboutVideoSources}
+                title="SARSYC 2026 documentary"
+                className="w-full"
+              />
             </div>
           </div>
         </div>

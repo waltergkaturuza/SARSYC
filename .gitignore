@@ -49,8 +49,9 @@ payload-types.ts
 *.swo
 *~
 
-# OS
-Thumbs.db
+# Oversized original documentary (~600MB) — use 720p/480p in repo; host 1080p on Blob/CDN if needed
+/public/sarsyc-2026-doc.mp4
+/public/sarsyc 2026 doc*.mp4
 
 
 
