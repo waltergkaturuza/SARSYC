@@ -3,6 +3,8 @@ import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { ensureLockedDocsRelsColumns } from '@/lib/ensureLockedDocsRelsColumns'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
+import { getCurrentUserFromRequest } from '@/lib/getCurrentUser'
+import { createAuditLog } from '@/lib/audit'
 import {
   normalizeConferenceBody,
   resolveConferenceGallery,
@@ -14,8 +16,18 @@ import {
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET() {
+function canManageConferences(user: { role?: string | null } | null): boolean {
+  if (!user?.role) return false
+  return user.role === 'admin' || user.role === 'editor'
+}
+
+export async function GET(request: NextRequest) {
   try {
+    const user = await getCurrentUserFromRequest(request)
+    if (!canManageConferences(user)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const payload = await getPayloadClient()
     await ensureConferencesSchema(payload)
     await ensureLockedDocsRelsColumns(payload)
@@ -41,6 +53,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUserFromRequest(request)
+    if (!canManageConferences(user)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const payload = await getPayloadClient()
     await ensureConferencesSchema(payload)
     await ensureLockedDocsRelsColumns(payload)
@@ -57,10 +74,37 @@ export async function POST(request: NextRequest) {
       data,
       overrideAccess: true,
       depth: 0,
+      context: { skipAudit: true },
     })
 
     await syncConferenceGallery(payload, conference.id, gallery)
     await syncConferenceFeaturedSpeakers(payload, conference.id, featuredSpeakers)
+
+    await createAuditLog(
+      payload,
+      {
+        action: 'create',
+        collection: 'conferences',
+        documentId: conference.id,
+        userId: user!.id,
+        userEmail: user!.email,
+        userRole: user!.role as string | undefined,
+        after: {
+          ...data,
+          galleryCount: gallery.length,
+          featuredSpeakersCount: featuredSpeakers.length,
+        },
+        description: `Created conference "${data.title}" (ID: ${conference.id}) — ${gallery.length} gallery photos, ${featuredSpeakers.length} featured speakers`,
+        metadata: {
+          title: data.title,
+          year: data.year,
+          galleryCount: gallery.length,
+          featuredSpeakersCount: featuredSpeakers.length,
+          featuredSpeakerNames: featuredSpeakers.map((s) => s.name),
+        },
+      },
+      request,
+    )
 
     const full = await payload.findByID({
       collection: 'conferences',

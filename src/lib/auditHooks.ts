@@ -42,12 +42,19 @@ export function createAfterChangeHook(collectionSlug: string) {
     doc,
     req,
     operation,
+    context,
   }: {
     doc: Record<string, unknown>
-    req: { user?: unknown; payload?: unknown; originalDocument?: unknown }
+    req: { user?: unknown; payload?: unknown; originalDocument?: unknown; context?: Record<string, unknown> }
     operation?: string
+    context?: Record<string, unknown>
   }) => {
     if (collectionSlug === 'audit-logs' || operation === 'login' || operation === 'auth') {
+      return doc
+    }
+
+    const hookContext = context || req.context
+    if (hookContext?.skipAudit) {
       return doc
     }
 
@@ -104,11 +111,18 @@ export function createAfterDeleteHook(collectionSlug: string) {
   return async ({
     doc,
     req,
+    context,
   }: {
     doc: Record<string, unknown>
-    req: { user?: unknown; payload?: unknown }
+    req: { user?: unknown; payload?: unknown; context?: Record<string, unknown> }
+    context?: Record<string, unknown>
   }) => {
     if (collectionSlug === 'audit-logs') {
+      return doc
+    }
+
+    const hookContext = context || req.context
+    if (hookContext?.skipAudit) {
       return doc
     }
 

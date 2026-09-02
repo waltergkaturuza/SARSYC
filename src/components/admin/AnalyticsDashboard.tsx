@@ -59,6 +59,8 @@ type AnalyticsData = {
     donatePageViews: number
     donateFabClicks: number
     donations: number
+    conferencesPageViews: number
+    galleryPageViews: number
   }
   rangeLabel: string
 }
@@ -105,6 +107,8 @@ const defaultData: AnalyticsData = {
     donatePageViews: 0,
     donateFabClicks: 0,
     donations: 0,
+    conferencesPageViews: 0,
+    galleryPageViews: 0,
   },
   rangeLabel: '14 days',
 }
@@ -394,6 +398,8 @@ export default function AnalyticsDashboard() {
                 { section: 'Sessions', views: data.interactionCounts.sessionsPageViews },
                 { section: 'Programme', views: data.interactionCounts.programmePageViews },
                 { section: 'Speakers', views: data.interactionCounts.speakersPageViews },
+                { section: 'Conferences', views: data.interactionCounts.conferencesPageViews },
+                { section: 'Photo Gallery', views: data.interactionCounts.galleryPageViews },
                 { section: 'Steering / Governance', views: data.interactionCounts.steeringPageViews },
                 { section: 'About', views: data.interactionCounts.aboutPageViews },
                 { section: 'SARSYC VI', views: data.interactionCounts.sarsycViPageViews },

@@ -304,6 +304,8 @@ export async function GET(request: NextRequest) {
       donatePageViews,
       donateFabClicks,
       donations,
+      conferencesPageViews,
+      galleryPageViews,
     ] = await Promise.all([
       payload.find({ collection: 'page-views', limit: 0 }),
       getUniqueVisitors(config.days),
@@ -355,6 +357,8 @@ export async function GET(request: NextRequest) {
           where: { createdAt: { greater_than_equal: sinceIso } },
         })
         .catch(() => ({ totalDocs: 0 })),
+      countPageViewsMatching(config.days, ['/conferences', '/conferences/%']),
+      countPageViewsMatching(config.days, ['/media/gallery', '/media/gallery/%']),
     ])
 
     const newsletterTotal = newsletterSubs?.totalDocs ?? 0
@@ -417,6 +421,8 @@ export async function GET(request: NextRequest) {
         donatePageViews,
         donateFabClicks,
         donations: donations?.totalDocs ?? 0,
+        conferencesPageViews,
+        galleryPageViews,
       },
       rangeLabel: range === '7d' ? '7 days' : range === '14d' ? '14 days' : range === '30d' ? '30 days' : range === '3m' ? '3 months' : '1 year',
     })

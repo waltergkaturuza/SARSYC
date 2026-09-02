@@ -105,10 +105,12 @@ export default async function AuditLogsPage({
   })
 
   const uniqueCollections = Array.from(
-    new Set(
-      collectionsResult.docs.map((log: any) => log.collection).filter(Boolean)
-    )
-  ).sort() as string[]
+    new Set([
+      'conferences',
+      ...collectionsResult.docs.map((log: any) => log.collection).filter(Boolean),
+    ])
+  ).sort()
+.sort() as string[]
 
   // Get unique actions for filter
   const uniqueActions = Array.from(

@@ -164,7 +164,7 @@ export default async function ConferenceDetailPage({
         </div>
       </section>
 
-      <section className="section bg-white">
+      <section className="bg-white pt-6 md:pt-8 pb-16 md:pb-20">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 xl:px-10">
           <div className="grid lg:grid-cols-12 gap-8 xl:gap-10 items-start">
             <aside className="lg:col-span-3 order-2 lg:order-1">
