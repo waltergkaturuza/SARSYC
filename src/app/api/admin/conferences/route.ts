@@ -6,7 +6,9 @@ import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
 import {
   normalizeConferenceBody,
   resolveConferenceGallery,
+  resolveConferenceFeaturedSpeakers,
   syncConferenceGallery,
+  syncConferenceFeaturedSpeakers,
 } from '@/lib/conferenceAdmin'
 
 export const dynamic = 'force-dynamic'
@@ -45,6 +47,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = normalizeConferenceBody(body)
     const gallery = await resolveConferenceGallery(payload, body.gallery, data.title)
+    const featuredSpeakers = await resolveConferenceFeaturedSpeakers(
+      payload,
+      body.featuredSpeakers,
+    )
 
     const conference = await payload.create({
       collection: 'conferences',
@@ -54,6 +60,7 @@ export async function POST(request: NextRequest) {
     })
 
     await syncConferenceGallery(payload, conference.id, gallery)
+    await syncConferenceFeaturedSpeakers(payload, conference.id, featuredSpeakers)
 
     const full = await payload.findByID({
       collection: 'conferences',

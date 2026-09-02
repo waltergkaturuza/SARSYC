@@ -14,6 +14,15 @@ type GalleryRow = {
   url: string
   caption: string
 }
+type FeaturedSpeakerRow = {
+  key: string
+  mediaId?: string
+  photoUrl: string
+  name: string
+  title: string
+  organization: string
+  country: string
+}
 
 interface ConferenceFormData {
   title: string
@@ -33,6 +42,7 @@ interface ConferenceFormData {
   keyOutcomes: OutcomeRow[]
   relatedLinks: LinkRow[]
   gallery: GalleryRow[]
+  featuredSpeakers: FeaturedSpeakerRow[]
 }
 
 interface ConferenceFormProps {
@@ -76,10 +86,35 @@ function mapInitialGallery(initialData?: any): GalleryRow[] {
     .filter(Boolean) as GalleryRow[]
 }
 
+function mapInitialFeaturedSpeakers(initialData?: any): FeaturedSpeakerRow[] {
+  if (!Array.isArray(initialData?.featuredSpeakers)) return []
+  return initialData.featuredSpeakers
+    .map((row: any, index: number) => {
+      const photoUrl = getConferenceMediaUrl(row.photo) || ''
+      const mediaId =
+        typeof row.photo === 'object' && row.photo?.id != null
+          ? String(row.photo.id)
+          : row.photo != null
+            ? String(row.photo)
+            : undefined
+      return {
+        key: row.id || `speaker-${index}-${row.name || 'new'}`,
+        mediaId,
+        photoUrl,
+        name: row.name || '',
+        title: row.title || '',
+        organization: row.organization || '',
+        country: row.country || '',
+      }
+    })
+    .filter((row: FeaturedSpeakerRow) => row.name || row.title || row.organization)
+}
+
 export default function ConferenceForm({ initialData, mode }: ConferenceFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [speakerPhotoUploading, setSpeakerPhotoUploading] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<ConferenceFormData>({
@@ -107,6 +142,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         }))
       : [],
     gallery: mapInitialGallery(initialData),
+    featuredSpeakers: mapInitialFeaturedSpeakers(initialData),
   })
 
   const handleChange = (field: keyof ConferenceFormData, value: any) => {
@@ -148,6 +184,40 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     }
   }
 
+  const handleSpeakerPhotoUpload = async (rowKey: string, files: FileList | null) => {
+    const file = files?.[0]
+    if (!file) return
+    setSpeakerPhotoUploading(rowKey)
+    setErrors((prev) => ({ ...prev, featuredSpeakers: '' }))
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('conferenceSlug', formData.slug || formData.title || 'conference')
+      const res = await fetch('/api/upload/conference-gallery', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Upload failed')
+      setFormData((prev) => ({
+        ...prev,
+        featuredSpeakers: prev.featuredSpeakers.map((row) =>
+          row.key === rowKey
+            ? {
+                ...row,
+                mediaId: data.mediaId != null ? String(data.mediaId) : undefined,
+                photoUrl: data.url as string,
+              }
+            : row,
+        ),
+      }))
+    } catch (err: any) {
+      setErrors((prev) => ({
+        ...prev,
+        featuredSpeakers: err.message || 'Speaker photo upload failed',
+      }))
+    } finally {
+      setSpeakerPhotoUploading(null)
+    }
+  }
+
   const validate = () => {
     const next: Record<string, string> = {}
     if (!formData.title.trim()) next.title = 'Title is required'
@@ -157,6 +227,14 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     if (!formData.summary.trim()) next.summary = 'Summary is required'
     if (formData.gallery.length === 0) {
       next.gallery = 'Add at least one photo for this conference'
+    }
+    const incompleteSpeaker = formData.featuredSpeakers.find(
+      (row) =>
+        (row.name.trim() || row.title.trim() || row.organization.trim()) &&
+        (!row.name.trim() || !row.title.trim() || !row.organization.trim()),
+    )
+    if (incompleteSpeaker) {
+      next.featuredSpeakers = 'Each featured speaker needs name, position, and organisation'
     }
     setErrors(next)
     return Object.keys(next).length === 0
@@ -197,6 +275,16 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
           url: row.url,
           caption: row.caption.trim() || null,
         })),
+        featuredSpeakers: formData.featuredSpeakers
+          .filter((row) => row.name.trim() && row.title.trim() && row.organization.trim())
+          .map((row) => ({
+            mediaId: row.mediaId || undefined,
+            photoUrl: row.photoUrl || undefined,
+            name: row.name.trim(),
+            title: row.title.trim(),
+            organization: row.organization.trim(),
+            country: row.country.trim() || null,
+          })),
       }
 
       const url =
@@ -398,6 +486,168 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
                     Remove
                   </button>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Featured Speakers</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Shown in the left column on the public conference detail page.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setFormData((prev) => ({
+                ...prev,
+                featuredSpeakers: [
+                  ...prev.featuredSpeakers,
+                  {
+                    key: `speaker-new-${Date.now()}`,
+                    photoUrl: '',
+                    name: '',
+                    title: '',
+                    organization: '',
+                    country: '',
+                  },
+                ],
+              }))
+            }
+            className="inline-flex items-center gap-2 text-sm text-primary-700 hover:text-primary-800"
+          >
+            <FiPlus className="w-4 h-4" />
+            Add speaker
+          </button>
+        </div>
+        {errors.featuredSpeakers && (
+          <p className="text-sm text-red-600">{errors.featuredSpeakers}</p>
+        )}
+        {formData.featuredSpeakers.length === 0 ? (
+          <p className="text-sm text-gray-500">No featured speakers yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {formData.featuredSpeakers.map((row, index) => (
+              <div
+                key={row.key}
+                className="grid md:grid-cols-[120px_1fr_auto] gap-4 border border-gray-200 rounded-xl p-4 bg-gray-50"
+              >
+                <div className="space-y-2">
+                  <div className="relative h-28 w-full rounded-lg overflow-hidden bg-gray-200">
+                    {row.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={row.photoUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-xs text-gray-500">
+                        No photo
+                      </div>
+                    )}
+                  </div>
+                  <label
+                    className={`inline-flex items-center justify-center gap-1 w-full px-2 py-1.5 text-xs bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 ${
+                      speakerPhotoUploading === row.key ? 'opacity-60 pointer-events-none' : ''
+                    }`}
+                  >
+                    {speakerPhotoUploading === row.key ? (
+                      <FiLoader className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FiUpload className="w-3.5 h-3.5" />
+                    )}
+                    <span>{row.photoUrl ? 'Change' : 'Photo'}</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="hidden"
+                      disabled={speakerPhotoUploading === row.key}
+                      onChange={(e) => {
+                        void handleSpeakerPhotoUpload(row.key, e.target.files)
+                        e.target.value = ''
+                      }}
+                    />
+                  </label>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={row.name}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData((prev) => {
+                        const featuredSpeakers = [...prev.featuredSpeakers]
+                        featuredSpeakers[index] = { ...featuredSpeakers[index], name: value }
+                        return { ...prev, featuredSpeakers }
+                      })
+                    }}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                    placeholder="Full name"
+                  />
+                  <input
+                    type="text"
+                    value={row.title}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData((prev) => {
+                        const featuredSpeakers = [...prev.featuredSpeakers]
+                        featuredSpeakers[index] = { ...featuredSpeakers[index], title: value }
+                        return { ...prev, featuredSpeakers }
+                      })
+                    }}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                    placeholder="Position / title"
+                  />
+                  <input
+                    type="text"
+                    value={row.organization}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData((prev) => {
+                        const featuredSpeakers = [...prev.featuredSpeakers]
+                        featuredSpeakers[index] = {
+                          ...featuredSpeakers[index],
+                          organization: value,
+                        }
+                        return { ...prev, featuredSpeakers }
+                      })
+                    }}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg sm:col-span-2"
+                    placeholder="Affiliated organisation"
+                  />
+                  <input
+                    type="text"
+                    value={row.country}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData((prev) => {
+                        const featuredSpeakers = [...prev.featuredSpeakers]
+                        featuredSpeakers[index] = { ...featuredSpeakers[index], country: value }
+                        return { ...prev, featuredSpeakers }
+                      })
+                    }}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg sm:col-span-2"
+                    placeholder="Country (optional)"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      featuredSpeakers: prev.featuredSpeakers.filter((_, i) => i !== index),
+                    }))
+                  }
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg h-fit"
+                  aria-label="Remove speaker"
+                >
+                  <FiTrash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>

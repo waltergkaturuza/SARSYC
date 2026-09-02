@@ -10,10 +10,12 @@ import {
   FiExternalLink,
 } from 'react-icons/fi'
 import EmptyState from '@/components/ui/EmptyState'
+import CountryFlag from '@/components/ui/CountryFlag'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureConferencesSchema } from '@/lib/ensureConferencesSchema'
 import { seedPreviousConferencesIfEmpty } from '@/lib/conferencesContent'
-import { getConferenceGallerySlides } from '@/lib/conferenceMedia'
+import { getConferenceGallerySlides, resolveConferenceHostCountry } from '@/lib/conferenceMedia'
+import { getCountryLabel } from '@/lib/countries'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -161,6 +163,8 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                   const slides = getConferenceGallerySlides(conf)
                   const img = slides[0]?.src || null
                   const href = `/conferences/${conf.slug}`
+                  const hostCode = resolveConferenceHostCountry(conf.location)
+                  const hostLabel = hostCode ? getCountryLabel(hostCode) : ''
                   const isFeatured = i === 0
 
                   if (isFeatured) {
@@ -184,7 +188,14 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                                 </span>
                               </div>
                             )}
-                            <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                            <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
+                              {hostCode && (
+                                <CountryFlag
+                                  countryOrCode={hostCode}
+                                  size="md"
+                                  className="!border-white/80 shadow-md"
+                                />
+                              )}
                               <span className="px-2 py-0.5 bg-primary-600 text-white text-xs font-bold rounded">
                                 {conf.year}
                               </span>
@@ -198,6 +209,12 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
 
                           <div className="p-6 lg:p-8 xl:p-10 flex flex-col justify-center flex-1">
                             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-3">
+                              {hostCode && (
+                                <span className="inline-flex items-center gap-2 font-medium text-gray-700">
+                                  <CountryFlag countryOrCode={hostCode} size="sm" />
+                                  {hostLabel}
+                                </span>
+                              )}
                               <span className="flex items-center gap-1">
                                 <FiMapPin className="w-4 h-4" />
                                 {conf.location}
@@ -251,15 +268,20 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          {hostCode && <CountryFlag countryOrCode={hostCode} size="sm" />}
                           <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-semibold rounded">
                             {conf.year}
                           </span>
-                          {conf.location && (
+                          {hostLabel ? (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                              {hostLabel}
+                            </span>
+                          ) : conf.location ? (
                             <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
                               {conf.location}
                             </span>
-                          )}
+                          ) : null}
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors mb-1 line-clamp-2">
                           {conf.title}
@@ -329,19 +351,27 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Recent editions</h3>
                 <div className="space-y-4">
-                  {recentEditions.map((post: any) => (
-                    <Link key={post.id} href={`/conferences/${post.slug}`} className="block group">
-                      <p className="text-sm font-semibold text-gray-800 group-hover:text-primary-600 transition-colors line-clamp-2">
-                        {post.title}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                        <span className="bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded text-xs">
-                          {post.year}
-                        </span>
-                        {post.location && <span className="line-clamp-1">{post.location}</span>}
-                      </div>
-                    </Link>
-                  ))}
+                  {recentEditions.map((post: any) => {
+                    const recentHost = resolveConferenceHostCountry(post.location)
+                    return (
+                      <Link key={post.id} href={`/conferences/${post.slug}`} className="block group">
+                        <p className="text-sm font-semibold text-gray-800 group-hover:text-primary-600 transition-colors line-clamp-2">
+                          {post.title}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                          {recentHost && <CountryFlag countryOrCode={recentHost} size="sm" />}
+                          <span className="bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded text-xs">
+                            {post.year}
+                          </span>
+                          {recentHost ? (
+                            <span className="line-clamp-1">{getCountryLabel(recentHost)}</span>
+                          ) : (
+                            post.location && <span className="line-clamp-1">{post.location}</span>
+                          )}
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               </div>
             )}

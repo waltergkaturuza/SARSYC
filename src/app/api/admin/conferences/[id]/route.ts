@@ -5,7 +5,9 @@ import { ensureLockedDocsRelsColumns } from '@/lib/ensureLockedDocsRelsColumns'
 import {
   normalizeConferenceBody,
   resolveConferenceGallery,
+  resolveConferenceFeaturedSpeakers,
   syncConferenceGallery,
+  syncConferenceFeaturedSpeakers,
 } from '@/lib/conferenceAdmin'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,10 @@ export async function PATCH(
     const body = await request.json()
     const data = normalizeConferenceBody(body)
     const gallery = await resolveConferenceGallery(payload, body.gallery, data.title)
+    const featuredSpeakers = await resolveConferenceFeaturedSpeakers(
+      payload,
+      body.featuredSpeakers,
+    )
 
     // Update scalar/array fields without gallery — Payload upload validation rejects
     // string media IDs and can fail on custom gallery table writes.
@@ -34,6 +40,7 @@ export async function PATCH(
     })
 
     await syncConferenceGallery(payload, conference.id, gallery)
+    await syncConferenceFeaturedSpeakers(payload, conference.id, featuredSpeakers)
 
     const full = await payload.findByID({
       collection: 'conferences',

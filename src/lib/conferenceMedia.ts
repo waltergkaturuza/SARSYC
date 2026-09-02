@@ -1,3 +1,54 @@
+import { countries } from '@/lib/countries'
+
+/** Host / venue phrases → ISO country code (journey hosts + common cities). */
+const HOST_LOCATION_ALIASES: Array<{ match: string; code: string }> = [
+  { match: 'university of zambia', code: 'ZM' },
+  { match: 'university of botswana', code: 'BW' },
+  { match: 'university of johannesburg', code: 'ZA' },
+  { match: 'university of namibia', code: 'NA' },
+  { match: 'luanar', code: 'MW' },
+  { match: 'nipam', code: 'NA' },
+  { match: 'windhoek', code: 'NA' },
+  { match: 'harare', code: 'ZW' },
+  { match: 'bulawayo', code: 'ZW' },
+  { match: 'lilongwe', code: 'MW' },
+  { match: 'lusaka', code: 'ZM' },
+  { match: 'gaborone', code: 'BW' },
+  { match: 'johannesburg', code: 'ZA' },
+  { match: 'cape town', code: 'ZA' },
+]
+
+/**
+ * Resolve host-country ISO code from a conference location string
+ * (e.g. "LUANAR, Malawi", "University of Zambia", "Zimbabwe").
+ */
+export function resolveConferenceHostCountry(location: string | null | undefined): string {
+  const raw = (location || '').trim()
+  if (!raw) return ''
+  const lower = raw.toLowerCase()
+
+  const exact = countries.find(
+    (c) => c.value.toLowerCase() === lower || c.label.toLowerCase() === lower,
+  )
+  if (exact) return exact.value
+
+  for (const alias of HOST_LOCATION_ALIASES) {
+    if (lower.includes(alias.match)) return alias.code
+  }
+
+  const byLabelLength = [...countries].sort((a, b) => b.label.length - a.label.length)
+  for (const c of byLabelLength) {
+    if (lower.includes(c.label.toLowerCase())) return c.value
+  }
+
+  const afterComma = raw.split(',').pop()?.trim()
+  if (afterComma && afterComma.toLowerCase() !== lower) {
+    return resolveConferenceHostCountry(afterComma)
+  }
+
+  return ''
+}
+
 /**
  * Resolve a displayable URL from a Payload media relation (Blob-first).
  */

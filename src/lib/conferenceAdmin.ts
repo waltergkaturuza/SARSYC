@@ -138,6 +138,131 @@ export async function syncConferenceGallery(
   }
 }
 
+type FeaturedSpeakerInputItem = {
+  id?: string | null
+  name?: string | null
+  title?: string | null
+  organization?: string | null
+  country?: string | null
+  mediaId?: string | number | null
+  photo?: string | number | { id?: string | number } | null
+  photoUrl?: string | null
+}
+
+export type ConferenceFeaturedSpeakerRow = {
+  id: string
+  name: string
+  title: string
+  organization: string
+  country: string | null
+  photo: number | null
+}
+
+export async function resolveConferenceFeaturedSpeakers(
+  payload: PayloadLike | unknown,
+  items: FeaturedSpeakerInputItem[] | undefined,
+): Promise<ConferenceFeaturedSpeakerRow[]> {
+  if (!Array.isArray(items) || items.length === 0) return []
+
+  const speakers: ConferenceFeaturedSpeakerRow[] = []
+
+  for (const [index, item] of items.entries()) {
+    if (!item || typeof item !== 'object') continue
+
+    const name = item.name?.trim() || ''
+    const title = item.title?.trim() || ''
+    const organization = item.organization?.trim() || ''
+    const country = item.country?.trim() || null
+
+    if (!name && !title && !organization) continue
+    if (!name || !title || !organization) {
+      throw new Error(
+        `Featured speaker ${index + 1} needs name, position, and organisation.`,
+      )
+    }
+
+    let photoId: string | number | null | undefined =
+      item.mediaId ??
+      (typeof item.photo === 'object' && item.photo ? item.photo.id : item.photo)
+
+    const photoUrl = typeof item.photoUrl === 'string' ? item.photoUrl.trim() : ''
+    const rowId =
+      (typeof item.id === 'string' && item.id.trim()) ||
+      `speaker-${Date.now()}-${index}-${randomBytes(4).toString('hex')}`
+
+    if ((!photoId || photoId === 'new') && photoUrl.startsWith('https://')) {
+      try {
+        photoId = await createMediaFromBlobUrl(payload, photoUrl, `${name} photo`)
+      } catch (err: any) {
+        throw new Error(
+          `Failed to create media for featured speaker ${index + 1}: ${err?.message || 'unknown error'}`,
+        )
+      }
+    }
+
+    let numericPhotoId: number | null = null
+    if (photoId != null && String(photoId).length > 0 && photoId !== 'new') {
+      const payloadPhotoId = mediaIdForPayload(photoId)
+      const n = Number(payloadPhotoId)
+      if (!Number.isFinite(n)) {
+        throw new Error(
+          `Featured speaker ${index + 1} has an invalid photo id. Please re-upload.`,
+        )
+      }
+      numericPhotoId = n
+    }
+
+    speakers.push({
+      id: rowId,
+      name,
+      title,
+      organization,
+      country,
+      photo: numericPhotoId,
+    })
+  }
+
+  return speakers
+}
+
+export async function syncConferenceFeaturedSpeakers(
+  _payload: Payload | unknown,
+  conferenceId: string | number,
+  speakers: ConferenceFeaturedSpeakerRow[],
+): Promise<void> {
+  const dbUrl = process.env.DATABASE_URL
+  if (!dbUrl) throw new Error('DATABASE_URL not configured')
+
+  const parentId = Number(conferenceId)
+  if (!Number.isFinite(parentId)) {
+    throw new Error(`Invalid conference id: ${conferenceId}`)
+  }
+
+  const sql = postgres(dbUrl, { max: 1 })
+  try {
+    await sql`DELETE FROM "conferences_featured_speakers" WHERE "_parent_id" = ${parentId}`
+
+    for (const [order, row] of speakers.entries()) {
+      await sql`
+        INSERT INTO "conferences_featured_speakers"
+          ("_order", "_parent_id", "id", "name", "title", "organization", "country", "photo_id")
+        VALUES (
+          ${order + 1},
+          ${parentId},
+          ${row.id},
+          ${row.name},
+          ${row.title},
+          ${row.organization},
+          ${row.country},
+          ${row.photo}
+        )
+      `
+    }
+  } finally {
+    await sql.end()
+  }
+}
+
 export function normalizeConferenceBody(body: any) {
   return {
     title: body.title,

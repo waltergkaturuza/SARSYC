@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit, FiX } from 'react-icons/fi'
 import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import EmptyState from '@/components/ui/EmptyState'
@@ -24,13 +25,37 @@ const resourceTypes = [
 ]
 
 export default function ResourcesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+          <FiLoader className="w-8 h-8 animate-spin text-primary-400" />
+        </div>
+      }
+    >
+      <ResourcesPageContent />
+    </Suspense>
+  )
+}
+
+function ResourcesPageContent() {
+  const searchParams = useSearchParams()
+  const yearFromQuery = searchParams.get('year')
   const [resources, setResources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState('all')
-  const [selectedYear, setSelectedYear] = useState('all')
+  const [selectedYear, setSelectedYear] = useState(
+    yearFromQuery && /^\d{4}$/.test(yearFromQuery) ? yearFromQuery : 'all',
+  )
   const [downloading, setDownloading] = useState<number | null>(null)
   const [selectedResource, setSelectedResource] = useState<any | null>(null)
+
+  useEffect(() => {
+    if (yearFromQuery && /^\d{4}$/.test(yearFromQuery)) {
+      setSelectedYear(yearFromQuery)
+    }
+  }, [yearFromQuery])
 
   useEffect(() => {
     fetchResources()

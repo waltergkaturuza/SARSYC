@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 let patchedThisInstance = false
 let galleryPatchedThisInstance = false
+let featuredSpeakersPatchedThisInstance = false
 
 /**
  * Idempotent DDL for the conferences collection (previous + current editions).
@@ -113,5 +114,33 @@ export async function ensureConferencesSchema(payload: Payload): Promise<void> {
         ON "conferences_gallery" ("image_id");
     `)
     galleryPatchedThisInstance = true
+  }
+
+  if (!featuredSpeakersPatchedThisInstance) {
+    await db.drizzle.execute(`
+      CREATE TABLE IF NOT EXISTS "conferences_featured_speakers" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY NOT NULL,
+        "name" varchar,
+        "title" varchar,
+        "organization" varchar,
+        "country" varchar,
+        "photo_id" integer
+      );
+    `)
+    await db.drizzle.execute(`
+      CREATE INDEX IF NOT EXISTS "conferences_featured_speakers_order_idx"
+        ON "conferences_featured_speakers" ("_order");
+    `)
+    await db.drizzle.execute(`
+      CREATE INDEX IF NOT EXISTS "conferences_featured_speakers_parent_id_idx"
+        ON "conferences_featured_speakers" ("_parent_id");
+    `)
+    await db.drizzle.execute(`
+      CREATE INDEX IF NOT EXISTS "conferences_featured_speakers_photo_idx"
+        ON "conferences_featured_speakers" ("photo_id");
+    `)
+    featuredSpeakersPatchedThisInstance = true
   }
 }

@@ -164,6 +164,48 @@ const Conferences: CollectionConfig = {
       ],
     },
     {
+      name: 'featuredSpeakers',
+      type: 'array',
+      label: 'Featured Speakers',
+      admin: {
+        description:
+          'Shown in the left column on the conference detail page. Add name, position, organisation, and optional photo.',
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          label: 'Full Name',
+        },
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+          label: 'Position / Title',
+          admin: { placeholder: 'e.g. Professor of Public Health' },
+        },
+        {
+          name: 'organization',
+          type: 'text',
+          required: true,
+          label: 'Affiliated Organisation',
+        },
+        {
+          name: 'photo',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'Photo',
+        },
+        {
+          name: 'country',
+          type: 'text',
+          label: 'Country',
+          admin: { placeholder: 'e.g. Zambia' },
+        },
+      ],
+    },
+    {
       name: 'startDate',
       type: 'date',
       label: 'Start Date',

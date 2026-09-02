@@ -34,6 +34,7 @@ import * as migration_20260803_000000_add_session_status from './20260803_000000
 import * as migration_20260831_000000_create_conferences from './20260831_000000_create_conferences';
 import * as migration_20260831_120000_conference_gallery from './20260831_120000_conference_gallery';
 import * as migration_20260901_000000_add_conferences_locked_docs_column from './20260901_000000_add_conferences_locked_docs_column';
+import * as migration_20260902_000000_conference_featured_speakers from './20260902_000000_conference_featured_speakers';
 
 export const migrations = [
   {
@@ -215,5 +216,10 @@ export const migrations = [
     up: migration_20260901_000000_add_conferences_locked_docs_column.up,
     down: migration_20260901_000000_add_conferences_locked_docs_column.down,
     name: '20260901_000000_add_conferences_locked_docs_column'
+  },
+  {
+    up: migration_20260902_000000_conference_featured_speakers.up,
+    down: migration_20260902_000000_conference_featured_speakers.down,
+    name: '20260902_000000_conference_featured_speakers'
   },
 ];
