@@ -157,7 +157,7 @@ export default function AboutVideoPlayer({
         key={activeSource.src}
         ref={videoRef}
         src={activeSource.src}
-        className="aspect-video w-full object-cover bg-black"
+        className="aspect-video w-full min-h-[240px] sm:min-h-[320px] lg:min-h-[420px] xl:min-h-[480px] object-cover bg-black"
         autoPlay
         muted
         loop

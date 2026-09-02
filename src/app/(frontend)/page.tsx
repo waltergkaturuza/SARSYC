@@ -3,6 +3,7 @@ import { FiCalendar, FiMapPin, FiArrowRight, FiUser } from 'react-icons/fi'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import ConferenceTrackCards from '@/components/ui/ConferenceTrackCards'
 import AboutVideoPlayer from '@/components/ui/AboutVideoPlayer'
+import ConnectLearnActSlider from '@/components/ui/ConnectLearnActSlider'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureSpeakersLatestColumns } from '@/lib/ensureSpeakersSchema'
 import {
@@ -277,7 +278,7 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
-        <div className="container-custom relative z-10">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-12">
             {stats.map((stat) => (
                 <div
@@ -294,7 +295,7 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-8 lg:gap-12 items-start">
             <div className="min-w-0">
               <div className="mb-6 md:mb-8 text-left">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">What is SARSYC?</h2>
@@ -304,46 +305,7 @@ export default async function HomePage() {
                 </p>
               </div>
 
-              <div className="grid gap-4">
-                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-                  <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-xl font-bold mb-3 shadow-lg">
-                    1
-                  </div>
-                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
-                    Connect
-                  </h3>
-                  <p className="text-sm text-white/75 leading-relaxed">
-                    Network with 500+ young leaders, researchers, policymakers, development partners, and the private
-                    sector from across Southern Africa.
-                  </p>
-                </div>
-
-                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-                  <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center text-white text-xl font-bold mb-3 shadow-lg">
-                    2
-                  </div>
-                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
-                    Learn
-                  </h3>
-                  <p className="text-sm text-white/75 leading-relaxed">
-                    Engage with cutting-edge research, best practices, and innovative solutions in youth health and
-                    education.
-                  </p>
-                </div>
-
-                <div className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary-400/40 hover:bg-white/15 hover:shadow-2xl hover:shadow-primary-500/10">
-                  <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center text-gray-900 text-xl font-bold mb-3 shadow-lg">
-                    3
-                  </div>
-                  <h3 className="text-lg font-bold text-primary-300 group-hover:text-amber-300 transition-colors mb-2">
-                    Act
-                  </h3>
-                  <p className="text-sm text-white/75 leading-relaxed">
-                    Develop actionable strategies and commitments to drive real change in youth health and education
-                    outcomes.
-                  </p>
-                </div>
-              </div>
+              <ConnectLearnActSlider />
             </div>
 
             <div className="min-w-0 lg:sticky lg:top-24">
