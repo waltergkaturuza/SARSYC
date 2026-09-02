@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCalendar, FiMapPin, FiUsers, FiTarget, FiTrendingUp, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
+import { FiCalendar, FiMapPin, FiUsers, FiDownload, FiArrowRight, FiCheck, FiLoader } from 'react-icons/fi'
 import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import CountdownTimer from '@/components/ui/CountdownTimer'
 import ConferenceProgrammeSchedule from '@/components/programme/ConferenceProgrammeSchedule'
@@ -131,17 +131,14 @@ function WelcomeVenueSection() {
 
 const objectives = [
   {
-    icon: FiUsers,
     title: 'Unite Youth Leaders',
     description: 'Bring together 500+ young leaders, researchers, and advocates from across Southern Africa.',
   },
   {
-    icon: FiTrendingUp,
     title: 'Share Knowledge',
     description: 'Exchange cutting-edge research, best practices, and innovative solutions in youth health and education.',
   },
   {
-    icon: FiTarget,
     title: 'Drive Action',
     description: 'Develop actionable commitments and strategies to advance youth health and education outcomes.',
   },
@@ -298,7 +295,7 @@ export default function SarsycVIPage() {
       {/* Hero */}
       <section className="relative overflow-hidden text-white">
         <Image
-          src="/Sponsership_1.png"
+          src="/OVERVIEW.jpg"
           alt=""
           fill
           priority
@@ -358,10 +355,10 @@ export default function SarsycVIPage() {
       </section>
 
       {/* Conference Theme */}
-      <section className="section bg-white">
-        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 2xl:px-20">
-          <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] gap-8 lg:gap-10 xl:gap-14 items-center mb-12 lg:mb-16">
-            <div className="relative w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[440px] xl:min-h-[520px] overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-200">
+      <section className="bg-white py-6 md:py-8">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
+          <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] gap-5 lg:gap-8 items-center mb-5 md:mb-6">
+            <div className="relative w-full min-h-[240px] sm:min-h-[300px] lg:min-h-[380px] xl:min-h-[440px] overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-200">
               <Image
                 src="/SARSYC Homepage3.jpg"
                 alt="SARSYC youth delegates at a regional conference"
@@ -371,9 +368,9 @@ export default function SarsycVIPage() {
                 priority
               />
             </div>
-            <div className="min-w-0 text-center lg:text-left lg:py-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Conference Theme</h2>
-              <div className="text-gradient text-xl md:text-2xl lg:text-3xl font-bold mb-6 leading-snug">
+            <div className="min-w-0 text-center lg:text-left">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">Conference Theme</h2>
+              <div className="text-gradient text-xl md:text-2xl lg:text-3xl font-bold mb-3 leading-snug">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed text-justify">
@@ -383,19 +380,13 @@ export default function SarsycVIPage() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-            {objectives.map((objective) => {
-              const Icon = objective.icon
-              return (
-                <div key={objective.title} className="card p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center text-white mx-auto mb-6">
-                    <Icon className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{objective.title}</h3>
-                  <p className="text-gray-600">{objective.description}</p>
-                </div>
-              )
-            })}
+          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-3 md:gap-4">
+            {objectives.map((objective) => (
+              <div key={objective.title} className="card p-3 md:p-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-1.5">{objective.title}</h3>
+                <p className="text-sm text-gray-600 leading-snug text-justify">{objective.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

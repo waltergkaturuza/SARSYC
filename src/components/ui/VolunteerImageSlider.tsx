@@ -8,6 +8,7 @@ const slides = [
   { src: '/Volunteer/Volunteera2.jpg', alt: 'Volunteers supporting SARSYC VI' },
   { src: '/Volunteer/volunteers3.jpg', alt: 'Volunteer team at SARSYC' },
   { src: '/Volunteer/VOL4.jpg', alt: 'SARSYC VI volunteer activities' },
+  { src: '/volunteerssspost.jpg', alt: 'SARSYC volunteers after the conference' },
 ]
 
 const INTERVAL_MS = 5000

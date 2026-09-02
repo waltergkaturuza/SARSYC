@@ -5,12 +5,16 @@ import Image from 'next/image'
 
 const slides = [
   {
-    src: '/homepage-hero-team.jpg',
-    alt: 'SARSYC VI participants at a regional conference',
+    src: '/home-new/HOMEPAGE.jpg',
+    alt: 'SARSYC conference homepage highlight',
   },
   {
-    src: '/SARSYC Homepage3.jpg',
-    alt: 'SARSYC youth delegates celebrating at a regional conference',
+    src: '/home-new/hmp.jpg',
+    alt: 'SARSYC participants and partners',
+  },
+  {
+    src: '/home-new/webforlifepostvi.jpg',
+    alt: 'Web for Life Post VI campaign visual',
   },
 ]
 

@@ -6,16 +6,20 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 const cultureNightImages = [
   {
-    src: '/night culture/Culturenight1.jpg',
-    alt: 'SARSYC culture night celebration',
+    src: '/culture-night-new/culturenightpostvi.jpg',
+    alt: 'SARSYC culture night performances after SARSYC VI',
   },
   {
-    src: '/night culture/Culture Night.jpg',
-    alt: 'Culture night performances at SARSYC',
+    src: '/culture-night-new/culturenightpostvi-2.jpg',
+    alt: 'Culture night celebration at SARSYC',
   },
   {
-    src: '/night culture/culture night4.jpg',
-    alt: 'Southern African cultural celebration at SARSYC',
+    src: '/culture-night-new/mugotaapostvi.jpg',
+    alt: 'Mugota/Ixhiba cultural showcase at SARSYC',
+  },
+  {
+    src: '/culture-night-new/namculture.jpg',
+    alt: 'Namibian cultural performance at SARSYC culture night',
   },
 ]
 
