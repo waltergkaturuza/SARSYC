@@ -100,6 +100,19 @@ const Conferences: CollectionConfig = {
       name: 'theme',
       type: 'text',
       label: 'Theme',
+      admin: {
+        description: 'Shown on the blue header ribbon under the conference title.',
+        placeholder: 'e.g. Plan, Prioritize and Prevent',
+      },
+    },
+    {
+      name: 'objectives',
+      type: 'textarea',
+      label: 'Objectives',
+      admin: {
+        description: 'Shown in the right column on the conference detail page.',
+        placeholder: 'e.g. Building Bridges: Advancing Equitable Access…',
+      },
     },
     {
       name: 'summary',

@@ -30,6 +30,7 @@ interface ConferenceFormData {
   year: string
   location: string
   theme: string
+  objectives: string
   summary: string
   participants: string
   highlights: string
@@ -123,6 +124,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
     year: initialData?.year != null ? String(initialData.year) : '',
     location: initialData?.location || '',
     theme: initialData?.theme || '',
+    objectives: initialData?.objectives || '',
     summary: initialData?.summary || '',
     participants: initialData?.participants || '',
     highlights: initialData?.highlights || '',
@@ -255,6 +257,7 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
         year: Number(formData.year),
         location: formData.location.trim(),
         theme: formData.theme.trim() || null,
+        objectives: formData.objectives.trim() || null,
         summary: formData.summary.trim(),
         participants: formData.participants.trim() || null,
         highlights: formData.highlights.trim() || null,
@@ -364,12 +367,29 @@ export default function ConferenceForm({ initialData, mode }: ConferenceFormProp
           </FormField>
         </div>
 
-        <FormField label="Theme">
+        <FormField
+          label="Theme"
+          hint="Shown on the blue header ribbon under the conference title"
+        >
           <input
             type="text"
             value={formData.theme}
             onChange={(e) => handleChange('theme', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="e.g. Plan, Prioritize and Prevent"
+          />
+        </FormField>
+
+        <FormField
+          label="Objectives"
+          hint="Shown in the right column on the conference detail page"
+        >
+          <textarea
+            value={formData.objectives}
+            onChange={(e) => handleChange('objectives', e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="e.g. Building Bridges: Advancing Equitable Access…"
           />
         </FormField>
 

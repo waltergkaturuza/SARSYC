@@ -322,12 +322,14 @@ export default async function ConferenceDetailPage({
                   )}
                 </div>
 
-                {conference.theme && (
+                {conference.objectives && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <FiTarget className="w-5 h-5 text-primary-600" /> Objectives
                     </h3>
-                    <p className="text-sm text-gray-700 leading-relaxed">{conference.theme}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                      {conference.objectives}
+                    </p>
                   </div>
                 )}
 

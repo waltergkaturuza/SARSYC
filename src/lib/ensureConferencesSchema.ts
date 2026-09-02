@@ -3,6 +3,7 @@ import type { Payload } from 'payload'
 let patchedThisInstance = false
 let galleryPatchedThisInstance = false
 let featuredSpeakersPatchedThisInstance = false
+let objectivesPatchedThisInstance = false
 
 /**
  * Idempotent DDL for the conferences collection (previous + current editions).
@@ -29,6 +30,7 @@ export async function ensureConferencesSchema(payload: Payload): Promise<void> {
         "year" numeric NOT NULL,
         "location" varchar NOT NULL,
         "theme" varchar,
+        "objectives" varchar,
         "summary" varchar NOT NULL,
         "participants" varchar,
         "highlights" varchar,
@@ -142,5 +144,12 @@ export async function ensureConferencesSchema(payload: Payload): Promise<void> {
         ON "conferences_featured_speakers" ("photo_id");
     `)
     featuredSpeakersPatchedThisInstance = true
+  }
+
+  if (!objectivesPatchedThisInstance) {
+    await db.drizzle.execute(
+      `ALTER TABLE "conferences" ADD COLUMN IF NOT EXISTS "objectives" varchar`,
+    )
+    objectivesPatchedThisInstance = true
   }
 }

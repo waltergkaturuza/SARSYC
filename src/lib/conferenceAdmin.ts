@@ -270,6 +270,7 @@ export function normalizeConferenceBody(body: any) {
     year: Number(body.year),
     location: body.location,
     theme: body.theme || null,
+    objectives: body.objectives || null,
     summary: body.summary,
     participants: body.participants || null,
     highlights: body.highlights || null,
