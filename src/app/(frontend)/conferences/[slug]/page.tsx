@@ -122,21 +122,21 @@ export default async function ConferenceDetailPage({
 
   return (
     <>
-      <section className="page-hero">
+      <section className="page-hero !py-3 md:!py-3.5">
         <div className="container-custom">
           <div className="max-w-4xl">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-2 text-sm"
             >
               <FiArrowLeft className="w-4 h-4" />
               {conference.isCurrent ? 'Back to current conference' : 'Back to previous conferences'}
             </Link>
-            <div className="flex flex-wrap items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               {hostCode && (
                 <CountryFlag
                   countryOrCode={hostCode}
-                  size="lg"
+                  size="md"
                   className="!border-white/40 shadow-md"
                 />
               )}
@@ -153,9 +153,13 @@ export default async function ConferenceDetailPage({
                   Current
                 </span>
               )}
+              <h1 className="text-2xl md:text-3xl font-bold text-white m-0 leading-tight">
+                {conference.title}
+              </h1>
             </div>
-            <h1 className="page-hero-title">{conference.title}</h1>
-            {conference.theme && <p className="page-hero-subtitle">{conference.theme}</p>}
+            {conference.theme && (
+              <p className="page-hero-subtitle mt-2 mb-0">{conference.theme}</p>
+            )}
           </div>
         </div>
       </section>
@@ -253,7 +257,7 @@ export default async function ConferenceDetailPage({
                 )}
               </div>
 
-              <p className="text-lg text-gray-700 text-justify leading-relaxed">
+              <p className="font-sans text-lg text-primary-700 text-justify leading-relaxed">
                 {conference.summary}
               </p>
 
@@ -273,8 +277,8 @@ export default async function ConferenceDetailPage({
             <aside className="lg:col-span-3 order-3">
               <div className="lg:sticky lg:top-24 space-y-5">
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <FiSearch className="w-4 h-4" /> Search
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <FiSearch className="w-5 h-5" /> Search
                   </h3>
                   <form method="GET" action="/conferences">
                     <div className="relative">
@@ -320,8 +324,8 @@ export default async function ConferenceDetailPage({
 
                 {conference.theme && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <FiTarget className="w-4 h-4 text-primary-600" /> Objectives
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                      <FiTarget className="w-5 h-5 text-primary-600" /> Objectives
                     </h3>
                     <p className="text-sm text-gray-700 leading-relaxed">{conference.theme}</p>
                   </div>
@@ -329,8 +333,8 @@ export default async function ConferenceDetailPage({
 
                 {keyOutcomes.length > 0 && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <FiAward className="w-4 h-4 text-primary-600" /> Key Outcomes
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <FiAward className="w-5 h-5 text-primary-600" /> Key Outcomes
                     </h3>
                     <ul className="space-y-2 list-disc list-inside text-sm text-gray-700">
                       {keyOutcomes.map((row: any, i: number) => (
@@ -342,14 +346,14 @@ export default async function ConferenceDetailPage({
 
                 {conference.highlights && (
                   <div className="rounded-xl bg-slate-50 border border-slate-200 p-5">
-                    <h3 className="font-semibold text-gray-900 mb-1">Highlights</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">Highlights</h3>
                     <p className="text-sm text-gray-700">{conference.highlights}</p>
                   </div>
                 )}
 
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <FiFileText className="w-4 h-4 text-primary-600" /> Materials &amp; Links
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <FiFileText className="w-5 h-5 text-primary-600" /> Materials &amp; Links
                   </h3>
 
                   {!hasMaterials ? (

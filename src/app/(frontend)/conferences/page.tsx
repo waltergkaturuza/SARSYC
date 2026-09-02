@@ -234,7 +234,7 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                                 {conf.theme}
                               </p>
                             )}
-                            <p className="text-gray-600 text-justify line-clamp-4 mb-6">
+                            <p className="font-sans text-primary-700 text-justify line-clamp-4 mb-6">
                               {conf.summary}
                             </p>
                             <span className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm group-hover:gap-3 transition-all">
@@ -250,9 +250,9 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                     <Link
                       key={conf.id}
                       href={href}
-                      className="flex gap-5 group border-b border-gray-100 pb-8"
+                      className="flex flex-col sm:flex-row gap-5 group border-b border-gray-100 pb-8"
                     >
-                      <div className="relative w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                      <div className="relative w-full sm:w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                         {img ? (
                           <Image
                             src={img}
@@ -267,7 +267,8 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
+
+                      <div className="sm:w-[220px] lg:w-[240px] xl:w-[260px] flex-shrink-0 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           {hostCode && <CountryFlag countryOrCode={hostCode} size="sm" />}
                           <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-semibold rounded">
@@ -282,13 +283,13 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                               {conf.location}
                             </span>
                           ) : null}
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                            {conf.title}
+                          </h3>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors mb-1 line-clamp-2">
-                          {conf.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 line-clamp-2 mb-2">
-                          {conf.theme || conf.summary}
-                        </p>
+                        {conf.theme && (
+                          <p className="text-sm text-gray-500 line-clamp-2 mb-2">{conf.theme}</p>
+                        )}
                         <div className="flex items-center gap-3 text-xs text-gray-400">
                           <span className="flex items-center gap-1">
                             <FiCalendar className="w-3 h-3" />
@@ -302,6 +303,12 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                           )}
                         </div>
                       </div>
+
+                      {conf.summary && (
+                        <p className="flex-1 min-w-0 font-sans text-sm md:text-base text-primary-700 text-justify leading-relaxed line-clamp-5">
+                          {conf.summary}
+                        </p>
+                      )}
                     </Link>
                   )
                 })}
@@ -312,8 +319,8 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
           {/* Sidebar */}
           <aside className="lg:col-span-4 xl:col-span-3 space-y-8 hidden lg:block">
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <FiSearch className="w-4 h-4" /> Search
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <FiSearch className="w-5 h-5" /> Search
               </h3>
               <form method="GET" action="/conferences">
                 {yearFilter !== 'all' && <input type="hidden" name="year" value={yearFilter} />}
@@ -349,7 +356,7 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
 
             {recentEditions.length > 0 && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                <h3 className="font-bold text-gray-900 mb-4">Recent editions</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Recent editions</h3>
                 <div className="space-y-4">
                   {recentEditions.map((post: any) => {
                     const recentHost = resolveConferenceHostCountry(post.location)
@@ -378,8 +385,8 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
 
             {yearOptions.length > 0 && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <FiAward className="w-4 h-4" /> By year
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <FiAward className="w-5 h-5" /> By year
                 </h3>
                 <div className="space-y-1">
                   <Link
@@ -416,7 +423,7 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
             )}
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-              <h3 className="font-bold text-gray-900 mb-1">Explore</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-1">Explore</h3>
               <p className="text-sm text-gray-500 mb-4">More from the SARSYC journey</p>
               <ul className="space-y-3">
                 <li>
