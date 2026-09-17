@@ -14,7 +14,7 @@ const CURRENT_CONFERENCE_LINKS: NavChild[] = [
   { name: 'Overview', href: '/sarsyc-vi' },
   { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
   { name: 'Objectives', href: '/sarsyc-vi/objectives' },
-  { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
+  { name: 'Outcomes', href: '/sarsyc-vi/outcomes' },
   { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
 ]
 

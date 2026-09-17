@@ -18,7 +18,7 @@ export default async function GovernancePage() {
     <div className="relative min-h-screen bg-slate-900">
       {/* Background image */}
       <div
-        className="fixed inset-0"
+        className="absolute inset-0"
         style={{
           backgroundImage: "url('/sarsyc-group.jpg')",
           backgroundSize: 'cover',
@@ -27,7 +27,7 @@ export default async function GovernancePage() {
         }}
       />
       {/* Dark overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" style={{ zIndex: 1 }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" style={{ zIndex: 1 }} />
 
       <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-12" style={{ zIndex: 2 }}>
 

@@ -173,7 +173,7 @@ function ResourcesPageContent() {
     <div className="relative min-h-screen bg-slate-900">
       {/* Background image */}
       <div
-        className="fixed inset-0"
+        className="absolute inset-0"
         style={{
           backgroundImage: "url('/sarsyc-group.jpg')",
           backgroundSize: 'cover',
@@ -182,7 +182,7 @@ function ResourcesPageContent() {
         }}
       />
       {/* Dark blue overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-primary-900/80 to-slate-900/90" style={{ zIndex: 1 }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-primary-900/80 to-slate-900/90" style={{ zIndex: 1 }} />
 
       <div className="relative" style={{ zIndex: 2 }}>
         {/* Hero */}

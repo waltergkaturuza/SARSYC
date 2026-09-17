@@ -9,10 +9,10 @@ export default function FrontendLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <AnalyticsTracker />
       <Header />
-      <main className="flex-grow pt-14 md:pt-16 min-w-0 overflow-x-hidden">
+      <main className="min-w-0 flex-1 overflow-x-hidden pt-14 md:pt-16">
         {children}
       </main>
       <Footer />

@@ -831,7 +831,7 @@ export default function RegisterPage() {
           ? `USD ${manualPaymentAmountUsd.toFixed(2)}`
           : '—'
       return (
-        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'scroll' }}>
           <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
           <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
@@ -896,7 +896,7 @@ export default function RegisterPage() {
     if (paymentOutstanding) {
       const b = SARSYC_BANK_TRANSFER_DETAILS
       return (
-        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+        <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'scroll' }}>
           <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
           <div className="container-custom relative z-10">
             <div className="max-w-2xl mx-auto">
@@ -973,7 +973,7 @@ export default function RegisterPage() {
       )
     }
     return (
-      <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }}>
+      <div className="relative min-h-screen py-12" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'scroll' }}>
         <div className="absolute inset-0 bg-slate-900/80 pointer-events-none fixed" />
         <div className="container-custom relative z-10">
           <div className="max-w-2xl mx-auto">
@@ -1038,7 +1038,7 @@ export default function RegisterPage() {
         backgroundPosition: 'center top',
       }}
     >
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" style={{ zIndex: 0 }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90 pointer-events-none" style={{ zIndex: 0 }} />
       <div className="container-custom relative" style={{ zIndex: 1 }}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}

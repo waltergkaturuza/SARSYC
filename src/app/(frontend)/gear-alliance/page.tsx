@@ -1,12 +1,13 @@
 import Link from 'next/link'
-import { FiUsers, FiMapPin, FiCalendar, FiLink, FiAward } from 'react-icons/fi'
+import { FiLink } from 'react-icons/fi'
+import CountryFlag from '@/components/ui/CountryFlag'
 
 const countries = [
-  { name: 'Angola', flag: '🇦🇴' },
-  { name: 'Malawi', flag: '🇲🇼' },
-  { name: 'Mozambique', flag: '🇲🇿' },
-  { name: 'Zambia', flag: '🇿🇲' },
-  { name: 'Zimbabwe', flag: '🇿🇼' },
+  { name: 'Angola', code: 'AO' },
+  { name: 'Malawi', code: 'MW' },
+  { name: 'Mozambique', code: 'MZ' },
+  { name: 'Zambia', code: 'ZM' },
+  { name: 'Zimbabwe', code: 'ZW' },
 ]
 
 const projects = [
@@ -80,10 +81,7 @@ export default function GearAlliancePage() {
             <div className="grid md:grid-cols-2 gap-8">
               {projects.map((project) => (
                 <div key={project.name} className="card p-8">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white">
-                      <FiAward className="w-8 h-8" />
-                    </div>
+                  <div className="flex items-start justify-end mb-4">
                     <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
                       {project.status}
                     </span>
@@ -109,11 +107,11 @@ export default function GearAlliancePage() {
               Active in 5 Southern African countries
             </p>
 
-            <div className="grid md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
               {countries.map((country) => (
-                <div key={country.name} className="text-center">
-                  <div className="text-6xl mb-4">{country.flag}</div>
-                  <h3 className="text-xl font-bold text-gray-900">{country.name}</h3>
+                <div key={country.code} className="text-center flex flex-col items-center">
+                  <CountryFlag countryOrCode={country.code} size="lg" className="mb-3 !h-14 !w-[4.5rem] shadow-md" />
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900">{country.name}</h3>
                 </div>
               ))}
             </div>

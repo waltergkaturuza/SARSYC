@@ -19,7 +19,7 @@ const footerLinks = {
     { name: 'SARSYC VI Overview', href: '/sarsyc-vi' },
     { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
     { name: 'Objectives', href: '/sarsyc-vi/objectives' },
-    { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
+    { name: 'Outcomes', href: '/sarsyc-vi/outcomes' },
     { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
     { name: 'Previous Conferences', href: '/conferences' },
     { name: 'Programme Schedule', href: '/programme' },
@@ -133,7 +133,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="relative z-30 mt-auto shrink-0 bg-gray-900 text-gray-300">
       {/* Main Footer */}
       <div className="container-custom py-8 md:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-x-6 lg:gap-y-5">
