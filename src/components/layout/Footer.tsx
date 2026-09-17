@@ -128,7 +128,7 @@ export default function Footer() {
                 />
               </div>
               <div>
-                <div className="font-heading font-bold text-xl text-white">
+                <div className="font-heading font-semibold text-xl text-white">
                   SARSYC
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function Footer() {
 
           {/* Conference Links */}
           <div>
-            <h3 className="font-heading font-semibold text-white mb-4">Conference</h3>
+            <h3 className="font-heading font-medium text-white mb-4">Conference</h3>
             <ul className="space-y-3">
               {footerLinks.conference.map((link) => (
                 <li key={link.name}>
@@ -189,7 +189,7 @@ export default function Footer() {
 
           {/* Participate Links */}
           <div>
-            <h3 className="font-heading font-semibold text-white mb-4">Participate</h3>
+            <h3 className="font-heading font-medium text-white mb-4">Participate</h3>
             <ul className="space-y-3">
               {footerLinks.participate.map((link) => (
                 <li key={link.name}>
@@ -206,7 +206,7 @@ export default function Footer() {
 
           {/* Resources Links */}
           <div>
-            <h3 className="font-heading font-semibold text-white mb-4">Resources</h3>
+            <h3 className="font-heading font-medium text-white mb-4">Resources</h3>
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
@@ -223,7 +223,7 @@ export default function Footer() {
 
           {/* Newsletter — sits below Conference / Participate / Resources on desktop */}
           <div className="md:col-span-2 lg:col-span-3 lg:col-start-3 lg:self-end">
-            <h3 className="font-heading font-semibold text-white mb-2">Stay Updated</h3>
+            <h3 className="font-heading font-medium text-white mb-2">Stay Updated</h3>
             <p className="text-sm mb-4">
               Subscribe to our newsletter for conference updates, speaker announcements, and more.
             </p>

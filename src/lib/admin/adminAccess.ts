@@ -7,12 +7,14 @@ export const EDITOR_ADMIN_PREFIXES = [
   '/admin/sessions',
   '/admin/conferences',
   '/admin/volunteers',
+  '/admin/orathon-countries',
 ] as const
 
 /** Routes accountants may use (registrations, payments, donations, partnerships). */
 export const ACCOUNTANT_ADMIN_PREFIXES = [
   '/admin/registrations',
   '/admin/orathon-registrations',
+  '/admin/orathon-countries',
   '/admin/payments',
   '/admin/donations',
   '/admin/sponsorship-tiers',

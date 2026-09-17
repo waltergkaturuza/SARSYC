@@ -311,7 +311,7 @@ export default async function HomePage() {
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:items-stretch">
             {/* Intro copy — left column glass card */}
             <div className="order-1 min-w-0 h-full rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8 flex flex-col gap-4 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary-400 leading-tight text-center lg:text-left">
+              <h1 className="home-hero-title text-primary-400 text-center lg:text-left">
                 The 6th Southern African Regional Students and Youth Conference
               </h1>
               <p className="text-lg md:text-xl font-semibold text-white">SARSYC VI</p>
@@ -392,7 +392,7 @@ export default async function HomePage() {
                   key={stat.label}
                   className="text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md px-3 py-2 md:px-4 md:py-2.5 shadow-lg transition-all duration-500 hover:-translate-y-0.5 hover:border-primary-400/30 hover:bg-white/15"
                 >
-                  <div className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                  <div className="text-2xl md:text-3xl font-semibold text-white leading-tight">
                     {stat.value}
                   </div>
                   <div className="text-xs md:text-sm text-white/70 mt-0.5">
@@ -405,7 +405,7 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-8 lg:gap-12 items-start">
             <div className="min-w-0">
               <div className="mb-6 md:mb-8 text-left">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">What is SARSYC?</h2>
+                <h2 className="text-3xl md:text-4xl font-semibold text-white mb-3">What is SARSYC?</h2>
                 <p className="text-lg md:text-xl text-white/70">
                   The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
                   for transnational advocacy on youth health and education.
@@ -436,7 +436,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[#FFF9F0]/18" aria-hidden />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center mb-6 rounded-2xl bg-slate-900/70 backdrop-blur-sm px-5 py-4 shadow-lg">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 text-white">
+            <h2 className="text-3xl md:text-4xl font-semibold text-center mb-3 text-white">
               Conference Tracks
             </h2>
             <p className="text-lg text-white/95 text-center max-w-3xl mx-auto">
@@ -470,7 +470,7 @@ export default async function HomePage() {
 
           <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Featured Speakers</h2>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Featured Speakers</h2>
               <p className="text-white/70 text-lg">
                 A big thanks to the distinguished speakers who shared their expertise at SARSYC VI.
               </p>
@@ -505,14 +505,14 @@ export default async function HomePage() {
                       )}
                       {isKeynote && (
                         <div className="absolute top-3 left-3">
-                          <span className="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-md uppercase tracking-wide shadow-lg">KEYNOTE</span>
+                          <span className="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-medium rounded-md uppercase tracking-wide shadow-lg">KEYNOTE</span>
                         </div>
                       )}
                     </div>
 
                     {/* Info */}
                     <div className="p-5 flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-primary-400 mb-1 leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                      <h3 className="text-base font-semibold text-primary-400 mb-1 leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
                       <p className="text-xs text-amber-400/90 font-medium mb-0.5">{speaker.title}</p>
@@ -546,7 +546,7 @@ export default async function HomePage() {
       <section className="py-8 md:py-10 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
               What Happened In Windhoek
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">

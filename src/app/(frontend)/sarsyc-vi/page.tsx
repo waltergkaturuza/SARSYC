@@ -308,7 +308,7 @@ export default function SarsycVIPage() {
 
         <div className="relative container-custom py-10 md:py-14">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h1 className="text-3xl md:text-5xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               SARSYC VI
             </h1>
             
@@ -366,7 +366,7 @@ export default function SarsycVIPage() {
               />
             </div>
             <div className="min-w-0 text-center lg:text-left">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">Conference Theme</h2>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Conference Theme</h2>
               <div className="text-gradient text-xl md:text-2xl lg:text-3xl font-bold mb-3 leading-snug">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </div>

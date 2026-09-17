@@ -42,7 +42,7 @@ export default function DonateFAB() {
             className="group-hover:scale-110 transition-transform"
             fill="currentColor"
           />
-          <span className="text-sm font-semibold pr-1">Donate / Sponsor</span>
+          <span className="text-sm font-medium pr-1">Donate / Sponsor</span>
         </Link>
       )}
     </div>

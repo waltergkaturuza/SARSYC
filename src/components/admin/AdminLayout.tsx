@@ -85,6 +85,12 @@ const navigation = [
     description: 'Marathon registrations',
   },
   {
+    name: 'Orathon Countries',
+    href: '/admin/orathon-countries',
+    icon: FiFolder,
+    description: 'Links, flyers & flags',
+  },
+  {
     name: 'Volunteers',
     href: '/admin/volunteers',
     icon: FiUsers,

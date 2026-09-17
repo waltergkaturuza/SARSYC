@@ -38,6 +38,7 @@ import * as migration_20260902_000000_conference_featured_speakers from './20260
 import * as migration_20260902_120000_conference_objectives from './20260902_120000_conference_objectives';
 import * as migration_20260902_130000_conference_objectives_array from './20260902_130000_conference_objectives_array';
 import * as migration_20260917_000000_add_resource_type_compact from './20260917_000000_add_resource_type_compact';
+import * as migration_20260917_120000_create_orathon_countries from './20260917_120000_create_orathon_countries';
 
 export const migrations = [
   {
@@ -239,5 +240,10 @@ export const migrations = [
     up: migration_20260917_000000_add_resource_type_compact.up,
     down: migration_20260917_000000_add_resource_type_compact.down,
     name: '20260917_000000_add_resource_type_compact'
+  },
+  {
+    up: migration_20260917_120000_create_orathon_countries.up,
+    down: migration_20260917_120000_create_orathon_countries.down,
+    name: '20260917_120000_create_orathon_countries'
   },
 ];

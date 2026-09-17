@@ -1,23 +1,85 @@
 import Link from 'next/link'
-import { FiExternalLink, FiMapPin, FiArrowRight } from 'react-icons/fi'
+import { FiExternalLink, FiArrowRight } from 'react-icons/fi'
 import OrathonFlyerSlider from '@/components/ui/OrathonFlyerSlider'
+import CountryFlag from '@/components/ui/CountryFlag'
+import { getPayloadClient } from '@/lib/payload'
+import { ensureOrathonCountriesSchema } from '@/lib/ensureOrathonCountriesSchema'
+import { getCountryLabel } from '@/lib/countries'
 
-const ORATHON_LINKS = [
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const FALLBACK_LINKS = [
   {
-    country: 'Zimbabwe',
-    label: 'Register for Orathon — Zimbabwe',
-    href: 'https://onlinetickets.hypenation.co.zw/Orathon2026',
+    country: 'ZW',
+    title: 'Register for Orathon — Zimbabwe',
+    registrationUrl: 'https://onlinetickets.hypenation.co.zw/Orathon2026',
     description: 'Official online ticket registration for the Zimbabwe Orathon.',
   },
   {
-    country: 'Namibia',
-    label: 'Register for Orathon — Namibia',
-    href: 'https://timetracka.app/events/saywhat-namibia-orathon-run-2026',
+    country: 'NA',
+    title: 'Register for Orathon — Namibia',
+    registrationUrl: 'https://timetracka.app/events/saywhat-namibia-orathon-run-2026',
     description: 'Official registration for the SAYWHAT Namibia Orathon Run 2026.',
   },
-] as const
+]
 
-export default function RegisterOrathonPage() {
+function mediaUrl(file: any): string | null {
+  if (!file) return null
+  if (typeof file === 'string') return file
+  const candidates = [file.url, file.thumbnailURL, file.sizes?.card?.url].filter(Boolean)
+  for (const url of candidates) {
+    if (typeof url === 'string' && url.length > 0) return url
+  }
+  return null
+}
+
+export default async function RegisterOrathonPage() {
+  let countries: Array<{
+    country: string
+    title: string
+    registrationUrl: string
+    description?: string | null
+  }> = FALLBACK_LINKS
+
+  let flyerSlides: Array<{ src: string; alt: string }> = []
+
+  try {
+    const payload = await getPayloadClient()
+    await ensureOrathonCountriesSchema(payload)
+
+    const result = await payload.find({
+      collection: 'orathon-countries' as any,
+      where: { active: { equals: true } },
+      limit: 50,
+      sort: 'displayOrder',
+      depth: 1,
+      overrideAccess: true,
+    })
+
+    if (result.docs?.length) {
+      countries = result.docs.map((doc: any) => ({
+        country: doc.country,
+        title: doc.title,
+        registrationUrl: doc.registrationUrl,
+        description: doc.description,
+      }))
+
+      flyerSlides = result.docs
+        .map((doc: any) => {
+          const src = mediaUrl(doc.flyer)
+          if (!src) return null
+          return {
+            src,
+            alt: `${getCountryLabel(doc.country)} Orathon flyer`,
+          }
+        })
+        .filter(Boolean) as Array<{ src: string; alt: string }>
+    }
+  } catch (error) {
+    console.error('Error loading Orathon countries:', error)
+  }
+
   return (
     <>
       <section className="page-hero">
@@ -36,26 +98,28 @@ export default function RegisterOrathonPage() {
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-6xl mx-auto">
             <div className="space-y-5">
-              {ORATHON_LINKS.map((item) => (
+              {countries.map((item) => (
                 <a
-                  key={item.country}
-                  href={item.href}
+                  key={`${item.country}-${item.registrationUrl}`}
+                  href={item.registrationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group block rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                    <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center flex-shrink-0">
-                      <FiMapPin className="w-6 h-6" aria-hidden />
+                    <div className="w-14 h-14 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <CountryFlag countryOrCode={item.country} size="md" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold uppercase tracking-wide text-primary-600 mb-1">
-                        {item.country}
+                        {getCountryLabel(item.country)}
                       </p>
                       <h2 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-700 transition-colors">
-                        {item.label}
+                        {item.title}
                       </h2>
-                      <p className="text-sm text-gray-600">{item.description}</p>
+                      {item.description && (
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      )}
                     </div>
                     <span className="inline-flex items-center gap-2 text-primary-700 font-semibold text-sm">
                       Open registration
@@ -77,7 +141,7 @@ export default function RegisterOrathonPage() {
             </div>
 
             <div>
-              <OrathonFlyerSlider />
+              <OrathonFlyerSlider slides={flyerSlides} />
             </div>
           </div>
         </div>

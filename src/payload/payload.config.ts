@@ -35,6 +35,7 @@ import Volunteers from './collections/Volunteers'
 import YouthSteeringCommittee from './collections/YouthSteeringCommittee'
 import AbstractReviews from './collections/AbstractReviews'
 import OrathonRegistrations from './collections/OrathonRegistrations'
+import OrathonCountries from './collections/OrathonCountries'
 import PageViews from './collections/PageViews'
 import SiteEvents from './collections/SiteEvents'
 import Donations from './collections/Donations'
@@ -166,6 +167,7 @@ export default buildConfig({
     Volunteers,
     YouthSteeringCommittee,
     OrathonRegistrations,
+    OrathonCountries,
     AbstractReviews,
     PageViews,
     SiteEvents,

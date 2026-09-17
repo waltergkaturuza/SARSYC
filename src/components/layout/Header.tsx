@@ -118,7 +118,7 @@ export default function Header() {
 
   const navLinkClass = (active: boolean) =>
     [
-      'px-2 xl:px-3 py-1.5 text-sm xl:text-base font-bold transition-colors duration-200 flex items-center gap-1 whitespace-nowrap rounded-md',
+      'px-2 xl:px-3 py-1.5 text-sm xl:text-base font-medium transition-colors duration-200 flex items-center gap-1 whitespace-nowrap rounded-md',
       active
         ? 'text-primary-600 bg-primary-50'
         : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50',
@@ -144,7 +144,7 @@ export default function Header() {
                 />
               </div>
               <div className="hidden sm:block leading-tight">
-                <div className="font-heading font-black text-xl md:text-2xl text-gray-900">
+                <div className="font-heading font-semibold text-xl md:text-2xl text-gray-900">
                   SARSYC
                 </div>
               </div>
@@ -185,11 +185,11 @@ export default function Header() {
                               className={`block px-4 py-2 text-sm transition-colors duration-200 ${
                                 subItem.children
                                   ? subActive
-                                    ? 'font-semibold text-primary-700 bg-primary-50'
-                                    : 'font-semibold text-gray-900 hover:bg-primary-50 hover:text-primary-700'
+                                    ? 'font-medium text-primary-700 bg-primary-50'
+                                    : 'font-medium text-gray-800 hover:bg-primary-50 hover:text-primary-700'
                                   : subActive
-                                    ? 'font-semibold text-primary-600 bg-primary-50'
-                                    : 'text-gray-700 hover:bg-primary-50 hover:text-primary-600'
+                                    ? 'font-medium text-primary-600 bg-primary-50'
+                                    : 'font-normal text-gray-700 hover:bg-primary-50 hover:text-primary-600'
                               }`}
                             >
                               {subItem.name}
@@ -227,7 +227,7 @@ export default function Header() {
           <div className="hidden lg:flex lg:items-center lg:gap-3 lg:flex-shrink-0">
             <Link
               href="/participate/register"
-              className="btn-primary font-bold text-sm xl:text-base px-4 xl:px-5 py-2 whitespace-nowrap"
+              className="btn-primary font-medium text-sm xl:text-base px-4 xl:px-5 py-2 whitespace-nowrap"
             >
               Register Now
             </Link>
@@ -255,7 +255,7 @@ export default function Header() {
                     <div key={item.name}>
                       <Link
                         href={item.href}
-                        className={`block px-4 py-2.5 text-base font-bold rounded-lg transition-colors duration-200 ${
+                        className={`block px-4 py-2.5 text-base font-medium rounded-lg transition-colors duration-200 ${
                           active
                             ? 'text-primary-600 bg-primary-50'
                             : 'text-gray-700 hover:bg-primary-50 hover:text-primary-600'
@@ -272,7 +272,7 @@ export default function Header() {
                                 <>
                                   <button
                                     type="button"
-                                    className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-primary-50 hover:text-primary-700 rounded-lg"
+                                    className="w-full flex items-center justify-between px-4 py-2 text-sm font-medium text-gray-800 hover:bg-primary-50 hover:text-primary-700 rounded-lg"
                                     onClick={() =>
                                       setMobileExpanded((prev) =>
                                         prev === subItem.name ? null : subItem.name,
@@ -336,7 +336,7 @@ export default function Header() {
               <div className="mt-4 px-4 space-y-3 pb-8">
                 <Link
                   href="/participate/register"
-                  className="btn-primary w-full justify-center font-bold text-base"
+                  className="btn-primary w-full justify-center font-medium text-base"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Register Now
