@@ -1,4 +1,5 @@
 import type { Payload } from 'payload'
+import { ensureLockedDocsRelsColumns } from '@/lib/ensureLockedDocsRelsColumns'
 
 let patchedThisInstance = false
 
@@ -37,6 +38,9 @@ export async function ensureOrathonCountriesSchema(payload: Payload): Promise<vo
     CREATE INDEX IF NOT EXISTS "orathon_countries_country_idx"
       ON "orathon_countries" ("country");
   `)
+
+  // Payload document-locking joins require this FK column
+  await ensureLockedDocsRelsColumns(payload)
 
   patchedThisInstance = true
 }

@@ -39,6 +39,7 @@ import * as migration_20260902_120000_conference_objectives from './20260902_120
 import * as migration_20260902_130000_conference_objectives_array from './20260902_130000_conference_objectives_array';
 import * as migration_20260917_000000_add_resource_type_compact from './20260917_000000_add_resource_type_compact';
 import * as migration_20260917_120000_create_orathon_countries from './20260917_120000_create_orathon_countries';
+import * as migration_20260917_130000_orathon_countries_locked_docs_column from './20260917_130000_orathon_countries_locked_docs_column';
 
 export const migrations = [
   {
@@ -245,5 +246,10 @@ export const migrations = [
     up: migration_20260917_120000_create_orathon_countries.up,
     down: migration_20260917_120000_create_orathon_countries.down,
     name: '20260917_120000_create_orathon_countries'
+  },
+  {
+    up: migration_20260917_130000_orathon_countries_locked_docs_column.up,
+    down: migration_20260917_130000_orathon_countries_locked_docs_column.down,
+    name: '20260917_130000_orathon_countries_locked_docs_column'
   },
 ];

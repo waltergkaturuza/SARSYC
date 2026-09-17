@@ -16,7 +16,8 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'payload_locked_documents_rels patched (donations_id, stanbic_payment_events_id, etc.)',
+      message:
+        'payload_locked_documents_rels patched (includes orathon_countries_id and other collection FKs)',
     })
   } catch (error: any) {
     console.error('fix-locked-docs-table error:', error)

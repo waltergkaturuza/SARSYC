@@ -10,11 +10,11 @@ export type OrathonFlyerSlide = {
 
 const FALLBACK_SLIDES: OrathonFlyerSlide[] = [
   {
-    src: '/orathon/Orathon Flyer Harare 02 (1).png',
-    alt: 'Orathon 2026 Harare flyer',
+    src: '/orathon/zimbabwe.png',
+    alt: 'Orathon 2026 Zimbabwe flyer',
   },
   {
-    src: '/orathon/Orathon Flyer Namibia.rv02 (1).png',
+    src: '/orathon/namibia.png',
     alt: 'Orathon 2026 Namibia flyer',
   },
 ]
@@ -26,30 +26,58 @@ type OrathonFlyerSliderProps = {
   slides?: OrathonFlyerSlide[]
 }
 
+function isUsableSrc(src: string): boolean {
+  if (!src) return false
+  if (src.includes('/api/media/file/')) return false
+  return true
+}
+
 export default function OrathonFlyerSlider({
   className = '',
   slides,
 }: OrathonFlyerSliderProps) {
-  const items = slides && slides.length > 0 ? slides : FALLBACK_SLIDES
+  const sanitize = (list: OrathonFlyerSlide[]) =>
+    list.filter((s) => isUsableSrc(s.src))
+
+  const initial = sanitize(slides && slides.length > 0 ? slides : FALLBACK_SLIDES)
+  const [items, setItems] = useState(initial.length > 0 ? initial : FALLBACK_SLIDES)
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
-    if (items.length <= 1) return
+    const next = sanitize(slides && slides.length > 0 ? slides : FALLBACK_SLIDES)
+    setItems(next.length > 0 ? next : FALLBACK_SLIDES)
+    setActiveIndex(0)
+  }, [slides])
 
+  useEffect(() => {
+    if (items.length <= 1) return
     const timer = setInterval(() => {
       setActiveIndex((current) => (current + 1) % items.length)
     }, INTERVAL_MS)
-
     return () => clearInterval(timer)
   }, [items.length])
 
-  useEffect(() => {
-    setActiveIndex(0)
-  }, [items.length])
+  const handleImageError = (failedSrc: string) => {
+    setItems((prev) => {
+      const remaining = prev.filter((s) => s.src !== failedSrc)
+      if (remaining.length > 0) return remaining
+      return FALLBACK_SLIDES
+    })
+  }
+
+  if (items.length === 0) {
+    return (
+      <div
+        className={`relative w-full aspect-[3/4] max-h-[640px] rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200 bg-slate-950 flex items-center justify-center text-white/70 text-sm ${className}`.trim()}
+      >
+        Flyer coming soon
+      </div>
+    )
+  }
 
   return (
     <div
-      className={`relative w-full aspect-[3/4] max-h-[640px] rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200 bg-gray-100 ${className}`.trim()}
+      className={`relative w-full aspect-[3/4] max-h-[640px] rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200 bg-slate-950 ${className}`.trim()}
     >
       {items.map((slide, index) => (
         <div
@@ -67,7 +95,8 @@ export default function OrathonFlyerSlider({
             quality={90}
             className="object-contain object-center bg-slate-950"
             sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized={slide.src.startsWith('http')}
+            unoptimized
+            onError={() => handleImageError(slide.src)}
           />
         </div>
       ))}

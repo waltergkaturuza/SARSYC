@@ -5,6 +5,7 @@ import CountryFlag from '@/components/ui/CountryFlag'
 import { getPayloadClient } from '@/lib/payload'
 import { ensureOrathonCountriesSchema } from '@/lib/ensureOrathonCountriesSchema'
 import { getCountryLabel } from '@/lib/countries'
+import { getMediaDisplayUrl } from '@/lib/mediaDisplayUrl'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -24,13 +25,45 @@ const FALLBACK_LINKS = [
   },
 ]
 
-function mediaUrl(file: any): string | null {
-  if (!file) return null
-  if (typeof file === 'string') return file
-  const candidates = [file.url, file.thumbnailURL, file.sizes?.card?.url].filter(Boolean)
-  for (const url of candidates) {
-    if (typeof url === 'string' && url.length > 0) return url
-  }
+/** Stable local public flyers (always available on the CDN) */
+const LOCAL_FLYERS: Record<string, { src: string; alt: string }> = {
+  ZW: {
+    src: '/orathon/zimbabwe.png',
+    alt: 'Orathon 2026 Zimbabwe flyer',
+  },
+  NA: {
+    src: '/orathon/namibia.png',
+    alt: 'Orathon 2026 Namibia flyer',
+  },
+  ZIMBABWE: {
+    src: '/orathon/zimbabwe.png',
+    alt: 'Orathon 2026 Zimbabwe flyer',
+  },
+  NAMIBIA: {
+    src: '/orathon/namibia.png',
+    alt: 'Orathon 2026 Namibia flyer',
+  },
+}
+
+const DEFAULT_FLYER_SLIDES = [
+  LOCAL_FLYERS.ZW,
+  LOCAL_FLYERS.NA,
+]
+
+function resolveLocalFlyer(country: unknown): { src: string; alt: string } | null {
+  const raw = String(country || '').trim()
+  if (!raw) return null
+  return (
+    LOCAL_FLYERS[raw.toUpperCase()] ||
+    LOCAL_FLYERS[getCountryLabel(raw).toUpperCase()] ||
+    null
+  )
+}
+
+/** Only accept Blob / real HTTPS URLs — never Payload /api/media/file/ paths. */
+function flyerSrcFromMedia(file: unknown): string | null {
+  const fromHelper = getMediaDisplayUrl(file)
+  if (fromHelper) return fromHelper
   return null
 }
 
@@ -53,7 +86,7 @@ export default async function RegisterOrathonPage() {
       where: { active: { equals: true } },
       limit: 50,
       sort: 'displayOrder',
-      depth: 1,
+      depth: 2,
       overrideAccess: true,
     })
 
@@ -67,17 +100,24 @@ export default async function RegisterOrathonPage() {
 
       flyerSlides = result.docs
         .map((doc: any) => {
-          const src = mediaUrl(doc.flyer)
+          const local = resolveLocalFlyer(doc.country)
+          // Prefer working local assets; use CMS only when it is a real Blob URL
+          const cmsSrc = flyerSrcFromMedia(doc.flyer)
+          const src = local?.src || cmsSrc
           if (!src) return null
           return {
             src,
-            alt: `${getCountryLabel(doc.country)} Orathon flyer`,
+            alt: local?.alt || `${getCountryLabel(doc.country)} Orathon flyer`,
           }
         })
         .filter(Boolean) as Array<{ src: string; alt: string }>
     }
   } catch (error) {
     console.error('Error loading Orathon countries:', error)
+  }
+
+  if (flyerSlides.length === 0) {
+    flyerSlides = DEFAULT_FLYER_SLIDES
   }
 
   return (
@@ -87,8 +127,8 @@ export default async function RegisterOrathonPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="page-hero-title">Registration for Orathon</h1>
             <p className="page-hero-subtitle">
-              The Orathon is a post-conference activity in November 2026. Choose your country registration
-              link below to complete signup on the official platform.
+              The Orathon is a post-conference activity in November 2026. Choose your country
+              registration link below to complete signup on the official platform.
             </p>
           </div>
         </div>

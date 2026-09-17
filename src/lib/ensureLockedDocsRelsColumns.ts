@@ -15,6 +15,7 @@ const LOCKED_DOCS_RELS_COLUMNS = [
   'volunteers_id',
   'youth_steering_committee_id',
   'orathon_registrations_id',
+  'orathon_countries_id',
   'abstract_reviews_id',
   'page_views_id',
   'site_events_id',
