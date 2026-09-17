@@ -307,39 +307,57 @@ export default function SarsycVIPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900/15 via-slate-900/10 to-secondary-900/18" />
 
         <div className="relative container-custom py-8 md:py-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl md:text-3xl font-semibold text-[#1877F2] mb-3 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
-              SARSYC VI
-            </h1>
-            
-            <h2 className="text-xl md:text-2xl text-[#1877F2] font-semibold mb-4 leading-snug [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
-              Align for Action: Sustaining Progress in Youth Health and Education
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-3 max-w-2xl mx-auto mb-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
-                <FiCalendar className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">August 5-7, 2026</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
-                <FiMapPin className="w-6 h-6 mx-auto mb-2" />
-                <div className="font-semibold">Windhoek, Namibia</div>
+          <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
+            {/* Rotating SARSYC logo — left */}
+            <div className="shrink-0 w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px]">
+              <div className="relative w-full aspect-square overflow-hidden rounded-full bg-white/90 shadow-2xl ring-2 ring-white/40">
+                <div className="absolute inset-0 animate-spin-clock">
+                  <Image
+                    src="/logo.jpeg"
+                    alt="SARSYC logo"
+                    fill
+                    className="object-cover scale-[1.32]"
+                    sizes="(max-width: 1024px) 280px, 320px"
+                    priority
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mb-6">
-              <h3 className="text-lg md:text-xl font-semibold text-white mb-3">Countdown to Conference</h3>
-              <CountdownTimer targetDate="2026-08-05T09:00:00" />
-            </div>
+            <div className="flex-1 min-w-0 max-w-3xl text-center lg:text-left">
+              <h1 className="text-2xl md:text-3xl font-semibold text-[#1877F2] mb-3 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+                SARSYC VI
+              </h1>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link href="/participate/register" className="btn-accent text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
-                Register Now
-              </Link>
-              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
-                Submit Abstract
-              </Link>
-              <DownloadConceptNoteButton />
+              <h2 className="text-xl md:text-2xl text-[#1877F2] font-semibold mb-4 leading-snug [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+                Align for Action: Sustaining Progress in Youth Health and Education
+              </h2>
+
+              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto lg:mx-0 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
+                  <FiCalendar className="w-6 h-6 mx-auto lg:mx-0 mb-2" />
+                  <div className="font-semibold">August 5-7, 2026</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
+                  <FiMapPin className="w-6 h-6 mx-auto lg:mx-0 mb-2" />
+                  <div className="font-semibold">Windhoek, Namibia</div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg md:text-xl font-semibold text-white mb-3">Countdown to Conference</h3>
+                <CountdownTimer targetDate="2026-08-05T09:00:00" />
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
+                <Link href="/participate/register" className="btn-accent text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
+                  Register Now
+                </Link>
+                <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
+                  Submit Abstract
+                </Link>
+                <DownloadConceptNoteButton />
+              </div>
             </div>
           </div>
         </div>

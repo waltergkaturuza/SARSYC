@@ -99,6 +99,7 @@ function TrackCard({
   const [visible, setVisible] = useState(false)
   const [phase, setPhase] = useState<'idle' | 'title' | 'description' | 'topics' | 'done'>('idle')
   const [topicIndex, setTopicIndex] = useState(0)
+  const [loopKey, setLoopKey] = useState(0)
 
   useEffect(() => {
     const node = cardRef.current
@@ -118,9 +119,21 @@ function TrackCard({
 
   useEffect(() => {
     if (!visible) return
+    if (phase !== 'idle') return
     const start = window.setTimeout(() => setPhase('title'), index * 120)
     return () => window.clearTimeout(start)
-  }, [visible, index])
+  }, [visible, index, phase])
+
+  // Keep handwriting looping: pause, then rewrite from the title
+  useEffect(() => {
+    if (phase !== 'done') return
+    const restart = window.setTimeout(() => {
+      setTopicIndex(0)
+      setLoopKey((k) => k + 1)
+      setPhase('title')
+    }, 3500)
+    return () => window.clearTimeout(restart)
+  }, [phase])
 
   const onTitleDone = useCallback(() => setPhase('description'), [])
   const onDescriptionDone = useCallback(() => {
@@ -151,35 +164,37 @@ function TrackCard({
   const body = (
     <>
       <div
-        className={`inline-block bg-gradient-to-r ${track.color} text-white text-sm font-bold px-3 py-1 rounded-full mb-4`}
+        className={`inline-block bg-gradient-to-r ${track.color} text-white text-xs font-bold px-3 py-1 rounded-full mb-3`}
       >
         Track {track.number}
       </div>
 
       {titleDone ? (
-        <h3 className={`${titleSizeClass} font-bold mb-3 ${track.textColor}`}>{track.title}</h3>
+        <h3 className={`${titleSizeClass} font-semibold mb-2 ${track.textColor}`}>{track.title}</h3>
       ) : (
         <TypeWithPen
+          key={`title-${track.number}-${loopKey}`}
           as="h3"
           text={track.title}
           active={titleTyping}
           speed={28}
-          className={`${titleSizeClass} font-bold mb-3 ${track.textColor} min-h-[1.5em]`}
+          className={`${titleSizeClass} font-semibold mb-2 ${track.textColor} min-h-[1.5em]`}
           onDone={onTitleDone}
         />
       )}
 
       {descriptionDone ? (
-        <p className={`text-justify leading-relaxed ${track.textColor} ${showTopics ? 'mb-6' : ''}`}>
+        <p className={`text-sm text-justify leading-relaxed ${track.textColor} ${showTopics ? 'mb-5' : ''}`}>
           {track.description}
         </p>
       ) : (
         <TypeWithPen
+          key={`desc-${track.number}-${loopKey}`}
           as="p"
           text={track.description}
           active={descriptionTyping}
           speed={16}
-          className={`text-justify leading-relaxed ${track.textColor} ${showTopics ? 'mb-6' : ''} min-h-[3em]`}
+          className={`text-sm text-justify leading-relaxed ${track.textColor} ${showTopics ? 'mb-5' : ''} min-h-[3em]`}
           onDone={onDescriptionDone}
         />
       )}
@@ -200,7 +215,14 @@ function TrackCard({
                     <span className="mr-2 mt-1">•</span>
                   )}
                   {typing ? (
-                    <TypeWithPen text={topic} active speed={14} className="flex-1" onDone={onTopicDone} />
+                    <TypeWithPen
+                      key={`topic-${track.number}-${i}-${loopKey}`}
+                      text={topic}
+                      active
+                      speed={14}
+                      className="flex-1"
+                      onDone={onTopicDone}
+                    />
                   ) : (
                     <span className="flex-1">{topic}</span>
                   )}
@@ -214,7 +236,7 @@ function TrackCard({
       {showExploreLink && phase === 'done' && (
         <Link
           href={`/programme?track=${track.number}`}
-          className={`inline-flex items-center gap-2 font-medium hover:gap-3 transition-all mt-6 ${track.textColor}`}
+          className={`inline-flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all mt-6 ${track.textColor}`}
         >
           Explore Track {track.number}
           <FiArrowRight className="w-4 h-4" />
@@ -274,7 +296,7 @@ export default function ConferenceTrackCards({
           showTopics={showTopics}
           showExploreLink={showExploreLink}
           detailed={detailed}
-          titleSizeClass={detailed ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}
+          titleSizeClass={detailed ? 'text-lg md:text-xl' : 'text-base md:text-lg'}
           cardPaddingClass={detailed ? 'p-8 lg:p-10' : 'p-5 md:p-8'}
         />
       ))}

@@ -17,24 +17,45 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://www.sarsyc.org'),
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon.ico'],
   },
+  manifest: '/manifest.json',
   title: 'SARSYC VI - Southern African Regional Students and Youth Conference',
   description: 'Join us for SARSYC VI in Windhoek, Namibia, August 5-7, 2026. Align for Action: Sustaining Progress in Youth Health and Education.',
   keywords: ['SARSYC', 'youth conference', 'Southern Africa', 'youth health', 'education', 'SAYWHAT'],
   authors: [{ name: 'SAYWHAT' }],
+  applicationName: 'SARSYC',
   openGraph: {
     title: 'SARSYC VI - Windhoek, Namibia',
     description: 'Align for Action: Sustaining Progress in Youth Health and Education',
     type: 'website',
     locale: 'en_US',
     siteName: 'SARSYC VI',
+    url: 'https://www.sarsyc.org',
+    images: [
+      {
+        url: '/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'SARSYC logo',
+      },
+    ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'SARSYC VI - Windhoek, Namibia',
     description: 'Align for Action: Sustaining Progress in Youth Health and Education',
+    images: ['/icon-512.png'],
   },
   robots: {
     index: true,

@@ -278,7 +278,7 @@
 }
 
 .track-pen-stroke.is-drawn {
-  animation: trackPenDraw 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: trackPenDraw 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .track-pen-tip {
@@ -289,7 +289,7 @@
 }
 
 .track-pen-tip.is-drawn {
-  animation: trackPenTip 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: trackPenTip 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .track-title-underline {
@@ -305,7 +305,7 @@
 }
 
 .track-title-underline.is-drawn {
-  animation: trackTitleUnderline 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: trackTitleUnderline 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
 /* Sessions page — kraft wood as page background; cards keep original colors */

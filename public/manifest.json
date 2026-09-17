@@ -1,6 +1,6 @@
 {
   "name": "SARSYC VI - Southern African Regional Students and Youth Conference",
-  "short_name": "SARSYC VI",
+  "short_name": "SARSYC",
   "description": "Official conference platform for SARSYC VI in Windhoek, Namibia",
   "start_url": "/",
   "display": "standalone",
@@ -8,6 +8,18 @@
   "theme_color": "#0ea5e9",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -44,18 +56,5 @@
       "url": "/programme",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-1.png",
-      "sizes": "540x720",
-      "type": "image/png"
-    }
   ]
 }
-
-
-
-
-
-
