@@ -28,10 +28,10 @@ const footerLinks = {
   ],
   participate: [
     { name: 'How to Participate', href: '/participate' },
+    { name: 'Register for Orathon', href: '/participate/register-orathon' },
     { name: 'Register', href: '/participate/register' },
     { name: 'Submit Abstract', href: '/participate/submit-abstract' },
     { name: 'Volunteer', href: '/participate/volunteer' },
-    { name: 'Orathon Registration', href: '/participate/register-orathon' },
     { name: 'Track Status', href: '/track' },
     { name: 'Donate / Sponsor', href: '/participate/donate' },
     { name: 'Safeguarding', href: '/participate/safeguarding' },

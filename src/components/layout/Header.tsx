@@ -56,6 +56,7 @@ const navigation: NavItem[] = [
     name: 'Participate',
     href: '/participate',
     dropdown: [
+      { name: 'Register for Orathon', href: '/participate/register-orathon' },
       { name: 'Register', href: '/participate/register' },
       { name: 'Submit Abstract', href: '/participate/submit-abstract' },
       { name: 'Volunteer', href: '/participate/volunteer' },
