@@ -251,6 +251,7 @@ export default function ResourceForm({ initialData, mode }: ResourceFormProps) {
     { value: 'brief', label: 'Policy Brief' },
     { value: 'communique', label: 'Communiqué' },
     { value: 'declaration', label: 'Declaration' },
+    { value: 'compact', label: 'Compact' },
     { value: 'presentation', label: 'Presentation' },
     { value: 'template', label: 'Template' },
     { value: 'toolkit', label: 'Toolkit' },

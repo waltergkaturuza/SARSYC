@@ -67,6 +67,7 @@ export default async function ResourcesManagementPage({
     'brief': { color: 'bg-purple-100 text-purple-700', label: 'Policy Brief', icon: FiFileText },
     'communique': { color: 'bg-amber-100 text-amber-700', label: 'Communiqué', icon: FiFileText },
     'declaration': { color: 'bg-rose-100 text-rose-700', label: 'Declaration', icon: FiFileText },
+    'compact': { color: 'bg-violet-100 text-violet-700', label: 'Compact', icon: FiFileText },
     'presentation': { color: 'bg-orange-100 text-orange-700', label: 'Presentation', icon: FiFileText },
     'template': { color: 'bg-lime-100 text-lime-700', label: 'Template', icon: FiFileText },
     'toolkit': { color: 'bg-yellow-100 text-yellow-700', label: 'Toolkit', icon: FiFolder },
@@ -135,6 +136,7 @@ export default async function ResourcesManagementPage({
                 <option value="brief">Policy Briefs</option>
                 <option value="communique">Communiqués</option>
                 <option value="declaration">Declarations</option>
+                <option value="compact">Compacts</option>
                 <option value="presentation">Presentations</option>
                 <option value="template">Templates</option>
                 <option value="toolkit">Toolkits</option>

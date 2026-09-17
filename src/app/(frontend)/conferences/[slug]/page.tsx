@@ -37,6 +37,7 @@ const RESOURCE_TYPE_LABELS: Record<string, string> = {
   brief: 'Policy Brief',
   communique: 'Communiqué',
   declaration: 'Declaration',
+  compact: 'Compact',
   presentation: 'Presentation',
   template: 'Template',
   toolkit: 'Toolkit',

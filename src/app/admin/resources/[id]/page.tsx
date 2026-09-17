@@ -14,10 +14,18 @@ interface ResourceDetailPageProps {
 }
 
 const typeLabels: Record<string, string> = {
+  abstract: 'Abstract',
+  'concept-note': 'Concept Note',
   report: 'Conference Report',
+  'research-report': 'Research Report',
+  'symposium-report': 'Symposium Report',
   paper: 'Research Paper',
   brief: 'Policy Brief',
+  communique: 'Communiqué',
+  declaration: 'Declaration',
+  compact: 'Compact',
   presentation: 'Presentation',
+  template: 'Template',
   toolkit: 'Toolkit',
   infographic: 'Infographic',
   video: 'Video',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit, FiX } from 'react-icons/fi'
+import { FiSearch, FiDownload, FiFileText, FiBook, FiFile, FiVideo, FiFilter, FiLoader, FiClipboard, FiAward, FiLayers, FiShield, FiEdit, FiX, FiCheckSquare } from 'react-icons/fi'
 import { trackEvent } from '@/components/analytics/AnalyticsTracker'
 import EmptyState from '@/components/ui/EmptyState'
 
@@ -17,6 +17,7 @@ const resourceTypes = [
   { value: 'brief', label: 'Policy Briefs', icon: FiFile },
   { value: 'communique', label: 'Communiqués', icon: FiAward },
   { value: 'declaration', label: 'Declarations', icon: FiShield },
+  { value: 'compact', label: 'Compacts', icon: FiCheckSquare },
   { value: 'presentation', label: 'Presentations', icon: FiLayers },
   { value: 'template', label: 'Templates', icon: FiFileText },
   { value: 'toolkit', label: 'Toolkits', icon: FiFile },

@@ -163,6 +163,7 @@ export default async function HomePage() {
   // Fetch featured speakers
   let featuredSpeakers: any[] = []
   let windhoekDeclarationUrl: string | null = null
+  let accountabilityCompactUrl: string | null = null
   try {
     const payload = await getPayloadClient()
     await ensureSpeakersLatestColumns(payload)
@@ -234,6 +235,62 @@ export default async function HomePage() {
       windhoekDeclarationUrl = getResourceFileUrl(declarationDocs[0]?.file) || null
     } catch (declarationError) {
       console.error('Error fetching Windhoek Declaration resource:', declarationError)
+    }
+
+    // Accountability Compact for homepage CTA download
+    try {
+      let compactDocs =
+        (
+          await payload.find({
+            collection: 'resources',
+            where: {
+              and: [
+                { type: { equals: 'compact' } },
+                { title: { contains: 'Accountability' } },
+              ],
+            },
+            limit: 1,
+            depth: 1,
+            overrideAccess: true,
+          })
+        ).docs || []
+
+      if (compactDocs.length === 0) {
+        compactDocs =
+          (
+            await payload.find({
+              collection: 'resources',
+              where: {
+                and: [
+                  { type: { equals: 'compact' } },
+                  { title: { contains: 'Compact' } },
+                ],
+              },
+              limit: 1,
+              sort: '-year',
+              depth: 1,
+              overrideAccess: true,
+            })
+          ).docs || []
+      }
+
+      if (compactDocs.length === 0) {
+        compactDocs =
+          (
+            await payload.find({
+              collection: 'resources',
+              where: { type: { equals: 'compact' } },
+              limit: 1,
+              sort: '-year',
+              depth: 1,
+              overrideAccess: true,
+            })
+          ).docs || []
+      }
+
+      accountabilityCompactUrl = getResourceFileUrl(compactDocs[0]?.file) || null
+    } catch (compactError) {
+      console.error('Error fetching Accountability Compact resource:', compactError)
     }
   } catch (error) {
     console.error('Error fetching featured speakers:', error)
@@ -516,6 +573,25 @@ export default async function HomePage() {
                 >
                   <FiDownload className="w-5 h-5" aria-hidden />
                   Download Declaration
+                </Link>
+              )}
+              {accountabilityCompactUrl ? (
+                <a
+                  href={accountabilityCompactUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                >
+                  <FiDownload className="w-5 h-5" aria-hidden />
+                  Download Accountability Compact
+                </a>
+              ) : (
+                <Link
+                  href="/resources?type=compact"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                >
+                  <FiDownload className="w-5 h-5" aria-hidden />
+                  Download Accountability Compact
                 </Link>
               )}
             </div>

@@ -70,6 +70,7 @@ const Resources: CollectionConfig = {
         { label: 'Policy Brief', value: 'brief' },
         { label: 'Communiqué', value: 'communique' },
         { label: 'Declaration', value: 'declaration' },
+        { label: 'Compact', value: 'compact' },
         { label: 'Presentation', value: 'presentation' },
         { label: 'Template', value: 'template' },
         { label: 'Toolkit', value: 'toolkit' },
