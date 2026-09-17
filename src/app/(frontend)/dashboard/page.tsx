@@ -199,7 +199,7 @@ export default async function DashboardPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <RoleIcon className="w-8 h-8" />
-                <h1 className="text-3xl md:text-4xl font-bold">
+                <h1 className="text-xl md:text-2xl font-semibold">
                   Welcome back, {currentUser.firstName}!
                 </h1>
               </div>

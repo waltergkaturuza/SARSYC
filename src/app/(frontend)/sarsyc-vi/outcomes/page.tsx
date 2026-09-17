@@ -82,7 +82,7 @@ export default function OutcomesPage() {
                         <Icon className="w-10 h-10" />
                       </div>
                       <div className="flex-1">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">{outcome.title}</h2>
+                        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">{outcome.title}</h2>
                         <p className="text-lg text-gray-600 leading-relaxed">{outcome.description}</p>
                       </div>
                     </div>
@@ -114,7 +114,7 @@ export default function OutcomesPage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             <div className="card p-8 md:p-12 bg-primary-50 border-2 border-primary-200">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Measurement & Accountability</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Measurement & Accountability</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
                 These outcomes are not aspirational—they are measurable commitments. The Youth Steering Committee 
                 and SAYWHAT will track progress on these outcomes through:
@@ -142,7 +142,7 @@ export default function OutcomesPage() {
       <section className="py-6 md:py-8 bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+            <h2 className="text-xl md:text-2xl font-semibold mb-3">
               Help Us Achieve These Outcomes
             </h2>
             <p className="text-lg mb-5 text-white/90">

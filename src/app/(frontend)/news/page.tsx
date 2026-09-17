@@ -144,7 +144,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                               />
                             ) : (
                               <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
-                                <span className="text-white text-5xl font-bold opacity-20">NEWS</span>
+                                <span className="text-white text-3xl font-semibold opacity-20">NEWS</span>
                               </div>
                             )}
                             {/* Category badges over image */}

@@ -33,13 +33,13 @@ export default async function GovernancePage() {
 
         {/* Page heading */}
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Governance</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2">Governance</h1>
           <p className="text-white/70 text-lg">Democratic, transparent, and accountable leadership</p>
         </div>
 
         {/* Youth Steering Committee */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white mb-2">Youth Steering Committee</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">Youth Steering Committee</h2>
           <p className="text-white/60 mb-8 max-w-3xl">
             Youth leaders from across SADC who co-plan and execute SARSYC VI, champion post-conference
             implementation, and ensure continuity and accountability.
@@ -70,14 +70,14 @@ export default async function GovernancePage() {
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-                      <span className="text-white text-5xl font-bold opacity-60">{getInitials(member.name)}</span>
+                      <span className="text-white text-2xl font-semibold opacity-60">{getInitials(member.name)}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="p-4">
-                  <h3 className="font-bold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">{member.name}</h3>
+                  <h3 className="text-base font-semibold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">{member.name}</h3>
                   <p className="text-xs font-semibold text-amber-400/90 mb-0.5">{member.role}</p>
                   <p className="text-xs text-white/50">{member.organization}</p>
                 </div>
@@ -99,7 +99,7 @@ export default async function GovernancePage() {
 
         {/* Governance Principles */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Governance Principles</h2>
+          <h2 className="text-xl font-semibold text-white mb-4 text-center">Governance Principles</h2>
           <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {[
               { title: 'Participatory', desc: 'Youth representatives involved in all decision-making processes.' },

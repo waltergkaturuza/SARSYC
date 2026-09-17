@@ -327,7 +327,7 @@ export default function VolunteerPage() {
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                 Volunteer applications are closed
               </h1>
               <p className="text-gray-600 leading-relaxed mb-6">
@@ -386,7 +386,7 @@ export default function VolunteerPage() {
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCheck className="w-10 h-10 text-green-600" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
                 Application Received!
               </h1>
               <p className="text-lg text-gray-600 mb-8">
@@ -424,7 +424,7 @@ export default function VolunteerPage() {
         <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-5 md:px-6 lg:px-8 xl:px-10 2xl:px-12">
           <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 md:gap-8 lg:gap-10 xl:gap-6 lg:gap-8 items-stretch">
             <div className="min-w-0 flex flex-col">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 lg:mb-8 text-center lg:text-left">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 lg:mb-8 text-center lg:text-left">
                 Why Volunteer?
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 flex-1">
@@ -471,7 +471,7 @@ export default function VolunteerPage() {
             </div>
 
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
                 Volunteer Application
               </h2>
               <p className="text-gray-600 mb-4">

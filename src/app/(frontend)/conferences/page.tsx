@@ -183,7 +183,7 @@ export default async function PreviousConferencesPage({ searchParams }: Conferen
                               />
                             ) : (
                               <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
-                                <span className="text-white text-5xl font-bold opacity-20">
+                                <span className="text-white text-3xl font-semibold opacity-20">
                                   {conf.year}
                                 </span>
                               </div>

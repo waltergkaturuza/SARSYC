@@ -248,7 +248,7 @@ export default function FAQPage() {
 
             {/* Still Have Questions */}
             <div className="mt-16 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-2xl p-8 md:p-12 text-center text-white">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              <h3 className="text-xl md:text-2xl font-semibold mb-4">
                 Still Have Questions?
               </h3>
               <p className="text-lg text-white/90 mb-8">

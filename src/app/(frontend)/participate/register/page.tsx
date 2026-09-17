@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
@@ -730,7 +730,7 @@ export default function RegisterPage() {
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                 Registration is closed
               </h1>
               <p className="text-gray-600 leading-relaxed mb-6">
@@ -782,7 +782,7 @@ export default function RegisterPage() {
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                 Registration is closed
               </h1>
               <p className="text-gray-600 leading-relaxed mb-6">
@@ -839,7 +839,7 @@ export default function RegisterPage() {
                 <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FiAlertCircle className="w-10 h-10 text-amber-400" aria-hidden />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
+                <h1 className="text-xl md:text-2xl font-semibold text-white mb-4 text-center">
                   Registration saved — bank transfer required
                 </h1>
                 <p className="text-lg text-white/70 mb-6 text-center">
@@ -904,7 +904,7 @@ export default function RegisterPage() {
                 <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FiAlertCircle className="w-10 h-10 text-amber-400" aria-hidden />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
+                <h1 className="text-xl md:text-2xl font-semibold text-white mb-4 text-center">
                   Registration saved — payment required
                 </h1>
                 <p className="text-lg text-white/70 mb-6 text-center">
@@ -981,7 +981,7 @@ export default function RegisterPage() {
               <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCheck className="w-10 h-10 text-green-400" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h1 className="text-xl md:text-2xl font-semibold text-white mb-4">
                 Registration Successful!
               </h1>
               <p className="text-lg text-white/70 mb-6">
@@ -1043,7 +1043,7 @@ export default function RegisterPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="text-2xl md:text-3xl font-semibold text-white mb-4">
               Register for SARSYC VI
             </h1>
             <p className="text-lg text-white/70">

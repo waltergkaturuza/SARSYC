@@ -26,6 +26,7 @@ const navigation: NavItem[] = [
     dropdown: [
       { name: 'About SARSYC', href: '/about' },
       { name: 'Vision & Mission', href: '/about/vision' },
+      { name: 'The SARSYC Journey', href: '/about/journey' },
       { name: 'Who We Are', href: '/about/team' },
       { name: 'Governance', href: '/about/governance' },
     ],

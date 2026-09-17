@@ -49,7 +49,7 @@ export default function VisionPage() {
         <div className="container-custom">
           <div className="grid md:grid-cols-2 gap-5 md:gap-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Vision</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Our Vision</h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-4">
                 A Southern Africa where all young people enjoy optimal sexual and reproductive health, access to
                 quality education, and are empowered to realize their full potential as active citizens and change agents.
@@ -61,7 +61,7 @@ export default function VisionPage() {
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Mission</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Our Mission</h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-4">
                 To mobilize, connect, and empower students and youth in Southern Africa to advocate for evidence-based
                 policies and programs that advance youth sexual and reproductive health and education.
@@ -78,7 +78,7 @@ export default function VisionPage() {
       {/* Core Values */}
       <section className="bg-gray-50 py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-2">
+          <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-2">
             Our Core Values
           </h2>
           <p className="text-center text-gray-600 mb-5 md:mb-6 max-w-2xl mx-auto">
@@ -88,7 +88,7 @@ export default function VisionPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {values.map((value) => (
               <div key={value.title} className="card p-4 md:p-5 hover:shadow-xl transition-all">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{value.title}</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-1.5">{value.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{value.description}</p>
               </div>
             ))}
@@ -99,7 +99,7 @@ export default function VisionPage() {
       {/* Strategic Priorities */}
       <section className="bg-white py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-5 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-5 md:mb-6">
             Strategic Priorities
           </h2>
           <div className="max-w-4xl mx-auto">
@@ -110,7 +110,7 @@ export default function VisionPage() {
                     <span className="text-xl font-bold text-primary-600">1</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
                       Strengthen Youth Advocacy Networks
                     </h3>
                     <p className="text-gray-600">
@@ -126,7 +126,7 @@ export default function VisionPage() {
                     <span className="text-xl font-bold text-primary-600">2</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
                       Advance Youth SRHR and Education
                     </h3>
                     <p className="text-gray-600">
@@ -142,7 +142,7 @@ export default function VisionPage() {
                     <span className="text-xl font-bold text-primary-600">3</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
                       Generate and Share Knowledge
                     </h3>
                     <p className="text-gray-600">
@@ -158,7 +158,7 @@ export default function VisionPage() {
                     <span className="text-xl font-bold text-primary-600">4</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
                       Influence Regional and National Policies
                     </h3>
                     <p className="text-gray-600">
@@ -176,7 +176,7 @@ export default function VisionPage() {
       <section className="about-cta bg-primary-600 text-white py-8 md:py-10">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">
               Join Us in Making This Vision Reality
             </h2>
             <p className="text-xl mb-6 text-white/90">

@@ -114,7 +114,7 @@ export default function SchedulePage() {
                 1
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Day 1 – Evidence & Gendered Dialogues</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Day 1 – Evidence & Gendered Dialogues</h2>
                 <p className="text-gray-600">Tuesday, August 5, 2026</p>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function SchedulePage() {
                 2
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Day 2 – Alliance & Policy Action</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Day 2 – Alliance & Policy Action</h2>
                 <p className="text-gray-600">Wednesday, August 6, 2026</p>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function SchedulePage() {
                 3
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Day 3 – High-Level Engagement & Culture</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Day 3 – High-Level Engagement & Culture</h2>
                 <p className="text-gray-600">Thursday, August 7, 2026</p>
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function SchedulePage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             <div className="card p-8 md:p-12 bg-primary-50 border-2 border-primary-200">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Post-Conference Advocacy</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Post-Conference Advocacy</h2>
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Orathon</h3>
@@ -304,7 +304,7 @@ export default function SchedulePage() {
       <section className="section bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold mb-6">
               Ready to Join Us?
             </h2>
             <p className="text-xl mb-8 text-white/90">

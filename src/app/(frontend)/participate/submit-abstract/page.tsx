@@ -266,7 +266,7 @@ export default function SubmitAbstractPage() {
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                 Abstract submission is closed
               </h1>
               <p className="text-gray-600 leading-relaxed mb-6">
@@ -322,7 +322,7 @@ export default function SubmitAbstractPage() {
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiCheck className="w-10 h-10 text-green-600" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
                 Abstract Submitted Successfully!
               </h1>
               <div className="bg-primary-50 rounded-lg p-6 mb-8">
@@ -371,7 +371,7 @@ export default function SubmitAbstractPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">
               Submit Your Abstract
             </h1>
             <p className="text-lg text-gray-600 mb-2">

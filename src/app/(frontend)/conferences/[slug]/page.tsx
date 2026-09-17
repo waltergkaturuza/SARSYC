@@ -157,7 +157,7 @@ export default async function ConferenceDetailPage({
                   Current
                 </span>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-white m-0 leading-tight">
+              <h1 className="text-xl md:text-2xl font-semibold text-white m-0 leading-tight">
                 {conference.title}
               </h1>
             </div>

@@ -79,7 +79,7 @@ export default function ObjectivesPage() {
                       </div>
 
                       <div className="flex-1">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">{objective.title}</h2>
+                        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">{objective.title}</h2>
                         <p className="text-lg text-gray-600 mb-6 leading-relaxed">{objective.description}</p>
 
                         <div className="bg-gray-50 rounded-xl p-6">
@@ -110,7 +110,7 @@ export default function ObjectivesPage() {
             <div className="w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center text-white mx-auto mb-6">
               <FiTarget className="w-10 h-10" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Aligned for Impact</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Aligned for Impact</h2>
             <p className="text-lg text-gray-600 leading-relaxed mb-8">
               These objectives are interconnected and mutually reinforcing. By strengthening youth engagement, 
               fostering collaboration, and generating actionable strategies, SARSYC VI creates a comprehensive 

@@ -141,7 +141,7 @@ export default function TrackPage() {
               {registration && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Registration Status</h2>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Registration Status</h2>
                     {(() => {
                       const status = statusConfig[registration.status] || statusConfig.pending
                       const Icon = status.icon
@@ -252,7 +252,7 @@ export default function TrackPage() {
               {orathonRegistration && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Orathon Registration Status</h2>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Orathon Registration Status</h2>
                     {(() => {
                       const status = statusConfig[orathonRegistration.status] || statusConfig.pending
                       const Icon = status.icon
@@ -323,7 +323,7 @@ export default function TrackPage() {
               {/* Abstract Submissions */}
               {abstracts.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Abstract Submissions</h2>
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Abstract Submissions</h2>
                   <div className="space-y-4">
                     {abstracts.map((abstract: any) => {
                       const status = statusConfig[abstract.status] || statusConfig.received
@@ -377,7 +377,7 @@ export default function TrackPage() {
               {partnership && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Partnership Inquiry</h2>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Partnership Inquiry</h2>
                     {(() => {
                       const statusMap: Record<string, { label: string; color: string }> = {
                         'new': { label: 'New', color: 'blue' },
@@ -467,7 +467,7 @@ export default function TrackPage() {
               {volunteer && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Volunteer Application</h2>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Volunteer Application</h2>
                     {(() => {
                       const statusMap: Record<string, { label: string; color: string }> = {
                         'pending': { label: 'Pending Review', color: 'yellow' },

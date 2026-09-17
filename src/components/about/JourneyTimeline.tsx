@@ -71,26 +71,26 @@ const milestones: JourneyMilestone[] = [
 function MilestoneCard({ milestone }: { milestone: JourneyMilestone }) {
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-xl shadow-xl p-6 border-l-4 border-primary-600">
-        <div className="flex items-start gap-4 mb-4">
+      <div className="bg-white rounded-xl shadow-lg p-4 md:p-5 border-l-4 border-primary-600">
+        <div className="flex items-start gap-3 mb-3">
           <img
             src={flagImageUrl(milestone.countryCode, 'lg')}
             srcSet={`${flagImageUrlRetina(milestone.countryCode, 'lg')} 2x`}
             alt={`${milestone.country} flag`}
             width={64}
             height={48}
-            className="h-10 w-14 shrink-0 rounded object-cover shadow-md border border-gray-200 bg-white"
+            className="h-8 w-11 shrink-0 rounded object-cover shadow-md border border-gray-200 bg-white"
             loading="lazy"
             decoding="async"
           />
           <div className="min-w-0">
-            <div className="inline-block px-4 py-1.5 bg-primary-600 text-white text-sm font-bold rounded-full mb-2 shadow-md">
+            <div className="inline-block px-3 py-1 bg-primary-600 text-white text-xs font-semibold rounded-full mb-1.5 shadow-md">
               {milestone.year}
             </div>
-            <h3 className="text-xl font-bold text-gray-900">{milestone.country}</h3>
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">{milestone.country}</h3>
           </div>
         </div>
-        <p className="text-gray-700 leading-relaxed text-sm mb-4">{milestone.description}</p>
+        <p className="text-gray-700 leading-relaxed text-sm mb-3">{milestone.description}</p>
         <div className="mt-4 pt-4">
           <svg width="100%" height="4" viewBox="0 0 300 4" preserveAspectRatio="none" className="text-blue-400">
             <path d="M 0 2 Q 75 0, 150 2 T 300 2" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -103,9 +103,9 @@ function MilestoneCard({ milestone }: { milestone: JourneyMilestone }) {
 
 export default function JourneyTimeline() {
   return (
-    <div className="relative w-full bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 py-10 md:py-16 px-4 md:px-8">
+    <div className="relative w-full bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 py-4 md:py-5 px-4 md:px-5">
       {/* Mobile: stacked timeline */}
-      <div className="relative z-10 mx-auto flex max-w-2xl flex-col gap-10 md:hidden">
+      <div className="relative z-10 mx-auto flex max-w-2xl flex-col gap-6 md:hidden">
         {milestones.map((milestone) => (
           <MilestoneCard key={milestone.year} milestone={milestone} />
         ))}

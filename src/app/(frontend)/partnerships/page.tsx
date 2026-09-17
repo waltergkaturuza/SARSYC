@@ -333,7 +333,7 @@ export default function PartnershipsPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
         <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3">Sponsorship Packages</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-white text-center mb-3">Sponsorship Packages</h2>
           <p className="text-lg text-white/70 text-center mb-8 max-w-3xl mx-auto">
             Choose the partnership level that aligns with your organization's goals and budget.
           </p>
@@ -421,7 +421,7 @@ export default function PartnershipsPage() {
       {/* Past Partners */}
       <section className="py-6 md:py-8 bg-white">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-2">Our Partners</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900 text-center mb-2">Our Partners</h2>
           <p className="text-lg text-gray-600 text-center mb-6 max-w-3xl mx-auto">
             Proud to partner with leading organizations committed to youth empowerment.
           </p>
@@ -458,7 +458,7 @@ export default function PartnershipsPage() {
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-5">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                 Express Your Interest
               </h2>
               <p className="text-lg text-gray-600">

@@ -49,7 +49,7 @@ export default function GearAlliancePage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             <div className="card p-8 md:p-12 bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-200">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">What is GEAR?</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">What is GEAR?</h2>
               <p className="text-lg text-gray-700 leading-relaxed mb-4">
                 The <strong>Girls Education Advocacy in the Region (GEAR) Alliance</strong> is a regional coalition 
                 dedicated to advancing girls' education rights and access across Southern Africa.
@@ -152,7 +152,7 @@ export default function GearAlliancePage() {
       <section className="section bg-gradient-to-br from-pink-600 to-purple-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold mb-6">
               Join the Movement
             </h2>
             <p className="text-xl mb-8 text-white/90">

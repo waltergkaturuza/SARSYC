@@ -308,8 +308,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
         <div className="relative z-10 w-full px-4 sm:px-5 md:px-8 lg:px-10 xl:px-12 pt-6 md:pt-8 lg:pt-10 pb-6 md:pb-8 lg:pb-10">
-          {/* Quantis-style full-width display headline */}
-          <h1 className="home-hero-title text-primary-400 max-w-[95%] xl:max-w-7xl mb-5 md:mb-6 lg:mb-8">
+          <h1 className="text-2xl md:text-3xl font-semibold text-primary-400 max-w-[95%] xl:max-w-7xl mb-4 md:mb-5">
             The 6th Southern African Regional Students
             <br className="hidden sm:block" />
             and Youth Conference
@@ -409,8 +408,8 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-5 lg:gap-8 items-start">
             <div className="min-w-0">
               <div className="mb-6 md:mb-8 text-left">
-                <h2 className="text-3xl md:text-4xl font-semibold text-white mb-3">What is SARSYC?</h2>
-                <p className="text-lg md:text-xl text-white/70">
+                <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">What is SARSYC?</h2>
+                <p className="text-sm md:text-base text-white/70">
                   The Southern African Regional Students and Youth Conference (SARSYC) is the premier regional platform
                   for transnational advocacy on youth health and education.
                 </p>
@@ -440,7 +439,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[#FFF9F0]/18" aria-hidden />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center mb-6 rounded-2xl bg-slate-900/70 backdrop-blur-sm px-5 py-4 shadow-lg">
-            <h2 className="text-3xl md:text-4xl font-semibold text-center mb-3 text-white">
+            <h2 className="text-xl md:text-2xl font-semibold text-center mb-3 text-white">
               Conference Tracks
             </h2>
             <p className="text-lg text-white/95 text-center max-w-3xl mx-auto">
@@ -474,7 +473,7 @@ export default async function HomePage() {
 
           <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-5 lg:px-8">
             <div className="max-w-3xl mx-auto text-center mb-6 md:mb-8">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-2 md:mb-3">Featured Speakers</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-white mb-2 md:mb-3">Featured Speakers</h2>
               <p className="text-white/70 text-base md:text-lg">
                 A big thanks to the distinguished speakers who shared their expertise at SARSYC VI.
               </p>
@@ -550,7 +549,7 @@ export default async function HomePage() {
       <section className="py-6 md:py-8 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">
+            <h2 className="text-xl md:text-2xl font-semibold text-white mb-3">
               What Happened In Windhoek
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">

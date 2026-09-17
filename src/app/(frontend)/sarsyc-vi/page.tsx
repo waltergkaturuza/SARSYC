@@ -74,7 +74,7 @@ function WelcomeVenueSection() {
       <div className="container-custom">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
           <div>
-            <h2 className="text-2xl md:text-4xl font-semibold mb-4">Welcome to Windhoek</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">Welcome to Windhoek</h2>
             <p className="text-base md:text-lg text-white/90 mb-4">
               Namibia&apos;s capital city, known for its stunning landscapes, rich culture, and warm
               hospitality, serves as the perfect backdrop for SARSYC VI.
@@ -308,7 +308,7 @@ export default function SarsycVIPage() {
 
         <div className="relative container-custom py-8 md:py-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-5xl font-semibold text-[#1877F2] mb-3 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h1 className="text-2xl md:text-3xl font-semibold text-[#1877F2] mb-3 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               SARSYC VI
             </h1>
             
@@ -366,8 +366,8 @@ export default function SarsycVIPage() {
               />
             </div>
             <div className="min-w-0 text-center lg:text-left">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Conference Theme</h2>
-              <div className="text-gradient text-xl md:text-2xl lg:text-3xl font-bold mb-3 leading-snug">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Conference Theme</h2>
+              <div className="text-gradient text-base md:text-lg lg:text-xl font-semibold mb-3 leading-snug">
                 Align for Action: Sustaining Progress in Youth Health and Education
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed text-justify">
@@ -532,7 +532,7 @@ export default function SarsycVIPage() {
             <span className="inline-block bg-green-600 text-white text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4">
               Post-conference activity
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Orathon</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">Orathon</h2>
             <p className="text-gray-600 leading-relaxed mb-6">
               The Orathon is a separate post-conference activity in <strong>November 2026</strong>, extending SARSYC VI
               momentum beyond the main conference in Windhoek. Activities will take place across{' '}

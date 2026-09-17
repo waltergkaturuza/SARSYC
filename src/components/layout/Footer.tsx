@@ -6,29 +6,51 @@ import Image from 'next/image'
 import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin, FiMail, FiMapPin, FiCheck } from 'react-icons/fi'
 
 const footerLinks = {
-  conference: [
+  about: [
     { name: 'About SARSYC', href: '/about' },
-    { name: 'Current Conference', href: '/sarsyc-vi' },
+    { name: 'Vision & Mission', href: '/about/vision' },
+    { name: 'The SARSYC Journey', href: '/about/journey' },
+    { name: 'Who We Are', href: '/about/team' },
+    { name: 'Governance', href: '/about/governance' },
+    { name: 'Our History', href: '/about/history' },
+    { name: 'Youth Steering Committee', href: '/about/youth-steering-committee' },
+  ],
+  conference: [
+    { name: 'SARSYC VI Overview', href: '/sarsyc-vi' },
+    { name: 'Why SARSYC VI?', href: '/sarsyc-vi/why' },
+    { name: 'Objectives', href: '/sarsyc-vi/objectives' },
+    { name: 'Expected Outcomes', href: '/sarsyc-vi/outcomes' },
+    { name: 'Venue & Accommodation', href: '/sarsyc-vi/venue' },
     { name: 'Previous Conferences', href: '/conferences' },
-    { name: 'Programme', href: '/programme' },
+    { name: 'Programme Schedule', href: '/programme' },
     { name: 'Speakers', href: '/programme/speakers' },
+    { name: 'Sessions', href: '/programme/sessions' },
   ],
   participate: [
+    { name: 'How to Participate', href: '/participate' },
     { name: 'Register', href: '/participate/register' },
     { name: 'Submit Abstract', href: '/participate/submit-abstract' },
     { name: 'Volunteer', href: '/participate/volunteer' },
+    { name: 'Orathon Registration', href: '/participate/register-orathon' },
+    { name: 'Track Status', href: '/track' },
+    { name: 'Donate / Sponsor', href: '/participate/donate' },
+    { name: 'Safeguarding', href: '/participate/safeguarding' },
     { name: 'Partnerships', href: '/partnerships' },
   ],
   resources: [
     { name: 'Resource Library', href: '/resources' },
     { name: 'News & Updates', href: '/news' },
+    { name: 'Photo & Video Gallery', href: '/media/gallery' },
+    { name: 'Press', href: '/media/press' },
+    { name: 'Media Kit', href: '/media/kit' },
+    { name: 'GEAR Alliance', href: '/gear-alliance' },
     { name: 'FAQs', href: '/faq' },
+    { name: 'Contact Us', href: '/contact' },
   ],
   legal: [
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Terms of Use', href: '/terms' },
     { name: 'Accessibility', href: '/accessibility' },
-    { name: 'Contact Us', href: '/contact' },
   ],
 }
 
@@ -114,9 +136,9 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-300">
       {/* Main Footer */}
       <div className="container-custom py-8 md:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-x-8 lg:gap-y-5">
-          {/* Brand Column — spans full left height on desktop */}
-          <div className="md:col-span-2 lg:col-span-2 lg:row-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-x-6 lg:gap-y-5">
+          {/* Brand Column */}
+          <div className="sm:col-span-2 lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <div className="relative w-14 h-14 flex-shrink-0 rounded-full overflow-hidden">
                 <Image
@@ -170,10 +192,27 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* About Links */}
+          <div>
+            <h3 className="font-heading font-medium text-white mb-4">About</h3>
+            <ul className="space-y-2.5">
+              {footerLinks.about.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-sm hover:text-white transition-colors duration-200"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Conference Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Conference</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {footerLinks.conference.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -190,7 +229,7 @@ export default function Footer() {
           {/* Participate Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Participate</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {footerLinks.participate.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -207,7 +246,7 @@ export default function Footer() {
           {/* Resources Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Resources</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -221,10 +260,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter — sits below Conference / Participate / Resources on desktop */}
-          <div className="md:col-span-2 lg:col-span-3 lg:col-start-3 lg:self-end">
+          {/* Newsletter — full width below link columns */}
+          <div className="sm:col-span-2 lg:col-span-6 pt-2 border-t border-gray-800">
             <h3 className="font-heading font-medium text-white mb-2">Stay Updated</h3>
-            <p className="text-sm mb-4">
+            <p className="text-sm mb-4 max-w-2xl">
               Subscribe to our newsletter for conference updates, speaker announcements, and more.
             </p>
             <NewsletterForm />
@@ -262,7 +301,7 @@ export default function Footer() {
 
             {/* Legal Links + Admin (low-key, like TNF site) */}
             <div className="relative z-50 flex flex-wrap items-center justify-center gap-4 text-sm">
-              {footerLinks.legal.slice(0, 2).map((link) => (
+              {footerLinks.legal.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}

@@ -215,7 +215,7 @@ export default function ParticipatePage() {
       <section className="bg-primary-600 text-white py-4 md:py-5">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">
               {registrationClosed ? 'Looking ahead to SARSYC VII' : 'Ready to Join SARSYC VI?'}
             </h2>
             <p className="text-base md:text-lg mb-4 text-white/90">

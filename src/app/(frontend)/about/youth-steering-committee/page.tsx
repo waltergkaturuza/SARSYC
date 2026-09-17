@@ -58,9 +58,9 @@ export default async function YouthSteeringCommitteePage() {
         </Link>
 
         {/* Page heading */}
-        <div className="mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Youth Steering Committee</h1>
-          <p className="text-white/70 max-w-3xl text-lg">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2">Youth Steering Committee</h1>
+          <p className="text-white/70 max-w-3xl text-sm md:text-base">
             Youth leaders from across SADC who co-plan and execute SARSYC VI, champion post-conference implementation, and ensure continuity and accountability.
           </p>
         </div>
@@ -99,17 +99,17 @@ export default async function YouthSteeringCommitteePage() {
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-                            <span className="text-white text-6xl font-bold opacity-60">{getInitials(member.name)}</span>
+                            <span className="text-white text-2xl font-semibold opacity-60">{getInitials(member.name)}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 p-4 md:p-5">
-                        <h3 className="text-xl font-bold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">
+                        <h3 className="text-base md:text-lg font-semibold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">
                           {member.name}
                         </h3>
-                        <p className="text-amber-400/90 font-semibold text-sm mb-0.5">{member.role}</p>
+                        <p className="text-amber-400/90 font-medium text-sm mb-0.5">{member.role}</p>
                         <p className="text-white/55 text-sm mb-4">{member.organization}</p>
 
                         {member.bio ? (

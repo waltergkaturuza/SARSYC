@@ -275,7 +275,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                         />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-                          <span className="text-white text-6xl font-bold opacity-60">{initials}</span>
+                          <span className="text-white text-2xl font-semibold opacity-60">{initials}</span>
                         </div>
                       )}
 
@@ -299,7 +299,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                     {/* Info */}
                     <div className="p-5 space-y-3 relative z-10 flex-1 min-w-0">
                       {/* Name */}
-                      <h3 className="text-lg font-bold text-primary-400 leading-snug group-hover:text-amber-300 transition-colors duration-300">
+                      <h3 className="text-base font-semibold text-primary-400 leading-snug group-hover:text-amber-300 transition-colors duration-300">
                         {speaker.name}
                       </h3>
 
@@ -399,7 +399,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
           {abstractPresenters.length > 0 && (
             <div className="mt-16">
               <div className="mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Abstract Presenters</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">Abstract Presenters</h2>
                 <p className="text-white/60 max-w-2xl">
                   Researchers and practitioners sharing their work through peer-reviewed abstract presentations at SARSYC VI.
                 </p>
@@ -437,7 +437,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-primary-700 to-primary-500 flex items-center justify-center">
-                            <span className="text-white text-5xl font-bold opacity-60">{initials}</span>
+                            <span className="text-white text-2xl font-semibold opacity-60">{initials}</span>
                           </div>
                         )}
                         {/* Abstract presenter badge */}
@@ -491,7 +491,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
           {abstractReviewers.length > 0 && (
             <div className="mt-16">
               <div className="mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Abstract Reviewers</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">Abstract Reviewers</h2>
                 <p className="text-white/60 max-w-2xl">
                   Expert reviewers who evaluated abstract submissions for the SARSYC VI Research Indaba.
                 </p>
@@ -527,7 +527,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-secondary-700 to-secondary-500 flex items-center justify-center">
-                            <span className="text-white text-5xl font-bold opacity-60">{initials}</span>
+                            <span className="text-white text-2xl font-semibold opacity-60">{initials}</span>
                           </div>
                         )}
                         <div className="absolute top-3 left-3">

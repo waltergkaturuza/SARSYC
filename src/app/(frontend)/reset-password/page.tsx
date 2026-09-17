@@ -119,7 +119,7 @@ function ResetPasswordForm() {
             <FiArrowLeft className="mr-2" />
             Back to Login
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
             Reset Your Password
           </h1>
           <p className="text-gray-600">

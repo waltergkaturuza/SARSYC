@@ -52,7 +52,7 @@ export default function WhySarsycVIPage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             <div className="card p-8 md:p-12 bg-gradient-to-br from-primary-50 to-secondary-50 border-2 border-primary-200">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Positioning</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Our Positioning</h2>
               <p className="text-lg text-gray-700 leading-relaxed mb-4">
                 <strong>SARSYC VI responds to shifting development landscapes by promoting homegrown, sustainable, 
                 youth-led solutions strengthened through regional solidarity and partnerships.</strong>
@@ -77,7 +77,7 @@ export default function WhySarsycVIPage() {
 
         <div className="container-custom relative z-10">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-3 drop-shadow-lg">Key Challenges We Address</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-white text-center mb-3 drop-shadow-lg">Key Challenges We Address</h2>
             <p className="text-lg text-white/90 text-center mb-10 max-w-3xl mx-auto drop-shadow-md">
               SARSYC VI responds to critical challenges facing youth in Southern Africa
             </p>
@@ -103,7 +103,7 @@ export default function WhySarsycVIPage() {
       <section className="bg-white py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-4 md:mb-5">
+            <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-4 md:mb-5">
               Why Regional Solidarity Matters
             </h2>
             <div className="grid md:grid-cols-2 gap-3 md:gap-4">
@@ -131,7 +131,7 @@ export default function WhySarsycVIPage() {
       <section className="py-6 md:py-8 bg-primary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+            <h2 className="text-xl md:text-2xl font-semibold mb-3">
               Be Part of the Solution
             </h2>
             <p className="text-lg mb-5 text-white/90">

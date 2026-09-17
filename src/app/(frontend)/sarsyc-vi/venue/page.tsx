@@ -311,7 +311,7 @@ export default function VenuePage() {
       <section className="bg-white py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-4">
               Getting to {venue.city}
             </h2>
 
@@ -342,7 +342,7 @@ export default function VenuePage() {
       <section className="bg-gray-50 py-6 md:py-8">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-1.5">
+            <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-1.5">
               Explore {venue.city}
             </h2>
             <p className="text-sm md:text-base text-gray-600 text-center mb-4">

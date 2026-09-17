@@ -163,7 +163,7 @@ function SafeguardingForm() {
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-5 md:p-6 border border-gray-100">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Safeguarding training & acknowledgment</h1>
+      <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Safeguarding training & acknowledgment</h1>
       <p className="text-gray-600 mb-6">
         SARSYC VI — registration <strong className="font-mono">{info.registrationId}</strong>
         {info.firstName ? ` — ${info.firstName}` : ''}

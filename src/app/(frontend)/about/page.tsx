@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import JourneyTimeline from '@/components/about/JourneyTimeline'
 
 const values = [
   {
@@ -19,15 +18,6 @@ const values = [
     title: 'Inclusive & Accessible',
     description: 'We create spaces that welcome and include all young people, regardless of background.',
   },
-]
-
-const milestones = [
-  { year: 2014, edition: 'SARSYC I', location: 'Maputo, Mozambique', participants: 200 },
-  { year: 2016, edition: 'SARSYC II', location: 'Gaborone, Botswana', participants: 300 },
-  { year: 2018, edition: 'SARSYC III', location: 'Johannesburg, South Africa', participants: 400 },
-  { year: 2020, edition: 'SARSYC IV', location: 'Lusaka, Zambia', participants: 350 },
-  { year: 2022, edition: 'SARSYC V', location: 'Maputo, Mozambique', participants: 500 },
-  { year: 2026, edition: 'SARSYC VI', location: 'Windhoek, Namibia', participants: '500+', isCurrent: true },
 ]
 
 export default function AboutPage() {
@@ -96,7 +86,7 @@ export default function AboutPage() {
         <div className="container-custom">
           <div className="grid md:grid-cols-2 gap-5 md:gap-6">
             <div className="card p-5 md:p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Our Vision</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Vision</h3>
               <p className="text-gray-600 leading-relaxed">
                 A Southern Africa where all young people enjoy optimal sexual and reproductive health, access to
                 quality education, and are empowered to realize their full potential.
@@ -104,7 +94,7 @@ export default function AboutPage() {
             </div>
 
             <div className="card p-5 md:p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Our Mission</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Mission</h3>
               <p className="text-gray-600 leading-relaxed">
                 To mobilize, connect, and empower students and youth in Southern Africa to advocate for evidence-based
                 policies and programs that advance youth sexual and reproductive health and education.
@@ -117,7 +107,7 @@ export default function AboutPage() {
       {/* Core Values */}
       <section className="bg-white py-8 md:py-10">
         <div className="container-custom">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-5 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-900 mb-3 md:mb-4">
             Our Core Values
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
@@ -131,34 +121,22 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* SARSYC Journey */}
-      <section className="section bg-white py-0">
-        <div className="container-custom px-0">
-          <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white py-12 mb-0">
-            <div className="container-custom">
-              <h2 className="text-3xl md:text-5xl font-bold text-center">The SARSYC Journey</h2>
-            </div>
-          </div>
-          <JourneyTimeline />
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="about-cta bg-primary-600 text-white py-4 md:py-5">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">
               Join the SARSYC Movement
             </h2>
-            <p className="text-base md:text-lg mb-4 text-white/90">
-              Be part of the next chapter in Southern Africa's youth advocacy movement.
+            <p className="text-sm md:text-base mb-3 text-white/90">
+              Be part of the next chapter in Southern Africa&apos;s youth advocacy movement.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/participate/register" className="btn-accent px-6 py-2.5">
                 Register for SARSYC VI
               </Link>
-              <Link href="/sarsyc-vi" className="btn-outline border-white text-white hover:bg-white/10 px-6 py-2.5">
-                Learn More
+              <Link href="/about/journey" className="btn-outline border-white text-white hover:bg-white/10 px-6 py-2.5">
+                Explore the Journey
               </Link>
             </div>
           </div>
@@ -167,9 +145,3 @@ export default function AboutPage() {
     </>
   )
 }
-
-
-
-
-
-

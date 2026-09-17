@@ -199,7 +199,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-secondary-600">
-                      <span className="text-white text-6xl font-bold opacity-60">{initials}</span>
+                      <span className="text-white text-2xl font-semibold opacity-60">{initials}</span>
                     </div>
                   )}
                 </div>
@@ -258,7 +258,7 @@ export default async function SpeakerProfilePage({ params }: { params: { slug: s
             {/* Right: Bio & Sessions */}
             <div className="lg:col-span-2 p-8">
               {/* Name */}
-              <h1 className="text-3xl md:text-5xl font-bold text-primary-400 mb-2 leading-tight">
+              <h1 className="text-xl md:text-2xl font-semibold text-primary-400 mb-2 leading-tight">
                 {speaker.name}
               </h1>
               {speaker.title && (

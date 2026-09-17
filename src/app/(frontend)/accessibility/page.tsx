@@ -8,7 +8,7 @@ export default function AccessibilityPage() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container-custom">
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8">Accessibility Statement</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8">Accessibility Statement</h1>
           
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-gray-600 mb-8">

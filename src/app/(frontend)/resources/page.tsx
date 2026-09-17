@@ -189,7 +189,7 @@ function ResourcesPageContent() {
         <section className="py-10 md:py-14">
           <div className="container-custom">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-5xl font-bold mb-3 text-white">
+              <h1 className="text-2xl md:text-3xl font-semibold mb-3 text-white">
                 Resource Library
               </h1>
               <p className="text-lg md:text-xl text-white/70 mb-6">
