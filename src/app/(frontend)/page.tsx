@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FiCalendar, FiMapPin, FiArrowRight, FiUser } from 'react-icons/fi'
+import { FiCalendar, FiMapPin, FiArrowRight, FiUser, FiDownload } from 'react-icons/fi'
 import HeroImageSlider from '@/components/ui/HeroImageSlider'
 import ConferenceTrackCards from '@/components/ui/ConferenceTrackCards'
 import AboutVideoPlayer from '@/components/ui/AboutVideoPlayer'
@@ -144,12 +144,25 @@ function getSpeakerPhotoUrl(photo: any): string | null {
   return null
 }
 
+function getResourceFileUrl(file: any): string | null {
+  if (!file) return null
+  if (typeof file === 'string') return file
+  const candidates = [file.url, file.thumbnailURL, file.sizes?.card?.url].filter(Boolean)
+  for (const url of candidates) {
+    if (typeof url !== 'string') continue
+    if (url.includes('/api/media/file/')) continue
+    return url
+  }
+  return typeof file.url === 'string' ? file.url : null
+}
+
 // Force page to revalidate on every request to show latest featured speakers
 export const revalidate = 0
 
 export default async function HomePage() {
   // Fetch featured speakers
   let featuredSpeakers: any[] = []
+  let windhoekDeclarationUrl: string | null = null
   try {
     const payload = await getPayloadClient()
     await ensureSpeakersLatestColumns(payload)
@@ -185,6 +198,43 @@ export default async function HomePage() {
         })
       }
     })
+
+    // Windhoek Declaration for homepage CTA download
+    try {
+      let declarationDocs =
+        (
+          await payload.find({
+            collection: 'resources',
+            where: {
+              and: [
+                { type: { equals: 'declaration' } },
+                { title: { contains: 'Windhoek' } },
+              ],
+            },
+            limit: 1,
+            depth: 1,
+            overrideAccess: true,
+          })
+        ).docs || []
+
+      if (declarationDocs.length === 0) {
+        declarationDocs =
+          (
+            await payload.find({
+              collection: 'resources',
+              where: { type: { equals: 'declaration' } },
+              limit: 1,
+              sort: '-year',
+              depth: 1,
+              overrideAccess: true,
+            })
+          ).docs || []
+      }
+
+      windhoekDeclarationUrl = getResourceFileUrl(declarationDocs[0]?.file) || null
+    } catch (declarationError) {
+      console.error('Error fetching Windhoek Declaration resource:', declarationError)
+    }
   } catch (error) {
     console.error('Error fetching featured speakers:', error)
   }
@@ -443,9 +493,31 @@ export default async function HomePage() {
               What Happened In Windhoek
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
-              <Link href="/programme" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
+              <Link
+                href="/programme"
+                className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto"
+              >
                 View Programme
               </Link>
+              {windhoekDeclarationUrl ? (
+                <a
+                  href={windhoekDeclarationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                >
+                  <FiDownload className="w-5 h-5" aria-hidden />
+                  Download Declaration
+                </a>
+              ) : (
+                <Link
+                  href="/resources?type=declaration"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                >
+                  <FiDownload className="w-5 h-5" aria-hidden />
+                  Download Declaration
+                </Link>
+              )}
             </div>
           </div>
         </div>

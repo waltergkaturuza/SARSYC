@@ -145,10 +145,7 @@ export default function Header() {
               </div>
               <div className="hidden sm:block leading-tight">
                 <div className="font-heading font-black text-xl md:text-2xl text-gray-900">
-                  SARSYC VI
-                </div>
-                <div className="text-xs md:text-sm font-semibold text-gray-600">
-                  Windhoek 2026
+                  SARSYC
                 </div>
               </div>
             </Link>

@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiFacebook, FiTwitter, FiInstagram, FiMail, FiMapPin, FiCheck } from 'react-icons/fi'
-import { SiTiktok } from 'react-icons/si'
+import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin, FiMail, FiMapPin, FiCheck } from 'react-icons/fi'
 
 const footerLinks = {
   conference: [
@@ -34,10 +33,10 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { name: 'Facebook', icon: FiFacebook, href: 'https://www.facebook.com/SARSYC', color: 'hover:text-blue-600' },
-  { name: 'Instagram', icon: FiInstagram, href: 'https://www.instagram.com/sarsyc2026/', color: 'hover:text-pink-600' },
-  { name: 'X (Twitter)', icon: FiTwitter, href: 'https://x.com/SARSYC2026', color: 'hover:text-sky-500' },
-  { name: 'TikTok', icon: SiTiktok, href: 'https://www.tiktok.com/@sarsyc2026', color: 'hover:text-black dark:hover:text-white' },
+  { name: 'Facebook', icon: FiFacebook, href: 'https://www.facebook.com/SAYWHATOrg', color: 'hover:text-blue-600' },
+  { name: 'Instagram', icon: FiInstagram, href: 'https://www.instagram.com/saywhatzimbabwe/', color: 'hover:text-pink-600' },
+  { name: 'X (Twitter)', icon: FiTwitter, href: 'https://x.com/SAYWHATOrg', color: 'hover:text-sky-500' },
+  { name: 'LinkedIn', icon: FiLinkedin, href: 'https://www.linkedin.com/company/5272695/', color: 'hover:text-blue-700' },
 ]
 
 function NewsletterForm() {
@@ -130,10 +129,7 @@ export default function Footer() {
               </div>
               <div>
                 <div className="font-heading font-bold text-xl text-white">
-                  SARSYC VI
-                </div>
-                <div className="text-sm text-gray-400">
-                  Windhoek 2026
+                  SARSYC
                 </div>
               </div>
             </div>
@@ -144,7 +140,10 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-start gap-3 text-sm">
                 <FiMapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
-                <span>Windhoek, Namibia<br />August 5-7, 2026</span>
+                <span>
+                  24 JEFFERSON Road<br />
+                  Logan Park, Hatfield
+                </span>
               </div>
               <div className="flex items-start gap-3 text-sm">
                 <FiMail className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />

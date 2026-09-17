@@ -1,10 +1,11 @@
 ﻿'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX, FiAlertCircle } from 'react-icons/fi'
+import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiCheck, FiArrowRight, FiArrowLeft, FiCalendar, FiGlobe, FiShield, FiLoader, FiEye, FiEdit, FiX, FiAlertCircle, FiInfo } from 'react-icons/fi'
 import { countries } from '@/lib/countries'
 import { showToast } from '@/lib/toast'
 import {
@@ -715,63 +716,107 @@ export default function RegisterPage() {
     }
   }
 
-  // Registration suspended — show overlay instead of form
-  if (REGISTRATION_SUSPENDED) {
+  const pricingTier = getRegistrationPricingTier()
+  const registrationPeriodClosed = pricingTier === 'closed'
+
+  // Period closed — same SARSYC VII notice style as abstract submission
+  if (registrationPeriodClosed) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
-        <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
-          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
-            Registration Coming Soon
-          </h1>
-          <p className="text-lg text-white/70 mb-6">
-            Online registration opens when organisers enable it in the configuration.
-          </p>
-          <p className="text-sm text-white/50 mb-8">
-            In the meantime, you can submit an abstract or explore the programme. SARSYC VI — Windhoek, Namibia.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/" className="btn-outline">
-              Back to Homepage
-            </a>
-            <a href="/participate/submit-abstract" className="btn-primary">
-              Submit an Abstract
-            </a>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-primary-50/30 py-12 px-4">
+        <div className="container-custom max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="h-2 bg-gradient-to-r from-primary-600 to-secondary-600" />
+            <div className="p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Registration is closed
+              </h1>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Thank you for your interest in{' '}
+                <span className="font-semibold text-gray-800">SARSYC VI</span>. Online registration for this
+                edition has now closed, and we are no longer accepting new registrations online.
+              </p>
+              <div className="bg-secondary-50 border border-secondary-100 rounded-xl p-5 text-left mb-8">
+                <p className="text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-2">
+                  <FiInfo className="w-4 h-4 flex-shrink-0" aria-hidden />
+                  Next edition
+                </p>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  The next conference in the series will be{' '}
+                  <strong>SARSYC VII (7)</strong>, planned for <strong>2028</strong>. You will be able to register
+                  when SARSYC VII registration opens—watch our website and social channels for announcements.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/participate"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all"
+                >
+                  Participate hub
+                  <FiArrowRight className="w-4 h-4" aria-hidden />
+                </Link>
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Back to Homepage
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     )
   }
 
-  const pricingTier = getRegistrationPricingTier()
-  const registrationPeriodClosed = pricingTier === 'closed'
-
-  if (!REGISTRATION_SUSPENDED && registrationPeriodClosed) {
+  // Registration not enabled yet (before windows open)
+  if (REGISTRATION_SUSPENDED) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: "url('/sarsyc-group.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40" aria-hidden />
-        <div className="relative z-50 rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center border border-white/10 bg-white/10 backdrop-blur-md">
-          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FiCalendar className="w-10 h-10 text-amber-400" />
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
-            Registration period has closed
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Online registration for SARSYC VI followed published early-bird and late windows. If you need help, please contact the organisers.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/" className="btn-outline">
-              Back to Homepage
-            </a>
-            <a href={`mailto:${REGISTRATION_CONTACT_EMAIL}`} className="btn-primary">
-              Contact registration
-            </a>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-primary-50/30 py-12 px-4">
+        <div className="container-custom max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="h-2 bg-gradient-to-r from-primary-600 to-secondary-600" />
+            <div className="p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiCalendar className="w-10 h-10 text-primary-700" aria-hidden />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Registration is closed
+              </h1>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Thank you for your interest in{' '}
+                <span className="font-semibold text-gray-800">SARSYC VI</span>. Online registration for this
+                edition is not available. The next opportunity will be with the following conference.
+              </p>
+              <div className="bg-secondary-50 border border-secondary-100 rounded-xl p-5 text-left mb-8">
+                <p className="text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-2">
+                  <FiInfo className="w-4 h-4 flex-shrink-0" aria-hidden />
+                  Next edition
+                </p>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  The next conference in the series will be{' '}
+                  <strong>SARSYC VII (7)</strong>, planned for <strong>2028</strong>. You will be able to register
+                  when SARSYC VII registration opens—watch our website and social channels for announcements.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/participate"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold shadow-lg hover:from-primary-700 hover:to-primary-800 transition-all"
+                >
+                  Participate hub
+                  <FiArrowRight className="w-4 h-4" aria-hidden />
+                </Link>
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Back to Homepage
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

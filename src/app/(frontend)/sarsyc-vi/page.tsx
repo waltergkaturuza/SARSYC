@@ -546,12 +546,29 @@ export default function SarsycVIPage() {
                 </li>
               ))}
             </ul>
-            <Link href="/participate/register-orathon" className="btn-primary inline-flex items-center gap-2">
-              Register for Orathon
-              <FiArrowRight />
-            </Link>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <a
+                href="https://onlinetickets.hypenation.co.zw/Orathon2026"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                Register — Zimbabwe
+                <FiArrowRight />
+              </a>
+              <a
+                href="https://timetracka.app/events/saywhat-namibia-orathon-run-2026"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline inline-flex items-center gap-2"
+              >
+                Register — Namibia
+                <FiArrowRight />
+              </a>
+            </div>
             <p className="text-sm text-gray-500 mt-4">
-              Registration is open for the regional Orathon — not part of the August 5-7 conference programme in Windhoek.
+              Choose your country registration link. Orathon is a November 2026 post-conference activity — not part of
+              the August conference programme in Windhoek.
             </p>
           </div>
         </div>

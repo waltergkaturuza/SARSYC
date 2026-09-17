@@ -3,12 +3,23 @@ import { getPayloadClient } from '@/lib/payload'
 import { createAuditLog } from '@/lib/audit'
 import { createMediaFromBlobUrl } from '@/lib/createMediaFromUrl'
 import { recordFormSubmit } from '@/lib/recordSiteEvent'
+import { isVolunteerApplicationClosed } from '@/lib/volunteerApplication'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
+    if (isVolunteerApplicationClosed()) {
+      return NextResponse.json(
+        {
+          error:
+            'Volunteer applications for SARSYC VI are closed. Open to host country only for future editions; SARSYC VII (2028) will announce the next call.',
+        },
+        { status: 403 },
+      )
+    }
+
     const body = await request.json()
     const payload = await getPayloadClient()
 

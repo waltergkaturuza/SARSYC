@@ -296,7 +296,7 @@ export default function PartnershipsPage() {
       {/* Why Partner */}
       <section className="py-8 md:py-10 bg-white">
         <div className="container-custom">
-          <h2 className="section-title">Why Partner with SARSYC VI?</h2>
+          <h2 className="section-title">Why Partner with Us?</h2>
           
           <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-8">
             <div className="card p-6 text-center">

@@ -180,7 +180,7 @@ export default async function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
                 <input
                   type="url"
-                  defaultValue="https://www.facebook.com/SARSYC"
+                  defaultValue="https://www.facebook.com/SAYWHATOrg"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
@@ -189,7 +189,7 @@ export default async function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
                 <input
                   type="url"
-                  defaultValue="https://www.instagram.com/sarsyc2026/"
+                  defaultValue="https://www.instagram.com/saywhatzimbabwe/"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
@@ -198,16 +198,16 @@ export default async function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">X (Twitter)</label>
                 <input
                   type="url"
-                  defaultValue="https://x.com/SARSYC2026"
+                  defaultValue="https://x.com/SAYWHATOrg"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">TikTok</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
                 <input
                   type="url"
-                  defaultValue="https://www.tiktok.com/@sarsyc2026"
+                  defaultValue="https://www.linkedin.com/company/5272695/"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>

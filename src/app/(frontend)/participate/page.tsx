@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { FiUserPlus, FiFileText, FiHeart, FiArrowRight, FiCheck } from 'react-icons/fi'
 import { isAbstractSubmissionClosed } from '@/lib/abstractSubmission'
+import { getRegistrationPricingTier } from '@/lib/registrationPackages'
+import { isVolunteerApplicationClosed } from '@/lib/volunteerApplication'
 
 const participationOptions = [
   {
@@ -53,6 +55,10 @@ const participationOptions = [
 
 export default function ParticipatePage() {
   const abstractClosed = isAbstractSubmissionClosed()
+  const registrationClosed =
+    getRegistrationPricingTier() === 'closed' ||
+    process.env.NEXT_PUBLIC_REGISTRATION_OPEN !== 'true'
+  const volunteerClosed = isVolunteerApplicationClosed()
 
   return (
     <>
@@ -77,12 +83,27 @@ export default function ParticipatePage() {
             {participationOptions.map((option) => {
               const Icon = option.icon
               const isAbstractCard = option.href === '/participate/submit-abstract'
-              const deadlineLabel =
-                isAbstractCard && abstractClosed
+              const isRegisterCard = option.href === '/participate/register'
+              const isVolunteerCard = option.href === '/participate/volunteer'
+              const deadlineLabel = isAbstractCard
+                ? abstractClosed
                   ? 'Abstract submission is closed for SARSYC VI. SARSYC VII (2028) will open a new call when announced.'
                   : option.deadline
+                : isRegisterCard && registrationClosed
+                  ? 'Registration is closed for SARSYC VI. SARSYC VII (2028) registration will open when announced.'
+                  : isVolunteerCard && volunteerClosed
+                    ? 'Volunteer applications are closed for SARSYC VI (open to host country only). SARSYC VII (2028) will announce the next call.'
+                    : option.deadline
               const ctaLabel =
-                isAbstractCard && abstractClosed ? 'Read notice' : option.cta
+                (isAbstractCard && abstractClosed) ||
+                (isRegisterCard && registrationClosed) ||
+                (isVolunteerCard && volunteerClosed)
+                  ? 'Read notice'
+                  : option.cta
+              const noticeStyle =
+                (isAbstractCard && abstractClosed) ||
+                (isRegisterCard && registrationClosed) ||
+                (isVolunteerCard && volunteerClosed)
 
               return (
                 <div key={option.title} className="card overflow-hidden group hover:shadow-2xl transition-all">
@@ -99,24 +120,22 @@ export default function ParticipatePage() {
                     {deadlineLabel && (
                       <div
                         className={`rounded-lg p-3 mb-6 border ${
-                          isAbstractCard && abstractClosed
-                            ? 'bg-gray-50 border-gray-200'
-                            : 'bg-red-50 border-red-200'
+                          noticeStyle ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-200'
                         }`}
                       >
                         <p
                           className={`text-sm font-semibold ${
-                            isAbstractCard && abstractClosed ? 'text-gray-800' : 'text-red-600'
+                            noticeStyle ? 'text-gray-800' : 'text-red-600'
                           }`}
                         >
-                          {isAbstractCard && abstractClosed ? '' : '⏰ '}
+                          {noticeStyle ? '' : '⏰ '}
                           {deadlineLabel}
                         </p>
                       </div>
                     )}
 
                     <div className="space-y-3 mb-8">
-                      <p className="text-sm font-semibold text-gray-700">What's Included:</p>
+                      <p className="text-sm font-semibold text-gray-700">What&apos;s Included:</p>
                       <ul className="space-y-2">
                         {option.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2 text-sm text-gray-600">
@@ -197,13 +216,18 @@ export default function ParticipatePage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">
-              Ready to Join SARSYC VI?
+              {registrationClosed ? 'Looking ahead to SARSYC VII' : 'Ready to Join SARSYC VI?'}
             </h2>
             <p className="text-base md:text-lg mb-4 text-white/90">
-              Registration is now open! Secure your spot today.
+              {registrationClosed
+                ? 'SARSYC VI registration has closed. SARSYC VII (2028) registration will open when announced.'
+                : 'Registration is now open! Secure your spot today.'}
             </p>
-            <Link href="/participate/register" className="btn-accent px-6 py-2.5">
-              Register Now
+            <Link
+              href={registrationClosed ? '/participate/register' : '/participate/register'}
+              className="btn-accent px-6 py-2.5"
+            >
+              {registrationClosed ? 'Read registration notice' : 'Register Now'}
             </Link>
           </div>
         </div>

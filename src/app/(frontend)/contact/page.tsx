@@ -255,9 +255,6 @@ export default function ContactPage() {
                         <a href="tel:+263782702887" className="block text-primary-300 hover:text-amber-300 transition-colors">
                           +263 78 270 2887 (Zimbabwe)
                         </a>
-                        <a href="tel:+264816279224" className="block text-primary-300 hover:text-amber-300 transition-colors">
-                          +264 81 627 9224 (Namibia)
-                        </a>
                       </div>
                     </div>
                   </div>
@@ -269,8 +266,8 @@ export default function ContactPage() {
                     <div>
                       <p className="font-medium text-white mb-1">Address</p>
                       <p className="text-white/70 text-sm">
-                        SAYWHAT Secretariat<br />
-                        Windhoek, Namibia
+                        24 JEFFERSON Road<br />
+                        Logan Park, Hatfield
                       </p>
                     </div>
                   </div>
@@ -282,7 +279,7 @@ export default function ContactPage() {
                 <h3 className="font-bold text-white mb-5">Follow Us</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <a
-                    href="https://facebook.com/saywhat"
+                    href="https://www.facebook.com/SAYWHATOrg"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all group"
@@ -291,16 +288,16 @@ export default function ContactPage() {
                     <span className="text-sm font-medium text-white/80">Facebook</span>
                   </a>
                   <a
-                    href="https://twitter.com/saywhat"
+                    href="https://x.com/SAYWHATOrg"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-sky-400/50 hover:bg-sky-500/10 transition-all group"
                   >
                     <FiTwitter className="w-7 h-7 text-white/60 group-hover:text-sky-400 mb-2" />
-                    <span className="text-sm font-medium text-white/80">Twitter</span>
+                    <span className="text-sm font-medium text-white/80">X</span>
                   </a>
                   <a
-                    href="https://instagram.com/saywhat"
+                    href="https://www.instagram.com/saywhatzimbabwe/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-pink-400/50 hover:bg-pink-500/10 transition-all group"
@@ -309,7 +306,7 @@ export default function ContactPage() {
                     <span className="text-sm font-medium text-white/80">Instagram</span>
                   </a>
                   <a
-                    href="https://linkedin.com/company/saywhat"
+                    href="https://www.linkedin.com/company/5272695/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center p-3 rounded-lg border border-white/15 bg-white/5 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all group"
