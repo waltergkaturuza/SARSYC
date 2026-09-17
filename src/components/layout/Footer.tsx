@@ -195,7 +195,7 @@ export default function Footer() {
           {/* About Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">About</h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
               {footerLinks.about.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -212,7 +212,7 @@ export default function Footer() {
           {/* Conference Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Conference</h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
               {footerLinks.conference.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -229,7 +229,7 @@ export default function Footer() {
           {/* Participate Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Participate</h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
               {footerLinks.participate.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -246,7 +246,7 @@ export default function Footer() {
           {/* Resources Links */}
           <div>
             <h3 className="font-heading font-medium text-white mb-4">Resources</h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
                   <Link
