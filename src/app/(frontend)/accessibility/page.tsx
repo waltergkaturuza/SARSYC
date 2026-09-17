@@ -108,7 +108,7 @@ export default function AccessibilityPage() {
               <li>User testing with people with disabilities</li>
             </ul>
 
-            <div className="mt-12 pt-8 border-t border-gray-200 bg-gray-50 rounded-lg p-6">
+            <div className="mt-6 md:mt-8 pt-8 border-t border-gray-200 bg-gray-50 rounded-lg p-6">
               <p className="font-semibold text-gray-900 mb-2">Commitment to Accessibility</p>
               <p className="text-gray-700">
                 We are committed to making SARSYC accessible to all young people in Southern Africa, regardless

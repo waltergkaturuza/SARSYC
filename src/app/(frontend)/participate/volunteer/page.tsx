@@ -422,7 +422,7 @@ export default function VolunteerPage() {
       {/* Benefits */}
       <section className="section bg-white">
         <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-5 md:px-6 lg:px-8 xl:px-10 2xl:px-12">
-          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 md:gap-8 lg:gap-10 xl:gap-12 items-stretch">
+          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 md:gap-8 lg:gap-10 xl:gap-6 lg:gap-8 items-stretch">
             <div className="min-w-0 flex flex-col">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 lg:mb-8 text-center lg:text-left">
                 Why Volunteer?

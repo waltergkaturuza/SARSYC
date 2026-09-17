@@ -123,7 +123,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
       <section className="section bg-white">
         <div className="container-custom">
           <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-12 gap-10 xl:gap-12">
+            <div className="grid lg:grid-cols-12 gap-10 xl:gap-6 lg:gap-8">
               <div className="lg:col-span-8 xl:col-span-9">
                 <div
                   className="prose prose-lg max-w-none text-justify prose-headings:text-left prose-headings:font-bold prose-h2:text-3xl prose-h3:text-2xl prose-p:text-gray-600 prose-p:text-justify prose-li:text-gray-600 prose-a:text-primary-600"
@@ -163,7 +163,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
                 )}
 
                 {tagList.length > 0 && (
-                  <div className="mt-12 pt-8 border-t border-gray-200">
+                  <div className="mt-6 md:mt-8 pt-8 border-t border-gray-200">
                     <p className="text-sm font-semibold text-gray-700 mb-3">Tags:</p>
                     <div className="flex flex-wrap gap-2">
                       {tagList.map((tag: string) => (

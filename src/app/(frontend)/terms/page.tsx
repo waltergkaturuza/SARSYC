@@ -118,7 +118,7 @@ export default function TermsPage() {
               <strong>Website:</strong> www.sarsyc.org
             </p>
 
-            <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="mt-6 md:mt-8 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-500">
                 These terms are governed by the laws of Namibia and the Republic of South Africa.
               </p>

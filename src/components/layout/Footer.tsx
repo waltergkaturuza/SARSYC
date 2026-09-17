@@ -113,12 +113,12 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       {/* Main Footer */}
-      <div className="container-custom py-10 md:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-x-12 lg:gap-y-6">
+      <div className="container-custom py-8 md:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-x-8 lg:gap-y-5">
           {/* Brand Column — spans full left height on desktop */}
           <div className="md:col-span-2 lg:col-span-2 lg:row-span-2">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="relative w-16 h-16 flex-shrink-0 rounded-full overflow-hidden">
+              <div className="relative w-14 h-14 flex-shrink-0 rounded-full overflow-hidden">
                 <Image
                   src="/logo.jpeg"
                   alt="SARSYC Logo"

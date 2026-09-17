@@ -12,7 +12,7 @@ export default function FrontendLayout({
     <div className="flex flex-col min-h-screen">
       <AnalyticsTracker />
       <Header />
-      <main className="flex-grow pt-16 md:pt-20">
+      <main className="flex-grow pt-14 md:pt-16 min-w-0 overflow-x-hidden">
         {children}
       </main>
       <Footer />

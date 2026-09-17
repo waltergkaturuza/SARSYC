@@ -91,7 +91,7 @@ export default function PrivacyPage() {
               an updated revision date.
             </p>
 
-            <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="mt-6 md:mt-8 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-500">
                 This privacy policy complies with applicable data protection regulations including GDPR where applicable.
               </p>

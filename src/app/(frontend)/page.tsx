@@ -307,13 +307,17 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
-        <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 pt-10 md:pt-12 lg:pt-14 pb-10 md:pb-12 lg:pb-14">
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] lg:gap-x-10 lg:items-stretch">
-            {/* Intro copy — left column glass card */}
-            <div className="order-1 min-w-0 h-full rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8 flex flex-col gap-4 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
-              <h1 className="home-hero-title text-primary-400 text-center lg:text-left">
-                The 6th Southern African Regional Students and Youth Conference
-              </h1>
+        <div className="relative z-10 w-full px-4 sm:px-5 md:px-8 lg:px-10 xl:px-12 pt-6 md:pt-8 lg:pt-10 pb-6 md:pb-8 lg:pb-10">
+          {/* Quantis-style full-width display headline */}
+          <h1 className="home-hero-title text-primary-400 max-w-[95%] xl:max-w-7xl mb-5 md:mb-6 lg:mb-8">
+            The 6th Southern African Regional Students
+            <br className="hidden sm:block" />
+            and Youth Conference
+          </h1>
+
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-x-8 lg:items-stretch">
+            {/* Supporting copy — left column glass card */}
+            <div className="order-1 min-w-0 h-full rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-4 sm:p-5 md:p-6 flex flex-col gap-3 text-justify break-words transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
               <p className="text-lg md:text-xl font-semibold text-white">SARSYC VI</p>
               <p className="text-sm md:text-base font-medium text-white/90">
                 Align for Action: Sustaining Progress in Youth Health and Education
@@ -334,8 +338,8 @@ export default async function HomePage() {
 
             {/* Team photo slider + date/location caption — right column */}
             <div className="order-2 min-w-0 flex flex-col gap-3 h-full">
-              <div className="flex-1 min-h-[280px] sm:min-h-[340px] rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary-400/30 hover:shadow-primary-500/10">
-                <HeroImageSlider className="h-full min-h-[280px] sm:min-h-[340px]" />
+              <div className="flex-1 min-h-[220px] sm:min-h-[300px] lg:min-h-[340px] rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary-400/30 hover:shadow-primary-500/10">
+                <HeroImageSlider className="h-full min-h-[220px] sm:min-h-[300px] lg:min-h-[340px]" />
               </div>
               <div className="flex justify-center lg:justify-start shrink-0">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-lg">
@@ -352,17 +356,17 @@ export default async function HomePage() {
       </section>
 
       {/* Register CTAs */}
-      <section className="relative text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600 py-4 md:py-5 pb-8 md:pb-10">
+      <section className="relative text-white bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-600 py-3 md:py-4 pb-6 md:pb-8">
         <div className="container-custom relative z-10">
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
-            <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 md:gap-3">
+            <Link href="/participate/register" className="btn-accent text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
               Register for SARSYC VI
               <FiArrowRight className="w-5 h-5 ml-2" />
             </Link>
-            <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
+            <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
               Submit Abstract (Research Indaba)
             </Link>
-            <Link href="/partnerships" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
+            <Link href="/partnerships" className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
               Become a Partner / Exhibitor
             </Link>
           </div>
@@ -386,7 +390,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" aria-hidden />
 
         <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-6 md:mb-8">
             {stats.map((stat) => (
                 <div
                   key={stat.label}
@@ -402,7 +406,7 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-8 lg:gap-12 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-5 lg:gap-8 items-start">
             <div className="min-w-0">
               <div className="mb-6 md:mb-8 text-left">
                 <h2 className="text-3xl md:text-4xl font-semibold text-white mb-3">What is SARSYC?</h2>
@@ -456,7 +460,7 @@ export default async function HomePage() {
 
       {/* Featured Speakers Section */}
       {featuredSpeakers.length > 0 && (
-        <section className="relative py-16 md:py-24 bg-slate-900">
+        <section className="relative py-8 md:py-12 bg-slate-900">
           {/* Background image */}
           <div
             className="absolute inset-0"
@@ -468,15 +472,15 @@ export default async function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/85" />
 
-          <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Featured Speakers</h2>
-              <p className="text-white/70 text-lg">
+          <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-5 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center mb-6 md:mb-8">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-2 md:mb-3">Featured Speakers</h2>
+              <p className="text-white/70 text-base md:text-lg">
                 A big thanks to the distinguished speakers who shared their expertise at SARSYC VI.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               {featuredSpeakers.map((speaker: any) => {
                 const photoUrl = getSpeakerPhotoUrl(speaker.photo)
                 const isKeynote = speaker.type && Array.isArray(speaker.type) && speaker.type.includes('keynote')
@@ -532,7 +536,7 @@ export default async function HomePage() {
               })}
             </div>
 
-            <div className="text-center mt-12">
+            <div className="text-center mt-6 md:mt-8">
               <Link href="/programme/speakers" className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold transition-colors shadow-lg shadow-amber-900/30">
                 View All Speakers
                 <FiArrowRight className="w-5 h-5" />
@@ -543,16 +547,16 @@ export default async function HomePage() {
       )}
 
       {/* CTA Section */}
-      <section className="py-8 md:py-10 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+      <section className="py-6 md:py-8 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">
               What Happened In Windhoek
             </h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
               <Link
                 href="/programme"
-                className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto"
+                className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto"
               >
                 View Programme
               </Link>
@@ -561,7 +565,7 @@ export default async function HomePage() {
                   href={windhoekDeclarationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
                 >
                   <FiDownload className="w-5 h-5" aria-hidden />
                   Download Declaration
@@ -569,7 +573,7 @@ export default async function HomePage() {
               ) : (
                 <Link
                   href="/resources?type=declaration"
-                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
                 >
                   <FiDownload className="w-5 h-5" aria-hidden />
                   Download Declaration
@@ -580,7 +584,7 @@ export default async function HomePage() {
                   href={accountabilityCompactUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
                 >
                   <FiDownload className="w-5 h-5" aria-hidden />
                   Download Accountability Compact
@@ -588,7 +592,7 @@ export default async function HomePage() {
               ) : (
                 <Link
                   href="/resources?type=compact"
-                  className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                  className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto inline-flex items-center justify-center gap-2"
                 >
                   <FiDownload className="w-5 h-5" aria-hidden />
                   Download Accountability Compact

@@ -208,7 +208,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
       </section>
 
       {/* Filters + Speaker Grid — full-bleed background section */}
-      <section className="relative py-16 md:py-24 bg-slate-900">
+      <section className="relative py-8 md:py-12 bg-slate-900">
         {/* Background image */}
         <div
           className="absolute inset-0"
@@ -384,7 +384,7 @@ export default async function SpeakersPage({ searchParams }: SpeakersPageProps) 
           )}
 
           {speakers.length > 0 && (
-            <div className="mt-12 text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8">
+            <div className="mt-6 md:mt-8 text-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8">
               <h3 className="font-semibold text-white mb-2">More Speakers Coming Soon!</h3>
               <p className="text-white/70 mb-4">
                 We&apos;re adding more amazing speakers daily. Check back regularly for updates.

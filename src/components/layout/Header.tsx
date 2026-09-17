@@ -130,8 +130,8 @@ export default function Header() {
         scrolled ? 'bg-white shadow-md' : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
-      <nav className="max-w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20 w-full">
+      <nav className="max-w-full px-4 sm:px-5 lg:px-6">
+        <div className="flex items-center justify-between h-14 md:h-16 w-full">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2.5">
               <div className="relative w-11 h-11 md:w-12 md:h-12 flex-shrink-0 rounded-full overflow-hidden">

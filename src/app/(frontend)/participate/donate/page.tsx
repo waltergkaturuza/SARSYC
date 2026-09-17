@@ -303,7 +303,7 @@ function DonatePageContent() {
 
         {/* ── Left: Card payment form ──────────────────────────────────────── */}
         <div className="lg:col-span-2">
-          <div className="bg-gray-800 rounded-2xl p-6 md:p-8 shadow-xl border border-gray-700">
+          <div className="bg-gray-800 rounded-2xl p-4 md:p-5 shadow-xl border border-gray-700">
             {/* Mode toggle */}
             <div className="flex gap-1 bg-gray-900 rounded-xl p-1 mb-6 w-fit">
               {(['donating', 'sponsoring'] as Mode[]).map((m) => (

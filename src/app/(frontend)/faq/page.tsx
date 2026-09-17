@@ -169,7 +169,7 @@ export default function FAQPage() {
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
             {/* Category Tabs */}
-            <div className="flex flex-wrap gap-3 mb-12 justify-center">
+            <div className="flex flex-wrap gap-3 mb-6 md:mb-8 justify-center">
               <button
                 onClick={() => {
                   setActiveCategory(null)

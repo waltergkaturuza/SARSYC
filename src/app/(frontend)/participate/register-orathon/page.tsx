@@ -96,7 +96,7 @@ export default async function RegisterOrathonPage() {
 
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-5 lg:gap-8 items-start max-w-6xl mx-auto">
             <div className="space-y-5">
               {countries.map((item) => (
                 <a
@@ -104,7 +104,7 @@ export default async function RegisterOrathonPage() {
                   href={item.registrationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-lg"
+                  className="group block rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                     <div className="w-14 h-14 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center flex-shrink-0 overflow-hidden">

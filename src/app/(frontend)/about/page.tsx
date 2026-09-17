@@ -50,7 +50,7 @@ export default function AboutPage() {
       {/* What is SARSYC */}
       <section className="section bg-white">
         <div className="container-custom">
-          <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-center lg:items-start">
+          <div className="flex flex-col lg:flex-row gap-10 lg:gap-6 lg:gap-8 items-center lg:items-start">
             <div className="w-full lg:w-[30%] shrink-0 flex justify-center lg:justify-start">
               <div className="relative w-full max-w-[280px] sm:max-w-xs lg:max-w-none aspect-square">
                 <Image

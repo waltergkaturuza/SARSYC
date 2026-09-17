@@ -72,14 +72,14 @@ function WelcomeVenueSection() {
   return (
     <section className="section bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <div className="container-custom">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
           <div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">Welcome to Windhoek</h2>
-            <p className="text-xl text-white/90 mb-6">
+            <h2 className="text-2xl md:text-4xl font-semibold mb-4">Welcome to Windhoek</h2>
+            <p className="text-base md:text-lg text-white/90 mb-4">
               Namibia&apos;s capital city, known for its stunning landscapes, rich culture, and warm
               hospitality, serves as the perfect backdrop for SARSYC VI.
             </p>
-            <div className="space-y-4 mb-8">
+            <div className="space-y-3 mb-5">
               <div className="flex items-start gap-3">
                 <FiMapPin className="w-6 h-6 text-accent-500 flex-shrink-0 mt-1" />
                 <div>
@@ -306,37 +306,37 @@ export default function SarsycVIPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900/15 via-slate-900/10 to-secondary-900/18" />
 
-        <div className="relative container-custom py-10 md:py-14">
+        <div className="relative container-custom py-8 md:py-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-5xl font-bold text-[#1877F2] mb-4 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h1 className="text-3xl md:text-5xl font-semibold text-[#1877F2] mb-3 leading-tight [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               SARSYC VI
             </h1>
             
-            <h2 className="text-2xl md:text-3xl text-[#1877F2] font-semibold mb-4 leading-snug [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
+            <h2 className="text-xl md:text-2xl text-[#1877F2] font-semibold mb-4 leading-snug [text-shadow:0_2px_4px_rgb(255_255_255_/_0.95),0_0_24px_rgb(255_255_255_/_0.65)]">
               Align for Action: Sustaining Progress in Youth Health and Education
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
+            <div className="grid md:grid-cols-2 gap-3 max-w-2xl mx-auto mb-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
                 <FiCalendar className="w-6 h-6 mx-auto mb-2" />
                 <div className="font-semibold">August 5-7, 2026</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 text-white">
                 <FiMapPin className="w-6 h-6 mx-auto mb-2" />
                 <div className="font-semibold">Windhoek, Namibia</div>
               </div>
             </div>
 
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold text-white mb-4">Countdown to Conference</h3>
+            <div className="mb-6">
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-3">Countdown to Conference</h3>
               <CountdownTimer targetDate="2026-08-05T09:00:00" />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/participate/register" className="btn-accent text-lg px-8 py-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/participate/register" className="btn-accent text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
                 Register Now
               </Link>
-              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-lg px-8 py-3 w-full sm:w-auto">
+              <Link href="/participate/submit-abstract" className="btn-outline border-white text-white hover:bg-white/10 text-base md:text-lg px-6 md:px-8 py-2.5 md:py-3 w-full sm:w-auto">
                 Submit Abstract
               </Link>
               <DownloadConceptNoteButton />
@@ -455,7 +455,7 @@ export default function SarsycVIPage() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-6 md:mt-8">
             <Link href="/participate/register" className="btn-primary text-lg px-8 py-4">
               Register Now - Don't Miss Out!
             </Link>
@@ -471,7 +471,7 @@ export default function SarsycVIPage() {
             Register during the early-bird window for lower rates. Packages and pricing match the online registration form.
           </p>
 
-          <div className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-4 mb-10">
+          <div className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-4 mb-6">
             <div className="card p-6 border-2 border-primary-200 bg-primary-50/60">
               <h3 className="font-bold text-gray-900 mb-2">Early Bird Registration</h3>
               <p className="text-sm text-gray-600">

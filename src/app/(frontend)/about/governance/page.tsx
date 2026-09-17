@@ -32,7 +32,7 @@ export default async function GovernancePage() {
       <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-12" style={{ zIndex: 2 }}>
 
         {/* Page heading */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 md:mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Governance</h1>
           <p className="text-white/70 text-lg">Democratic, transparent, and accountable leadership</p>
         </div>

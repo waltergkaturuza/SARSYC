@@ -81,7 +81,7 @@ function PaymentCompleteInner({ registrationPayloadId }: { registrationPayloadId
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 md:p-10 text-center border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-5 md:p-6 text-center border border-gray-100">
         {phase === 'loading' && (
           <>
             <FiLoader className="w-12 h-12 text-primary-600 animate-spin mx-auto mb-6" aria-hidden />

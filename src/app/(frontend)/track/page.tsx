@@ -139,7 +139,7 @@ export default function TrackPage() {
             <div className="max-w-4xl mx-auto space-y-8">
               {/* Registration Status */}
               {registration && (
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Registration Status</h2>
                     {(() => {
@@ -250,7 +250,7 @@ export default function TrackPage() {
 
               {/* Orathon Registration Status */}
               {orathonRegistration && (
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Orathon Registration Status</h2>
                     {(() => {
@@ -322,7 +322,7 @@ export default function TrackPage() {
 
               {/* Abstract Submissions */}
               {abstracts.length > 0 && (
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Abstract Submissions</h2>
                   <div className="space-y-4">
                     {abstracts.map((abstract: any) => {
@@ -375,7 +375,7 @@ export default function TrackPage() {
 
               {/* Partnership Inquiry */}
               {partnership && (
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Partnership Inquiry</h2>
                     {(() => {
@@ -465,7 +465,7 @@ export default function TrackPage() {
 
               {/* Volunteer Application */}
               {volunteer && (
-                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div className="bg-white rounded-xl shadow-lg p-4 md:p-5">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Volunteer Application</h2>
                     {(() => {

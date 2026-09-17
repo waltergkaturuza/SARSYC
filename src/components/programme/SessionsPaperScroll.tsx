@@ -139,7 +139,7 @@ export default function SessionsPaperScroll({ dayGroups }: { dayGroups: SessionD
                       <article
                         key={session.id}
                         data-paper-sheet
-                        className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all duration-300 will-change-transform ${theme.hover}`}
+                        className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm transition-all duration-300 will-change-transform ${theme.hover}`}
                         style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
                       >
                         <div className={`absolute inset-y-0 left-0 w-1.5 ${theme.bar}`} aria-hidden />

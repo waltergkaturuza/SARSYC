@@ -108,7 +108,7 @@ function LoginForm() {
       <section className="py-8 md:py-10 bg-gray-50">
         <div className="container-custom">
           <div className="max-w-2xl mx-auto">
-            <div className="card p-6 md:p-8 shadow-xl">
+            <div className="card p-4 md:p-5 shadow-xl">
               <div className="mb-5">
                 <label htmlFor="userType" className="block text-sm font-bold text-gray-800 mb-2">
                   I am signing in as

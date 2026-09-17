@@ -81,7 +81,7 @@ export default function PressReleasesPage() {
             </div>
           )}
 
-          <div className="mt-12 text-center">
+          <div className="mt-6 md:mt-8 text-center">
             <div className="card p-8 bg-gray-50 max-w-2xl mx-auto">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Media Inquiries</h3>
               <p className="text-gray-600 mb-4">

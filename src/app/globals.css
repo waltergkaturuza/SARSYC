@@ -13,7 +13,7 @@
   }
   
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-white text-gray-900 overflow-x-hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -21,7 +21,7 @@
   }
   
   /* Cap below .home-hero-title (site’s largest type) */
-  h1 {
+  h1:not(.home-hero-title) {
     @apply text-3xl md:text-4xl lg:text-5xl;
   }
   
@@ -40,7 +40,7 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
   
   .btn-primary {
@@ -60,7 +60,7 @@
   }
   
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-4 sm:px-5 lg:px-6;
   }
   
   .card {
@@ -73,33 +73,37 @@
   }
   
   .section {
-    @apply py-16 md:py-24;
+    @apply py-8 md:py-12;
   }
   
   .section-title {
-    @apply text-2xl md:text-3xl lg:text-4xl font-semibold text-center mb-4;
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold text-center mb-3 md:mb-4;
   }
 
-  /* Homepage hero — largest type on the site; keep all other headings smaller */
+  /* Homepage hero — Quantis-scale display type; largest on the site */
+  h1.home-hero-title,
   .home-hero-title {
-    @apply text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold leading-[1.05] tracking-tight;
+    @apply font-semibold tracking-tight text-left;
+    font-size: clamp(3.25rem, 2rem + 9vw, 8rem) !important;
+    line-height: 0.88 !important;
+    letter-spacing: -0.03em;
   }
   
   .section-subtitle {
-    @apply text-lg md:text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto;
+    @apply text-base md:text-lg text-gray-600 text-center mb-6 md:mb-8 max-w-3xl mx-auto;
   }
 
   /* Shared page title banner (Contact-style blue gradient, compact) */
   .page-hero {
-    @apply bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-4 md:py-5;
+    @apply bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white py-3 md:py-4;
   }
 
   .page-hero-title {
-    @apply text-3xl md:text-4xl font-semibold mb-2 md:mb-3;
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold mb-1.5 md:mb-2;
   }
 
   .page-hero-subtitle {
-    @apply text-base md:text-lg text-white/90;
+    @apply text-sm md:text-base text-white/90;
   }
 
   .about-page p {

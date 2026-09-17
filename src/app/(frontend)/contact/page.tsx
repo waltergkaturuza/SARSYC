@@ -97,7 +97,7 @@ export default function ContactPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-6 md:p-8">
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-2xl p-4 md:p-5">
                 <h2 className="text-2xl font-bold text-white mb-6">Send Us a Message</h2>
 
                 {isSuccess ? (
@@ -218,7 +218,7 @@ export default function ContactPage() {
             {/* Contact Information */}
             <div className="space-y-5">
               {/* Contact Details */}
-              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-6 md:p-8 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-4 md:p-5 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
                 <h3 className="font-bold text-white mb-5">Contact Information</h3>
                 <div className="space-y-5">
                   <div className="flex items-start gap-4">
@@ -275,7 +275,7 @@ export default function ContactPage() {
               </div>
 
               {/* Social Media */}
-              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-6 md:p-8 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
+              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md shadow-xl p-4 md:p-5 transition-all duration-500 hover:border-primary-400/30 hover:bg-white/15">
                 <h3 className="font-bold text-white mb-5">Follow Us</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <a

@@ -114,7 +114,7 @@ export default function MediaKitPage() {
               ))}
             </div>
 
-            <div className="mt-12 card p-8 bg-gray-50">
+            <div className="mt-6 md:mt-8 card p-8 bg-gray-50">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Need Additional Resources?</h3>
               <p className="text-gray-600 mb-4">
                 For custom media requests, interview opportunities, or high-resolution images, please contact our communications team.

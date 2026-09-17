@@ -105,7 +105,7 @@ export default async function YouthSteeringCommitteePage() {
                       </div>
 
                       {/* Info */}
-                      <div className="flex-1 p-6 md:p-8">
+                      <div className="flex-1 p-4 md:p-5">
                         <h3 className="text-xl font-bold text-primary-400 mb-1 group-hover:text-amber-300 transition-colors duration-300">
                           {member.name}
                         </h3>
